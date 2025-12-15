@@ -177,6 +177,40 @@ async function syncFiles(rootPath, sendLog, disabledMods = []) {
         }
     }
 
+    // Cleanup: Remove unmanaged files in 'mods' directory
+    const modsDir = path.join(rootPath, 'mods');
+    if (fs.existsSync(modsDir)) {
+        const localFiles = fs.readdirSync(modsDir);
+        // Create a Set of normalized manifest paths for fast lookup
+        // We only care about files in 'mods/' directory from the manifest
+        // And we exclude disabled mods (they should be removed anyway)
+        const manifestMods = new Set(
+            manifest.files
+                .filter(f => f.path.startsWith('mods/') && !disabledMods.includes(f.path))
+                .map(f => path.normalize(f.path))
+        );
+
+        for (const file of localFiles) {
+            const fullPath = path.join(modsDir, file);
+            // Skip directories if any
+            try {
+                if (fs.statSync(fullPath).isDirectory()) continue;
+            } catch (e) { continue; }
+
+            const relativePath = path.join('mods', file);
+            const normalizedPath = path.normalize(relativePath);
+
+            if (!manifestMods.has(normalizedPath)) {
+                sendLog(`Removing unmanaged file: ${relativePath}`);
+                try {
+                    fs.unlinkSync(fullPath);
+                } catch (e) {
+                    sendLog(`Failed to remove ${relativePath}: ${e.message}`);
+                }
+            }
+        }
+    }
+
     if (downloaded > 0) {
         sendLog(`Update complete. Downloaded: ${downloaded}`);
     } else {
