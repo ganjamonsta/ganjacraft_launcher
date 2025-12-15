@@ -95,8 +95,10 @@ async function syncFiles(rootPath, sendLog) {
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 800,
+        width: 900,
         height: 600,
+        frame: false, // Custom title bar
+        backgroundColor: '#121212',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
@@ -105,6 +107,10 @@ function createWindow() {
     });
 
     win.loadFile('src/index.html');
+
+    // Window Control Handlers
+    ipcMain.on('window-minimize', () => win.minimize());
+    ipcMain.on('window-close', () => win.close());
 }
 
 app.whenReady().then(() => {

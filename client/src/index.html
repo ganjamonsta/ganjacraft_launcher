@@ -3,94 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <title>GanjaCraft Launcher</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1e1e1e;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: #2d2d2d;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            width: 300px;
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: none;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .hidden {
-            display: none;
-        }
-        #status {
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #aaa;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h2>GanjaCraft</h2>
-        
-        <!-- Шаг 1: Ввод ника -->
-        <div id="step-1">
-            <input type="text" id="username" placeholder="Ваш никнейм">
-            <button id="btn-get-code">Получить код</button>
+    <!-- Custom Title Bar -->
+    <div id="title-bar">
+        <div id="title-bar-title">GANJACRAFT LAUNCHER</div>
+        <div id="window-controls">
+            <button id="btn-minimize" class="control-btn" title="Minimize"></button>
+            <button id="btn-close" class="control-btn" title="Close"></button>
         </div>
+    </div>
 
-        <!-- Шаг 2: Ввод кода -->
-        <div id="step-2" class="hidden">
-            <p>Код отправлен в Telegram!</p>
-            <input type="text" id="auth-code" placeholder="Код из бота">
-            <button id="btn-verify">Войти</button>
+    <!-- Main Content -->
+    <div id="main-content">
+        <div id="bg-overlay"></div>
+
+        <div class="auth-container fade-in">
+            <h2>GanjaCraft</h2>
+            
+            <!-- Step 1: Login -->
+            <div id="step-login">
+                <input type="text" id="username" placeholder="Username" spellcheck="false">
+                <button id="login-btn">Next</button>
+            </div>
+
+            <!-- Step 2: Code Verification -->
+            <div id="step-code" class="hidden">
+                <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Code sent to Telegram</p>
+                <input type="text" id="auth-code" placeholder="Enter Code" spellcheck="false">
+                <button id="verify-btn">Play</button>
+            </div>
+
+            <!-- Step 3: Progress -->
+            <div id="step-progress" class="hidden">
+                <div id="status">Initializing...</div>
+                <div style="width: 100%; background: #333; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;">
+                    <div id="progress-bar" style="width: 0%; height: 100%; background: #4CAF50; transition: width 0.2s;"></div>
+                </div>
+                <button id="cancel-btn" style="background: #d32f2f; margin-top: 20px; font-size: 12px; padding: 8px;">Cancel</button>
+            </div>
+
+            <!-- Console Toggle -->
+            <div style="margin-top: 15px; text-align: right;">
+                <a href="#" id="toggle-console" style="color: #666; font-size: 10px; text-decoration: none;">Toggle Console</a>
+            </div>
+            
+            <!-- Console Output -->
+            <div id="console-output"></div>
         </div>
-
-        <!-- Шаг 3: Запуск -->
-        <div id="step-3" class="hidden">
-            <h3 id="welcome-msg">Привет!</h3>
-            <button id="btn-launch">ИГРАТЬ</button>
-            <div id="console-output" style="
-                margin-top: 20px;
-                background: #000;
-                color: #0f0;
-                font-family: monospace;
-                font-size: 12px;
-                height: 150px;
-                overflow-y: auto;
-                text-align: left;
-                padding: 10px;
-                border-radius: 5px;
-                display: none;
-            "></div>
-        </div>
-
-        <div id="status"></div>
     </div>
 
     <script src="renderer.js"></script>

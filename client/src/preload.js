@@ -20,5 +20,7 @@ contextBridge.exposeInMainWorld('api', {
         });
         return response.json();
     },
-    onLog: (callback) => ipcRenderer.on('log-message', (event, text) => callback(text))
+    onLog: (callback) => ipcRenderer.on('log-message', (event, text) => callback(text)),
+    minimize: () => ipcRenderer.send('window-minimize'),
+    close: () => ipcRenderer.send('window-close')
 });
