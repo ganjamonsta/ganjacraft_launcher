@@ -203,6 +203,12 @@ document.getElementById('verify-btn').addEventListener('click', async () => {
     try {
         const result = await window.api.verifyAuth(currentUsername, code);
         if (result.success) {
+            // Save Auth
+            localStorage.setItem('auth_user', currentUsername);
+            if (result.token) {
+                localStorage.setItem('auth_token', result.token);
+            }
+
             stepCode.classList.add('hidden');
             stepProgress.classList.remove('hidden');
             stepProgress.classList.add('fade-in');
@@ -273,3 +279,67 @@ function logToConsole(text) {
     consoleOutput.appendChild(line);
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
 }
+
+// --- Startup Logic ---
+(async () => {
+    loadNews();
+    await checkSavedAuth();
+})();
+
+async function loadNews() {
+    const list = document.getElementById('news-list');
+    try {
+        const result = await window.api.getNews();
+        if (result.success && result.news.length > 0) {
+            list.innerHTML = '';
+            result.news.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'news-item';
+                
+                let imgHtml = '';
+                if (item.image_url) {
+                    imgHtml = `<img src="${item.image_url}">`;
+                }
+                
+                div.innerHTML = `
+                    <div class="news-date">${item.created_at}</div>
+                    ${imgHtml}
+                    <div class="news-text">${item.text || ''}</div>
+                `;
+                list.appendChild(div);
+            });
+        } else {
+            list.innerHTML = '<div style="padding:10px; color:#888;">No news yet.</div>';
+        }
+    } catch (e) {
+        console.error(e);
+        list.innerHTML = '<div style="padding:10px; color:#d32f2f;">Failed to load news.</div>';
+    }
+}
+
+async function checkSavedAuth() {
+    const savedUser = localStorage.getItem('auth_user');
+    const savedToken = localStorage.getItem('auth_token');
+    
+    if (savedUser && savedToken) {
+        // Validate token
+        try {
+            const result = await window.api.checkAuth(savedUser, savedToken);
+            if (result.success) {
+                currentUsername = savedUser;
+                stepLogin.classList.add('hidden');
+                stepProgress.classList.remove('hidden');
+                stepProgress.classList.add('fade-in');
+                startLaunch();
+                return;
+            }
+        } catch (e) {
+            console.error("Auth check failed", e);
+        }
+    }
+    // If not valid or no token, show login
+    if (savedUser) {
+        usernameInput.value = savedUser;
+    }
+}
+

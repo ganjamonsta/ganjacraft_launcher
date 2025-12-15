@@ -20,6 +20,21 @@ contextBridge.exposeInMainWorld('api', {
         });
         return response.json();
     },
+    checkAuth: async (username, token) => {
+        const response = await fetch('https://ganjacraft.ru/api/launcher/auth/check', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Auth-Token': token
+            },
+            body: JSON.stringify({ username })
+        });
+        return response.json();
+    },
+    getNews: async () => {
+        const response = await fetch('https://ganjacraft.ru/api/news?limit=5');
+        return response.json();
+    },
     onLog: (callback) => ipcRenderer.on('log-message', (event, text) => callback(text)),
     minimize: () => ipcRenderer.send('window-minimize'),
     close: () => ipcRenderer.send('window-close'),
