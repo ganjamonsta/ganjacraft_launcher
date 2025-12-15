@@ -270,7 +270,10 @@ async function startLaunch() {
     
     consoleOutput.innerHTML = '';
 
-    const result = await window.api.launchGame({ username: currentUsername });
+    const result = await window.api.launchGame({ 
+        username: currentUsername,
+        token: localStorage.getItem('auth_token')
+    });
     
     if (result.success) {
         if (currentConfig.hideOnPlay !== false) {

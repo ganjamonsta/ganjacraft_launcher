@@ -11,6 +11,7 @@ const FORGE_VERSION = '1.20.1-47.4.0';
 const FORGE_INSTALLER_URL = `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const LAUNCHER_VERSION_URL = 'https://ganjacraft.ru/api/launcher/version';
+const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 
 // Config Management
 const CONFIG_FILE = path.join(app.getPath('userData'), 'launcher_config.json');
@@ -308,6 +309,19 @@ ipcMain.handle('launch-game', async (event, options) => {
         sendLog('Forge Installer found.');
     }
 
+    // Check and download authlib-injector
+    const authlibPath = path.join(rootPath, 'authlib-injector.jar');
+    if (!fs.existsSync(authlibPath)) {
+        sendLog('Downloading Authlib Injector...');
+        try {
+            await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath);
+            sendLog('Authlib Injector downloaded.');
+        } catch (e) {
+            console.error('Failed to download Authlib Injector:', e);
+            return { success: false, error: "Failed to download Authlib Injector: " + e.message };
+        }
+    }
+
     // Синхронизация модов
     try {
         await syncFiles(rootPath, sendLog, config.disabledMods);
@@ -318,7 +332,13 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     const opts = {
         clientPackage: null, // null = ванильная версия, или url к zip
-        authorization: Authenticator.getAuth(options.username), // Оффлайн/Пиратка режим для теста
+        authorization: {
+            access_token: options.token,
+            client_token: crypto.randomUUID(),
+            uuid: "00000000-0000-0000-0000-000000000000", // Placeholder, authlib-injector handles the rest
+            name: options.username,
+            user_properties: "{}"
+        },
         root: rootPath,
         version: {
             number: "1.20.1", // Версия майнкрафта
@@ -329,7 +349,10 @@ ipcMain.handle('launch-game', async (event, options) => {
             max: config.memoryMax,
             min: config.memoryMin
         },
-        javaPath: config.javaPath || undefined // Use custom java if set
+        javaPath: config.javaPath || undefined, // Use custom java if set
+        customArgs: [
+            `-javaagent:${authlibPath}=https://ganjacraft.ru/api/yggdrasil`
+        ]
     };
 
     sendLog('Starting Minecraft Core...');
