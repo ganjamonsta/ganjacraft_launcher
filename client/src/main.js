@@ -12,9 +12,54 @@ const FORGE_INSTALLER_URL = `https://maven.minecraftforge.net/net/minecraftforge
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const LAUNCHER_VERSION_URL = 'https://ganjacraft.ru/api/launcher/version';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
+const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
 
 // Config Management
 const CONFIG_FILE = path.join(app.getPath('userData'), 'launcher_config.json');
+
+function authenticateYggdrasil(username, token) {
+    return new Promise((resolve, reject) => {
+        const data = JSON.stringify({
+            agent: { name: "Minecraft", version: 1 },
+            username: username,
+            password: token, // Token from Telegram Auth acts as password
+            clientToken: crypto.randomUUID(),
+            requestUser: true
+        });
+
+        const req = https.request(YGGDRASIL_AUTH_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': data.length
+            }
+        }, (res) => {
+            let body = '';
+            res.on('data', chunk => body += chunk);
+            res.on('end', () => {
+                if (res.statusCode === 200) {
+                    try {
+                        const response = JSON.parse(body);
+                        resolve({
+                            accessToken: response.accessToken,
+                            clientToken: response.clientToken,
+                            uuid: response.selectedProfile.id,
+                            name: response.selectedProfile.name
+                        });
+                    } catch (e) {
+                        reject(new Error("Invalid JSON response from auth server"));
+                    }
+                } else {
+                    reject(new Error(`Auth failed: ${res.statusCode} - ${body}`));
+                }
+            });
+        });
+
+        req.on('error', (e) => reject(e));
+        req.write(data);
+        req.end();
+    });
+}
 
 function loadConfig() {
     try {
@@ -330,13 +375,24 @@ ipcMain.handle('launch-game', async (event, options) => {
         console.error(e);
     }
 
+    // Yggdrasil Authentication
+    sendLog('Authenticating with GanjaCraft Yggdrasil...');
+    let authSession;
+    try {
+        authSession = await authenticateYggdrasil(options.username, options.token);
+        sendLog(`Authentication successful. UUID: ${authSession.uuid}`);
+    } catch (e) {
+        console.error('Authentication failed:', e);
+        return { success: false, error: "Authentication failed: " + e.message };
+    }
+
     const opts = {
         clientPackage: null, // null = ванильная версия, или url к zip
         authorization: {
-            access_token: options.token,
-            client_token: crypto.randomUUID(),
-            uuid: "00000000-0000-0000-0000-000000000000", // Placeholder, authlib-injector handles the rest
-            name: options.username,
+            access_token: authSession.accessToken,
+            client_token: authSession.clientToken,
+            uuid: authSession.uuid,
+            name: authSession.name,
             user_properties: "{}"
         },
         root: rootPath,
