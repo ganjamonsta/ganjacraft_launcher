@@ -125,12 +125,24 @@ app.on('window-all-closed', () => {
 
 // Обработка запуска игры
 ipcMain.handle('launch-game', async (event, options) => {
-    const sendLog = (msg) => event.sender.send('log-message', msg);
-
-    sendLog('Запуск игры с параметрами: ' + JSON.stringify(options));
-
     const rootPath = path.join(app.getPath('appData'), '.ganjacraft');
     if (!fs.existsSync(rootPath)) fs.mkdirSync(rootPath, { recursive: true });
+
+    const logFile = path.join(rootPath, 'launcher.log');
+    // Очищаем лог при новом запуске
+    fs.writeFileSync(logFile, `--- Log started at ${new Date().toISOString()} ---\n`);
+
+    const sendLog = (msg) => {
+        event.sender.send('log-message', msg);
+        // Пишем в файл
+        try {
+            fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`);
+        } catch (e) {
+            console.error("Failed to write log:", e);
+        }
+    };
+
+    sendLog('Запуск игры с параметрами: ' + JSON.stringify(options));
 
     // Проверяем и качаем Forge
     const forgeInstallerPath = path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`);
