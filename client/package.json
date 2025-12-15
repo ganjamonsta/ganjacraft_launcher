@@ -4,7 +4,21 @@
   "description": "Official Launcher for GanjaCraft Server",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "ru.ganjacraft.launcher",
+    "productName": "GanjaCraft Launcher",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   },
   "author": "GanjaCraft Team",
   "license": "ISC",
