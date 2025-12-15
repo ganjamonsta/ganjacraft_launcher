@@ -252,13 +252,22 @@ document.getElementById('cancel-btn').addEventListener('click', () => {
     location.reload();
 });
 
+// Retry Button
+document.getElementById('retry-btn').addEventListener('click', () => {
+    startLaunch();
+});
+
 // Launch Logic
 async function startLaunch() {
+    // Reset UI
     statusDiv.innerText = 'Initializing...';
+    statusDiv.style.color = '#888';
     progressBar.style.width = '0%';
+    progressBar.style.backgroundColor = '#4CAF50';
     
-    // Show console by default during launch? Maybe not, keep it clean.
-    // consoleOutput.style.display = 'block'; 
+    document.getElementById('retry-btn').classList.add('hidden');
+    document.getElementById('cancel-btn').classList.remove('hidden');
+    
     consoleOutput.innerHTML = '';
 
     const result = await window.api.launchGame({ username: currentUsername });
@@ -268,12 +277,31 @@ async function startLaunch() {
             window.api.minimize();
         }
     } else {
-        statusDiv.innerText = 'Launch Error';
+        // Error Handling
+        console.error(result.error);
+        
+        let msg = 'Launch Failed';
+        let isNetwork = false;
+        
+        const err = result.error ? result.error.toString() : 'Unknown Error';
+        
+        if (err.includes('ENOTFOUND') || err.includes('ETIMEDOUT') || err.includes('UnknownHostException')) {
+            msg = 'Connection Lost. Please check internet.';
+            isNetwork = true;
+        } else {
+            msg = 'Error: ' + err.substring(0, 40) + '...';
+        }
+        
+        statusDiv.innerText = msg;
+        statusDiv.style.color = '#e74c3c';
+        progressBar.style.backgroundColor = '#e74c3c';
+        progressBar.style.width = '100%';
+        
         logToConsole(`[ERROR] ${result.error}`);
-        alert('Launch Failed: ' + result.error);
-        // Reset UI
-        stepProgress.classList.add('hidden');
-        showPlayScreen();
+        
+        // Show Retry
+        document.getElementById('retry-btn').classList.remove('hidden');
+        document.getElementById('cancel-btn').classList.add('hidden');
     }
 }
 

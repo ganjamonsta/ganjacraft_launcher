@@ -123,7 +123,10 @@
                 <div style="width: 100%; background: #333; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;">
                     <div id="progress-bar" style="width: 0%; height: 100%; background: #4CAF50; transition: width 0.2s;"></div>
                 </div>
-                <button id="cancel-btn" style="background: #d32f2f; margin-top: 20px; font-size: 12px; padding: 8px;">Cancel</button>
+                <div id="progress-controls" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                    <button id="retry-btn" class="hidden" style="background: #f1c40f; color: #111; font-size: 12px; padding: 8px; font-weight: bold;">Retry</button>
+                    <button id="cancel-btn" style="background: #d32f2f; font-size: 12px; padding: 8px;">Cancel</button>
+                </div>
             </div>
 
             <!-- Console Toggle -->
