@@ -184,10 +184,10 @@ document.getElementById('login-btn').addEventListener('click', async () => {
             console.log('DEBUG CODE:', result.debugCode);
             logToConsole(`[AUTH] Debug Code: ${result.debugCode}`);
         } else {
-            alert('Error: ' + result.error);
+            alert('Error: ' + result.message); // Use result.message from API
         }
     } catch (e) {
-        alert('Network Error');
+        alert('Network Error: ' + e.message);
         console.error(e);
     } finally {
         btn.disabled = false;

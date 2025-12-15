@@ -5,31 +5,55 @@ contextBridge.exposeInMainWorld('api', {
     // Функция для запроса к нашему API серверу (Python API)
     requestAuth: async (username) => {
         // Используем реальный адрес сервера вместо localhost
-        const response = await fetch('https://ganjacraft.ru/api/launcher/auth/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username })
-        });
-        return response.json();
+        try {
+            const response = await fetch('https://ganjacraft.ru/api/launcher/auth/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`API Error: ${response.status} - ${text}`);
+            }
+            return response.json();
+        } catch (e) {
+            throw new Error(e.message);
+        }
     },
     verifyAuth: async (username, code) => {
-        const response = await fetch('https://ganjacraft.ru/api/launcher/auth/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, code })
-        });
-        return response.json();
+        try {
+            const response = await fetch('https://ganjacraft.ru/api/launcher/auth/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, code })
+            });
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`API Error: ${response.status} - ${text}`);
+            }
+            return response.json();
+        } catch (e) {
+            throw new Error(e.message);
+        }
     },
     checkAuth: async (username, token) => {
-        const response = await fetch('https://ganjacraft.ru/api/launcher/auth/check', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'X-Auth-Token': token
-            },
-            body: JSON.stringify({ username })
-        });
-        return response.json();
+        try {
+            const response = await fetch('https://ganjacraft.ru/api/launcher/auth/check', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Auth-Token': token
+                },
+                body: JSON.stringify({ username })
+            });
+            if (!response.ok) {
+                // Don't throw here, just return success: false, as this is a background check
+                return { success: false, message: `API Error: ${response.status}` };
+            }
+            return response.json();
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
     },
     getNews: async () => {
         const response = await fetch('https://ganjacraft.ru/api/news?limit=5');
