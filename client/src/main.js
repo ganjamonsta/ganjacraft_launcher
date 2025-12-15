@@ -357,15 +357,39 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     sendLog('Starting Minecraft Core...');
     
-    try {
+    return new Promise((resolve, reject) => {
+        let hasResolved = false;
+
+        const onArguments = (e) => {
+            if (!hasResolved) {
+                hasResolved = true;
+                sendLog('[LAUNCHER] Game process starting...');
+                resolve({ success: true });
+            }
+        };
+
+        // Listen for arguments event (emitted just before spawn)
+        launcher.once('arguments', onArguments);
+        // Also listen for data (stdout) just in case arguments is missed or behavior changes
+        launcher.once('data', onArguments);
+
         launcher.on('debug', (e) => sendLog(`[DEBUG] ${e}`));
         launcher.on('data', (e) => sendLog(`[GAME] ${e}`));
         launcher.on('progress', (e) => sendLog(`[PROGRESS] ${e.type} - ${e.task} (${e.total})`));
         
-        await launcher.launch(opts);
-        return { success: true };
-    } catch (error) {
-        console.error(error);
-        return { success: false, error: error.message };
-    }
+        launcher.launch(opts).then(() => {
+            if (!hasResolved) {
+                hasResolved = true;
+                resolve({ success: true });
+            }
+        }).catch(error => {
+            if (!hasResolved) {
+                hasResolved = true;
+                console.error(error);
+                resolve({ success: false, error: error.message });
+            } else {
+                sendLog(`[ERROR] Game crashed: ${error.message}`);
+            }
+        });
+    });
 });
