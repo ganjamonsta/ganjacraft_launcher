@@ -99,18 +99,28 @@ async function loadModsList(disabledMods) {
     
     // Filter for interesting files (mods, resourcepacks)
     const files = manifest.files.filter(f => 
-        f.path.startsWith('mods/') || 
-        f.path.startsWith('resourcepacks/') ||
-        f.path.startsWith('shaderpacks/')
+        f.optional && 
+        f.path.startsWith('mods/') && 
+        f.path.endsWith('.jar')
     );
     
+    if (files.length === 0) {
+        list.innerHTML = '<div class="error">Нет доступных опциональных модов.<br>Убедитесь, что вы обновили манифест в боте.</div>';
+        return;
+    }
+
     files.forEach(file => {
         const isChecked = !disabledMods.includes(file.path);
+        
         const div = document.createElement('div');
         div.className = 'mod-item';
+        
+        // Display only filename for better UI
+        const fileName = file.path.split('/').pop();
+
         div.innerHTML = `
             <input type="checkbox" data-path="${file.path}" ${isChecked ? 'checked' : ''}>
-            <span>${file.path}</span>
+            <span>${fileName}</span>
         `;
         list.appendChild(div);
     });
