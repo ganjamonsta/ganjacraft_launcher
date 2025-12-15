@@ -5,11 +5,13 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "publish-local": "node publish.js"
   },
   "build": {
     "appId": "ru.ganjacraft.launcher",
     "productName": "GanjaCraft Launcher",
+    "compression": "maximum",
     "directories": {
       "output": "dist"
     },

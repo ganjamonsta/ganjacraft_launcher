@@ -70,5 +70,8 @@ contextBridge.exposeInMainWorld('api', {
     
     // Advanced
     reinstallClient: () => ipcRenderer.invoke('reinstall-client'),
-    getManifest: () => ipcRenderer.invoke('get-manifest') // To list mods in UI
+    getManifest: () => ipcRenderer.invoke('get-manifest'), // To list mods in UI
+    
+    // Events
+    onGameClosed: (callback) => ipcRenderer.on('game-closed', () => callback())
 });

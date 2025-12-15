@@ -70,6 +70,7 @@ function loadConfig() {
     
     // Defaults
     return {
+        isDefault: true,
         installPath: path.join(app.getPath('appData'), '.ganjacraft'),
         javaPath: '', // Empty = auto-detect
         memoryMin: '2G',
@@ -119,19 +120,19 @@ function getFileHash(filePath) {
 }
 
 async function syncFiles(rootPath, sendLog, disabledMods = []) {
-    sendLog('Checking for updates...');
+    sendLog('Проверка обновлений...');
     
     // 1. Download Manifest
     const manifestPath = path.join(rootPath, 'manifest.json');
     try {
         await downloadFile(MANIFEST_URL, manifestPath);
     } catch (e) {
-        sendLog('Manifest download error: ' + e.message);
+        sendLog('Ошибка загрузки манифеста: ' + e.message);
         throw e;
     }
 
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-    sendLog(`Found ${manifest.files.length} files in manifest.`);
+    sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
 
     let downloaded = 0;
     
@@ -142,7 +143,7 @@ async function syncFiles(rootPath, sendLog, disabledMods = []) {
             // Let's just delete it to be clean, or skip download.
             const localPath = path.join(rootPath, file.path);
             if (fs.existsSync(localPath)) {
-                sendLog(`Removing disabled mod: ${file.path}`);
+                sendLog(`Удаление отключенного мода: ${file.path}`);
                 fs.unlinkSync(localPath);
             }
             continue;
@@ -167,12 +168,12 @@ async function syncFiles(rootPath, sendLog, disabledMods = []) {
         }
 
         if (needDownload) {
-            sendLog(`Downloading: ${file.path} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+            sendLog(`Скачивание: ${file.path} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
             try {
                 await downloadFile(file.url, localPath);
                 downloaded++;
             } catch (e) {
-                sendLog(`Download error ${file.path}: ${e.message}`);
+                sendLog(`Ошибка скачивания ${file.path}: ${e.message}`);
             }
         }
     }
@@ -201,20 +202,20 @@ async function syncFiles(rootPath, sendLog, disabledMods = []) {
             const normalizedPath = path.normalize(relativePath);
 
             if (!manifestMods.has(normalizedPath)) {
-                sendLog(`Removing unmanaged file: ${relativePath}`);
+                sendLog(`Удаление лишнего файла: ${relativePath}`);
                 try {
                     fs.unlinkSync(fullPath);
                 } catch (e) {
-                    sendLog(`Failed to remove ${relativePath}: ${e.message}`);
+                    sendLog(`Не удалось удалить ${relativePath}: ${e.message}`);
                 }
             }
         }
     }
 
     if (downloaded > 0) {
-        sendLog(`Update complete. Downloaded: ${downloaded}`);
+        sendLog(`Обновление завершено. Скачано: ${downloaded}`);
     } else {
-        sendLog('All files up to date.');
+        sendLog('Обновление завершено. Файлы проверены.');
     }
 }
 
@@ -371,33 +372,33 @@ ipcMain.handle('launch-game', async (event, options) => {
         }
     };
 
-    sendLog('Launching with config: ' + JSON.stringify(config));
+    sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
 
     // Проверяем и качаем Forge
     const forgeInstallerPath = path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`);
     if (!fs.existsSync(forgeInstallerPath)) {
-        sendLog('Downloading Forge Installer...');
+        sendLog('Скачивание установщика Forge...');
         try {
             await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath);
-            sendLog('Forge Installer downloaded.');
+            sendLog('Установщик Forge скачан.');
         } catch (e) {
             console.error('Failed to download Forge:', e);
-            return { success: false, error: "Failed to download Forge: " + e.message };
+            return { success: false, error: "Не удалось скачать Forge: " + e.message };
         }
     } else {
-        sendLog('Forge Installer found.');
+        sendLog('Установщик Forge найден.');
     }
 
     // Check and download authlib-injector
     const authlibPath = path.join(rootPath, 'authlib-injector.jar');
     if (!fs.existsSync(authlibPath)) {
-        sendLog('Downloading Authlib Injector...');
+        sendLog('Скачивание Authlib Injector...');
         try {
             await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath);
-            sendLog('Authlib Injector downloaded.');
+            sendLog('Authlib Injector скачан.');
         } catch (e) {
             console.error('Failed to download Authlib Injector:', e);
-            return { success: false, error: "Failed to download Authlib Injector: " + e.message };
+            return { success: false, error: "Не удалось скачать Authlib Injector: " + e.message };
         }
     }
 
@@ -405,19 +406,19 @@ ipcMain.handle('launch-game', async (event, options) => {
     try {
         await syncFiles(rootPath, sendLog, config.disabledMods);
     } catch (e) {
-        sendLog('WARNING: Mod sync failed. Game may be unstable.');
+        sendLog('ВНИМАНИЕ: Ошибка синхронизации модов. Игра может работать нестабильно.');
         console.error(e);
     }
 
     // Yggdrasil Authentication
-    sendLog('Authenticating with GanjaCraft Yggdrasil...');
+    sendLog('Авторизация в GanjaCraft Yggdrasil...');
     let authSession;
     try {
         authSession = await authenticateYggdrasil(options.username, options.token);
-        sendLog(`Authentication successful. UUID: ${authSession.uuid}`);
+        sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
     } catch (e) {
         console.error('Authentication failed:', e);
-        return { success: false, error: "Authentication failed: " + e.message };
+        return { success: false, error: "Ошибка авторизации: " + e.message };
     }
 
     const opts = {
@@ -445,7 +446,26 @@ ipcMain.handle('launch-game', async (event, options) => {
         ]
     };
 
-    sendLog('Starting Minecraft Core...');
+    sendLog('Запуск ядра Minecraft...');
+    
+    // Get window instance to restore it later
+    const mainWindow = BrowserWindow.fromWebContents(event.sender);
+
+    // Listen for game close event
+    // We use 'once' to avoid stacking listeners if multiple launches happen in one session
+    launcher.once('close', (code) => {
+        sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
+        
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            // Restore window if it was minimized or hidden
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            if (!mainWindow.isVisible()) mainWindow.show();
+            mainWindow.focus();
+            
+            // Notify renderer to reset UI state
+            mainWindow.webContents.send('game-closed');
+        }
+    });
     
     return new Promise((resolve, reject) => {
         let hasResolved = false;
@@ -453,7 +473,7 @@ ipcMain.handle('launch-game', async (event, options) => {
         const onArguments = (e) => {
             if (!hasResolved) {
                 hasResolved = true;
-                sendLog('[LAUNCHER] Game process starting...');
+                sendLog('[LAUNCHER] Процесс игры запускается...');
                 resolve({ success: true });
             }
         };
@@ -463,9 +483,15 @@ ipcMain.handle('launch-game', async (event, options) => {
         // Also listen for data (stdout) just in case arguments is missed or behavior changes
         launcher.once('data', onArguments);
 
-        launcher.on('debug', (e) => sendLog(`[DEBUG] ${e}`));
-        launcher.on('data', (e) => sendLog(`[GAME] ${e}`));
-        launcher.on('progress', (e) => sendLog(`[PROGRESS] ${e.type} - ${e.task} (${e.total})`));
+        launcher.on('debug', (e) => {
+            if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
+        });
+        launcher.on('data', (e) => {
+            if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[GAME] ${e}`);
+        });
+        launcher.on('progress', (e) => {
+            if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[PROGRESS] ${e.type} - ${e.task} (${e.total})`);
+        });
         
         launcher.launch(opts).then(() => {
             if (!hasResolved) {
@@ -478,7 +504,7 @@ ipcMain.handle('launch-game', async (event, options) => {
                 console.error(error);
                 resolve({ success: false, error: error.message });
             } else {
-                sendLog(`[ERROR] Game crashed: ${error.message}`);
+                if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
             }
         });
     });

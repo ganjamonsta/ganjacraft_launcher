@@ -5,15 +5,16 @@
     <title>GanjaCraft Launcher</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="modal.css">
+    <link rel="stylesheet" href="mods.css">
 </head>
 <body>
     <!-- Custom Title Bar -->
     <div id="title-bar">
         <div id="title-bar-title">GANJACRAFT LAUNCHER</div>
         <div id="window-controls">
-            <button id="btn-settings" class="control-btn" title="Settings">⚙</button>
-            <button id="btn-minimize" class="control-btn" title="Minimize">─</button>
-            <button id="btn-close" class="control-btn" title="Close">✕</button>
+            <button id="btn-settings" class="control-btn" title="Настройки">⚙</button>
+            <button id="btn-minimize" class="control-btn" title="Свернуть">─</button>
+            <button id="btn-close" class="control-btn" title="Закрыть">✕</button>
         </div>
     </div>
 
@@ -21,11 +22,17 @@
     <div id="main-content">
         <div id="bg-overlay"></div>
 
-        <!-- News Section -->
+        <!-- News Section / Console Panel -->
         <div id="news-section" class="fade-in">
-            <h3>Latest News</h3>
+            <div class="panel-header">
+                <h3 id="panel-title">Новости</h3>
+                <div id="console-toggle-btn" title="Переключить консоль"></div>
+            </div>
             <div id="news-list">
-                <div class="loading">Loading news...</div>
+                <div class="loading">Загрузка новостей...</div>
+            </div>
+            <div id="console-output" class="hidden">
+                <div style="color: #666; font-style: italic;">Ожидание логов игры...</div>
             </div>
         </div>
 
@@ -33,61 +40,61 @@
         <div id="settings-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Settings</h3>
+                    <h3>Настройки</h3>
                     <button id="close-settings">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="tabs">
-                        <button class="tab-btn active" data-tab="general">General</button>
-                        <button class="tab-btn" data-tab="mods">Mods Manager</button>
+                        <button class="tab-btn active" data-tab="general">Общие</button>
+                        <button class="tab-btn" data-tab="mods">Моды</button>
                     </div>
                     
                     <!-- General Tab -->
                     <div id="tab-general" class="tab-content active">
                         <div class="form-group">
-                            <label>Install Path:</label>
+                            <label>Путь установки:</label>
                             <div class="input-group">
                                 <input type="text" id="setting-path" readonly>
                                 <button id="btn-select-path">...</button>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Java Path (Optional):</label>
+                            <label>Путь к Java (Опционально):</label>
                             <div class="input-group">
-                                <input type="text" id="setting-java" placeholder="Auto-detect">
+                                <input type="text" id="setting-java" placeholder="Авто-определение">
                                 <button id="btn-select-java">...</button>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Memory (RAM):</label>
+                            <label>Память (RAM):</label>
                             <div class="row">
-                                <input type="text" id="setting-ram-min" placeholder="Min (e.g. 2G)" style="width: 48%">
-                                <input type="text" id="setting-ram-max" placeholder="Max (e.g. 6G)" style="width: 48%">
+                                <input type="text" id="setting-ram-min" placeholder="Мин (напр. 2G)" style="width: 48%">
+                                <input type="text" id="setting-ram-max" placeholder="Макс (напр. 6G)" style="width: 48%">
                             </div>
                         </div>
                         <div class="form-group" style="margin-top: 15px;">
                             <label style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="checkbox" id="setting-hide-on-play" style="width: auto; margin-right: 10px;">
-                                Hide launcher when game starts
+                                Скрывать лаунчер при запуске игры
                             </label>
                         </div>
                         <div class="form-group" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
-                            <button id="btn-reinstall" style="background: #d32f2f;">Full Repair / Reinstall</button>
-                            <p style="font-size: 10px; color: #666; margin-top: 5px;">Deletes mods/configs and re-downloads everything.</p>
+                            <button id="btn-reinstall" style="background: #d32f2f;">Полная починка / Переустановка</button>
+                            <p style="font-size: 10px; color: #666; margin-top: 5px;">Удаляет моды/конфиги и скачивает всё заново.</p>
                         </div>
                     </div>
 
                     <!-- Mods Tab -->
                     <div id="tab-mods" class="tab-content">
-                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Uncheck mods to disable them.</p>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Снимите галочки, чтобы отключить моды.</p>
                         <div id="mods-list" class="scrollable-list">
                             <!-- Populated by JS -->
-                            <div class="loading">Loading manifest...</div>
+                            <div class="loading">Загрузка манифеста...</div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="save-settings">Save & Close</button>
+                    <button id="save-settings">Сохранить и Закрыть</button>
                 </div>
             </div>
         </div>
@@ -95,47 +102,44 @@
         <div class="auth-container fade-in">
             <h2>GanjaCraft</h2>
             
+            <!-- Step 0: Loading -->
+            <div id="step-loading" style="color: #888; font-size: 14px; margin-bottom: 20px;">
+                Проверка сессии...
+            </div>
+
             <!-- Step 1: Login -->
-            <div id="step-login">
-                <input type="text" id="username" placeholder="Username" spellcheck="false">
-                <button id="login-btn">Next</button>
+            <div id="step-login" class="hidden">
+                <input type="text" id="username" placeholder="Имя пользователя" spellcheck="false">
+                <button id="login-btn">Далее</button>
             </div>
 
             <!-- Step 2: Code Verification -->
             <div id="step-code" class="hidden">
-                <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Code sent to Telegram</p>
-                <input type="text" id="auth-code" placeholder="Enter Code" spellcheck="false">
-                <button id="verify-btn">Verify</button>
+                <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Код отправлен в Telegram</p>
+                <input type="text" id="auth-code" placeholder="Введите код" spellcheck="false">
+                <button id="verify-btn">Подтвердить</button>
             </div>
 
             <!-- Step 3: Ready to Play -->
             <div id="step-play" class="hidden">
-                <div id="welcome-msg" style="margin-bottom: 15px; color: #eee; font-size: 14px;">Welcome back!</div>
-                <button id="play-btn" style="background: #4CAF50; font-size: 18px; padding: 12px 40px; font-weight: bold; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">PLAY</button>
+                <div id="welcome-msg" style="margin-bottom: 15px; color: #eee; font-size: 14px;">С возвращением!</div>
+                <button id="play-btn" style="background: #4CAF50; font-size: 18px; padding: 12px 40px; font-weight: bold; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">ИГРАТЬ</button>
                 <div style="margin-top: 15px;">
-                    <button id="logout-btn" style="background: transparent; border: 1px solid #444; color: #888; font-size: 11px; padding: 5px 10px;">Logout</button>
+                    <button id="logout-btn" style="background: transparent; border: 1px solid #444; color: #888; font-size: 11px; padding: 5px 10px;">Выйти</button>
                 </div>
             </div>
 
             <!-- Step 4: Progress -->
             <div id="step-progress" class="hidden">
-                <div id="status">Initializing...</div>
+                <div id="status">Инициализация...</div>
                 <div style="width: 100%; background: #333; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;">
                     <div id="progress-bar" style="width: 0%; height: 100%; background: #4CAF50; transition: width 0.2s;"></div>
                 </div>
                 <div id="progress-controls" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                    <button id="retry-btn" class="hidden" style="background: #f1c40f; color: #111; font-size: 12px; padding: 8px; font-weight: bold;">Retry</button>
-                    <button id="cancel-btn" style="background: #d32f2f; font-size: 12px; padding: 8px;">Cancel</button>
+                    <button id="retry-btn" class="hidden" style="background: #f1c40f; color: #111; font-size: 12px; padding: 8px; font-weight: bold;">Повторить</button>
+                    <button id="cancel-btn" style="background: #d32f2f; font-size: 12px; padding: 8px;">Отмена</button>
                 </div>
             </div>
-
-            <!-- Console Toggle -->
-            <div style="margin-top: 15px; text-align: right;">
-                <a href="#" id="toggle-console" style="color: #666; font-size: 10px; text-decoration: none;">Toggle Console</a>
-            </div>
-            
-            <!-- Console Output -->
-            <div id="console-output"></div>
         </div>
     </div>
 

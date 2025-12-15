@@ -1,4 +1,5 @@
 // UI Elements
+const stepLoading = document.getElementById('step-loading');
 const stepLogin = document.getElementById('step-login');
 const stepCode = document.getElementById('step-code');
 const stepPlay = document.getElementById('step-play');
@@ -81,60 +82,169 @@ document.getElementById('btn-select-java').addEventListener('click', async () =>
 
 // Reinstall
 document.getElementById('btn-reinstall').addEventListener('click', async () => {
-    if (confirm('Are you sure? This will delete all mods and configs.')) {
+    if (confirm('Вы уверены? Это удалит все моды и настройки.')) {
         await window.api.reinstallClient();
-        alert('Client files removed. Please restart the launcher or click Play to re-download.');
+        alert('Файлы клиента удалены. Пожалуйста, перезапустите лаунчер или нажмите ИГРАТЬ для повторной загрузки.');
         settingsModal.classList.add('hidden');
     }
 });
 
+// Mods Configuration
+const MOD_GROUPS = [
+    {
+        id: 'optimization',
+        name: 'Оптимизация и Шейдеры',
+        description: 'Embeddium, Oculus (Шейдеры), EntityCulling. Значительно повышает FPS.',
+        files: ['client-embeddium', 'client-oculus', 'client-entityculling', 'client-chloride']
+    },
+    {
+        id: 'fancymenu',
+        name: 'Красивое Меню',
+        description: 'Анимированное главное меню с музыкой.',
+        files: ['client-fancymenu', 'client-konkrete', 'client-melody']
+    },
+    {
+        id: 'visuals',
+        name: 'Улучшенная Графика',
+        description: 'Поддержка сложных текстурпаков (ETF, EMF, CIT).',
+        files: ['client-entity_texture_features', 'client-entity_model_features', 'client-citreforged', 'client-athena']
+    },
+    {
+        id: 'controls',
+        name: 'Удобное Управление',
+        description: 'Поиск конфликтов клавиш (Controlling).',
+        files: ['client-Controlling', 'client-Searchables']
+    },
+    {
+        id: 'rpc',
+        name: 'Discord RPC',
+        description: 'Показывает статус игры в Discord.',
+        files: ['client-SimpleRPC']
+    },
+    {
+        id: 'advancements',
+        name: 'Улучшенные Достижения',
+        description: 'Более удобный интерфейс ачивок.',
+        files: ['client-BetterAdvancements']
+    },
+    {
+        id: 'overlays',
+        name: 'More Overlays',
+        description: 'F7 для просмотра уровня освещения.',
+        files: ['client-moreoverlays']
+    },
+    {
+        id: 'thirdperson',
+        name: 'Better Third Person',
+        description: 'Улучшенная камера от 3-го лица (F5).',
+        files: ['client-leawind_third_person']
+    },
+    {
+        id: 'motor',
+        name: 'Motor Assistance',
+        description: 'Помощь в управлении игрой геймпадом.',
+        files: ['client-motorassistance', 'client-controllable']
+    },
+    {
+        id: 'tweaks',
+        name: 'Epic Tweaks',
+        description: 'Различные мелкие улучшения клиента.',
+        files: ['client-epictweaks']
+    }
+];
+
 // Mods Manager
 async function loadModsList(disabledMods) {
     const list = document.getElementById('mods-list');
-    list.innerHTML = '<div class="loading">Loading manifest...</div>';
+    list.innerHTML = '<div class="loading">Загрузка манифеста...</div>';
     
     const manifest = await window.api.getManifest();
     if (!manifest) {
-        list.innerHTML = '<div class="error">Failed to load manifest</div>';
+        list.innerHTML = '<div class="error">Не удалось загрузить манифест</div>';
         return;
     }
     
     list.innerHTML = '';
     
     // Filter for interesting files (mods, resourcepacks)
-    const files = manifest.files.filter(f => 
+    const allFiles = manifest.files.filter(f => 
         f.optional && 
         f.path.startsWith('mods/') && 
         f.path.endsWith('.jar')
     );
     
-    if (files.length === 0) {
+    if (allFiles.length === 0) {
         list.innerHTML = '<div class="error">Нет доступных опциональных модов.<br>Убедитесь, что вы обновили манифест в боте.</div>';
         return;
     }
 
-    files.forEach(file => {
-        const isChecked = !disabledMods.includes(file.path);
-        
-        const div = document.createElement('div');
-        div.className = 'mod-item';
-        
-        // Display only filename for better UI
-        const fileName = file.path.split('/').pop();
+    const handledFiles = new Set();
 
-        div.innerHTML = `
-            <input type="checkbox" data-path="${file.path}" ${isChecked ? 'checked' : ''}>
-            <span>${fileName}</span>
-        `;
-        list.appendChild(div);
+    // Render Groups
+    MOD_GROUPS.forEach(group => {
+        // Find files belonging to this group
+        const groupFiles = allFiles.filter(f => {
+            const fileName = f.path.split('/').pop();
+            return group.files.some(pattern => fileName.includes(pattern));
+        });
+
+        if (groupFiles.length > 0) {
+            groupFiles.forEach(f => handledFiles.add(f.path));
+
+            // Check if ALL files in group are enabled (not in disabledMods)
+            // If at least one is disabled, we consider the group unchecked (or partial, but simple checkbox is easier)
+            // Actually, better logic: if ANY is enabled, check it? No, usually "all or nothing".
+            // Let's say: Checked if NONE are disabled.
+            const isChecked = groupFiles.every(f => !disabledMods.includes(f.path));
+
+            const div = document.createElement('div');
+            div.className = 'mod-item group';
+            // Store all file paths in data attribute
+            const paths = groupFiles.map(f => f.path).join('|');
+
+            div.innerHTML = `
+                <label class="mod-row">
+                    <input type="checkbox" data-paths="${paths}" ${isChecked ? 'checked' : ''}>
+                    <span class="mod-name">${group.name}</span>
+                    <span class="mod-desc">${group.description}</span>
+                </label>
+            `;
+            list.appendChild(div);
+        }
     });
+
+    // Render Remaining Files
+    const remainingFiles = allFiles.filter(f => !handledFiles.has(f.path));
+    if (remainingFiles.length > 0) {
+        const otherHeader = document.createElement('div');
+        otherHeader.className = 'mod-category-header';
+        otherHeader.innerText = 'Остальное';
+        list.appendChild(otherHeader);
+
+        remainingFiles.forEach(file => {
+            const isChecked = !disabledMods.includes(file.path);
+            const div = document.createElement('div');
+            div.className = 'mod-item';
+            const fileName = file.path.split('/').pop();
+
+            div.innerHTML = `
+                <label class="mod-row">
+                    <input type="checkbox" data-paths="${file.path}" ${isChecked ? 'checked' : ''}>
+                    <span class="mod-name">${fileName}</span>
+                </label>
+            `;
+            list.appendChild(div);
+        });
+    }
 }
 
 function getDisabledMods() {
     const disabled = [];
     document.querySelectorAll('#mods-list input[type="checkbox"]').forEach(cb => {
         if (!cb.checked) {
-            disabled.push(cb.dataset.path);
+            // Split paths by pipe
+            const paths = cb.dataset.paths.split('|');
+            paths.forEach(p => disabled.push(p));
         }
     });
     return disabled;
@@ -150,19 +260,35 @@ document.getElementById('btn-close').addEventListener('click', () => {
 });
 
 // Console Toggle
-document.getElementById('toggle-console').addEventListener('click', (e) => {
-    e.preventDefault();
-    if (consoleOutput.style.display === 'block') {
-        consoleOutput.style.display = 'none';
+const consoleToggleBtn = document.getElementById('console-toggle-btn');
+const newsList = document.getElementById('news-list');
+const panelTitle = document.getElementById('panel-title');
+
+consoleToggleBtn.addEventListener('click', () => {
+    const isConsoleVisible = !consoleOutput.classList.contains('hidden');
+    
+    if (isConsoleVisible) {
+        // Hide Console, Show News
+        consoleOutput.classList.add('hidden');
+        newsList.classList.remove('hidden');
+        consoleToggleBtn.classList.remove('active');
+        panelTitle.innerText = 'Новости';
     } else {
-        consoleOutput.style.display = 'block';
+        // Show Console, Hide News
+        consoleOutput.classList.remove('hidden');
+        newsList.classList.add('hidden');
+        consoleToggleBtn.classList.add('active');
+        panelTitle.innerText = 'Консоль';
     }
 });
 
-// Step 1: Login -> Get Code
+// Step 1: Login -> Request Code
 document.getElementById('login-btn').addEventListener('click', async () => {
     const username = usernameInput.value.trim();
-    if (!username) return;
+    if (!username) {
+        alert('Пожалуйста, введите никнейм');
+        return;
+    }
 
     // Disable button
     const btn = document.getElementById('login-btn');
@@ -184,14 +310,14 @@ document.getElementById('login-btn').addEventListener('click', async () => {
             console.log('DEBUG CODE:', result.debugCode);
             logToConsole(`[AUTH] Debug Code: ${result.debugCode}`);
         } else {
-            alert('Error: ' + result.message); // Use result.message from API
+            alert('Ошибка: ' + result.message); // Use result.message from API
         }
     } catch (e) {
-        alert('Network Error: ' + e.message);
+        alert('Ошибка сети: ' + e.message);
         console.error(e);
     } finally {
         btn.disabled = false;
-        btn.innerText = 'Next';
+        btn.innerText = 'Далее';
     }
 });
 
@@ -202,7 +328,7 @@ document.getElementById('verify-btn').addEventListener('click', async () => {
 
     const btn = document.getElementById('verify-btn');
     btn.disabled = true;
-    btn.innerText = 'Verifying...';
+    btn.innerText = 'Проверка...';
 
     try {
         const result = await window.api.verifyAuth(currentUsername, code);
@@ -216,14 +342,14 @@ document.getElementById('verify-btn').addEventListener('click', async () => {
             stepCode.classList.add('hidden');
             showPlayScreen();
         } else {
-            alert('Invalid Code: ' + result.error);
+            alert('Неверный код: ' + result.error);
             btn.disabled = false;
-            btn.innerText = 'Verify';
+            btn.innerText = 'Подтвердить';
         }
     } catch (e) {
-        alert('Network Error');
+        alert('Ошибка сети');
         btn.disabled = false;
-        btn.innerText = 'Verify';
+        btn.innerText = 'Подтвердить';
     }
 });
 
@@ -231,7 +357,7 @@ document.getElementById('verify-btn').addEventListener('click', async () => {
 function showPlayScreen() {
     stepPlay.classList.remove('hidden');
     stepPlay.classList.add('fade-in');
-    document.getElementById('welcome-msg').innerText = `Welcome, ${currentUsername}!`;
+    document.getElementById('welcome-msg').innerText = `Добро пожаловать, ${currentUsername}!`;
 }
 
 document.getElementById('play-btn').addEventListener('click', () => {
@@ -260,7 +386,7 @@ document.getElementById('retry-btn').addEventListener('click', () => {
 // Launch Logic
 async function startLaunch() {
     // Reset UI
-    statusDiv.innerText = 'Initializing...';
+    statusDiv.innerText = 'Инициализация...';
     statusDiv.style.color = '#888';
     progressBar.style.width = '0%';
     progressBar.style.backgroundColor = '#4CAF50';
@@ -269,6 +395,7 @@ async function startLaunch() {
     document.getElementById('cancel-btn').classList.remove('hidden');
     
     consoleOutput.innerHTML = '';
+    logToConsole('[LAUNCHER] Запуск игры...');
 
     const result = await window.api.launchGame({ 
         username: currentUsername,
@@ -276,6 +403,10 @@ async function startLaunch() {
     });
     
     if (result.success) {
+        statusDiv.innerText = 'Игра запущена';
+        progressBar.style.width = '100%';
+        document.getElementById('cancel-btn').classList.add('hidden');
+
         if (currentConfig.hideOnPlay !== false) {
             window.api.minimize();
         }
@@ -283,16 +414,16 @@ async function startLaunch() {
         // Error Handling
         console.error(result.error);
         
-        let msg = 'Launch Failed';
+        let msg = 'Ошибка запуска';
         let isNetwork = false;
         
-        const err = result.error ? result.error.toString() : 'Unknown Error';
+        const err = result.error ? result.error.toString() : 'Неизвестная ошибка';
         
         if (err.includes('ENOTFOUND') || err.includes('ETIMEDOUT') || err.includes('UnknownHostException')) {
-            msg = 'Connection Lost. Please check internet.';
+            msg = 'Потеряно соединение. Проверьте интернет.';
             isNetwork = true;
         } else {
-            msg = 'Error: ' + err.substring(0, 40) + '...';
+            msg = 'Ошибка: ' + err.substring(0, 40) + '...';
         }
         
         statusDiv.innerText = msg;
@@ -314,17 +445,35 @@ window.api.onLog((text) => {
     
     // Update status text for user-friendly messages
     if (text.includes('Скачивание:')) {
-        statusDiv.innerText = 'Downloading assets...';
+        statusDiv.innerText = 'Загрузка ресурсов...';
         // Simulate progress bar movement (fake, since we don't have total size easily accessible here yet)
         // In a real app, we'd parse the progress.
         progressBar.style.width = '50%'; 
     } else if (text.includes('Обновление завершено')) {
-        statusDiv.innerText = 'Starting Game...';
+        statusDiv.innerText = 'Запуск игры...';
         progressBar.style.width = '100%';
     } else if (text.includes('Проверка обновлений')) {
-        statusDiv.innerText = 'Checking updates...';
+        statusDiv.innerText = 'Проверка обновлений...';
         progressBar.style.width = '10%';
     }
+});
+
+// Game Closed Handler
+window.api.onGameClosed(() => {
+    logToConsole('[LAUNCHER] Игровая сессия завершена.');
+    
+    // Reset UI
+    stepProgress.classList.add('hidden');
+    stepPlay.classList.remove('hidden');
+    
+    // Reset Progress Bar
+    progressBar.style.width = '0%';
+    statusDiv.innerText = 'Готов к игре';
+    
+    // Re-enable Play button just in case
+    const btn = document.getElementById('play-btn');
+    btn.disabled = false;
+    btn.innerText = 'ИГРАТЬ';
 });
 
 function logToConsole(text) {
@@ -338,7 +487,39 @@ function logToConsole(text) {
 
 // --- Startup Logic ---
 (async () => {
+    logToConsole('[LAUNCHER] Client initialized.');
     currentConfig = await window.api.loadConfig();
+
+    // Apply default disabled mods if fresh install
+    if (currentConfig.isDefault) {
+        try {
+            const manifest = await window.api.getManifest();
+            if (manifest) {
+                const defaultDisabledGroups = ['fancymenu', 'motor'];
+                const disabledPaths = [];
+                
+                const allFiles = manifest.files.filter(f => f.optional && f.path.startsWith('mods/'));
+                
+                MOD_GROUPS.forEach(group => {
+                    if (defaultDisabledGroups.includes(group.id)) {
+                        const groupFiles = allFiles.filter(f => {
+                            const fileName = f.path.split('/').pop();
+                            return group.files.some(pattern => fileName.includes(pattern));
+                        });
+                        groupFiles.forEach(f => disabledPaths.push(f.path));
+                    }
+                });
+                
+                currentConfig.disabledMods = disabledPaths;
+                delete currentConfig.isDefault;
+                await window.api.saveConfig(currentConfig);
+                console.log('[CONFIG] Applied default disabled mods:', disabledPaths);
+            }
+        } catch (e) {
+            console.error('Failed to apply default config:', e);
+        }
+    }
+
     loadNews();
     await checkSavedAuth();
 })();
@@ -366,11 +547,11 @@ async function loadNews() {
                 list.appendChild(div);
             });
         } else {
-            list.innerHTML = '<div style="padding:10px; color:#888;">No news yet.</div>';
+            list.innerHTML = '<div style="padding:10px; color:#888;">Новостей пока нет.</div>';
         }
     } catch (e) {
         console.error(e);
-        list.innerHTML = '<div style="padding:10px; color:#d32f2f;">Failed to load news.</div>';
+        list.innerHTML = '<div style="padding:10px; color:#d32f2f;">Не удалось загрузить новости.</div>';
     }
 }
 
@@ -384,7 +565,7 @@ async function checkSavedAuth() {
             const result = await window.api.checkAuth(savedUser, savedToken);
             if (result.success) {
                 currentUsername = savedUser;
-                stepLogin.classList.add('hidden');
+                stepLoading.classList.add('hidden');
                 showPlayScreen();
                 return;
             }
@@ -392,7 +573,11 @@ async function checkSavedAuth() {
             console.error("Auth check failed", e);
         }
     }
+    
     // If not valid or no token, show login
+    stepLoading.classList.add('hidden');
+    stepLogin.classList.remove('hidden');
+    
     if (savedUser) {
         usernameInput.value = savedUser;
     }
