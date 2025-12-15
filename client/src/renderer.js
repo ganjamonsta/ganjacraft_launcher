@@ -1,6 +1,7 @@
 // UI Elements
 const stepLogin = document.getElementById('step-login');
 const stepCode = document.getElementById('step-code');
+const stepPlay = document.getElementById('step-play');
 const stepProgress = document.getElementById('step-progress');
 
 const usernameInput = document.getElementById('username');
@@ -37,6 +38,7 @@ btnSettings.addEventListener('click', async () => {
     document.getElementById('setting-java').value = currentConfig.javaPath || '';
     document.getElementById('setting-ram-min').value = currentConfig.memoryMin;
     document.getElementById('setting-ram-max').value = currentConfig.memoryMax;
+    document.getElementById('setting-hide-on-play').checked = currentConfig.hideOnPlay !== false; // Default true
     
     // Load Mods
     loadModsList(currentConfig.disabledMods || []);
@@ -56,10 +58,12 @@ btnSaveSettings.addEventListener('click', async () => {
         javaPath: document.getElementById('setting-java').value,
         memoryMin: document.getElementById('setting-ram-min').value,
         memoryMax: document.getElementById('setting-ram-max').value,
+        hideOnPlay: document.getElementById('setting-hide-on-play').checked,
         disabledMods: getDisabledMods()
     };
     
     await window.api.saveConfig(newConfig);
+    currentConfig = newConfig; // Update local config immediately
     settingsModal.classList.add('hidden');
     logToConsole('[SETTINGS] Saved.');
 });
@@ -191,7 +195,7 @@ document.getElementById('login-btn').addEventListener('click', async () => {
     }
 });
 
-// Step 2: Verify Code -> Launch
+// Step 2: Verify Code -> Show Play Screen
 document.getElementById('verify-btn').addEventListener('click', async () => {
     const code = codeInput.value.trim();
     if (!code) return;
@@ -210,20 +214,37 @@ document.getElementById('verify-btn').addEventListener('click', async () => {
             }
 
             stepCode.classList.add('hidden');
-            stepProgress.classList.remove('hidden');
-            stepProgress.classList.add('fade-in');
-            
-            startLaunch();
+            showPlayScreen();
         } else {
             alert('Invalid Code: ' + result.error);
             btn.disabled = false;
-            btn.innerText = 'Play';
+            btn.innerText = 'Verify';
         }
     } catch (e) {
         alert('Network Error');
         btn.disabled = false;
-        btn.innerText = 'Play';
+        btn.innerText = 'Verify';
     }
+});
+
+// Step 3: Play Screen Logic
+function showPlayScreen() {
+    stepPlay.classList.remove('hidden');
+    stepPlay.classList.add('fade-in');
+    document.getElementById('welcome-msg').innerText = `Welcome, ${currentUsername}!`;
+}
+
+document.getElementById('play-btn').addEventListener('click', () => {
+    stepPlay.classList.add('hidden');
+    stepProgress.classList.remove('hidden');
+    stepProgress.classList.add('fade-in');
+    startLaunch();
+});
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_token');
+    location.reload();
 });
 
 // Cancel Button (Reloads app to reset state)
@@ -242,13 +263,17 @@ async function startLaunch() {
 
     const result = await window.api.launchGame({ username: currentUsername });
     
-    if (!result.success) {
+    if (result.success) {
+        if (currentConfig.hideOnPlay !== false) {
+            window.api.minimize();
+        }
+    } else {
         statusDiv.innerText = 'Launch Error';
         logToConsole(`[ERROR] ${result.error}`);
         alert('Launch Failed: ' + result.error);
         // Reset UI
         stepProgress.classList.add('hidden');
-        stepLogin.classList.remove('hidden');
+        showPlayScreen();
     }
 }
 
@@ -282,6 +307,7 @@ function logToConsole(text) {
 
 // --- Startup Logic ---
 (async () => {
+    currentConfig = await window.api.loadConfig();
     loadNews();
     await checkSavedAuth();
 })();
@@ -328,9 +354,7 @@ async function checkSavedAuth() {
             if (result.success) {
                 currentUsername = savedUser;
                 stepLogin.classList.add('hidden');
-                stepProgress.classList.remove('hidden');
-                stepProgress.classList.add('fade-in');
-                startLaunch();
+                showPlayScreen();
                 return;
             }
         } catch (e) {

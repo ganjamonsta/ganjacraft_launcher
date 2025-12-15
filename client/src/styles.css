@@ -18,43 +18,58 @@ body {
 
 /* Custom Title Bar */
 #title-bar {
-    height: 30px;
+    height: 40px;
     background: #1f1f1f;
     display: flex;
     justify-content: space-between;
     align-items: center;
     -webkit-app-region: drag; /* Allow dragging */
-    padding: 0 10px;
-    border-bottom: 1px solid #333;
+    padding-left: 15px; /* Padding only on left */
+    padding-right: 0;   /* Controls go to the edge */
+    border-bottom: 1px solid #2a2a2a;
 }
 
 #title-bar-title {
-    font-size: 12px;
-    color: #888;
+    font-size: 13px;
+    color: #aaa;
     font-weight: 600;
+    letter-spacing: 1px;
 }
 
 #window-controls {
     -webkit-app-region: no-drag;
     display: flex;
-    gap: 5px;
+    height: 100%;
+    align-items: center;
 }
 
 .control-btn {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    width: 50px;
+    height: 100%;
     border: none;
+    background: transparent;
+    color: #aaa;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 0;
+    outline: none;
+    margin: 0;
+    padding: 0;
 }
 
 .control-btn:hover {
-    opacity: 0.8;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
-#btn-minimize { background-color: #f1c40f; }
-#btn-close { background-color: #e74c3c; }
+#btn-close:hover {
+    background-color: #e81123;
+    color: white;
+}
 
 /* Main Content Area */
 #main-content {
@@ -83,6 +98,10 @@ body {
 
 /* Auth Container */
 .auth-container {
+    position: absolute;
+    left: 40px;
+    top: 50%;
+    transform: translateY(-50%);
     z-index: 1;
     background: rgba(30, 30, 30, 0.85);
     backdrop-filter: blur(10px);
@@ -203,7 +222,8 @@ button:active {
 /* News Section */
 #news-section {
     position: absolute;
-    left: 20px;
+    right: 20px;
+    left: auto;
     top: 20px;
     bottom: 20px;
     width: 300px;

@@ -11,9 +11,9 @@
     <div id="title-bar">
         <div id="title-bar-title">GANJACRAFT LAUNCHER</div>
         <div id="window-controls">
-            <button id="btn-settings" class="control-btn" title="Settings" style="background-color: #888; margin-right: 10px;"></button>
-            <button id="btn-minimize" class="control-btn" title="Minimize"></button>
-            <button id="btn-close" class="control-btn" title="Close"></button>
+            <button id="btn-settings" class="control-btn" title="Settings">⚙</button>
+            <button id="btn-minimize" class="control-btn" title="Minimize">─</button>
+            <button id="btn-close" class="control-btn" title="Close">✕</button>
         </div>
     </div>
 
@@ -65,6 +65,12 @@
                                 <input type="text" id="setting-ram-max" placeholder="Max (e.g. 6G)" style="width: 48%">
                             </div>
                         </div>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="setting-hide-on-play" style="width: auto; margin-right: 10px;">
+                                Hide launcher when game starts
+                            </label>
+                        </div>
                         <div class="form-group" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
                             <button id="btn-reinstall" style="background: #d32f2f;">Full Repair / Reinstall</button>
                             <p style="font-size: 10px; color: #666; margin-top: 5px;">Deletes mods/configs and re-downloads everything.</p>
@@ -99,10 +105,19 @@
             <div id="step-code" class="hidden">
                 <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Code sent to Telegram</p>
                 <input type="text" id="auth-code" placeholder="Enter Code" spellcheck="false">
-                <button id="verify-btn">Play</button>
+                <button id="verify-btn">Verify</button>
             </div>
 
-            <!-- Step 3: Progress -->
+            <!-- Step 3: Ready to Play -->
+            <div id="step-play" class="hidden">
+                <div id="welcome-msg" style="margin-bottom: 15px; color: #eee; font-size: 14px;">Welcome back!</div>
+                <button id="play-btn" style="background: #4CAF50; font-size: 18px; padding: 12px 40px; font-weight: bold; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">PLAY</button>
+                <div style="margin-top: 15px;">
+                    <button id="logout-btn" style="background: transparent; border: 1px solid #444; color: #888; font-size: 11px; padding: 5px 10px;">Logout</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Progress -->
             <div id="step-progress" class="hidden">
                 <div id="status">Initializing...</div>
                 <div style="width: 100%; background: #333; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;">

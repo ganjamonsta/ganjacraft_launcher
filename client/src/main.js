@@ -28,6 +28,7 @@ function loadConfig() {
         javaPath: '', // Empty = auto-detect
         memoryMin: '2G',
         memoryMax: '6G',
+        hideOnPlay: true,
         disabledMods: [] // List of paths to skip
     };
 }
