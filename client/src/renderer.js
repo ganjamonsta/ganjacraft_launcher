@@ -10,6 +10,121 @@ const progressBar = document.getElementById('progress-bar');
 const consoleOutput = document.getElementById('console-output');
 
 let currentUsername = '';
+let currentConfig = {};
+
+// --- Settings Logic ---
+const settingsModal = document.getElementById('settings-modal');
+const btnSettings = document.getElementById('btn-settings');
+const btnCloseSettings = document.getElementById('close-settings');
+const btnSaveSettings = document.getElementById('save-settings');
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    });
+});
+
+// Open Settings
+btnSettings.addEventListener('click', async () => {
+    currentConfig = await window.api.loadConfig();
+    
+    // Populate Fields
+    document.getElementById('setting-path').value = currentConfig.installPath;
+    document.getElementById('setting-java').value = currentConfig.javaPath || '';
+    document.getElementById('setting-ram-min').value = currentConfig.memoryMin;
+    document.getElementById('setting-ram-max').value = currentConfig.memoryMax;
+    
+    // Load Mods
+    loadModsList(currentConfig.disabledMods || []);
+    
+    settingsModal.classList.remove('hidden');
+});
+
+// Close Settings
+btnCloseSettings.addEventListener('click', () => {
+    settingsModal.classList.add('hidden');
+});
+
+// Save Settings
+btnSaveSettings.addEventListener('click', async () => {
+    const newConfig = {
+        installPath: document.getElementById('setting-path').value,
+        javaPath: document.getElementById('setting-java').value,
+        memoryMin: document.getElementById('setting-ram-min').value,
+        memoryMax: document.getElementById('setting-ram-max').value,
+        disabledMods: getDisabledMods()
+    };
+    
+    await window.api.saveConfig(newConfig);
+    settingsModal.classList.add('hidden');
+    logToConsole('[SETTINGS] Saved.');
+});
+
+// Path Selectors
+document.getElementById('btn-select-path').addEventListener('click', async () => {
+    const path = await window.api.selectPath('dir');
+    if (path) document.getElementById('setting-path').value = path;
+});
+
+document.getElementById('btn-select-java').addEventListener('click', async () => {
+    const path = await window.api.selectPath('file');
+    if (path) document.getElementById('setting-java').value = path;
+});
+
+// Reinstall
+document.getElementById('btn-reinstall').addEventListener('click', async () => {
+    if (confirm('Are you sure? This will delete all mods and configs.')) {
+        await window.api.reinstallClient();
+        alert('Client files removed. Please restart the launcher or click Play to re-download.');
+        settingsModal.classList.add('hidden');
+    }
+});
+
+// Mods Manager
+async function loadModsList(disabledMods) {
+    const list = document.getElementById('mods-list');
+    list.innerHTML = '<div class="loading">Loading manifest...</div>';
+    
+    const manifest = await window.api.getManifest();
+    if (!manifest) {
+        list.innerHTML = '<div class="error">Failed to load manifest</div>';
+        return;
+    }
+    
+    list.innerHTML = '';
+    
+    // Filter for interesting files (mods, resourcepacks)
+    const files = manifest.files.filter(f => 
+        f.path.startsWith('mods/') || 
+        f.path.startsWith('resourcepacks/') ||
+        f.path.startsWith('shaderpacks/')
+    );
+    
+    files.forEach(file => {
+        const isChecked = !disabledMods.includes(file.path);
+        const div = document.createElement('div');
+        div.className = 'mod-item';
+        div.innerHTML = `
+            <input type="checkbox" data-path="${file.path}" ${isChecked ? 'checked' : ''}>
+            <span>${file.path}</span>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function getDisabledMods() {
+    const disabled = [];
+    document.querySelectorAll('#mods-list input[type="checkbox"]').forEach(cb => {
+        if (!cb.checked) {
+            disabled.push(cb.dataset.path);
+        }
+    });
+    return disabled;
+}
 
 // Window Controls
 document.getElementById('btn-minimize').addEventListener('click', () => {

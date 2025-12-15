@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <title>GanjaCraft Launcher</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal.css">
 </head>
 <body>
     <!-- Custom Title Bar -->
     <div id="title-bar">
         <div id="title-bar-title">GANJACRAFT LAUNCHER</div>
         <div id="window-controls">
+            <button id="btn-settings" class="control-btn" title="Settings" style="background-color: #888; margin-right: 10px;"></button>
             <button id="btn-minimize" class="control-btn" title="Minimize"></button>
             <button id="btn-close" class="control-btn" title="Close"></button>
         </div>
@@ -18,6 +20,63 @@
     <!-- Main Content -->
     <div id="main-content">
         <div id="bg-overlay"></div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button id="close-settings">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="general">General</button>
+                        <button class="tab-btn" data-tab="mods">Mods Manager</button>
+                    </div>
+                    
+                    <!-- General Tab -->
+                    <div id="tab-general" class="tab-content active">
+                        <div class="form-group">
+                            <label>Install Path:</label>
+                            <div class="input-group">
+                                <input type="text" id="setting-path" readonly>
+                                <button id="btn-select-path">...</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Java Path (Optional):</label>
+                            <div class="input-group">
+                                <input type="text" id="setting-java" placeholder="Auto-detect">
+                                <button id="btn-select-java">...</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Memory (RAM):</label>
+                            <div class="row">
+                                <input type="text" id="setting-ram-min" placeholder="Min (e.g. 2G)" style="width: 48%">
+                                <input type="text" id="setting-ram-max" placeholder="Max (e.g. 6G)" style="width: 48%">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
+                            <button id="btn-reinstall" style="background: #d32f2f;">Full Repair / Reinstall</button>
+                            <p style="font-size: 10px; color: #666; margin-top: 5px;">Deletes mods/configs and re-downloads everything.</p>
+                        </div>
+                    </div>
+
+                    <!-- Mods Tab -->
+                    <div id="tab-mods" class="tab-content">
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Uncheck mods to disable them.</p>
+                        <div id="mods-list" class="scrollable-list">
+                            <!-- Populated by JS -->
+                            <div class="loading">Loading manifest...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="save-settings">Save & Close</button>
+                </div>
+            </div>
+        </div>
 
         <div class="auth-container fade-in">
             <h2>GanjaCraft</h2>

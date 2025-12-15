@@ -22,5 +22,14 @@ contextBridge.exposeInMainWorld('api', {
     },
     onLog: (callback) => ipcRenderer.on('log-message', (event, text) => callback(text)),
     minimize: () => ipcRenderer.send('window-minimize'),
-    close: () => ipcRenderer.send('window-close')
+    close: () => ipcRenderer.send('window-close'),
+    
+    // Settings & Config
+    loadConfig: () => ipcRenderer.invoke('load-config'),
+    saveConfig: (config) => ipcRenderer.invoke('save-config', config),
+    selectPath: (type) => ipcRenderer.invoke('select-path', type), // type: 'dir' or 'file'
+    
+    // Advanced
+    reinstallClient: () => ipcRenderer.invoke('reinstall-client'),
+    getManifest: () => ipcRenderer.invoke('get-manifest') // To list mods in UI
 });
