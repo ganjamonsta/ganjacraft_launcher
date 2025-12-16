@@ -688,12 +688,17 @@ window.api.onUpdateProgress((progress) => {
 
 window.api.onUpdateDownloaded((info) => {
     logToConsole('[UPDATE] Обновление скачано.');
-    if (updateStatusText) updateStatusText.innerText = 'Установка...';
+    if (updateStatusText) updateStatusText.innerText = 'Патч скачан! Требуется перезапуск.';
     
-    // Install Automatically
-    setTimeout(() => {
-        window.api.quitAndInstall();
-    }, 1000); // Small delay to let user see 100%
+    // Show Restart Button
+    const btn = document.getElementById('btn-restart-launcher');
+    if (btn) {
+        btn.classList.remove('hidden');
+        // Ensure we don't add multiple listeners if this event fires multiple times (unlikely but safe)
+        btn.onclick = () => {
+            window.api.quitAndInstall();
+        };
+    }
 });
 
 window.api.onUpdateError((err) => {

@@ -159,6 +159,7 @@ function installPortableUpdate() {
     // Loop ensures we wait until the main process is fully released
     const batContent = `
 @echo off
+cd /d "${currentDir}"
 :loop
 del "${exeName}" >nul 2>&1
 if exist "${exeName}" (
@@ -166,7 +167,6 @@ if exist "${exeName}" (
     goto loop
 )
 move "update.tmp.exe" "${exeName}" >nul
-start "" "${exeName}"
 del "update.vbs"
 del "%~f0"
     `;
