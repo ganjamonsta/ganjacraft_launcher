@@ -433,7 +433,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             access_token: authSession.accessToken,
             client_token: authSession.clientToken,
             uuid: authSession.uuid,
-            name: javaPath || undefined, // Use custom/downloaded
+            name: authSession.name,
             user_properties: "{}"
         },
         root: rootPath,
