@@ -19,6 +19,7 @@ function loadConfig() {
         memoryMin: '2G',
         memoryMax: '6G',
         hideOnPlay: true,
+        enableSnow: true, // Default snow effect
         disabledMods: [] // List of paths to skip
     };
 }

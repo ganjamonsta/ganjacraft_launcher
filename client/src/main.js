@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -10,6 +10,7 @@ const { autoUpdater } = require('electron-updater');
 const { loadConfig, saveConfig } = require('./modules/config');
 const { syncFiles, downloadFile } = require('./modules/updater');
 const { authenticateYggdrasil } = require('./modules/auth');
+const { checkAndDownloadJava } = require('./modules/java');
 
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -223,6 +224,14 @@ function createWindow() {
         return null;
     });
 
+    ipcMain.handle('open-folder', async (event, folderPath) => {
+        if (folderPath && fs.existsSync(folderPath)) {
+            await shell.openPath(folderPath);
+            return true;
+        }
+        return false;
+    });
+
     ipcMain.handle('get-manifest', async () => {
         // Fetch manifest directly to return to UI
         return new Promise((resolve) => {
@@ -302,11 +311,24 @@ ipcMain.handle('launch-game', async (event, options) => {
     sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
 
     // Validate Java Path if set
-    if (config.javaPath) {
-        if (!fs.existsSync(config.javaPath)) {
+    let javaPath = config.javaPath;
+    if (javaPath) {
+        if (!fs.existsSync(javaPath)) {
             isGameRunning = false;
-            sendLog(`[ОШИБКА] Указанный путь к Java не существует: ${config.javaPath}`);
+            sendLog(`[ОШИБКА] Указанный путь к Java не существует: ${javaPath}`);
             return { success: false, error: "Неверный путь к Java. Проверьте настройки." };
+        }
+    } else {
+        // Auto-download Java if not set
+        try {
+            const downloadedJava = await checkAndDownloadJava(rootPath, sendLog);
+            if (downloadedJava) {
+                javaPath = downloadedJava;
+            }
+        } catch (e) {
+            console.error('Java download failed:', e);
+            isGameRunning = false;
+            return { success: false, error: "Ошибка загрузки Java: " + e.message };
         }
     }
 
@@ -366,7 +388,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             access_token: authSession.accessToken,
             client_token: authSession.clientToken,
             uuid: authSession.uuid,
-            name: authSession.name,
+            name: javaPath || undefined, // Use custom/downloaded
             user_properties: "{}"
         },
         root: rootPath,

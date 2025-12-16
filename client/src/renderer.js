@@ -1,3 +1,51 @@
+// --- Snow Effect ---
+let snowInterval = null;
+
+function createSnowflake() {
+    const snowContainer = document.getElementById('snow-container');
+    if (!snowContainer) return;
+
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+    snowflake.textContent = '❄';
+    
+    // Randomize
+    snowflake.style.left = Math.random() * 100 + 'vw';
+    // Slower: 8s to 15s
+    snowflake.style.animationDuration = Math.random() * 7 + 8 + 's'; 
+    snowflake.style.opacity = Math.random() * 0.6 + 0.2; // 0.2 - 0.8
+    snowflake.style.fontSize = Math.random() * 10 + 8 + 'px'; // 8px - 18px
+    
+    // Randomize Animation (Swaying)
+    const animations = ['fall-1', 'fall-2', 'fall-3'];
+    snowflake.style.animationName = animations[Math.floor(Math.random() * animations.length)];
+
+    snowContainer.appendChild(snowflake);
+    
+    // Remove after animation (buffer time)
+    setTimeout(() => {
+        snowflake.remove();
+    }, 15000);
+}
+
+function toggleSnow(enable) {
+    const snowContainer = document.getElementById('snow-container');
+    if (enable) {
+        if (!snowInterval) {
+            // Create less frequently (every 400ms instead of 200ms)
+            snowInterval = setInterval(createSnowflake, 400); 
+            // Create initial batch
+            for(let i=0; i<10; i++) setTimeout(createSnowflake, i * 300);
+        }
+    } else {
+        if (snowInterval) {
+            clearInterval(snowInterval);
+            snowInterval = null;
+        }
+        if (snowContainer) snowContainer.innerHTML = ''; // Clear existing
+    }
+}
+
 // UI Elements
 const stepLoading = document.getElementById('step-loading');
 const stepLogin = document.getElementById('step-login');
@@ -40,6 +88,7 @@ btnSettings.addEventListener('click', async () => {
     document.getElementById('setting-ram-min').value = currentConfig.memoryMin;
     document.getElementById('setting-ram-max').value = currentConfig.memoryMax;
     document.getElementById('setting-hide-on-play').checked = currentConfig.hideOnPlay !== false; // Default true
+    document.getElementById('setting-enable-snow').checked = currentConfig.enableSnow !== false; // Default true
     
     // Load Mods
     loadModsList(currentConfig.disabledMods || []);
@@ -71,12 +120,16 @@ btnSaveSettings.addEventListener('click', async () => {
         memoryMin: memMin,
         memoryMax: memMax,
         hideOnPlay: document.getElementById('setting-hide-on-play').checked,
+        enableSnow: document.getElementById('setting-enable-snow').checked,
         disabledMods: getDisabledMods()
     };
     
     await window.api.saveConfig(newConfig);
     currentConfig = newConfig; // Update local config immediately
     
+    // Apply Snow Effect
+    toggleSnow(newConfig.enableSnow);
+
     // Update UI values to show formatted result
     document.getElementById('setting-ram-min').value = memMin;
     document.getElementById('setting-ram-max').value = memMax;
@@ -91,9 +144,20 @@ document.getElementById('btn-select-path').addEventListener('click', async () =>
     if (path) document.getElementById('setting-path').value = path;
 });
 
+document.getElementById('btn-open-path').addEventListener('click', async () => {
+    const path = document.getElementById('setting-path').value;
+    if (path) {
+        await window.api.openFolder(path);
+    }
+});
+
 document.getElementById('btn-select-java').addEventListener('click', async () => {
     const path = await window.api.selectPath('file');
     if (path) document.getElementById('setting-java').value = path;
+});
+
+document.getElementById('btn-reset-java').addEventListener('click', () => {
+    document.getElementById('setting-java').value = '';
 });
 
 // Reinstall
@@ -573,6 +637,9 @@ function logToConsole(text) {
 (async () => {
     logToConsole('[LAUNCHER] Client initialized.');
     currentConfig = await window.api.loadConfig();
+
+    // Apply Snow Effect
+    toggleSnow(currentConfig.enableSnow !== false);
 
     // Apply default disabled mods if fresh install
     if (currentConfig.isDefault) {

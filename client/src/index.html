@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="mods.css">
 </head>
 <body>
+    <!-- Snow Container -->
+    <div id="snow-container"></div>
+
     <!-- Custom Title Bar -->
     <div id="title-bar">
         <div id="title-bar-title">GANJACRAFT LAUNCHER</div>
@@ -54,14 +57,16 @@
                             <label>Путь установки:</label>
                             <div class="input-group">
                                 <input type="text" id="setting-path" readonly>
-                                <button id="btn-select-path">...</button>
+                                <button id="btn-select-path" title="Выбрать папку">...</button>
+                                <button id="btn-open-path" title="Открыть папку" style="margin-left: 5px;">📂</button>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Путь к Java (Опционально):</label>
                             <div class="input-group">
                                 <input type="text" id="setting-java" placeholder="Авто-определение">
-                                <button id="btn-select-java">...</button>
+                                <button id="btn-select-java" title="Выбрать файл">...</button>
+                                <button id="btn-reset-java" title="Сбросить (Авто)" style="margin-left: 5px;">↺</button>
                             </div>
                         </div>
                         <div class="form-group">
@@ -75,6 +80,12 @@
                             <label style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="checkbox" id="setting-hide-on-play" style="width: auto; margin-right: 10px;">
                                 Скрывать лаунчер при запуске игры
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="setting-enable-snow" style="width: auto; margin-right: 10px;">
+                                Включить снегопад ❄️
                             </label>
                         </div>
                         <div class="form-group" style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">

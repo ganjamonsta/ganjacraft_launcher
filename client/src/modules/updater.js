@@ -5,24 +5,32 @@ const path = require('path');
 
 function downloadFile(url, dest) {
     return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(dest);
+        const request = https.get(url, (response) => {
+            // Handle Redirects
+            if (response.statusCode === 301 || response.statusCode === 302) {
+                downloadFile(response.headers.location, dest).then(resolve).catch(reject);
+                return;
+            }
 
-        file.on('error', (err) => {
-            fs.unlink(dest, () => {});
-            reject(err);
-        });
-
-        https.get(url, (response) => {
             if (response.statusCode !== 200) {
                 reject(new Error(`Failed to download: ${response.statusCode}`));
                 return;
             }
+            
+            const file = fs.createWriteStream(dest);
+            file.on('error', (err) => {
+                fs.unlink(dest, () => {});
+                reject(err);
+            });
+
             response.pipe(file);
             file.on('finish', () => {
                 file.close(resolve);
             });
-        }).on('error', (err) => {
-            fs.unlink(dest, () => {});
+        });
+        
+        request.on('error', (err) => {
+            if (fs.existsSync(dest)) fs.unlink(dest, () => {});
             reject(err);
         });
     });
