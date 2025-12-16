@@ -593,36 +593,51 @@ window.api.onGameClosed(() => {
 });
 
 // Auto Updater Handlers
+const updateOverlay = document.getElementById('update-overlay');
+const updateProgressBar = document.getElementById('update-progress-bar');
+const updateStatusText = document.getElementById('update-status-text');
+
 window.api.onUpdateAvailable((info) => {
     logToConsole(`[UPDATE] Доступна новая версия: ${info.version}`);
-    if (confirm(`Доступна новая версия лаунчера ${info.version}. Скачать?`)) {
-        window.api.downloadUpdate();
-        statusDiv.innerText = 'Скачивание обновления лаунчера...';
-        stepLoading.classList.remove('hidden');
-        stepLogin.classList.add('hidden');
-        stepPlay.classList.add('hidden');
-    }
+    
+    // Show Overlay
+    updateOverlay.classList.remove('hidden');
+    updateStatusText.innerText = `Найдена новая версия ${info.version}. Качаем...`;
+    
+    // Start Download Automatically
+    window.api.downloadUpdate();
 });
 
 window.api.onUpdateProgress((progress) => {
     const percent = Math.round(progress.percent);
-    progressBar.style.width = `${percent}%`;
-    statusDiv.innerText = `Скачивание обновления: ${percent}%`;
+    
+    // Update Overlay Progress
+    if (updateProgressBar) updateProgressBar.style.width = `${percent}%`;
+    if (updateStatusText) updateStatusText.innerText = `Загрузка обновления: ${percent}%`;
+    
     logToConsole(`[UPDATE] Загрузка: ${percent}%`);
 });
 
 window.api.onUpdateDownloaded((info) => {
     logToConsole('[UPDATE] Обновление скачано.');
-    if (confirm('Обновление готово к установке. Перезапустить сейчас?')) {
+    if (updateStatusText) updateStatusText.innerText = 'Установка...';
+    
+    // Install Automatically
+    setTimeout(() => {
         window.api.quitAndInstall();
-    }
+    }, 1000); // Small delay to let user see 100%
 });
 
 window.api.onUpdateError((err) => {
     logToConsole(`[UPDATE ERROR] ${err}`);
-    statusDiv.innerText = 'Ошибка обновления';
+    if (updateStatusText) {
+        updateStatusText.innerText = 'Ошибка обновления! Пропускаем...';
+        updateStatusText.style.color = 'red';
+    }
+    
+    // Hide overlay after 3 seconds and continue
     setTimeout(() => {
-        statusDiv.innerText = 'Готов к игре';
+        updateOverlay.classList.add('hidden');
     }, 3000);
 });
 

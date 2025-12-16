@@ -26,3 +26,19 @@
 - [ ] Сверстать Grid-сетку для отображения картинок (CSS).
 - [ ] Реализовать оверлей при наведении: кнопка "Загрузить в облако".
 - [ ] Индикация загрузки и уведомление об успехе.
+
+### 🔄 Бесшовное Авто-обновление (Seamless Updater)
+**Цель:** Убрать отдельные окна обновлений. Лаунчер должен обновляться сам и показывать прогресс внутри основного окна.
+
+#### 1. UI (Renderer)
+- [x] Создать оверлей "Update Screen" в `index.html` (z-index: 9999).
+  - Блокирует весь интерфейс.
+  - Содержит: Логотип, Текст "Прилетает обнова...", Прогресс-бар.
+- [x] Скрыть стандартные диалоговые окна Electron.
+
+#### 2. Logic (Main Process)
+- [x] Переписать `updater.js` (Renderer Logic):
+  - `autoDownload = true` (Implemented via auto-call in renderer).
+  - Убрать `dialog.showMessageBox` (Removed confirms).
+  - Прокинуть события `download-progress` в Renderer через IPC.
+  - При событии `update-downloaded` -> `autoUpdater.quitAndInstall(true, true)`.
