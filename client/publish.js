@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const DIST_DIR = path.join(__dirname, 'dist');
-const TARGET_DIR = path.resolve(__dirname, '../../ganjacrafter_bot/storage/launcher');
+// Target directory explicitly requested by user
+const TARGET_DIR = 'D:\\GanjaCraft\\git\\ganjacrafter_bot\\storage\\launcher';
 const PACKAGE_JSON = path.join(__dirname, 'package.json');
 
 // Ensure target dir exists
