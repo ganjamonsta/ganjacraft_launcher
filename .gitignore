@@ -3,3 +3,6 @@ node_modules
 dist
 build
 .env
+client/private.pem
+client/public.pem
+

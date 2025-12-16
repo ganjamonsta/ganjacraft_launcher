@@ -23,8 +23,15 @@ const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authe
 // autoUpdater.logger = require("electron-log");
 // autoUpdater.logger.transports.file.level = "info";
 
+const crypto = require('crypto');
+
 // Custom Portable Updater
 const VERSION_URL = 'https://ganjacraft.ru/api/launcher/files/version.json';
+// PUBLIC KEY (Hardcoded for security) - Replace with content of public.pem
+const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAQv9ZFfputwoW/JzVhRwLIiUy3/3Mgaj0aDrz+t5y2+s=
+-----END PUBLIC KEY-----`;
+
 let updateInfo = null;
 
 async function checkForPortableUpdates(win) {
@@ -86,7 +93,33 @@ async function downloadPortableUpdate(win) {
 
         response.on('end', () => {
             file.end();
-            win.webContents.send('update-downloaded', updateInfo);
+            
+            // Verify Signature
+            if (updateInfo.signature) {
+                try {
+                    const fileBuffer = fs.readFileSync(dest);
+                    const isVerified = crypto.verify(
+                        null,
+                        fileBuffer,
+                        PUBLIC_KEY,
+                        Buffer.from(updateInfo.signature, 'base64')
+                    );
+                    
+                    if (!isVerified) {
+                        throw new Error("Invalid signature! Update file might be corrupted or tampered.");
+                    }
+                    console.log("✅ Update signature verified.");
+                    win.webContents.send('update-downloaded', updateInfo);
+                } catch (e) {
+                    console.error("Signature verification failed:", e);
+                    fs.unlink(dest, () => {});
+                    win.webContents.send('update-error', "Security Error: " + e.message);
+                }
+            } else {
+                console.warn("⚠️ Update has no signature!");
+                // For now, allow it but log warning. In production, block it.
+                win.webContents.send('update-downloaded', updateInfo);
+            }
         });
     }).on('error', (err) => {
         fs.unlink(dest, () => {});
@@ -141,6 +174,7 @@ function createWindow() {
     // Config Handlers
     ipcMain.handle('load-config', () => loadConfig());
     ipcMain.handle('save-config', (event, config) => saveConfig(config));
+    ipcMain.handle('get-app-version', () => app.getVersion());
     
     // Auto Updater Events (Custom Portable)
     ipcMain.handle('check-for-updates', () => {

@@ -604,6 +604,13 @@ function logToConsole(text) {
         }
     }
 
+    // Display Version
+    try {
+        const ver = await window.api.getAppVersion();
+        const vDiv = document.getElementById('app-version');
+        if (vDiv) vDiv.innerText = `v${ver}`;
+    } catch (e) { console.error('Failed to get version', e); }
+
     loadNews();
     await checkSavedAuth();
 })();

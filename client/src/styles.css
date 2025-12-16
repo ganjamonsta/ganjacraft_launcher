@@ -316,3 +316,13 @@ button:active {
     white-space: pre-wrap;
 }
 
+#app-version {
+    position: absolute;
+    bottom: 10px;
+    left: 15px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    z-index: 100;
+    pointer-events: none;
+}
+

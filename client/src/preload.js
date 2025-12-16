@@ -89,6 +89,7 @@ contextBridge.exposeInMainWorld('api', {
     // Settings & Config
     loadConfig: () => ipcRenderer.invoke('load-config'),
     saveConfig: (config) => ipcRenderer.invoke('save-config', config),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     selectPath: (type) => ipcRenderer.invoke('select-path', type), // type: 'dir' or 'file'
     
     // Advanced
