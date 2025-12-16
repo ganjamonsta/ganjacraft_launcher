@@ -46,7 +46,7 @@ function getFileHash(filePath) {
     });
 }
 
-async function syncFiles(rootPath, manifestUrl, sendLog, disabledMods = []) {
+async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMods = [], checkCancelled = () => false) {
     sendLog('Проверка обновлений...');
     
     // 1. Download Manifest
@@ -61,9 +61,21 @@ async function syncFiles(rootPath, manifestUrl, sendLog, disabledMods = []) {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
     sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
 
-    let downloaded = 0;
+    let processed = 0;
+    const totalFiles = manifest.files.length;
     
     for (const file of manifest.files) {
+        // Report Progress
+        processed++;
+        if (onProgress) {
+            onProgress({ task: processed, total: totalFiles, type: 'mods' });
+        }
+
+        // Check Cancellation
+        if (checkCancelled()) {
+            throw new Error('CANCELLED');
+        }
+
         // Check if disabled
         if (disabledMods.includes(file.path)) {
             const localPath = path.join(rootPath, file.path);

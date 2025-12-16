@@ -394,10 +394,25 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     // Синхронизация модов
     try {
-        await syncFiles(rootPath, MANIFEST_URL, sendLog, config.disabledMods);
+        const onSyncProgress = (p) => {
+            if (event.sender && !event.sender.isDestroyed()) {
+                event.sender.send('progress', p);
+            }
+        };
+        await syncFiles(rootPath, MANIFEST_URL, sendLog, onSyncProgress, config.disabledMods, () => isLaunchCancelled);
     } catch (e) {
+        if (e.message === 'CANCELLED') {
+            sendLog('Запуск отменен пользователем.');
+            isGameRunning = false;
+            return { success: false, error: "Запуск отменен" };
+        }
         sendLog('ВНИМАНИЕ: Ошибка синхронизации модов. Игра может работать нестабильно.');
         console.error(e);
+    }
+
+    if (isLaunchCancelled) {
+        isGameRunning = false;
+        return { success: false, error: "Запуск отменен" };
     }
 
     // Yggdrasil Authentication

@@ -149,9 +149,19 @@
             <!-- Step 4: Progress -->
             <div id="step-progress" class="hidden">
                 <div id="status">Инициализация...</div>
-                <div style="width: 100%; background: #333; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;">
-                    <div id="progress-bar" style="width: 0%; height: 100%; background: #4CAF50; transition: width 0.2s;"></div>
+                
+                <!-- Joint Progress Bar (Game Launch) -->
+                <div class="joint-wrapper" style="margin-top: 20px;">
+                    <div id="game-joint-progress" class="joint-progress-container">
+                        <img src="assets/images/loading/progress_bar.png" class="joint-img" alt="Loading...">
+                    </div>
+                    <div id="game-joint-burn" class="joint-burn-effect">
+                        <div class="joint-burn"></div>
+                        <div class="joint-smoke"></div>
+                    </div>
+                    <img id="game-joint-end" src="assets/images/loading/progress_bar_end.png" class="joint-end-img hidden">
                 </div>
+
                 <div id="progress-controls" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
                     <button id="retry-btn" class="hidden" style="background: #f1c40f; color: #111; font-size: 12px; padding: 8px; font-weight: bold;">Повторить</button>
                     <button id="cancel-btn" style="background: #d32f2f; font-size: 12px; padding: 8px;">Отмена</button>
@@ -167,9 +177,19 @@
         <div class="update-content">
             <img src="assets/icon.png" alt="Logo" class="update-logo">
             <h2>Прилетает обнова...</h2>
-            <div class="progress-container">
-                <div id="update-progress-bar" class="progress-bar"></div>
+            
+            <!-- Joint Progress Bar -->
+            <div class="joint-wrapper">
+                <div id="joint-progress-container" class="joint-progress-container">
+                    <img src="assets/images/loading/progress_bar.png" class="joint-img" alt="Loading...">
+                </div>
+                <div id="update-joint-burn" class="joint-burn-effect">
+                    <div class="joint-burn"></div>
+                    <div class="joint-smoke"></div>
+                </div>
+                <img id="update-joint-end" src="assets/images/loading/progress_bar_end.png" class="joint-end-img hidden">
             </div>
+
             <div id="update-status-text">Подготовка...</div>
         </div>
     </div>

@@ -153,7 +153,8 @@ body {
 /* Auth Container */
 .auth-container {
     position: absolute;
-    left: 40px;
+    right: 40px;
+    left: auto;
     top: 50%;
     transform: translateY(-50%);
     z-index: 1;
@@ -266,8 +267,8 @@ button:active {
 /* News Section */
 #news-section {
     position: absolute;
-    right: 20px;
-    left: auto;
+    left: 20px;
+    right: auto;
     top: 20px;
     bottom: 20px;
     width: 300px;
@@ -411,10 +412,99 @@ button:active {
 
 #update-overlay h2 {
     color: #00ff00;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     font-size: 24px;
     text-transform: uppercase;
     letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+/* Joint Progress Bar */
+.joint-wrapper {
+    width: 260px; /* Fits inside 350px auth-container */
+    height: 40px;
+    position: relative;
+    margin: 20px auto;
+}
+
+.joint-progress-container {
+    position: absolute;
+    right: 0; /* Anchor to filter side */
+    top: 0;
+    height: 100%;
+    width: 100%; /* Starts full */
+    overflow: hidden;
+    transition: width 0.3s linear;
+    z-index: 1;
+}
+
+.joint-img {
+    position: absolute;
+    right: 0; /* Keep image anchored right */
+    height: 100%;
+    width: 260px; /* Must match wrapper width */
+    object-fit: contain;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+/* Burn Effect Container - Tracks the left edge */
+.joint-burn-effect {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    left: 0; /* Controlled by JS */
+    transition: left 0.3s linear;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Burning Tip Effect */
+.joint-burn {
+    position: absolute;
+    left: -4px; /* Center on the line */
+    top: calc(50% - 1px);
+    transform: translateY(-50%);
+    width: 8px;
+    height: 26px; /* Adjust to match joint thickness */
+    background: radial-gradient(circle, #ff4500 20%, #ff8c00 60%, transparent 80%);
+    box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00;
+    border-radius: 50%;
+    opacity: 0.9;
+    animation: burn-pulse 0.1s infinite alternate;
+}
+
+/* Smoke Effect from Tip */
+.joint-smoke {
+    position: absolute;
+    left: -12px;
+    top: -25px;
+    width: 25px;
+    height: 40px;
+    background: radial-gradient(circle, rgba(200,200,200,0.4) 0%, transparent 70%);
+    filter: blur(4px);
+    animation: smoke-rise 2s infinite;
+}
+
+/* End Image */
+.joint-end-img {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 260px;
+    height: 100%;
+    object-fit: contain;
+    z-index: 3;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+@keyframes burn-pulse {
+    from { transform: translateY(-50%) scale(0.9); opacity: 0.8; }
+    to { transform: translateY(-50%) scale(1.1); opacity: 1; }
+}
+
+@keyframes smoke-rise {
+    0% { transform: translateY(0) scale(1); opacity: 0.5; }
+    100% { transform: translateY(-40px) scale(2); opacity: 0; }
 }
 
 #update-status-text {

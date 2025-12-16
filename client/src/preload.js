@@ -83,6 +83,7 @@ contextBridge.exposeInMainWorld('api', {
         }
     },
     onLog: (callback) => ipcRenderer.on('log-message', (event, text) => callback(text)),
+    onProgress: (callback) => ipcRenderer.on('progress', (event, e) => callback(e)),
     minimize: () => ipcRenderer.send('window-minimize'),
     close: () => ipcRenderer.send('window-close'),
     

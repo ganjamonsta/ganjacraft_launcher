@@ -56,8 +56,69 @@ const stepProgress = document.getElementById('step-progress');
 const usernameInput = document.getElementById('username');
 const codeInput = document.getElementById('auth-code');
 const statusDiv = document.getElementById('status');
-const progressBar = document.getElementById('progress-bar');
 const consoleOutput = document.getElementById('console-output');
+
+// Joint Progress Elements
+const gameJointProgress = document.getElementById('game-joint-progress');
+const gameJointBurn = document.getElementById('game-joint-burn');
+const gameJointEnd = document.getElementById('game-joint-end');
+
+const updateJointProgress = document.getElementById('joint-progress-container');
+const updateJointBurn = document.getElementById('update-joint-burn');
+const updateJointEnd = document.getElementById('update-joint-end');
+
+function setJointProgress(container, burn, endImg, percent) {
+    if (!container) return;
+    
+    // Constants for realistic smoking effect
+    const MAX_WIDTH = 260; // Total width of the image in pixels
+    const MIN_WIDTH = 28;  // Width at 100% progress (the filter/butt)
+    const START_BURN_HEIGHT = 19; // Thickness at start
+    const END_BURN_HEIGHT = 10;    // Thickness at end
+
+    // Calculate current width of the container (the unsmoked part)
+    // 0% progress -> MAX_WIDTH
+    // 100% progress -> MIN_WIDTH
+    const currentWidthPx = MAX_WIDTH - ((MAX_WIDTH - MIN_WIDTH) * (percent / 100));
+    
+    // Calculate burn height (thickness)
+    const currentBurnHeight = START_BURN_HEIGHT - ((START_BURN_HEIGHT - END_BURN_HEIGHT) * (percent / 100));
+
+    if (percent >= 100) {
+        // Finished
+        container.classList.add('hidden');
+        if (burn) burn.classList.add('hidden');
+        if (endImg) endImg.classList.remove('hidden');
+    } else {
+        // In progress
+        container.classList.remove('hidden');
+        container.style.width = `${currentWidthPx}px`;
+        
+        if (burn) {
+            burn.classList.remove('hidden');
+            
+            // Position: The burn is separate from the container in the DOM.
+            // It tracks the left edge of the visible joint.
+            // Since the joint is anchored right, the left edge is at (MAX_WIDTH - currentWidthPx).
+            const burnLeftPos = MAX_WIDTH - currentWidthPx;
+            burn.style.left = `${burnLeftPos}px`;
+            
+            // Vertical Trajectory: Moves down by 4px as it burns
+            // 0% -> 0px offset
+            // 100% -> 4px offset
+            const verticalOffset = 3 * (percent / 100);
+            burn.style.top = `${verticalOffset}px`;
+            
+            // Update height/thickness of the burning tip
+            const burnTip = burn.querySelector('.joint-burn');
+            if (burnTip) {
+                burnTip.style.height = `${currentBurnHeight}px`;
+            }
+        }
+        
+        if (endImg) endImg.classList.add('hidden');
+    }
+}
 
 let currentUsername = '';
 let currentConfig = {};
@@ -504,8 +565,7 @@ async function startLaunch() {
     // Reset UI
     statusDiv.innerText = 'Инициализация...';
     statusDiv.style.color = '#888';
-    progressBar.style.width = '0%';
-    progressBar.style.backgroundColor = '#4CAF50';
+    setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
     
     document.getElementById('retry-btn').classList.add('hidden');
     document.getElementById('cancel-btn').classList.remove('hidden');
@@ -520,7 +580,7 @@ async function startLaunch() {
     
     if (result.success) {
         statusDiv.innerText = 'Игра запущена';
-        progressBar.style.width = '100%';
+        setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 100);
         document.getElementById('cancel-btn').classList.add('hidden');
 
         if (currentConfig.hideOnPlay !== false) {
@@ -544,8 +604,6 @@ async function startLaunch() {
         
         statusDiv.innerText = msg;
         statusDiv.style.color = '#e74c3c';
-        progressBar.style.backgroundColor = '#e74c3c';
-        progressBar.style.width = '100%';
         
         logToConsole(`[ERROR] ${result.error}`);
         
@@ -555,6 +613,16 @@ async function startLaunch() {
     }
 }
 
+// Real Progress Handler (from Core)
+if (window.api.onProgress) {
+    window.api.onProgress((e) => {
+        // e.task / e.total
+        const percent = (e.task / e.total) * 100;
+        setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, percent);
+        statusDiv.innerText = `Загрузка ресурсов: ${Math.round(percent)}%`;
+    });
+}
+
 // Log Handler
 window.api.onLog((text) => {
     logToConsole(text);
@@ -562,15 +630,17 @@ window.api.onLog((text) => {
     // Update status text for user-friendly messages
     if (text.includes('Скачивание:')) {
         statusDiv.innerText = 'Загрузка ресурсов...';
-        // Simulate progress bar movement (fake, since we don't have total size easily accessible here yet)
-        // In a real app, we'd parse the progress.
-        progressBar.style.width = '50%'; 
+        // Fallback if onProgress is not firing (e.g. java download)
+        // Only update if we are at 0 (start)
+        if (gameJointProgress && !gameJointProgress.classList.contains('hidden') && gameJointProgress.style.width === '100%') {
+             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 40);
+        }
     } else if (text.includes('Обновление завершено')) {
         statusDiv.innerText = 'Запуск игры...';
-        progressBar.style.width = '100%';
+        setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 100);
     } else if (text.includes('Проверка обновлений')) {
         statusDiv.innerText = 'Проверка обновлений...';
-        progressBar.style.width = '10%';
+        setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 5);
     }
 });
 
@@ -583,7 +653,7 @@ window.api.onGameClosed(() => {
     stepPlay.classList.remove('hidden');
     
     // Reset Progress Bar
-    progressBar.style.width = '0%';
+    setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
     statusDiv.innerText = 'Готов к игре';
     
     // Re-enable Play button just in case
@@ -594,7 +664,6 @@ window.api.onGameClosed(() => {
 
 // Auto Updater Handlers
 const updateOverlay = document.getElementById('update-overlay');
-const updateProgressBar = document.getElementById('update-progress-bar');
 const updateStatusText = document.getElementById('update-status-text');
 
 window.api.onUpdateAvailable((info) => {
@@ -602,7 +671,7 @@ window.api.onUpdateAvailable((info) => {
     
     // Show Overlay
     updateOverlay.classList.remove('hidden');
-    updateStatusText.innerText = `Найдена новая версия ${info.version}. Качаем...`;
+    updateStatusText.innerText = `Найдена новая версия ${info.version}. Взрываем...`;
     
     // Start Download Automatically
     window.api.downloadUpdate();
@@ -610,10 +679,9 @@ window.api.onUpdateAvailable((info) => {
 
 window.api.onUpdateProgress((progress) => {
     const percent = Math.round(progress.percent);
+    setJointProgress(updateJointProgress, updateJointBurn, updateJointEnd, percent);
     
-    // Update Overlay Progress
-    if (updateProgressBar) updateProgressBar.style.width = `${percent}%`;
-    if (updateStatusText) updateStatusText.innerText = `Загрузка обновления: ${percent}%`;
+    if (updateStatusText) updateStatusText.innerText = `Скуриваем обнову: ${percent}%`;
     
     logToConsole(`[UPDATE] Загрузка: ${percent}%`);
 });
