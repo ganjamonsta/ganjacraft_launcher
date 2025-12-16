@@ -19,9 +19,104 @@ const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
 
 // Configure Auto Updater
-autoUpdater.autoDownload = false;
-autoUpdater.logger = require("electron-log");
-autoUpdater.logger.transports.file.level = "info";
+// autoUpdater.autoDownload = false;
+// autoUpdater.logger = require("electron-log");
+// autoUpdater.logger.transports.file.level = "info";
+
+// Custom Portable Updater
+const VERSION_URL = 'https://ganjacraft.ru/api/launcher/files/version.json';
+let updateInfo = null;
+
+async function checkForPortableUpdates(win) {
+    if (!app.isPackaged) return;
+
+    try {
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(VERSION_URL);
+        if (!response.ok) throw new Error('Failed to fetch version info');
+        
+        const remoteData = await response.json();
+        const currentVersion = app.getVersion();
+        
+        // Simple version compare (assumes semver)
+        if (remoteData.version !== currentVersion) {
+            // Check if remote is actually newer
+            const v1 = currentVersion.split('.').map(Number);
+            const v2 = remoteData.version.split('.').map(Number);
+            
+            let isNewer = false;
+            for (let i = 0; i < 3; i++) {
+                if (v2[i] > v1[i]) { isNewer = true; break; }
+                if (v2[i] < v1[i]) { break; }
+            }
+
+            if (isNewer) {
+                updateInfo = remoteData;
+                win.webContents.send('update-available', { version: remoteData.version });
+            } else {
+                win.webContents.send('update-not-available');
+            }
+        } else {
+            win.webContents.send('update-not-available');
+        }
+    } catch (e) {
+        console.error('Update check failed:', e);
+        win.webContents.send('update-error', e.message);
+    }
+}
+
+async function downloadPortableUpdate(win) {
+    if (!updateInfo) return;
+    
+    const dest = path.join(path.dirname(process.execPath), 'update.tmp.exe');
+    const file = fs.createWriteStream(dest);
+    
+    win.webContents.send('update-progress', { percent: 0 });
+
+    https.get(updateInfo.url, (response) => {
+        const total = parseInt(response.headers['content-length'], 10);
+        let current = 0;
+
+        response.on('data', (chunk) => {
+            current += chunk.length;
+            const percent = (current / total) * 100;
+            win.webContents.send('update-progress', { percent });
+            file.write(chunk);
+        });
+
+        response.on('end', () => {
+            file.end();
+            win.webContents.send('update-downloaded', updateInfo);
+        });
+    }).on('error', (err) => {
+        fs.unlink(dest, () => {});
+        win.webContents.send('update-error', err.message);
+    });
+}
+
+function installPortableUpdate() {
+    const currentExe = process.execPath;
+    const updateExe = path.join(path.dirname(currentExe), 'update.tmp.exe');
+    const batPath = path.join(path.dirname(currentExe), 'update.bat');
+
+    const batContent = `
+@echo off
+timeout /t 2 /nobreak > NUL
+del "${path.basename(currentExe)}"
+move "update.tmp.exe" "${path.basename(currentExe)}"
+start "" "${path.basename(currentExe)}"
+del "%~f0"
+    `;
+
+    fs.writeFileSync(batPath, batContent);
+
+    spawn('cmd.exe', ['/c', batPath], {
+        detached: true,
+        stdio: 'ignore'
+    }).unref();
+
+    app.quit();
+}
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -47,43 +142,22 @@ function createWindow() {
     ipcMain.handle('load-config', () => loadConfig());
     ipcMain.handle('save-config', (event, config) => saveConfig(config));
     
-    // Auto Updater Events
+    // Auto Updater Events (Custom Portable)
     ipcMain.handle('check-for-updates', () => {
-        if (!app.isPackaged) return { updateAvailable: false };
-        return autoUpdater.checkForUpdates();
+        checkForPortableUpdates(win);
     });
 
     ipcMain.handle('download-update', () => {
-        autoUpdater.downloadUpdate();
+        downloadPortableUpdate(win);
     });
 
     ipcMain.handle('quit-and-install', () => {
-        autoUpdater.quitAndInstall();
-    });
-
-    autoUpdater.on('update-available', (info) => {
-        win.webContents.send('update-available', info);
-    });
-
-    autoUpdater.on('update-not-available', () => {
-        win.webContents.send('update-not-available');
-    });
-
-    autoUpdater.on('download-progress', (progressObj) => {
-        win.webContents.send('update-progress', progressObj);
-    });
-
-    autoUpdater.on('update-downloaded', (info) => {
-        win.webContents.send('update-downloaded', info);
-    });
-
-    autoUpdater.on('error', (err) => {
-        win.webContents.send('update-error', err.message);
+        installPortableUpdate();
     });
 
     // Check for updates on startup
     if (app.isPackaged) {
-        autoUpdater.checkForUpdates();
+        checkForPortableUpdates(win);
     }
 
     ipcMain.handle('select-path', async (event, type) => {
