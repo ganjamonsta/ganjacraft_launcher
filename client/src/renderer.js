@@ -611,8 +611,10 @@ function logToConsole(text) {
         if (vDiv) vDiv.innerText = `v${ver}`;
     } catch (e) { console.error('Failed to get version', e); }
 
-    loadNews();
     await checkSavedAuth();
+    
+    // Delay news loading to reduce startup CPU spike
+    setTimeout(loadNews, 1500);
 })();
 
 async function loadNews() {

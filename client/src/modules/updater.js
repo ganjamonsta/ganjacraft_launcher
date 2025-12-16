@@ -6,6 +6,12 @@ const path = require('path');
 function downloadFile(url, dest) {
     return new Promise((resolve, reject) => {
         const file = fs.createWriteStream(dest);
+
+        file.on('error', (err) => {
+            fs.unlink(dest, () => {});
+            reject(err);
+        });
+
         https.get(url, (response) => {
             if (response.statusCode !== 200) {
                 reject(new Error(`Failed to download: ${response.statusCode}`));

@@ -11,7 +11,25 @@ const { loadConfig, saveConfig } = require('./modules/config');
 const { syncFiles, downloadFile } = require('./modules/updater');
 const { authenticateYggdrasil } = require('./modules/auth');
 
+// Single Instance Lock
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        // Someone tried to run a second instance, we should focus our window.
+        const windows = BrowserWindow.getAllWindows();
+        if (windows.length > 0) {
+            const win = windows[0];
+            if (win.isMinimized()) win.restore();
+            win.focus();
+        }
+    });
+}
+
 const launcher = new Client();
+let isGameRunning = false;
 const FORGE_VERSION = '1.20.1-47.4.0';
 const FORGE_INSTALLER_URL = `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
@@ -189,9 +207,11 @@ function createWindow() {
         installPortableUpdate();
     });
 
-    // Check for updates on startup
+    // Check for updates on startup (delayed to reduce startup load)
     if (app.isPackaged) {
-        checkForPortableUpdates(win);
+        setTimeout(() => {
+            checkForPortableUpdates(win);
+        }, 3000);
     }
 
     ipcMain.handle('select-path', async (event, type) => {
@@ -255,6 +275,11 @@ app.on('window-all-closed', () => {
 
 // Обработка запуска игры
 ipcMain.handle('launch-game', async (event, options) => {
+    if (isGameRunning) {
+        return { success: false, error: "Игра уже запущена!" };
+    }
+    isGameRunning = true;
+
     const config = loadConfig();
     const rootPath = config.installPath;
     
@@ -279,6 +304,7 @@ ipcMain.handle('launch-game', async (event, options) => {
     // Validate Java Path if set
     if (config.javaPath) {
         if (!fs.existsSync(config.javaPath)) {
+            isGameRunning = false;
             sendLog(`[ОШИБКА] Указанный путь к Java не существует: ${config.javaPath}`);
             return { success: false, error: "Неверный путь к Java. Проверьте настройки." };
         }
@@ -293,6 +319,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             sendLog('Установщик Forge скачан.');
         } catch (e) {
             console.error('Failed to download Forge:', e);
+            isGameRunning = false;
             return { success: false, error: "Не удалось скачать Forge: " + e.message };
         }
     } else {
@@ -308,6 +335,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             sendLog('Authlib Injector скачан.');
         } catch (e) {
             console.error('Failed to download Authlib Injector:', e);
+            isGameRunning = false;
             return { success: false, error: "Не удалось скачать Authlib Injector: " + e.message };
         }
     }
@@ -328,6 +356,7 @@ ipcMain.handle('launch-game', async (event, options) => {
         sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
     } catch (e) {
         console.error('Authentication failed:', e);
+        isGameRunning = false;
         return { success: false, error: "Ошибка авторизации: " + e.message };
     }
 
@@ -364,6 +393,7 @@ ipcMain.handle('launch-game', async (event, options) => {
     // Listen for game close event
     // We use 'once' to avoid stacking listeners if multiple launches happen in one session
     launcher.once('close', (code) => {
+        isGameRunning = false;
         sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
         
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -412,6 +442,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             if (!hasResolved) {
                 hasResolved = true;
                 console.error(error);
+                isGameRunning = false;
                 resolve({ success: false, error: error.message });
             } else {
                 if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
