@@ -19,6 +19,13 @@ pkg.version = newVersion;
 console.log(`🚀 Bumping version to: ${newVersion}`);
 fs.writeFileSync(PACKAGE_PATH, JSON.stringify(pkg, null, 2));
 
+// 2.5 Clean dist
+console.log('🧹 Cleaning dist folder...');
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+    fs.rmSync(distPath, { recursive: true, force: true });
+}
+
 // 3. Run Build
 console.log('🔨 Running build (electron-builder)...');
 try {
