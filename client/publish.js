@@ -17,23 +17,31 @@ const version = pkg.version;
 // Find Executable
 const files = fs.readdirSync(DIST_DIR);
 const exeFile = files.find(f => f.endsWith('.exe') && !f.includes('blockmap'));
+const ymlFile = 'latest.yml';
 
 if (!exeFile) {
     console.error('❌ Executable not found in dist/. Run "npm run build" first.');
     process.exit(1);
 }
 
-const sourcePath = path.join(DIST_DIR, exeFile);
-const targetPath = path.join(TARGET_DIR, exeFile);
+// Copy Executable
+const sourceExe = path.join(DIST_DIR, exeFile);
+const targetExe = path.join(TARGET_DIR, exeFile);
+console.log(`📦 Copying .exe: ${exeFile}`);
+fs.copyFileSync(sourceExe, targetExe);
 
-console.log(`📦 Publishing version ${version}...`);
-console.log(`   Source: ${sourcePath}`);
-console.log(`   Target: ${targetPath}`);
+// Copy latest.yml (Required for electron-updater)
+const sourceYml = path.join(DIST_DIR, ymlFile);
+const targetYml = path.join(TARGET_DIR, ymlFile);
 
-// Copy File
-fs.copyFileSync(sourcePath, targetPath);
+if (fs.existsSync(sourceYml)) {
+    console.log(`📄 Copying latest.yml`);
+    fs.copyFileSync(sourceYml, targetYml);
+} else {
+    console.warn('⚠️ latest.yml not found! Auto-updates might not work.');
+}
 
-// Update version.json
+// Update version.json (For legacy clients to upgrade to this version)
 const versionJsonPath = path.join(TARGET_DIR, 'version.json');
 const versionData = {
     version: version,

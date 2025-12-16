@@ -2,282 +2,32 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
-const crypto = require('crypto');
 const { spawn } = require('child_process');
-const { Client, Authenticator } = require('minecraft-launcher-core');
+const { Client } = require('minecraft-launcher-core');
+const { autoUpdater } = require('electron-updater');
+
+// Modules
+const { loadConfig, saveConfig } = require('./modules/config');
+const { syncFiles, downloadFile } = require('./modules/updater');
+const { authenticateYggdrasil } = require('./modules/auth');
 
 const launcher = new Client();
 const FORGE_VERSION = '1.20.1-47.4.0';
 const FORGE_INSTALLER_URL = `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
-const LAUNCHER_VERSION_URL = 'https://ganjacraft.ru/api/launcher/version';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
 
-// Config Management
-const CONFIG_FILE = path.join(app.getPath('userData'), 'launcher_config.json');
-
-function authenticateYggdrasil(username, token) {
-    return new Promise((resolve, reject) => {
-        const data = JSON.stringify({
-            agent: { name: "Minecraft", version: 1 },
-            username: username,
-            password: token, // Token from Telegram Auth acts as password
-            clientToken: crypto.randomUUID(),
-            requestUser: true
-        });
-
-        const req = https.request(YGGDRASIL_AUTH_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': data.length
-            }
-        }, (res) => {
-            let body = '';
-            res.on('data', chunk => body += chunk);
-            res.on('end', () => {
-                if (res.statusCode === 200) {
-                    try {
-                        const response = JSON.parse(body);
-                        resolve({
-                            accessToken: response.accessToken,
-                            clientToken: response.clientToken,
-                            uuid: response.selectedProfile.id,
-                            name: response.selectedProfile.name
-                        });
-                    } catch (e) {
-                        reject(new Error("Invalid JSON response from auth server"));
-                    }
-                } else {
-                    reject(new Error(`Auth failed: ${res.statusCode} - ${body}`));
-                }
-            });
-        });
-
-        req.on('error', (e) => reject(e));
-        req.write(data);
-        req.end();
-    });
-}
-
-function loadConfig() {
-    try {
-        if (fs.existsSync(CONFIG_FILE)) {
-            return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
-        }
-    } catch (e) { console.error("Config load error:", e); }
-    
-    // Defaults
-    return {
-        isDefault: true,
-        installPath: path.join(app.getPath('appData'), '.ganjacraft'),
-        javaPath: '', // Empty = auto-detect
-        memoryMin: '2G',
-        memoryMax: '6G',
-        hideOnPlay: true,
-        disabledMods: [] // List of paths to skip
-    };
-}
-
-function saveConfig(config) {
-    try {
-        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 4));
-        return true;
-    } catch (e) {
-        console.error("Config save error:", e);
-        return false;
-    }
-}
-
-function downloadFile(url, dest) {
-    return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(dest);
-        https.get(url, (response) => {
-            if (response.statusCode !== 200) {
-                reject(new Error(`Failed to download: ${response.statusCode}`));
-                return;
-            }
-            response.pipe(file);
-            file.on('finish', () => {
-                file.close(resolve);
-            });
-        }).on('error', (err) => {
-            fs.unlink(dest, () => {});
-            reject(err);
-        });
-    });
-}
-
-function getFileHash(filePath) {
-    return new Promise((resolve, reject) => {
-        const hash = crypto.createHash('sha1');
-        const stream = fs.createReadStream(filePath);
-        stream.on('error', err => reject(err));
-        stream.on('data', chunk => hash.update(chunk));
-        stream.on('end', () => resolve(hash.digest('hex')));
-    });
-}
-
-async function syncFiles(rootPath, sendLog, disabledMods = []) {
-    sendLog('Проверка обновлений...');
-    
-    // 1. Download Manifest
-    const manifestPath = path.join(rootPath, 'manifest.json');
-    try {
-        await downloadFile(MANIFEST_URL, manifestPath);
-    } catch (e) {
-        sendLog('Ошибка загрузки манифеста: ' + e.message);
-        throw e;
-    }
-
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-    sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
-
-    let downloaded = 0;
-    
-    for (const file of manifest.files) {
-        // Check if disabled
-        if (disabledMods.includes(file.path)) {
-            // If file exists but is disabled, rename it to .disabled or delete?
-            // Let's just delete it to be clean, or skip download.
-            const localPath = path.join(rootPath, file.path);
-            if (fs.existsSync(localPath)) {
-                sendLog(`Удаление отключенного мода: ${file.path}`);
-                fs.unlinkSync(localPath);
-            }
-            continue;
-        }
-
-        const localPath = path.join(rootPath, file.path);
-        const localDir = path.dirname(localPath);
-
-        if (!fs.existsSync(localDir)) {
-            fs.mkdirSync(localDir, { recursive: true });
-        }
-
-        let needDownload = false;
-
-        if (!fs.existsSync(localPath)) {
-            needDownload = true;
-        } else {
-            const localHash = await getFileHash(localPath);
-            if (localHash !== file.hash) {
-                needDownload = true;
-            }
-        }
-
-        if (needDownload) {
-            sendLog(`Скачивание: ${file.path} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
-            try {
-                await downloadFile(file.url, localPath);
-                downloaded++;
-            } catch (e) {
-                sendLog(`Ошибка скачивания ${file.path}: ${e.message}`);
-            }
-        }
-    }
-
-    // Cleanup: Remove unmanaged files in 'mods' directory
-    const modsDir = path.join(rootPath, 'mods');
-    if (fs.existsSync(modsDir)) {
-        const localFiles = fs.readdirSync(modsDir);
-        // Create a Set of normalized manifest paths for fast lookup
-        // We only care about files in 'mods/' directory from the manifest
-        // And we exclude disabled mods (they should be removed anyway)
-        const manifestMods = new Set(
-            manifest.files
-                .filter(f => f.path.startsWith('mods/') && !disabledMods.includes(f.path))
-                .map(f => path.normalize(f.path))
-        );
-
-        for (const file of localFiles) {
-            const fullPath = path.join(modsDir, file);
-            // Skip directories if any
-            try {
-                if (fs.statSync(fullPath).isDirectory()) continue;
-            } catch (e) { continue; }
-
-            const relativePath = path.join('mods', file);
-            const normalizedPath = path.normalize(relativePath);
-
-            if (!manifestMods.has(normalizedPath)) {
-                sendLog(`Удаление лишнего файла: ${relativePath}`);
-                try {
-                    fs.unlinkSync(fullPath);
-                } catch (e) {
-                    sendLog(`Не удалось удалить ${relativePath}: ${e.message}`);
-                }
-            }
-        }
-    }
-
-    if (downloaded > 0) {
-        sendLog(`Обновление завершено. Скачано: ${downloaded}`);
-    } else {
-        sendLog('Обновление завершено. Файлы проверены.');
-    }
-}
-
-async function checkForLauncherUpdate() {
-    if (!app.isPackaged) return; // Skip in dev
-
-    try {
-        const data = await new Promise((resolve, reject) => {
-            https.get(LAUNCHER_VERSION_URL, (res) => {
-                if (res.statusCode !== 200) {
-                    reject(new Error(res.statusCode));
-                    return;
-                }
-                let body = '';
-                res.on('data', chunk => body += chunk);
-                res.on('end', () => {
-                    try { resolve(JSON.parse(body)); }
-                    catch (e) { reject(e); }
-                });
-            }).on('error', reject);
-        });
-
-        const currentVersion = app.getVersion();
-        // Simple string comparison, ideally use semver
-        if (data.version && data.version !== currentVersion) {
-            const { response } = await dialog.showMessageBox({
-                type: 'info',
-                buttons: ['Обновить', 'Позже'],
-                title: 'Доступно обновление',
-                message: `Доступна новая версия лаунчера: ${data.version}\nТекущая версия: ${currentVersion}`,
-                detail: 'Лаунчер будет перезапущен.'
-            });
-
-            if (response === 0) { // Update
-                const tempPath = path.join(path.dirname(process.execPath), 'launcher_new.exe');
-                
-                // Show downloading dialog (non-blocking for now, or just blocking)
-                // Since we don't have a UI for this yet, we just wait.
-                
-                await downloadFile(data.url, tempPath);
-
-                // Spawn update script
-                // timeout /t 2 gives time for app to close
-                const cmd = `timeout /t 2 & move /y "${tempPath}" "${process.execPath}" & "${process.execPath}"`;
-                
-                spawn('cmd.exe', ['/c', cmd], {
-                    detached: true,
-                    stdio: 'ignore'
-                }).unref();
-
-                app.quit();
-            }
-        }
-    } catch (e) {
-        console.error("Update check failed:", e);
-    }
-}
+// Configure Auto Updater
+autoUpdater.autoDownload = false;
+autoUpdater.logger = require("electron-log");
+autoUpdater.logger.transports.file.level = "info";
 
 function createWindow() {
     const win = new BrowserWindow({
         width: 900,
         height: 600,
+        resizable: false,
         frame: false, // Custom title bar
         backgroundColor: '#121212',
         webPreferences: {
@@ -297,6 +47,45 @@ function createWindow() {
     ipcMain.handle('load-config', () => loadConfig());
     ipcMain.handle('save-config', (event, config) => saveConfig(config));
     
+    // Auto Updater Events
+    ipcMain.handle('check-for-updates', () => {
+        if (!app.isPackaged) return { updateAvailable: false };
+        return autoUpdater.checkForUpdates();
+    });
+
+    ipcMain.handle('download-update', () => {
+        autoUpdater.downloadUpdate();
+    });
+
+    ipcMain.handle('quit-and-install', () => {
+        autoUpdater.quitAndInstall();
+    });
+
+    autoUpdater.on('update-available', (info) => {
+        win.webContents.send('update-available', info);
+    });
+
+    autoUpdater.on('update-not-available', () => {
+        win.webContents.send('update-not-available');
+    });
+
+    autoUpdater.on('download-progress', (progressObj) => {
+        win.webContents.send('update-progress', progressObj);
+    });
+
+    autoUpdater.on('update-downloaded', (info) => {
+        win.webContents.send('update-downloaded', info);
+    });
+
+    autoUpdater.on('error', (err) => {
+        win.webContents.send('update-error', err.message);
+    });
+
+    // Check for updates on startup
+    if (app.isPackaged) {
+        autoUpdater.checkForUpdates();
+    }
+
     ipcMain.handle('select-path', async (event, type) => {
         const properties = type === 'file' ? ['openFile'] : ['openDirectory'];
         const result = await dialog.showOpenDialog(win, { properties });
@@ -309,14 +98,20 @@ function createWindow() {
     ipcMain.handle('get-manifest', async () => {
         // Fetch manifest directly to return to UI
         return new Promise((resolve) => {
-            https.get(MANIFEST_URL, (res) => {
+            const req = https.get(MANIFEST_URL, (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => {
                     try { resolve(JSON.parse(data)); }
                     catch { resolve(null); }
                 });
-            }).on('error', () => resolve(null));
+            });
+            
+            req.on('error', () => resolve(null));
+            req.setTimeout(5000, () => {
+                req.destroy();
+                resolve(null);
+            });
         });
     });
 
@@ -335,7 +130,6 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-    await checkForLauncherUpdate();
     createWindow();
 
     app.on('activate', () => {
@@ -374,6 +168,14 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
 
+    // Validate Java Path if set
+    if (config.javaPath) {
+        if (!fs.existsSync(config.javaPath)) {
+            sendLog(`[ОШИБКА] Указанный путь к Java не существует: ${config.javaPath}`);
+            return { success: false, error: "Неверный путь к Java. Проверьте настройки." };
+        }
+    }
+
     // Проверяем и качаем Forge
     const forgeInstallerPath = path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`);
     if (!fs.existsSync(forgeInstallerPath)) {
@@ -404,7 +206,7 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     // Синхронизация модов
     try {
-        await syncFiles(rootPath, sendLog, config.disabledMods);
+        await syncFiles(rootPath, MANIFEST_URL, sendLog, config.disabledMods);
     } catch (e) {
         sendLog('ВНИМАНИЕ: Ошибка синхронизации модов. Игра может работать нестабильно.');
         console.error(e);
@@ -414,7 +216,7 @@ ipcMain.handle('launch-game', async (event, options) => {
     sendLog('Авторизация в GanjaCraft Yggdrasil...');
     let authSession;
     try {
-        authSession = await authenticateYggdrasil(options.username, options.token);
+        authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token);
         sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
     } catch (e) {
         console.error('Authentication failed:', e);

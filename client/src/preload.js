@@ -1,12 +1,31 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 5000 } = options;
+    
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const response = await fetch(resource, {
+            ...options,
+            signal: controller.signal  
+        });
+        clearTimeout(id);
+        return response;
+    } catch (error) {
+        clearTimeout(id);
+        throw error;
+    }
+}
+
 contextBridge.exposeInMainWorld('api', {
     launchGame: (options) => ipcRenderer.invoke('launch-game', options),
     // Функция для запроса к нашему API серверу (Python API)
     requestAuth: async (username) => {
         // Используем реальный адрес сервера вместо localhost
         try {
-            const response = await fetch('https://ganjacraft.ru/api/launcher/auth/request', {
+            const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username })
@@ -22,7 +41,7 @@ contextBridge.exposeInMainWorld('api', {
     },
     verifyAuth: async (username, code) => {
         try {
-            const response = await fetch('https://ganjacraft.ru/api/launcher/auth/verify', {
+            const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, code })
@@ -38,7 +57,7 @@ contextBridge.exposeInMainWorld('api', {
     },
     checkAuth: async (username, token) => {
         try {
-            const response = await fetch('https://ganjacraft.ru/api/launcher/auth/check', {
+            const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/check', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -56,8 +75,12 @@ contextBridge.exposeInMainWorld('api', {
         }
     },
     getNews: async () => {
-        const response = await fetch('https://ganjacraft.ru/api/news?limit=5');
-        return response.json();
+        try {
+            const response = await fetchWithTimeout('https://ganjacraft.ru/api/news?limit=5');
+            return response.json();
+        } catch (e) {
+            return { success: false, error: e.message, news: [] };
+        }
     },
     onLog: (callback) => ipcRenderer.on('log-message', (event, text) => callback(text)),
     minimize: () => ipcRenderer.send('window-minimize'),
@@ -73,5 +96,13 @@ contextBridge.exposeInMainWorld('api', {
     getManifest: () => ipcRenderer.invoke('get-manifest'), // To list mods in UI
     
     // Events
-    onGameClosed: (callback) => ipcRenderer.on('game-closed', () => callback())
+    onGameClosed: (callback) => ipcRenderer.on('game-closed', () => callback()),
+    
+    // Auto Updater
+    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, info) => callback(info)),
+    onUpdateProgress: (callback) => ipcRenderer.on('update-progress', (event, progress) => callback(progress)),
+    onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (event, info) => callback(info)),
+    onUpdateError: (callback) => ipcRenderer.on('update-error', (event, err) => callback(err)),
+    downloadUpdate: () => ipcRenderer.invoke('download-update'),
+    quitAndInstall: () => ipcRenderer.invoke('quit-and-install')
 });

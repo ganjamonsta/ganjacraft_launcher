@@ -54,17 +54,33 @@ btnCloseSettings.addEventListener('click', () => {
 
 // Save Settings
 btnSaveSettings.addEventListener('click', async () => {
+    let memMin = document.getElementById('setting-ram-min').value.trim().toUpperCase();
+    let memMax = document.getElementById('setting-ram-max').value.trim().toUpperCase();
+
+    // Basic validation: Append 'G' if user just typed a number (assuming GB)
+    if (memMin && /^\d+$/.test(memMin)) memMin += 'G';
+    if (memMax && /^\d+$/.test(memMax)) memMax += 'G';
+
+    // Validate format (must end in M or G)
+    if (!/^\d+[MG]$/.test(memMin)) memMin = '2G';
+    if (!/^\d+[MG]$/.test(memMax)) memMax = '6G';
+
     const newConfig = {
         installPath: document.getElementById('setting-path').value,
         javaPath: document.getElementById('setting-java').value,
-        memoryMin: document.getElementById('setting-ram-min').value,
-        memoryMax: document.getElementById('setting-ram-max').value,
+        memoryMin: memMin,
+        memoryMax: memMax,
         hideOnPlay: document.getElementById('setting-hide-on-play').checked,
         disabledMods: getDisabledMods()
     };
     
     await window.api.saveConfig(newConfig);
     currentConfig = newConfig; // Update local config immediately
+    
+    // Update UI values to show formatted result
+    document.getElementById('setting-ram-min').value = memMin;
+    document.getElementById('setting-ram-max').value = memMax;
+
     settingsModal.classList.add('hidden');
     logToConsole('[SETTINGS] Saved.');
 });
@@ -282,11 +298,41 @@ consoleToggleBtn.addEventListener('click', () => {
     }
 });
 
+// Helper to show error
+function showAuthError(elementId, message) {
+    const el = document.getElementById(elementId);
+    
+    // Try to parse JSON error
+    if (message.includes('API Error')) {
+        try {
+            // Extract JSON part: "API Error: 404 - {...}"
+            const jsonPart = message.substring(message.indexOf('{'));
+            const data = JSON.parse(jsonPart);
+            if (data.message) message = data.message;
+        } catch (e) {
+            // If parsing fails, just clean up the prefix
+            message = message.replace('API Error: ', '');
+        }
+    }
+    
+    el.innerText = message;
+    el.classList.remove('hidden');
+    
+    // Hide after 5 seconds
+    setTimeout(() => {
+        el.classList.add('hidden');
+        el.innerText = '';
+    }, 5000);
+}
+
 // Step 1: Login -> Request Code
 document.getElementById('login-btn').addEventListener('click', async () => {
     const username = usernameInput.value.trim();
+    const errorDiv = document.getElementById('login-error');
+    errorDiv.classList.add('hidden');
+    
     if (!username) {
-        alert('Пожалуйста, введите никнейм');
+        showAuthError('login-error', 'Пожалуйста, введите никнейм');
         return;
     }
 
@@ -310,20 +356,24 @@ document.getElementById('login-btn').addEventListener('click', async () => {
             console.log('DEBUG CODE:', result.debugCode);
             logToConsole(`[AUTH] Debug Code: ${result.debugCode}`);
         } else {
-            alert('Ошибка: ' + result.message); // Use result.message from API
+            showAuthError('login-error', result.message || 'Ошибка сервера');
         }
     } catch (e) {
-        alert('Ошибка сети: ' + e.message);
+        showAuthError('login-error', e.message);
         console.error(e);
     } finally {
         btn.disabled = false;
         btn.innerText = 'Далее';
+        usernameInput.focus(); // Ensure focus returns to input
     }
 });
 
 // Step 2: Verify Code -> Show Play Screen
 document.getElementById('verify-btn').addEventListener('click', async () => {
     const code = codeInput.value.trim();
+    const errorDiv = document.getElementById('code-error');
+    errorDiv.classList.add('hidden');
+    
     if (!code) return;
 
     const btn = document.getElementById('verify-btn');
@@ -342,12 +392,12 @@ document.getElementById('verify-btn').addEventListener('click', async () => {
             stepCode.classList.add('hidden');
             showPlayScreen();
         } else {
-            alert('Неверный код: ' + result.error);
+            showAuthError('code-error', result.error || 'Неверный код');
             btn.disabled = false;
             btn.innerText = 'Подтвердить';
         }
     } catch (e) {
-        alert('Ошибка сети');
+        showAuthError('code-error', 'Ошибка сети');
         btn.disabled = false;
         btn.innerText = 'Подтвердить';
     }
@@ -474,6 +524,40 @@ window.api.onGameClosed(() => {
     const btn = document.getElementById('play-btn');
     btn.disabled = false;
     btn.innerText = 'ИГРАТЬ';
+});
+
+// Auto Updater Handlers
+window.api.onUpdateAvailable((info) => {
+    logToConsole(`[UPDATE] Доступна новая версия: ${info.version}`);
+    if (confirm(`Доступна новая версия лаунчера ${info.version}. Скачать?`)) {
+        window.api.downloadUpdate();
+        statusDiv.innerText = 'Скачивание обновления лаунчера...';
+        stepLoading.classList.remove('hidden');
+        stepLogin.classList.add('hidden');
+        stepPlay.classList.add('hidden');
+    }
+});
+
+window.api.onUpdateProgress((progress) => {
+    const percent = Math.round(progress.percent);
+    progressBar.style.width = `${percent}%`;
+    statusDiv.innerText = `Скачивание обновления: ${percent}%`;
+    logToConsole(`[UPDATE] Загрузка: ${percent}%`);
+});
+
+window.api.onUpdateDownloaded((info) => {
+    logToConsole('[UPDATE] Обновление скачано.');
+    if (confirm('Обновление готово к установке. Перезапустить сейчас?')) {
+        window.api.quitAndInstall();
+    }
+});
+
+window.api.onUpdateError((err) => {
+    logToConsole(`[UPDATE ERROR] ${err}`);
+    statusDiv.innerText = 'Ошибка обновления';
+    setTimeout(() => {
+        statusDiv.innerText = 'Готов к игре';
+    }, 3000);
 });
 
 function logToConsole(text) {

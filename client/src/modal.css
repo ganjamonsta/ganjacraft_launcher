@@ -14,27 +14,25 @@
 }
 
 .modal-content {
-    background: #1e1e1e;
-    width: 500px;
-    max-height: 80vh;
-    border-radius: 10px;
-    border: 1px solid #333;
+    background: #181818; /* Darker background */
+    width: 550px; /* Slightly wider */
+    height: 500px; /* Fixed height */
+    border-radius: 6px; /* Less rounded */
+    border: 1px solid #2a2a2a; /* Subtle border */
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7); /* Deeper shadow */
 }
 
 .modal-header {
-    padding: 15px;
-    border-bottom: 1px solid #333;
+    padding: 0 10px;
+    height: 50px;
+    border-bottom: 1px solid #2a2a2a;
+    background: #1f1f1f;
+    border-radius: 6px 6px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.modal-header h3 {
-    margin: 0;
-    color: #fff;
 }
 
 #close-settings {
@@ -43,64 +41,109 @@
     color: #888;
     font-size: 24px;
     cursor: pointer;
-    padding: 0;
+    padding: 0 10px;
     width: auto;
     margin: 0;
+    line-height: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#close-settings:hover {
+    color: #fff;
 }
 
 .modal-body {
-    padding: 20px;
-    overflow-y: auto;
+    padding: 0;
+    overflow: hidden;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-content {
+    display: none;
+    flex: 1;
+    padding: 20px;
+    overflow-y: hidden; /* Disable scroll for General tab */
+}
+
+.tab-content.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Mods Tab Specifics */
+#tab-mods {
+    padding: 0;
+    overflow: hidden;
+}
+
+#tab-mods p {
+    padding: 15px 20px;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 .modal-footer {
     padding: 15px;
     border-top: 1px solid #333;
     text-align: right;
+    background: #1f1f1f; /* Match header/footer bg */
 }
 
 /* Tabs */
 .tabs {
     display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #333;
+    height: 100%;
 }
 
 .tab-btn {
     background: none;
     border: none;
     color: #888;
-    padding: 10px 20px;
+    padding: 0 20px;
+    height: 100%;
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin: 0;
     width: auto;
     border-radius: 0;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    box-shadow: none; /* Override global button styles */
+    transform: none;
+}
+
+.tab-btn:hover {
+    color: #ccc;
+    background: transparent;
+    box-shadow: none; /* Override global button styles */
+    transform: none;
 }
 
 .tab-btn.active {
     color: #4CAF50;
     border-bottom-color: #4CAF50;
+    background: transparent;
+    box-shadow: none; /* Override global button styles */
+    transform: none;
 }
 
-.tab-content {
-    display: none;
-}
 
-.tab-content.active {
-    display: block;
-}
 
 /* Forms */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-align: left;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     color: #aaa;
     font-size: 12px;
 }
@@ -128,12 +171,14 @@
 
 /* Mods List */
 .scrollable-list {
-    height: 250px;
+    flex: 1;
+    height: auto;
     overflow-y: auto;
     background: #111;
-    border: 1px solid #333;
-    border-radius: 5px;
-    padding: 10px;
+    border: none;
+    border-top: 1px solid #2a2a2a;
+    border-radius: 0;
+    padding: 10px 20px;
 }
 
 .mod-item {
