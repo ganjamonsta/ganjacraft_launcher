@@ -40,7 +40,6 @@ body {
     pointer-events: none;
     will-change: transform;
     animation-timing-function: linear;
-    animation-iteration-count: infinite;
 }
 
 @keyframes fall-1 {

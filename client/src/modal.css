@@ -15,8 +15,9 @@
 
 .modal-content {
     background: #181818; /* Darker background */
-    width: 550px; /* Slightly wider */
-    height: 500px; /* Fixed height */
+    width: 600px; /* Wider */
+    height: 600px; /* Fixed height for stability */
+    max-height: 85vh; /* Ensure it fits on screen */
     border-radius: 6px; /* Less rounded */
     border: 1px solid #2a2a2a; /* Subtle border */
     display: flex;
@@ -52,6 +53,8 @@
 
 #close-settings:hover {
     color: #fff;
+    box-shadow: none;
+    transform: none;
 }
 
 .modal-body {
@@ -66,7 +69,7 @@
     display: none;
     flex: 1;
     padding: 20px;
-    overflow-y: hidden; /* Disable scroll for General tab */
+    overflow-y: auto; /* Enable scroll */
 }
 
 .tab-content.active {
@@ -167,6 +170,51 @@
 .row {
     display: flex;
     justify-content: space-between;
+}
+
+/* Danger Zone (Reinstall) */
+.danger-zone {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #d32f2f;
+    border-radius: 4px;
+    background: rgba(211, 47, 47, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.danger-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.danger-info strong {
+    color: #ef5350;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.danger-info span {
+    color: #888;
+    font-size: 11px;
+}
+
+#btn-reinstall {
+    background: #d32f2f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: auto; /* Override global button width if any */
+    margin: 0;
+}
+
+#btn-reinstall:hover {
+    background: #b71c1c;
 }
 
 /* Mods List */

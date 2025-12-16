@@ -10,16 +10,28 @@ async function checkAndDownloadJava(dataDir, sendLog) {
     const runtimeDir = path.join(dataDir, 'runtime');
     const javaDir = path.join(runtimeDir, 'java');
     
-    // Check if java exists
+    // 1. Check if local java exists
     const javaExec = process.platform === 'win32' 
         ? path.join(javaDir, 'bin', 'java.exe')
         : path.join(javaDir, 'bin', 'java');
 
     if (fs.existsSync(javaExec)) {
-        sendLog('Java найдена: ' + javaExec);
+        sendLog('Используется локальная Java: ' + javaExec);
         return javaExec;
     }
 
+    // 2. Check for System Java
+    try {
+        const systemJava = await checkSystemJava();
+        if (systemJava) {
+            sendLog('Найдена системная Java: ' + systemJava);
+            return systemJava; // Return 'java' or path
+        }
+    } catch (e) {
+        // Ignore error, proceed to download
+    }
+
+    // 3. Download if not found
     sendLog('Java не найдена. Скачивание JRE 17...');
     
     if (!fs.existsSync(runtimeDir)) fs.mkdirSync(runtimeDir, { recursive: true });
@@ -78,6 +90,17 @@ async function checkAndDownloadJava(dataDir, sendLog) {
         if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
         throw e;
     }
+}
+
+function checkSystemJava() {
+    return new Promise((resolve) => {
+        const check = spawn('java', ['-version']);
+        check.on('error', () => resolve(null));
+        check.on('close', (code) => {
+            if (code === 0) resolve('java'); // 'java' command works
+            else resolve(null);
+        });
+    });
 }
 
 function extractZip(zipPath, destDir) {

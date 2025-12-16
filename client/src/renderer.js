@@ -22,10 +22,10 @@ function createSnowflake() {
 
     snowContainer.appendChild(snowflake);
     
-    // Remove after animation (buffer time)
-    setTimeout(() => {
+    // Remove after animation ends
+    snowflake.addEventListener('animationend', () => {
         snowflake.remove();
-    }, 15000);
+    });
 }
 
 function toggleSnow(enable) {
@@ -487,9 +487,11 @@ document.getElementById('logout-btn').addEventListener('click', () => {
     location.reload();
 });
 
-// Cancel Button (Reloads app to reset state)
-document.getElementById('cancel-btn').addEventListener('click', () => {
-    location.reload();
+// Cancel Button
+document.getElementById('cancel-btn').addEventListener('click', async () => {
+    logToConsole('[LAUNCHER] Отмена запуска...');
+    await window.api.cancelLaunch();
+    // UI will be reset by the error handler in startLaunch when it catches the cancellation error
 });
 
 // Retry Button

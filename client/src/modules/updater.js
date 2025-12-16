@@ -7,7 +7,7 @@ function downloadFile(url, dest) {
     return new Promise((resolve, reject) => {
         const request = https.get(url, (response) => {
             // Handle Redirects
-            if (response.statusCode === 301 || response.statusCode === 302) {
+            if ([301, 302, 303, 307, 308].includes(response.statusCode)) {
                 downloadFile(response.headers.location, dest).then(resolve).catch(reject);
                 return;
             }

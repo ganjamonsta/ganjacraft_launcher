@@ -31,6 +31,7 @@ if (!gotTheLock) {
 
 const launcher = new Client();
 let isGameRunning = false;
+let isLaunchCancelled = false;
 const FORGE_VERSION = '1.20.1-47.4.0';
 const FORGE_INSTALLER_URL = `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
@@ -148,21 +149,40 @@ async function downloadPortableUpdate(win) {
 
 function installPortableUpdate() {
     const currentExe = process.execPath;
-    const updateExe = path.join(path.dirname(currentExe), 'update.tmp.exe');
-    const batPath = path.join(path.dirname(currentExe), 'update.bat');
+    const currentDir = path.dirname(currentExe);
+    const updateExe = path.join(currentDir, 'update.tmp.exe');
+    const batPath = path.join(currentDir, 'update.bat');
+    const vbsPath = path.join(currentDir, 'update.vbs');
+    const exeName = path.basename(currentExe);
 
+    // Batch script to replace file and restart
+    // Loop ensures we wait until the main process is fully released
     const batContent = `
 @echo off
-timeout /t 2 /nobreak > NUL
-del "${path.basename(currentExe)}"
-move "update.tmp.exe" "${path.basename(currentExe)}"
-start "" "${path.basename(currentExe)}"
+:loop
+del "${exeName}" >nul 2>&1
+if exist "${exeName}" (
+    timeout /t 1 /nobreak >nul
+    goto loop
+)
+move "update.tmp.exe" "${exeName}" >nul
+start "" "${exeName}"
+del "update.vbs"
 del "%~f0"
     `;
 
-    fs.writeFileSync(batPath, batContent);
+    // VBScript to run batch file hidden
+    const vbsContent = `
+Set WshShell = CreateObject("WScript.Shell")
+WshShell.Run chr(34) & "${batPath}" & chr(34), 0
+Set WshShell = Nothing
+    `;
 
-    spawn('cmd.exe', ['/c', batPath], {
+    fs.writeFileSync(batPath, batContent);
+    fs.writeFileSync(vbsPath, vbsContent);
+
+    // Spawn wscript to run vbs (which runs bat hidden)
+    spawn('wscript.exe', [vbsPath], {
         detached: true,
         stdio: 'ignore'
     }).unref();
@@ -283,11 +303,21 @@ app.on('window-all-closed', () => {
 });
 
 // Обработка запуска игры
+ipcMain.handle('cancel-launch', () => {
+    if (isGameRunning) {
+        isLaunchCancelled = true;
+        isGameRunning = false;
+        return true;
+    }
+    return false;
+});
+
 ipcMain.handle('launch-game', async (event, options) => {
     if (isGameRunning) {
         return { success: false, error: "Игра уже запущена!" };
     }
     isGameRunning = true;
+    isLaunchCancelled = false;
 
     const config = loadConfig();
     const rootPath = config.installPath;
