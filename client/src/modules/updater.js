@@ -62,6 +62,7 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
 
     let processed = 0;
+    let downloaded = 0;
     const totalFiles = manifest.files.length;
     
     for (const file of manifest.files) {
