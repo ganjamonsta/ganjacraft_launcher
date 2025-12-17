@@ -159,6 +159,7 @@ function installPortableUpdate() {
     // Loop ensures we wait until the main process is fully released
     const batContent = `
 @echo off
+chcp 65001 >nul
 cd /d "${currentDir}"
 :loop
 del "${exeName}" >nul 2>&1
@@ -174,12 +175,12 @@ del "%~f0"
     // VBScript to run batch file hidden
     const vbsContent = `
 Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run chr(34) & "${batPath}" & chr(34), 0
+WshShell.Run "cmd /c " & chr(34) & "${batPath}" & chr(34), 0
 Set WshShell = Nothing
     `;
 
     fs.writeFileSync(batPath, batContent);
-    fs.writeFileSync(vbsPath, vbsContent);
+    fs.writeFileSync(vbsPath, '\ufeff' + vbsContent, { encoding: 'utf16le' });
 
     // Spawn wscript to run vbs (which runs bat hidden)
     spawn('wscript.exe', [vbsPath], {
