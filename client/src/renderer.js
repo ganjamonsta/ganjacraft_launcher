@@ -852,7 +852,37 @@ function logToConsole(text) {
     
     // Delay news loading to reduce startup CPU spike
     setTimeout(loadNews, 1500);
+
+    // Start Server Status Checker
+    updateServerStatus();
+    setInterval(updateServerStatus, 30000);
 })();
+
+async function updateServerStatus() {
+    const playerCount = document.getElementById('player-count');
+    const indicator = document.querySelector('.status-indicator');
+    if (!playerCount || !indicator) return;
+
+    try {
+        // Using mcsrvstat.us public API to avoid CORS issues and backend changes
+        const response = await fetch('https://api.mcsrvstat.us/3/ganjacraft.ru');
+        const data = await response.json();
+
+        if (data.online) {
+            playerCount.textContent = `${data.players.online} / ${data.players.max}`;
+            indicator.className = 'status-indicator online';
+            indicator.title = 'Сервер доступен';
+        } else {
+            playerCount.textContent = 'Оффлайн';
+            indicator.className = 'status-indicator offline';
+            indicator.title = 'Сервер недоступен';
+        }
+    } catch (error) {
+        console.error('Status check failed:', error);
+        playerCount.textContent = 'Ошибка';
+        indicator.className = 'status-indicator offline';
+    }
+}
 
 async function loadNews() {
     const list = document.getElementById('news-list');
