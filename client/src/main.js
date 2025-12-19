@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron')
 const path = require('path');
 const fs = require('fs');
 
+// Build trigger
 // Override userData path to keep everything in .ganjacraft
 const appDataPath = app.getPath('appData');
 const customUserDataPath = path.join(appDataPath, '.ganjacraft', 'launcher-data');

@@ -10,8 +10,9 @@ import zipfile
 import tkinter as tk
 from tkinter import ttk
 
+# Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.2"
+BOOTSTRAP_VERSION = "1.0.3"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
