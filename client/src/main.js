@@ -103,7 +103,7 @@ async function checkForPortableUpdates(win) {
             if (isNewer) {
                 logUpdate('Update available.');
                 updateInfo = remoteData;
-                win.webContents.send('update-available', { version: remoteData.version });
+                win.webContents.send('update-available', remoteData);
             } else {
                 logUpdate('No new version.');
                 win.webContents.send('update-not-available');
@@ -232,9 +232,6 @@ del "%~f0"
         logUpdate(`Failed to spawn update script: ${e.message}`);
     }
 }
-        console.error('Failed to spawn update script:', e);
-    }
-}
 
 function installPortableUpdate() {
     spawnUpdateScript();
@@ -313,6 +310,10 @@ function createWindow() {
             return true;
         }
         return false;
+    });
+
+    ipcMain.handle('open-url', async (event, url) => {
+        await shell.openExternal(url);
     });
 
     ipcMain.handle('get-manifest', async () => {

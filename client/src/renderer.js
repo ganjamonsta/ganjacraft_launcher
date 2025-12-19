@@ -683,17 +683,45 @@ window.api.onGameClosed(() => {
 // Auto Updater Handlers
 const updateOverlay = document.getElementById('update-overlay');
 const updateStatusText = document.getElementById('update-status-text');
+const updateChoices = document.getElementById('update-choices');
+const btnUpdateAuto = document.getElementById('btn-update-auto');
+const btnUpdateManual = document.getElementById('btn-update-manual');
+const updateJointWrapper = document.querySelector('#update-overlay .joint-wrapper');
+
+let updateUrl = '';
 
 window.api.onUpdateAvailable((info) => {
     logToConsole(`[UPDATE] Доступна новая версия: ${info.version}`);
+    updateUrl = info.url; // Assuming info contains url, which it should from main.js
     
     // Show Overlay
     updateOverlay.classList.remove('hidden');
-    updateStatusText.innerText = `Найдена новая версия ${info.version}. Взрываем...`;
+    updateStatusText.innerText = `Найдена новая версия ${info.version}. Как обновляемся?`;
     
-    // Start Download Automatically
-    window.api.downloadUpdate();
+    // Show Choices, Hide Progress
+    updateChoices.classList.remove('hidden');
+    if (updateJointWrapper) updateJointWrapper.classList.add('hidden');
 });
+
+if (btnUpdateAuto) {
+    btnUpdateAuto.onclick = () => {
+        updateChoices.classList.add('hidden');
+        if (updateJointWrapper) updateJointWrapper.classList.remove('hidden');
+        updateStatusText.innerText = 'Взрываем...';
+        window.api.downloadUpdate();
+    };
+}
+
+if (btnUpdateManual) {
+    btnUpdateManual.onclick = () => {
+        if (updateUrl) {
+            window.api.openUrl(updateUrl);
+            updateStatusText.innerText = 'Открыта ссылка в браузере. После установки перезапустите лаунчер.';
+        } else {
+            updateStatusText.innerText = 'Ошибка: Ссылка не найдена.';
+        }
+    };
+}
 
 window.api.onUpdateProgress((progress) => {
     const percent = Math.round(progress.percent);

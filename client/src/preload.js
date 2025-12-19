@@ -93,6 +93,7 @@ contextBridge.exposeInMainWorld('api', {
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     selectPath: (type) => ipcRenderer.invoke('select-path', type), // type: 'dir' or 'file'
     openFolder: (path) => ipcRenderer.invoke('open-folder', path),
+    openUrl: (url) => ipcRenderer.invoke('open-url', url),
     
     // Advanced
     reinstallClient: () => ipcRenderer.invoke('reinstall-client'),
