@@ -193,12 +193,20 @@ function spawnUpdateScript() {
     // Batch script with logging for debugging
     const batContent = `
 @echo off
+chcp 65001 >nul
 cd /d "${currentDir}"
 echo %DATE% %TIME% Starting update process > update_log.txt
 echo Target: ${exeName} >> update_log.txt
 
+if not exist "update.tmp.exe" (
+    echo ERROR: update.tmp.exe not found! >> update_log.txt
+    echo ERROR: update.tmp.exe not found!
+    pause
+    exit
+)
+
 :loop
-echo Waiting for application to close... >> update_log.txt
+echo Waiting for application to close...
 timeout /t 1 /nobreak >nul
 del "${exeName}" >> update_log.txt 2>&1
 if exist "${exeName}" goto loop
@@ -208,8 +216,13 @@ move /y "update.tmp.exe" "${exeName}" >> update_log.txt 2>&1
 
 if exist "${exeName}" (
     echo Update successful! >> update_log.txt
+    echo Update successful!
+    echo Starting application...
+    start "" "${exeName}"
 ) else (
     echo Update FAILED! >> update_log.txt
+    echo Update FAILED! Check update_log.txt
+    pause
 )
 
 del "%~f0"
@@ -218,11 +231,12 @@ del "%~f0"
     try {
         fs.writeFileSync(batPath, batContent);
         
-        // Spawn cmd directly, detached
-        const child = spawn('cmd.exe', ['/C', batPath], {
+        // Correctly quote arguments for 'start' command to handle spaces in paths
+        // cmd /C start "Title" cmd /C "path/to/bat"
+        const child = spawn('cmd.exe', ['/C', 'start', '"GanjaUpdate"', 'cmd.exe', '/C', `"${batPath}"`], {
             detached: true,
             stdio: 'ignore',
-            windowsHide: true 
+            windowsHide: false
         });
         
         child.unref();
