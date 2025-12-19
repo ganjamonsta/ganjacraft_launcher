@@ -17,9 +17,8 @@ if (!fs.existsSync(TARGET_DIR)) {
 console.log('🧹 Cleaning up old versions on server...');
 const targetFiles = fs.readdirSync(TARGET_DIR);
 targetFiles.forEach(file => {
-    // Delete old launcher executables (GanjaCraftLauncher-*.exe)
-    // But keep GanjaCraft.exe (Bootstrap) and json files
-    if (file.startsWith('GanjaCraftLauncher-') && file.endsWith('.exe')) {
+    // Delete old launcher archives (GanjaCraftLauncher-*.zip)
+    if (file.startsWith('GanjaCraftLauncher-') && file.endsWith('.zip')) {
         console.log(`   Deleting old file: ${file}`);
         fs.unlinkSync(path.join(TARGET_DIR, file));
     }
@@ -29,53 +28,41 @@ targetFiles.forEach(file => {
 const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf-8'));
 const version = pkg.version;
 
-// Find Executable
+// Find Archive
 const files = fs.readdirSync(DIST_DIR);
-const exeFile = files.find(f => f.endsWith('.exe') && !f.includes('blockmap'));
-const ymlFile = 'latest.yml';
+const zipFile = files.find(f => f.endsWith('.zip') && !f.includes('blockmap'));
 
-if (!exeFile) {
-    console.error('❌ Executable not found in dist/. Run "npm run build" first.');
+if (!zipFile) {
+    console.error('❌ Zip archive not found in dist/. Run "npm run build" first.');
     process.exit(1);
 }
 
-// Copy Executable
-const sourceExe = path.join(DIST_DIR, exeFile);
-const targetExe = path.join(TARGET_DIR, exeFile);
-console.log(`📦 Copying .exe: ${exeFile}`);
-fs.copyFileSync(sourceExe, targetExe);
+// Copy Archive
+const sourceZip = path.join(DIST_DIR, zipFile);
+const targetZip = path.join(TARGET_DIR, zipFile);
+console.log(`📦 Copying .zip: ${zipFile}`);
+fs.copyFileSync(sourceZip, targetZip);
 
-// Sign the executable
+// Sign the archive
 let signature = '';
 if (fs.existsSync(PRIVATE_KEY_PATH)) {
     console.log('🔐 Signing update...');
     const privateKey = fs.readFileSync(PRIVATE_KEY_PATH, 'utf-8');
-    const fileBuffer = fs.readFileSync(sourceExe);
+    const fileBuffer = fs.readFileSync(sourceZip);
     signature = crypto.sign(null, fileBuffer, privateKey).toString('base64');
 } else {
     console.warn('⚠️  Private key not found. Update will NOT be signed.');
 }
 
-// Copy latest.yml (Required for electron-updater)
-const sourceYml = path.join(DIST_DIR, ymlFile);
-const targetYml = path.join(TARGET_DIR, ymlFile);
-
-if (fs.existsSync(sourceYml)) {
-    console.log(`📄 Copying latest.yml`);
-    fs.copyFileSync(sourceYml, targetYml);
-} else {
-    console.warn('⚠️ latest.yml not found! Auto-updates might not work.');
-}
-
-// Update version.json (For legacy clients to upgrade to this version)
+// Update version.json
 const versionJsonPath = path.join(TARGET_DIR, 'version.json');
-// Encode filename to handle spaces and special chars in URL
-const encodedFile = encodeURIComponent(exeFile);
+const encodedFile = encodeURIComponent(zipFile);
 const versionData = {
     version: version,
     url: `https://ganjacraft.ru/api/launcher/files/${encodedFile}`,
     signature: signature,
-    releaseDate: new Date().toISOString()
+    releaseDate: new Date().toISOString(),
+    type: "zip"
 };
 
 fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));

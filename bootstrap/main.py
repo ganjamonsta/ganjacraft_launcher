@@ -6,6 +6,8 @@ import subprocess
 import threading
 import urllib.request
 import urllib.error
+import zipfile
+import ctypes
 import tkinter as tk
 from tkinter import ttk
 
@@ -15,7 +17,8 @@ BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
 LAUNCHER_DIR = os.path.join(APPDATA, ".ganjacraft")
-LAUNCHER_EXE_NAME = "GanjaCraftClient.exe"
+CLIENT_DIR = os.path.join(LAUNCHER_DIR, "client")
+LAUNCHER_EXE_NAME = "GanjaCraft Launcher.exe" # Name inside the zip
 VERSION_FILE = "version.txt"
 LOGO_PATH = "assets/logo.png"
 
@@ -32,6 +35,7 @@ class BootstrapApp(tk.Tk):
         self.geometry("400x300")
         self.configure(bg=BG_COLOR)
         self.overrideredirect(True)  # Frameless
+        self.after(10, self.set_appwindow) # Show in taskbar
 
         # Center window
         screen_width = self.winfo_screenwidth()
@@ -40,9 +44,19 @@ class BootstrapApp(tk.Tk):
         y = (screen_height - 300) // 2
         self.geometry(f"400x300+{x}+{y}")
 
+        # Dragging functionality
+        self.x_offset = 0
+        self.y_offset = 0
+        self.bind("<ButtonPress-1>", self.start_move)
+        self.bind("<B1-Motion>", self.do_move)
+
         # Main Frame
         self.main_frame = tk.Frame(self, bg=BG_COLOR)
         self.main_frame.pack(expand=True, fill="both", padx=20, pady=20)
+        
+        # Bind drag events to frame and labels too
+        self.main_frame.bind("<ButtonPress-1>", self.start_move)
+        self.main_frame.bind("<B1-Motion>", self.do_move)
 
         # Logo
         try:
@@ -61,12 +75,16 @@ class BootstrapApp(tk.Tk):
 
                 self.logo_label = tk.Label(self.main_frame, image=self.logo_img, bg=BG_COLOR, bd=0)
                 self.logo_label.pack(pady=(20, 10))
+                self.logo_label.bind("<ButtonPress-1>", self.start_move)
+                self.logo_label.bind("<B1-Motion>", self.do_move)
         except Exception as e:
             print(f"Logo error: {e}")
 
         # Label
         self.label = tk.Label(self.main_frame, text="Checking for updates...", font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR, bg=BG_COLOR)
         self.label.pack(pady=(10, 20))
+        self.label.bind("<ButtonPress-1>", self.start_move)
+        self.label.bind("<B1-Motion>", self.do_move)
 
         # Custom Style for Progressbar
         style = ttk.Style()
@@ -82,9 +100,32 @@ class BootstrapApp(tk.Tk):
 
         self.status_label = tk.Label(self.main_frame, text="", font=("Segoe UI", 9), fg="#888888", bg=BG_COLOR)
         self.status_label.pack(pady=5)
+        self.status_label.bind("<ButtonPress-1>", self.start_move)
+        self.status_label.bind("<B1-Motion>", self.do_move)
 
         # Start update process
         threading.Thread(target=self.run_update_process, daemon=True).start()
+
+    def set_appwindow(self):
+        GWL_EXSTYLE = -20
+        WS_EX_APPWINDOW = 0x00040000
+        WS_EX_TOOLWINDOW = 0x00000080
+        hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+        style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+        style = style & ~WS_EX_TOOLWINDOW
+        style = style | WS_EX_APPWINDOW
+        ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
+        self.wm_withdraw()
+        self.after(10, self.wm_deiconify)
+
+    def start_move(self, event):
+        self.x_offset = event.x
+        self.y_offset = event.y
+
+    def do_move(self, event):
+        x = self.winfo_x() + (event.x - self.x_offset)
+        y = self.winfo_y() + (event.y - self.y_offset)
+        self.geometry(f"+{x}+{y}")
 
     def update_status(self, text):
         self.label.config(text=text)
@@ -208,8 +249,7 @@ del "%~f0"
             # Handle spaces in URL if not already handled
             url = url.replace(" ", "%20")
             
-            dest_path = os.path.join(LAUNCHER_DIR, LAUNCHER_EXE_NAME)
-            temp_path = dest_path + ".tmp"
+            zip_path = os.path.join(LAUNCHER_DIR, "update.zip")
 
             req = urllib.request.Request(url, headers={'User-Agent': 'GanjaCraft Launcher'})
             with urllib.request.urlopen(req, timeout=30) as response:
@@ -217,7 +257,7 @@ del "%~f0"
                 downloaded = 0
                 block_size = 8192
 
-                with open(temp_path, 'wb') as f:
+                with open(zip_path, 'wb') as f:
                     while True:
                         buffer = response.read(block_size)
                         if not buffer:
@@ -227,10 +267,17 @@ del "%~f0"
                         if total_size > 0:
                             self.update_progress(downloaded, total_size)
 
-            # Rename temp to actual
-            if os.path.exists(dest_path):
-                os.remove(dest_path)
-            os.rename(temp_path, dest_path)
+            self.update_status("Installing update...")
+            
+            # Extract Zip
+            if not os.path.exists(CLIENT_DIR):
+                os.makedirs(CLIENT_DIR)
+                
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(CLIENT_DIR)
+            
+            # Clean up zip
+            os.remove(zip_path)
 
             # Update version file
             with open(os.path.join(LAUNCHER_DIR, VERSION_FILE), "w") as f:
@@ -252,10 +299,10 @@ del "%~f0"
         self.launch_client()
 
     def launch_client(self):
-        exe_path = os.path.join(LAUNCHER_DIR, LAUNCHER_EXE_NAME)
+        exe_path = os.path.join(CLIENT_DIR, LAUNCHER_EXE_NAME)
         if os.path.exists(exe_path):
             self.update_status("Launching...")
-            subprocess.Popen([exe_path], cwd=LAUNCHER_DIR)
+            subprocess.Popen([exe_path], cwd=CLIENT_DIR)
             self.quit()
         else:
             self.status_label.config(text="Client not found. Reinstall required.")
