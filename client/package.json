@@ -1,6 +1,6 @@
 {
   "name": "ganjacraft-launcher-client",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "Official Launcher for GanjaCraft Server",
   "main": "src/main.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "win": {
       "target": "portable",
       "icon": "src/assets/icon.ico",
-      "artifactName": "${productName}.${ext}",
+      "artifactName": "${productName} ${version}.${ext}",
       "publish": [
         {
           "provider": "generic",
