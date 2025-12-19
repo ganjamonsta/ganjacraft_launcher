@@ -108,5 +108,6 @@ contextBridge.exposeInMainWorld('api', {
     onUpdateError: (callback) => ipcRenderer.on('update-error', (event, err) => callback(err)),
     downloadUpdate: () => ipcRenderer.invoke('download-update'),
     quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
-    cancelLaunch: () => ipcRenderer.invoke('cancel-launch')
+    cancelLaunch: () => ipcRenderer.invoke('cancel-launch'),
+    showContextMenu: () => ipcRenderer.send('show-context-menu')
 });

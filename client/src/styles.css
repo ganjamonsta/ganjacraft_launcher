@@ -325,13 +325,24 @@ button:active {
 #console-output {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 11px;
     color: #ccc;
     background: rgba(0, 0, 0, 0.3);
     padding: 5px;
     border-radius: 4px;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
     /* display: none;  <-- Removed this because we use .hidden class now */
+}
+
+#console-output * {
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 #console-output::-webkit-scrollbar-track {
@@ -370,7 +381,7 @@ button:active {
 #app-version {
     position: absolute;
     bottom: 10px;
-    left: 15px;
+    right: 15px;
     font-size: 11px;
     color: rgba(255, 255, 255, 0.3);
     z-index: 100;

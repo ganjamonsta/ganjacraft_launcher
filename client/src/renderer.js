@@ -58,6 +58,13 @@ const codeInput = document.getElementById('auth-code');
 const statusDiv = document.getElementById('status');
 const consoleOutput = document.getElementById('console-output');
 
+if (consoleOutput) {
+    consoleOutput.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        window.api.showContextMenu();
+    });
+}
+
 // Joint Progress Elements
 const gameJointProgress = document.getElementById('game-joint-progress');
 const gameJointBurn = document.getElementById('game-joint-burn');
@@ -241,7 +248,7 @@ const MOD_GROUPS = [
     {
         id: 'fancymenu',
         name: 'Красивое Меню',
-        description: 'Анимированное главное меню с музыкой.',
+        description: 'Кастомное меню FancyMenu.',
         files: ['client-fancymenu', 'client-konkrete', 'client-melody']
     },
     {
@@ -253,7 +260,7 @@ const MOD_GROUPS = [
     {
         id: 'controls',
         name: 'Удобное Управление',
-        description: 'Поиск конфликтов клавиш (Controlling).',
+        description: 'Поиск конфликтов клавиш и комбинации биндов(Controlling).',
         files: ['client-Controlling', 'client-Searchables']
     },
     {
@@ -271,13 +278,13 @@ const MOD_GROUPS = [
     {
         id: 'overlays',
         name: 'More Overlays',
-        description: 'F7 для просмотра уровня освещения.',
+        description: 'F7 для просмотра уровня освещения и поиск в инвентаре.',
         files: ['client-moreoverlays']
     },
     {
         id: 'thirdperson',
         name: 'Better Third Person',
-        description: 'Улучшенная камера от 3-го лица (F5).',
+        description: 'Альтернатинвая камера от 3-го лица (F5).',
         files: ['client-leawind_third_person']
     },
     {
@@ -590,10 +597,19 @@ async function startLaunch() {
         // Error Handling
         console.error(result.error);
         
+        const err = result.error ? result.error.toString() : 'Неизвестная ошибка';
+
+        // Handle Cancellation
+        if (err === 'Запуск отменен') {
+            logToConsole('[LAUNCHER] Запуск отменен.');
+            stepProgress.classList.add('hidden');
+            showPlayScreen();
+            setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
+            return;
+        }
+        
         let msg = 'Ошибка запуска';
         let isNetwork = false;
-        
-        const err = result.error ? result.error.toString() : 'Неизвестная ошибка';
         
         if (err.includes('ENOTFOUND') || err.includes('ETIMEDOUT') || err.includes('UnknownHostException')) {
             msg = 'Потеряно соединение. Проверьте интернет.';
@@ -638,6 +654,8 @@ window.api.onLog((text) => {
     } else if (text.includes('Обновление завершено')) {
         statusDiv.innerText = 'Запуск игры...';
         setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 100);
+        // Hide cancel button as we cannot interrupt the launch process easily from here
+        document.getElementById('cancel-btn').classList.add('hidden');
     } else if (text.includes('Проверка обновлений')) {
         statusDiv.innerText = 'Проверка обновлений...';
         setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 5);
@@ -720,6 +738,12 @@ function logToConsole(text) {
     line.style.borderBottom = '1px solid #1a1a1a';
     line.style.padding = '2px 0';
     consoleOutput.appendChild(line);
+
+    // Limit max lines to prevent lag
+    if (consoleOutput.children.length > 1000) {
+        consoleOutput.removeChild(consoleOutput.firstChild);
+    }
+
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
 }
 

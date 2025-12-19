@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -210,6 +210,18 @@ function createWindow() {
     // Window Control Handlers
     ipcMain.on('window-minimize', () => win.minimize());
     ipcMain.on('window-close', () => win.close());
+
+    // Context Menu
+    ipcMain.on('show-context-menu', (event) => {
+        const template = [
+            {
+                label: 'Копировать',
+                role: 'copy',
+            }
+        ];
+        const menu = Menu.buildFromTemplate(template);
+        menu.popup(BrowserWindow.fromWebContents(event.sender));
+    });
 
     // Config Handlers
     ipcMain.handle('load-config', () => loadConfig());
