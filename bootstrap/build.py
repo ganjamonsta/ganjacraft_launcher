@@ -4,14 +4,31 @@ import json
 import shutil
 import subprocess
 import requests
+import hashlib
 
 # Paths
 BOOTSTRAP_DIR = os.path.dirname(os.path.abspath(__file__))
 MAIN_PY = os.path.join(BOOTSTRAP_DIR, "main.py")
+HASH_FILE = os.path.join(BOOTSTRAP_DIR, "last_build.hash")
 STORAGE_DIR = os.path.abspath(os.path.join(BOOTSTRAP_DIR, "../../ganjacrafter_bot/storage/launcher"))
 BOOTSTRAP_JSON = os.path.join(STORAGE_DIR, "bootstrap.json")
 DIST_EXE = os.path.join(BOOTSTRAP_DIR, "dist/GanjaCraft.exe")
 DEST_EXE = os.path.join(STORAGE_DIR, "GanjaCraft.exe")
+
+def get_file_hash(filepath):
+    with open(filepath, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+def check_changes():
+    current_hash = get_file_hash(MAIN_PY)
+    last_hash = ""
+    if os.path.exists(HASH_FILE):
+        with open(HASH_FILE, 'r') as f:
+            last_hash = f.read().strip()
+    
+    if current_hash == last_hash:
+        return False, current_hash
+    return True, current_hash
 
 def bump_version():
     print(f"📖 Reading {MAIN_PY}...")
@@ -98,9 +115,18 @@ def upload_file(file_path):
 def main():
     print("--- Starting Bootstrap Auto-Build ---")
     
+    changed, current_hash = check_changes()
+    if not changed:
+        print("💤 No changes detected in main.py. Skipping build.")
+        return
+
     new_version = bump_version()
     if not new_version:
         return
+    
+    # Update hash after bump (because bump changes the file!)
+    # Actually, bump changes the file, so the hash WILL change.
+    # We should save the hash of the file AFTER bump, so next time we compare against that.
     
     try:
         build_exe()
@@ -108,6 +134,11 @@ def main():
         print("❌ Build failed!")
         return
     
+    # Save new hash
+    new_hash = get_file_hash(MAIN_PY)
+    with open(HASH_FILE, 'w') as f:
+        f.write(new_hash)
+
     print(f"📦 Copying to {DEST_EXE}...")
     if os.path.exists(DIST_EXE):
         shutil.copy2(DIST_EXE, DEST_EXE)

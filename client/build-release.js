@@ -1,8 +1,42 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { execSync } = require('child_process');
 
 const PACKAGE_PATH = path.join(__dirname, 'package.json');
+const SRC_DIR = path.join(__dirname, 'src');
+const HASH_FILE = path.join(__dirname, 'last_build.hash');
+
+function getDirHash(dir) {
+    const hash = crypto.createHash('md5');
+    const files = fs.readdirSync(dir).sort();
+    
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+        
+        if (stat.isDirectory()) {
+            hash.update(getDirHash(filePath));
+        } else {
+            hash.update(fs.readFileSync(filePath));
+        }
+    }
+    return hash.digest('hex');
+}
+
+// 0. Check for changes
+console.log('🔍 Checking for changes...');
+const currentHash = getDirHash(SRC_DIR);
+let lastHash = '';
+
+if (fs.existsSync(HASH_FILE)) {
+    lastHash = fs.readFileSync(HASH_FILE, 'utf-8').trim();
+}
+
+if (currentHash === lastHash) {
+    console.log('💤 No changes detected in src/. Skipping build.');
+    process.exit(0);
+}
 
 // 1. Read package.json
 console.log('📖 Reading package.json...');
@@ -45,3 +79,7 @@ try {
 }
 
 console.log('✅ Done! Update deployed successfully.');
+
+// Save new hash
+fs.writeFileSync(HASH_FILE, currentHash);
+
