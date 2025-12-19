@@ -187,47 +187,51 @@ function spawnUpdateScript() {
     logUpdate('Spawning update script...');
     const currentExe = process.execPath;
     const currentDir = path.dirname(currentExe);
-    const updateExe = path.join(currentDir, 'update.tmp.exe');
     const batPath = path.join(currentDir, 'update.bat');
-    const vbsPath = path.join(currentDir, 'update.vbs');
     const exeName = path.basename(currentExe);
 
-    // Batch script to replace file and restart
-    // Loop ensures we wait until the main process is fully released
+    // Batch script with logging for debugging
     const batContent = `
 @echo off
-chcp 65001 >nul
 cd /d "${currentDir}"
-:loop
-del "${exeName}" >nul 2>&1
-if exist "${exeName}" (
-    timeout /t 1 /nobreak >nul
-    goto loop
-)
-move "update.tmp.exe" "${exeName}" >nul
-del "update.vbs"
-del "%~f0"
-    `;
+echo %DATE% %TIME% Starting update process > update_log.txt
+echo Target: ${exeName} >> update_log.txt
 
-    // VBScript to run batch file hidden
-    const vbsContent = `
-Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run "cmd /c " & chr(34) & "${batPath}" & chr(34), 0
-Set WshShell = Nothing
+:loop
+echo Waiting for application to close... >> update_log.txt
+timeout /t 1 /nobreak >nul
+del "${exeName}" >> update_log.txt 2>&1
+if exist "${exeName}" goto loop
+
+echo Application closed. Moving file... >> update_log.txt
+move /y "update.tmp.exe" "${exeName}" >> update_log.txt 2>&1
+
+if exist "${exeName}" (
+    echo Update successful! >> update_log.txt
+) else (
+    echo Update FAILED! >> update_log.txt
+)
+
+del "%~f0"
     `;
 
     try {
         fs.writeFileSync(batPath, batContent);
-        fs.writeFileSync(vbsPath, '\ufeff' + vbsContent, { encoding: 'utf16le' });
-
-        // Spawn wscript to run vbs (which runs bat hidden)
-        spawn('wscript.exe', [vbsPath], {
+        
+        // Spawn cmd directly, detached
+        const child = spawn('cmd.exe', ['/C', batPath], {
             detached: true,
-            stdio: 'ignore'
-        }).unref();
+            stdio: 'ignore',
+            windowsHide: true 
+        });
+        
+        child.unref();
         logUpdate('Update script spawned successfully.');
+        app.quit();
     } catch (e) {
         logUpdate(`Failed to spawn update script: ${e.message}`);
+    }
+}
         console.error('Failed to spawn update script:', e);
     }
 }
