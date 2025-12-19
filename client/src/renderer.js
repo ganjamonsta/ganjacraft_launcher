@@ -4,6 +4,9 @@ let snowInterval = null;
 // --- Smoke Cursor Effect ---
 let lastSmokeTime = 0;
 document.addEventListener('mousemove', (e) => {
+    // Optimization: Disable smoke if effects are disabled
+    if (currentConfig.enableSnow === false) return;
+
     const now = Date.now();
     if (now - lastSmokeTime > 50) { // Limit spawn rate
         createSmokeParticle(e.clientX, e.clientY);

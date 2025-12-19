@@ -62,16 +62,11 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
 
     let processed = 0;
-    let downloaded = 0;
     const totalFiles = manifest.files.length;
-    
-    for (const file of manifest.files) {
-        // Report Progress
-        processed++;
-        if (onProgress) {
-            onProgress({ task: processed, total: totalFiles, type: 'mods' });
-        }
+    const CONCURRENCY = 10; // Parallel downloads
 
+    // Helper for concurrency
+    async function processFile(file) {
         // Check Cancellation
         if (checkCancelled()) {
             throw new Error('CANCELLED');
@@ -84,7 +79,7 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
                 sendLog(`Удаление отключенного мода: ${file.path}`);
                 fs.unlinkSync(localPath);
             }
-            continue;
+            return;
         }
 
         const localPath = path.join(rootPath, file.path);
@@ -99,22 +94,60 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         if (!fs.existsSync(localPath)) {
             needDownload = true;
         } else {
-            const localHash = await getFileHash(localPath);
-            if (localHash !== file.hash) {
-                needDownload = true;
+            // Optimization: Check size first
+            let sizeMismatch = false;
+            if (file.size) {
+                const stats = fs.statSync(localPath);
+                if (stats.size !== file.size) {
+                    sendLog(`Размер не совпадает: ${file.path}`);
+                    sizeMismatch = true;
+                    needDownload = true;
+                }
+            }
+
+            if (!sizeMismatch) {
+                // Check Hash
+                const localHash = await getFileHash(localPath);
+                if (localHash !== file.hash) {
+                    sendLog(`Хеш не совпадает: ${file.path}`);
+                    needDownload = true;
+                }
             }
         }
 
         if (needDownload) {
-            sendLog(`Скачивание: ${file.path} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
-            try {
-                await downloadFile(file.url, localPath);
-                downloaded++;
-            } catch (e) {
-                sendLog(`Ошибка скачивания ${file.path}: ${e.message}`);
-            }
+            sendLog(`Загрузка: ${file.path}`);
+            await downloadFile(file.url, localPath);
+        }
+        
+        processed++;
+        if (onProgress) {
+            onProgress({ task: processed, total: totalFiles, type: 'mods' });
         }
     }
+
+    // Run with concurrency limit
+    const queue = [...manifest.files];
+    const workers = [];
+
+    for (let i = 0; i < CONCURRENCY; i++) {
+        workers.push((async () => {
+            while (queue.length > 0) {
+                const file = queue.shift();
+                try {
+                    await processFile(file);
+                } catch (err) {
+                    if (err.message === 'CANCELLED') throw err;
+                    sendLog(`Ошибка обработки ${file.path}: ${err.message}`);
+                    // Optional: Retry logic could go here
+                    throw err; 
+                }
+            }
+        })());
+    }
+
+    await Promise.all(workers);
+    sendLog('Все файлы проверены.');
 
     // Cleanup: Remove unmanaged files in 'mods' directory
     const modsDir = path.join(rootPath, 'mods');

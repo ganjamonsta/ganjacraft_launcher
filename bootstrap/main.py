@@ -9,10 +9,11 @@ import urllib.error
 import zipfile
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.3"
+BOOTSTRAP_VERSION = "1.0.12"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -80,7 +81,7 @@ class BootstrapApp(tk.Tk):
             print(f"Logo error: {e}")
 
         # Label
-        self.label = tk.Label(self.main_frame, text="Checking for updates...", font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR, bg=BG_COLOR)
+        self.label = tk.Label(self.main_frame, text="Проверка обновлений...", font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR, bg=BG_COLOR)
         self.label.pack(pady=(10, 20))
         self.label.bind("<ButtonPress-1>", self.start_move)
         self.label.bind("<B1-Motion>", self.do_move)
@@ -101,6 +102,10 @@ class BootstrapApp(tk.Tk):
         self.status_label.pack(pady=5)
         self.status_label.bind("<ButtonPress-1>", self.start_move)
         self.status_label.bind("<B1-Motion>", self.do_move)
+
+        # Version Label (Bottom Right)
+        self.version_label = tk.Label(self.main_frame, text=f"v{BOOTSTRAP_VERSION}", font=("Segoe UI", 8), fg="#444444", bg=BG_COLOR)
+        self.version_label.place(relx=1.0, rely=1.0, anchor="se", x=-5, y=-5)
 
         # Start update process
         threading.Thread(target=self.run_update_process, daemon=True).start()
@@ -133,7 +138,7 @@ class BootstrapApp(tk.Tk):
                 return
 
             # 2. Check Remote Version (Client)
-            self.update_status("Connecting to server...")
+            self.update_status("Подключение к серверу...")
             try:
                 req = urllib.request.Request(API_URL, headers={'User-Agent': 'GanjaCraft Launcher'})
                 with urllib.request.urlopen(req, timeout=10) as response:
@@ -143,7 +148,7 @@ class BootstrapApp(tk.Tk):
                     download_url = remote_data.get("url")
             except Exception as e:
                 print(f"Network error: {e}")
-                self.launch_existing_or_fail("Network error. Launching offline...")
+                self.launch_existing_or_fail("Ошибка сети. Запуск оффлайн...")
                 return
 
             # 3. Check Local Version (Client)
@@ -156,13 +161,13 @@ class BootstrapApp(tk.Tk):
             if remote_version != local_version:
                 self.download_update(download_url, remote_version)
             else:
-                self.update_status("Client is up to date.")
+                self.update_status("Клиент обновлен.")
                 self.update_progress(100)
                 time.sleep(0.5)
                 self.launch_client()
 
         except Exception as e:
-            self.status_label.config(text=f"Error: {str(e)}")
+            self.status_label.config(text=f"Ошибка: {str(e)}")
             time.sleep(3)
             self.destroy()
 
@@ -171,7 +176,7 @@ class BootstrapApp(tk.Tk):
         if not getattr(sys, 'frozen', False):
             return False
 
-        self.update_status("Checking launcher updates...")
+        self.update_status("Проверка обновлений лаунчера...")
         try:
             req = urllib.request.Request(BOOTSTRAP_API_URL, headers={'User-Agent': 'GanjaCraft Launcher'})
             with urllib.request.urlopen(req, timeout=5) as response:
@@ -187,7 +192,7 @@ class BootstrapApp(tk.Tk):
         return False
 
     def perform_self_update(self, url, version):
-        self.update_status(f"Updating launcher to v{version}...")
+        self.update_status(f"Обновление загрузчика до v{version}...")
         try:
             url = url.replace(" ", "%20")
             current_exe = sys.executable
@@ -207,40 +212,50 @@ class BootstrapApp(tk.Tk):
                         f.write(buffer)
                         if total_size > 0:
                             self.update_progress(downloaded, total_size)
+                
+                if total_size > 0 and downloaded != total_size:
+                    raise Exception(f"Загрузка не завершена: {downloaded}/{total_size} байт")
             
             # Validate the downloaded file
             with open(new_exe, 'rb') as f:
                 header = f.read(2)
                 if header != b'MZ':
-                    raise Exception("Invalid executable file (Header mismatch)")
+                    raise Exception("Неверный исполняемый файл (Ошибка заголовка)")
                 f.seek(0, 2)
                 if f.tell() < 1024 * 1024: # Less than 1MB
-                    raise Exception("Invalid executable file (Too small)")
+                    raise Exception("Неверный исполняемый файл (Слишком маленький)")
 
             # Create batch script to replace exe and restart
             batch_file = "update_bootstrap.bat"
+            exe_dir = os.path.dirname(current_exe)
+            exe_name = os.path.basename(current_exe)
+            
             with open(batch_file, "w") as f:
                 f.write(f"""
 @echo off
-timeout /t 2 /nobreak > NUL
-move /y "{new_exe}" "{current_exe}"
-start "" "{current_exe}"
+:wait_loop
+timeout /t 1 /nobreak > NUL
+del "{current_exe}" 2>NUL
+if exist "{current_exe}" goto wait_loop
+
+move "{new_exe}" "{current_exe}"
 del "%~f0"
 """)
             
-            self.update_status("Restarting...")
-            time.sleep(1)
+            self.update_status("Обновление завершено.")
+            messagebox.showinfo("Обновление", "Загрузчик успешно обновлен.\nПожалуйста, запустите его заново.")
+            
             subprocess.Popen(batch_file, shell=True)
-            self.quit()
+            os._exit(0)
             
         except Exception as e:
-            self.status_label.config(text=f"Self-update failed: {e}")
+            self.status_label.config(text=f"Ошибка самообновления: {e}")
             time.sleep(2)
             # Continue to client update if self-update fails
             return
 
     def download_update(self, url, version):
-        self.update_status(f"Downloading version {version}...")
+        self.update_status(f"Загрузка версии {version}...")
         try:
             # Handle spaces in URL if not already handled
             url = url.replace(" ", "%20")
@@ -263,7 +278,7 @@ del "%~f0"
                         if total_size > 0:
                             self.update_progress(downloaded, total_size)
 
-            self.update_status("Installing update...")
+            self.update_status("Установка обновления...")
             
             # Extract Zip
             if not os.path.exists(CLIENT_DIR):
@@ -279,15 +294,15 @@ del "%~f0"
             with open(os.path.join(LAUNCHER_DIR, VERSION_FILE), "w") as f:
                 f.write(version)
 
-            self.update_status("Update complete!")
+            self.update_status("Обновление завершено!")
             time.sleep(0.5)
             self.launch_client()
 
         except Exception as e:
-            self.status_label.config(text=f"Download failed: {e}")
+            self.status_label.config(text=f"Ошибка загрузки: {e}")
             print(f"Download error: {e}")
             time.sleep(3)
-            self.launch_existing_or_fail("Update failed. Trying offline...")
+            self.launch_existing_or_fail("Ошибка обновления. Попытка запуска оффлайн...")
 
     def launch_existing_or_fail(self, message):
         self.update_status(message)
@@ -297,11 +312,11 @@ del "%~f0"
     def launch_client(self):
         exe_path = os.path.join(CLIENT_DIR, LAUNCHER_EXE_NAME)
         if os.path.exists(exe_path):
-            self.update_status("Launching...")
+            self.update_status("Запуск...")
             subprocess.Popen([exe_path], cwd=CLIENT_DIR)
             self.quit()
         else:
-            self.status_label.config(text="Client not found. Reinstall required.")
+            self.status_label.config(text="Клиент не найден. Требуется переустановка.")
             time.sleep(3)
             self.destroy()
 
