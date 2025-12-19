@@ -53,10 +53,31 @@ MCowBQYDK2VwAyEAQv9ZFfputwoW/JzVhRwLIiUy3/3Mgaj0aDrz+t5y2+s=
 -----END PUBLIC KEY-----`;
 
 let updateInfo = null;
+let isUpdateReady = false;
+
+function logUpdate(msg) {
+    try {
+        const config = loadConfig();
+        const logDir = config.installPath;
+        
+        if (!fs.existsSync(logDir)) {
+            fs.mkdirSync(logDir, { recursive: true });
+        }
+
+        const logPath = path.join(logDir, 'update.log');
+        const timestamp = new Date().toISOString();
+        const logLine = `[${timestamp}] ${msg}\n`;
+        
+        fs.appendFileSync(logPath, logLine);
+    } catch (e) {
+        console.error('Failed to write update log:', e);
+    }
+}
 
 async function checkForPortableUpdates(win) {
     if (!app.isPackaged) return;
 
+    logUpdate('Checking for updates...');
     try {
         const fetch = (await import('node-fetch')).default;
         const response = await fetch(VERSION_URL);
@@ -65,6 +86,8 @@ async function checkForPortableUpdates(win) {
         const remoteData = await response.json();
         const currentVersion = app.getVersion();
         
+        logUpdate(`Current version: ${currentVersion}, Remote version: ${remoteData.version}`);
+
         // Simple version compare (assumes semver)
         if (remoteData.version !== currentVersion) {
             // Check if remote is actually newer
@@ -78,15 +101,19 @@ async function checkForPortableUpdates(win) {
             }
 
             if (isNewer) {
+                logUpdate('Update available.');
                 updateInfo = remoteData;
                 win.webContents.send('update-available', { version: remoteData.version });
             } else {
+                logUpdate('No new version.');
                 win.webContents.send('update-not-available');
             }
         } else {
+            logUpdate('Versions match.');
             win.webContents.send('update-not-available');
         }
     } catch (e) {
+        logUpdate(`Update check failed: ${e.message}`);
         console.error('Update check failed:', e);
         win.webContents.send('update-error', e.message);
     }
@@ -95,6 +122,7 @@ async function checkForPortableUpdates(win) {
 async function downloadPortableUpdate(win) {
     if (!updateInfo) return;
     
+    logUpdate(`Downloading update from ${updateInfo.url}`);
     const dest = path.join(path.dirname(process.execPath), 'update.tmp.exe');
     const file = fs.createWriteStream(dest);
     
@@ -128,26 +156,35 @@ async function downloadPortableUpdate(win) {
                     if (!isVerified) {
                         throw new Error("Invalid signature! Update file might be corrupted or tampered.");
                     }
+                    logUpdate("Update signature verified.");
                     console.log("✅ Update signature verified.");
+                    isUpdateReady = true;
                     win.webContents.send('update-downloaded', updateInfo);
                 } catch (e) {
+                    logUpdate(`Signature verification failed: ${e.message}`);
                     console.error("Signature verification failed:", e);
                     fs.unlink(dest, () => {});
                     win.webContents.send('update-error', "Security Error: " + e.message);
                 }
             } else {
+                logUpdate("Update has no signature!");
                 console.warn("⚠️ Update has no signature!");
                 // For now, allow it but log warning. In production, block it.
+                isUpdateReady = true;
                 win.webContents.send('update-downloaded', updateInfo);
             }
         });
     }).on('error', (err) => {
+        logUpdate(`Download error: ${err.message}`);
         fs.unlink(dest, () => {});
         win.webContents.send('update-error', err.message);
     });
 }
 
-function installPortableUpdate() {
+function spawnUpdateScript() {
+    if (!isUpdateReady) return;
+
+    logUpdate('Spawning update script...');
     const currentExe = process.execPath;
     const currentDir = path.dirname(currentExe);
     const updateExe = path.join(currentDir, 'update.tmp.exe');
@@ -179,15 +216,24 @@ WshShell.Run "cmd /c " & chr(34) & "${batPath}" & chr(34), 0
 Set WshShell = Nothing
     `;
 
-    fs.writeFileSync(batPath, batContent);
-    fs.writeFileSync(vbsPath, '\ufeff' + vbsContent, { encoding: 'utf16le' });
+    try {
+        fs.writeFileSync(batPath, batContent);
+        fs.writeFileSync(vbsPath, '\ufeff' + vbsContent, { encoding: 'utf16le' });
 
-    // Spawn wscript to run vbs (which runs bat hidden)
-    spawn('wscript.exe', [vbsPath], {
-        detached: true,
-        stdio: 'ignore'
-    }).unref();
+        // Spawn wscript to run vbs (which runs bat hidden)
+        spawn('wscript.exe', [vbsPath], {
+            detached: true,
+            stdio: 'ignore'
+        }).unref();
+        logUpdate('Update script spawned successfully.');
+    } catch (e) {
+        logUpdate(`Failed to spawn update script: ${e.message}`);
+        console.error('Failed to spawn update script:', e);
+    }
+}
 
+function installPortableUpdate() {
+    spawnUpdateScript();
     app.quit();
 }
 
@@ -310,6 +356,9 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
+    if (isUpdateReady) {
+        spawnUpdateScript();
+    }
     if (process.platform !== 'darwin') {
         app.quit();
     }
