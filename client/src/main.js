@@ -1,6 +1,15 @@
 const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
+
+// Override userData path to keep everything in .ganjacraft
+const appDataPath = app.getPath('appData');
+const customUserDataPath = path.join(appDataPath, '.ganjacraft', 'launcher-data');
+if (!fs.existsSync(customUserDataPath)) {
+    fs.mkdirSync(customUserDataPath, { recursive: true });
+}
+app.setPath('userData', customUserDataPath);
+
 const https = require('https');
 const { spawn } = require('child_process');
 const { Client } = require('minecraft-launcher-core');

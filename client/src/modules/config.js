@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 
-const CONFIG_FILE = path.join(app.getPath('userData'), 'launcher_config.json');
+const CONFIG_FILE = path.join(app.getPath('appData'), '.ganjacraft', 'launcher_config.json');
 
 function loadConfig() {
     try {

@@ -7,12 +7,11 @@ import threading
 import urllib.request
 import urllib.error
 import zipfile
-import ctypes
 import tkinter as tk
 from tkinter import ttk
 
 # Configuration
-BOOTSTRAP_VERSION = "1.0.0"
+BOOTSTRAP_VERSION = "1.0.1"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -35,7 +34,6 @@ class BootstrapApp(tk.Tk):
         self.geometry("400x300")
         self.configure(bg=BG_COLOR)
         self.overrideredirect(True)  # Frameless
-        self.after(10, self.set_appwindow) # Show in taskbar
 
         # Center window
         screen_width = self.winfo_screenwidth()
@@ -105,18 +103,6 @@ class BootstrapApp(tk.Tk):
 
         # Start update process
         threading.Thread(target=self.run_update_process, daemon=True).start()
-
-    def set_appwindow(self):
-        GWL_EXSTYLE = -20
-        WS_EX_APPWINDOW = 0x00040000
-        WS_EX_TOOLWINDOW = 0x00000080
-        hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
-        style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
-        style = style & ~WS_EX_TOOLWINDOW
-        style = style | WS_EX_APPWINDOW
-        ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
-        self.wm_withdraw()
-        self.after(10, self.wm_deiconify)
 
     def start_move(self, event):
         self.x_offset = event.x
@@ -221,6 +207,15 @@ class BootstrapApp(tk.Tk):
                         if total_size > 0:
                             self.update_progress(downloaded, total_size)
             
+            # Validate the downloaded file
+            with open(new_exe, 'rb') as f:
+                header = f.read(2)
+                if header != b'MZ':
+                    raise Exception("Invalid executable file (Header mismatch)")
+                f.seek(0, 2)
+                if f.tell() < 1024 * 1024: # Less than 1MB
+                    raise Exception("Invalid executable file (Too small)")
+
             # Create batch script to replace exe and restart
             batch_file = "update_bootstrap.bat"
             with open(batch_file, "w") as f:
