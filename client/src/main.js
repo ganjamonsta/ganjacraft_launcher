@@ -190,38 +190,32 @@ function spawnUpdateScript() {
     const batPath = path.join(currentDir, 'update.bat');
     const exeName = path.basename(currentExe);
 
-    // Batch script with logging for debugging
+    // Simple and robust batch script
     const batContent = `
 @echo off
-chcp 65001 >nul
-cd /d "${currentDir}"
-echo %DATE% %TIME% Starting update process > update_log.txt
-echo Target: ${exeName} >> update_log.txt
-
-if not exist "update.tmp.exe" (
-    echo ERROR: update.tmp.exe not found! >> update_log.txt
-    echo ERROR: update.tmp.exe not found!
-    pause
-    exit
-)
+title GanjaCraft Updater
+color 0A
+echo [UPDATE] Waiting for launcher to close...
+timeout /t 3 /nobreak >nul
 
 :loop
-echo Waiting for application to close...
-timeout /t 1 /nobreak >nul
-del "${exeName}" >> update_log.txt 2>&1
-if exist "${exeName}" goto loop
+del "${exeName}" >nul 2>&1
+if exist "${exeName}" (
+    echo [UPDATE] File locked. Retrying...
+    timeout /t 1 /nobreak >nul
+    goto loop
+)
 
-echo Application closed. Moving file... >> update_log.txt
-move /y "update.tmp.exe" "${exeName}" >> update_log.txt 2>&1
+echo [UPDATE] Installing new version...
+move /y "update.tmp.exe" "${exeName}" >nul
 
 if exist "${exeName}" (
-    echo Update successful! >> update_log.txt
-    echo Update successful!
-    echo Starting application...
+    echo [UPDATE] Success! Restarting...
     start "" "${exeName}"
 ) else (
-    echo Update FAILED! >> update_log.txt
-    echo Update FAILED! Check update_log.txt
+    color 0C
+    echo [ERROR] Failed to move file!
+    echo Please check permissions or antivirus.
     pause
 )
 
@@ -231,19 +225,17 @@ del "%~f0"
     try {
         fs.writeFileSync(batPath, batContent);
         
-        // Correctly quote arguments for 'start' command to handle spaces in paths
-        // cmd /C start "Title" cmd /C "path/to/bat"
-        const child = spawn('cmd.exe', ['/C', 'start', '"GanjaUpdate"', 'cmd.exe', '/C', `"${batPath}"`], {
-            detached: true,
-            stdio: 'ignore',
-            windowsHide: false
+        // Execute .bat via Shell (Explorer) - most reliable way to detach
+        shell.openPath(batPath).then((err) => {
+            if (err) {
+                logUpdate(`Shell failed: ${err}`);
+            } else {
+                logUpdate('Updater launched via Shell. Quitting...');
+                setTimeout(() => app.quit(), 1000);
+            }
         });
-        
-        child.unref();
-        logUpdate('Update script spawned successfully.');
-        app.quit();
     } catch (e) {
-        logUpdate(`Failed to spawn update script: ${e.message}`);
+        logUpdate(`Installation error: ${e.message}`);
     }
 }
 

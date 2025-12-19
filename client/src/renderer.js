@@ -744,7 +744,10 @@ if (btnUpdateManual) {
     btnUpdateManual.onclick = () => {
         if (updateUrl) {
             window.api.openUrl(updateUrl);
-            updateStatusText.innerText = 'Открыта ссылка в браузере. После установки перезапустите лаунчер.';
+            updateStatusText.innerText = 'Скачивание началось. Лаунчер закроется через 3 секунды...';
+            setTimeout(() => {
+                window.api.close();
+            }, 3000);
         } else {
             updateStatusText.innerText = 'Ошибка: Ссылка не найдена.';
         }
