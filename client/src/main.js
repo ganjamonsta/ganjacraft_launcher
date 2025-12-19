@@ -4,7 +4,6 @@ const fs = require('fs');
 const https = require('https');
 const { spawn } = require('child_process');
 const { Client } = require('minecraft-launcher-core');
-const { autoUpdater } = require('electron-updater');
 
 // Modules
 const { loadConfig, saveConfig } = require('./modules/config');
@@ -37,212 +36,6 @@ const FORGE_INSTALLER_URL = `https://maven.minecraftforge.net/net/minecraftforge
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
-
-// Configure Auto Updater
-// autoUpdater.autoDownload = false;
-// autoUpdater.logger = require("electron-log");
-// autoUpdater.logger.transports.file.level = "info";
-
-const crypto = require('crypto');
-
-// Custom Portable Updater
-const VERSION_URL = 'https://ganjacraft.ru/api/launcher/files/version.json';
-// PUBLIC KEY (Hardcoded for security) - Replace with content of public.pem
-const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAQv9ZFfputwoW/JzVhRwLIiUy3/3Mgaj0aDrz+t5y2+s=
------END PUBLIC KEY-----`;
-
-let updateInfo = null;
-let isUpdateReady = false;
-
-function logUpdate(msg) {
-    try {
-        const config = loadConfig();
-        const logDir = config.installPath;
-        
-        if (!fs.existsSync(logDir)) {
-            fs.mkdirSync(logDir, { recursive: true });
-        }
-
-        const logPath = path.join(logDir, 'update.log');
-        const timestamp = new Date().toISOString();
-        const logLine = `[${timestamp}] ${msg}\n`;
-        
-        fs.appendFileSync(logPath, logLine);
-    } catch (e) {
-        console.error('Failed to write update log:', e);
-    }
-}
-
-async function checkForPortableUpdates(win) {
-    if (!app.isPackaged) return;
-
-    logUpdate('Checking for updates...');
-    try {
-        const fetch = (await import('node-fetch')).default;
-        const response = await fetch(VERSION_URL);
-        if (!response.ok) throw new Error('Failed to fetch version info');
-        
-        const remoteData = await response.json();
-        const currentVersion = app.getVersion();
-        
-        logUpdate(`Current version: ${currentVersion}, Remote version: ${remoteData.version}`);
-
-        // Simple version compare (assumes semver)
-        if (remoteData.version !== currentVersion) {
-            // Check if remote is actually newer
-            const v1 = currentVersion.split('.').map(Number);
-            const v2 = remoteData.version.split('.').map(Number);
-            
-            let isNewer = false;
-            for (let i = 0; i < 3; i++) {
-                if (v2[i] > v1[i]) { isNewer = true; break; }
-                if (v2[i] < v1[i]) { break; }
-            }
-
-            if (isNewer) {
-                logUpdate('Update available.');
-                updateInfo = remoteData;
-                win.webContents.send('update-available', remoteData);
-            } else {
-                logUpdate('No new version.');
-                win.webContents.send('update-not-available');
-            }
-        } else {
-            logUpdate('Versions match.');
-            win.webContents.send('update-not-available');
-        }
-    } catch (e) {
-        logUpdate(`Update check failed: ${e.message}`);
-        console.error('Update check failed:', e);
-        win.webContents.send('update-error', e.message);
-    }
-}
-
-async function downloadPortableUpdate(win) {
-    if (!updateInfo) return;
-    
-    logUpdate(`Downloading update from ${updateInfo.url}`);
-    const dest = path.join(path.dirname(process.execPath), 'update.tmp.exe');
-    const file = fs.createWriteStream(dest);
-    
-    win.webContents.send('update-progress', { percent: 0 });
-
-    https.get(updateInfo.url, (response) => {
-        const total = parseInt(response.headers['content-length'], 10);
-        let current = 0;
-
-        response.on('data', (chunk) => {
-            current += chunk.length;
-            const percent = (current / total) * 100;
-            win.webContents.send('update-progress', { percent });
-            file.write(chunk);
-        });
-
-        response.on('end', () => {
-            file.end();
-            
-            // Verify Signature
-            if (updateInfo.signature) {
-                try {
-                    const fileBuffer = fs.readFileSync(dest);
-                    const isVerified = crypto.verify(
-                        null,
-                        fileBuffer,
-                        PUBLIC_KEY,
-                        Buffer.from(updateInfo.signature, 'base64')
-                    );
-                    
-                    if (!isVerified) {
-                        throw new Error("Invalid signature! Update file might be corrupted or tampered.");
-                    }
-                    logUpdate("Update signature verified.");
-                    console.log("✅ Update signature verified.");
-                    isUpdateReady = true;
-                    win.webContents.send('update-downloaded', updateInfo);
-                } catch (e) {
-                    logUpdate(`Signature verification failed: ${e.message}`);
-                    console.error("Signature verification failed:", e);
-                    fs.unlink(dest, () => {});
-                    win.webContents.send('update-error', "Security Error: " + e.message);
-                }
-            } else {
-                logUpdate("Update has no signature!");
-                console.warn("⚠️ Update has no signature!");
-                // For now, allow it but log warning. In production, block it.
-                isUpdateReady = true;
-                win.webContents.send('update-downloaded', updateInfo);
-            }
-        });
-    }).on('error', (err) => {
-        logUpdate(`Download error: ${err.message}`);
-        fs.unlink(dest, () => {});
-        win.webContents.send('update-error', err.message);
-    });
-}
-
-function spawnUpdateScript() {
-    if (!isUpdateReady) return;
-
-    logUpdate('Spawning update script...');
-    const currentExe = process.execPath;
-    const currentDir = path.dirname(currentExe);
-    const batPath = path.join(currentDir, 'update.bat');
-    const exeName = path.basename(currentExe);
-
-    // Simple and robust batch script
-    const batContent = `
-@echo off
-title GanjaCraft Updater
-color 0A
-echo [UPDATE] Waiting for launcher to close...
-timeout /t 3 /nobreak >nul
-
-:loop
-del "${exeName}" >nul 2>&1
-if exist "${exeName}" (
-    echo [UPDATE] File locked. Retrying...
-    timeout /t 1 /nobreak >nul
-    goto loop
-)
-
-echo [UPDATE] Installing new version...
-move /y "update.tmp.exe" "${exeName}" >nul
-
-if exist "${exeName}" (
-    echo [UPDATE] Success! Restarting...
-    start "" "${exeName}"
-) else (
-    color 0C
-    echo [ERROR] Failed to move file!
-    echo Please check permissions or antivirus.
-    pause
-)
-
-del "%~f0"
-    `;
-
-    try {
-        fs.writeFileSync(batPath, batContent);
-        
-        // Execute .bat via Shell (Explorer) - most reliable way to detach
-        shell.openPath(batPath).then((err) => {
-            if (err) {
-                logUpdate(`Shell failed: ${err}`);
-            } else {
-                logUpdate('Updater launched via Shell. Quitting...');
-                setTimeout(() => app.quit(), 1000);
-            }
-        });
-    } catch (e) {
-        logUpdate(`Installation error: ${e.message}`);
-    }
-}
-
-function installPortableUpdate() {
-    spawnUpdateScript();
-    app.quit();
-}
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -281,26 +74,6 @@ function createWindow() {
     ipcMain.handle('save-config', (event, config) => saveConfig(config));
     ipcMain.handle('get-app-version', () => app.getVersion());
     
-    // Auto Updater Events (Custom Portable)
-    ipcMain.handle('check-for-updates', () => {
-        checkForPortableUpdates(win);
-    });
-
-    ipcMain.handle('download-update', () => {
-        downloadPortableUpdate(win);
-    });
-
-    ipcMain.handle('quit-and-install', () => {
-        installPortableUpdate();
-    });
-
-    // Check for updates on startup (delayed to reduce startup load)
-    if (app.isPackaged) {
-        setTimeout(() => {
-            checkForPortableUpdates(win);
-        }, 3000);
-    }
-
     ipcMain.handle('select-path', async (event, type) => {
         const properties = type === 'file' ? ['openFile'] : ['openDirectory'];
         const result = await dialog.showOpenDialog(win, { properties });
@@ -367,9 +140,6 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
-    if (isUpdateReady) {
-        spawnUpdateScript();
-    }
     if (process.platform !== 'darwin') {
         app.quit();
     }

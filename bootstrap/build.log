@@ -1,0 +1,20 @@
+186 INFO: PyInstaller: 6.17.0, contrib hooks: 2025.10
+186 INFO: Python: 3.12.5
+209 INFO: Platform: Windows-10-10.0.19045-SP0
+209 INFO: Python environment: S:\Program Files\Python312
+210 INFO: wrote d:\GanjaCraft\git\ganja_launcher\bootstrap\GanjaCraft.spec
+217 INFO: Module search paths (PYTHONPATH):
+['d:\\GanjaCraft\\git\\ganja_launcher\\bootstrap',
+ 'S:\\Program Files\\Python312\\python312.zip',
+ 'S:\\Program Files\\Python312\\DLLs',
+ 'S:\\Program Files\\Python312\\Lib',
+ 'S:\\Program Files\\Python312',
+ 'C:\\Users\\asuka\\AppData\\Roaming\\Python\\Python312\\site-packages',
+ 'S:\\Program Files\\Python312\\Lib\\site-packages',
+ 'd:\\GanjaCraft\\git\\ganja_launcher\\bootstrap']
+711 INFO: checking Analysis
+1036 INFO: checking PYZ
+1129 INFO: checking PKG
+1248 INFO: Bootloader C:\Users\asuka\AppData\Roaming\Python\Python312\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+1248 INFO: checking EXE
+1280 INFO: Build complete! The results are available in: d:\GanjaCraft\git\ganja_launcher\bootstrap\dist

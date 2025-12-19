@@ -13,6 +13,18 @@ if (!fs.existsSync(TARGET_DIR)) {
     fs.mkdirSync(TARGET_DIR, { recursive: true });
 }
 
+// Clean up old versions in target dir
+console.log('🧹 Cleaning up old versions on server...');
+const targetFiles = fs.readdirSync(TARGET_DIR);
+targetFiles.forEach(file => {
+    // Delete old launcher executables (GanjaCraftLauncher-*.exe)
+    // But keep GanjaCraft.exe (Bootstrap) and json files
+    if (file.startsWith('GanjaCraftLauncher-') && file.endsWith('.exe')) {
+        console.log(`   Deleting old file: ${file}`);
+        fs.unlinkSync(path.join(TARGET_DIR, file));
+    }
+});
+
 // Get Version
 const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf-8'));
 const version = pkg.version;
@@ -57,9 +69,11 @@ if (fs.existsSync(sourceYml)) {
 
 // Update version.json (For legacy clients to upgrade to this version)
 const versionJsonPath = path.join(TARGET_DIR, 'version.json');
+// Encode filename to handle spaces and special chars in URL
+const encodedFile = encodeURIComponent(exeFile);
 const versionData = {
     version: version,
-    url: `https://ganjacraft.ru/api/launcher/files/${exeFile}`,
+    url: `https://ganjacraft.ru/api/launcher/files/${encodedFile}`,
     signature: signature,
     releaseDate: new Date().toISOString()
 };
