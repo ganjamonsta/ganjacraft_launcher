@@ -1,6 +1,34 @@
 // --- Snow Effect ---
 let snowInterval = null;
 
+// --- Smoke Cursor Effect ---
+let lastSmokeTime = 0;
+document.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - lastSmokeTime > 50) { // Limit spawn rate
+        createSmokeParticle(e.clientX, e.clientY);
+        lastSmokeTime = now;
+    }
+});
+
+function createSmokeParticle(x, y) {
+    const particle = document.createElement('div');
+    particle.classList.add('smoke-particle');
+    
+    // Randomize drift
+    const driftX = (Math.random() - 0.5) * 30 + 'px';
+    particle.style.setProperty('--tx', driftX);
+    
+    particle.style.left = x + 'px';
+    particle.style.top = y + 'px';
+    
+    document.body.appendChild(particle);
+    
+    particle.addEventListener('animationend', () => {
+        particle.remove();
+    });
+}
+
 function createSnowflake() {
     const snowContainer = document.getElementById('snow-container');
     if (!snowContainer) return;

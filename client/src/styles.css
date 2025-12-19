@@ -16,6 +16,29 @@ body {
     flex-direction: column;
 }
 
+/* Smoke Cursor Effect */
+.smoke-particle {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, rgba(220, 220, 220, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998; /* Below snow */
+    animation: smoke-anim 1.2s ease-out forwards;
+}
+
+@keyframes smoke-anim {
+    0% {
+        opacity: 0.5;
+        transform: scale(0.5) translate(0, 0);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(2.5) translate(var(--tx), -40px);
+    }
+}
+
 /* Snow Effect */
 #snow-container {
     position: fixed;
