@@ -2,17 +2,25 @@
 let snowInterval = null;
 
 // --- Smoke Cursor Effect ---
-let lastSmokeTime = 0;
+let mouseX = 0;
+let mouseY = 0;
+let hasMouseMoved = false;
+
 document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    hasMouseMoved = true;
+});
+
+// Continuous smoke loop
+setInterval(() => {
     // Optimization: Disable smoke if effects are disabled
     if (currentConfig.enableSnow === false) return;
 
-    const now = Date.now();
-    if (now - lastSmokeTime > 50) { // Limit spawn rate
-        createSmokeParticle(e.clientX, e.clientY);
-        lastSmokeTime = now;
+    if (hasMouseMoved) {
+        createSmokeParticle(mouseX, mouseY);
     }
-});
+}, 50);
 
 function createSmokeParticle(x, y) {
     const particle = document.createElement('div');

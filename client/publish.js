@@ -14,8 +14,8 @@ if (fs.existsSync(ENV_PATH)) {
 }
 
 const DIST_DIR = path.join(__dirname, 'dist');
-// Target directory explicitly requested by user
-const TARGET_DIR = 'D:\\GanjaCraft\\git\\ganjacrafter_bot\\storage\\launcher';
+// Target directory (Relative to repo root)
+const TARGET_DIR = path.resolve(__dirname, '../../ganjacrafter_bot/storage/launcher');
 const PACKAGE_JSON = path.join(__dirname, 'package.json');
 const PRIVATE_KEY_PATH = path.join(__dirname, 'private.pem');
 
