@@ -40,7 +40,7 @@
 - **Customization**: Forge version and installer URL are constants in `main.js`.
 - **File Source**:
   - Manifest: `https://ganjacraft.ru/files/manifest.json` (Mapped to Bot storage: `/opt/ganjacrafter_bot/storage/manifest.json`).
-  - Game Files: `https://ganjacraft.ru/files/...` (Mapped to Server Volume: `/var/lib/pterodactyl/volumes/e773057d-bd12-4b7d-a764-8bf5fd19bb40`).
+  - Game Files: `https://ganjacraft.ru/files/...` (Mapped to Server Volume: `/var/lib/pterodactyl/volumes/769e09f5-5112-41ae-8931-417bdec26a04`).
 
 ## 3. Specific Conventions
 - **API Exposure**: Do not import `electron` in `renderer.js`. Always go through `window.api` defined in `preload.js`.
