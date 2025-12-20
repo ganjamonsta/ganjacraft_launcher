@@ -39,10 +39,19 @@
 - **Library**: `Client` from `minecraft-launcher-core`.
 - **Customization**: Forge version and installer URL are constants in `main.js`.
 - **File Source**:
-  - Manifest: `https://ganjacraft.ru/files/manifest.json` (Mapped to Bot storage: `/opt/ganjacrafter_bot/storage/manifest.json`).
-  - Game Files: `https://ganjacraft.ru/files/...` (Mapped to Server Volume: `/var/lib/pterodactyl/volumes/769e09f5-5112-41ae-8931-417bdec26a04`).
+  - Manifest: `https://ganjacraft.ru/files/manifest.json` (Served from `/var/www/ganjacraft.ru/files/manifest.json`).
+  - Game Files: `https://ganjacraft.ru/files/...` (Served from `/var/www/ganjacraft.ru/files/...`).
 
-## 3. Specific Conventions
+## 3. Build & Deployment
+- **Script**: `DEPLOY_ALL.bat` (Windows).
+- **Process**:
+  1. Checks for changes.
+  2. Bumps version in `package.json`.
+  3. Builds `GanjaCraft.exe` (Bootstrap) and `app.zip` (Client).
+  4. Uploads artifacts to API (`/api/admin/upload/launcher`).
+  5. Updates `version.json` and `bootstrap.json` on the server.
+
+## 4. Specific Conventions
 - **API Exposure**: Do not import `electron` in `renderer.js`. Always go through `window.api` defined in `preload.js`.
 - **Logging**: Stream launch logs to the UI console via `log-message` channel.
 - **Error Handling**: Wrap IPC handlers in `try/catch` and return meaningful errors to the renderer.
