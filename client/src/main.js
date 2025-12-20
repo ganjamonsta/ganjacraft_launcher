@@ -47,6 +47,66 @@ const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
 
+function cleanZeroByteFiles(dir) {
+    if (!fs.existsSync(dir)) return;
+    try {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            const filePath = path.join(dir, file);
+            const stats = fs.statSync(filePath);
+            if (stats.isDirectory()) {
+                cleanZeroByteFiles(filePath);
+            } else if (stats.isFile()) {
+                let shouldDelete = false;
+                if (stats.size === 0) {
+                    shouldDelete = true;
+                } else if (file.endsWith('.jar') || file.endsWith('.zip')) {
+                    try {
+                        const fd = fs.openSync(filePath, 'r');
+                        
+                        // 1. Check Header (PK..)
+                        const headerBuffer = Buffer.alloc(4);
+                        fs.readSync(fd, headerBuffer, 0, 4, 0);
+                        if (headerBuffer.toString('hex') !== '504b0304') {
+                            console.log(`[CLEANUP] Invalid zip header for ${filePath}: ${headerBuffer.toString('hex')}`);
+                            shouldDelete = true;
+                        }
+
+                        // 2. Check Footer (EOCD) - Heuristic: Scan last 4KB
+                        if (!shouldDelete && stats.size > 22) {
+                            const scanSize = Math.min(stats.size, 4096);
+                            const footerBuffer = Buffer.alloc(scanSize);
+                            fs.readSync(fd, footerBuffer, 0, scanSize, stats.size - scanSize);
+                            
+                            // EOCD signature: 50 4B 05 06
+                            if (!footerBuffer.includes(Buffer.from([0x50, 0x4B, 0x05, 0x06]))) {
+                                console.log(`[CLEANUP] Missing EOCD signature (truncated?) for ${filePath}`);
+                                shouldDelete = true;
+                            }
+                        }
+                        
+                        fs.closeSync(fd);
+                    } catch (err) {
+                        console.error(`[CLEANUP] Error checking file ${filePath}:`, err);
+                        shouldDelete = true; // If we can't read it, it's probably bad
+                    }
+                }
+
+                if (shouldDelete) {
+                    console.log(`[CLEANUP] Deleting corrupted file: ${filePath}`);
+                    try {
+                        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                    } catch (e) {
+                        console.error(`[CLEANUP] Failed to delete ${filePath}:`, e);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error(`[CLEANUP] Error scanning ${dir}:`, e);
+    }
+}
+
 function createWindow() {
     const win = new BrowserWindow({
         width: 900,
@@ -178,16 +238,17 @@ ipcMain.handle('launch-game', async (event, options) => {
     if (!fs.existsSync(rootPath)) fs.mkdirSync(rootPath, { recursive: true });
 
     const logFile = path.join(rootPath, 'launcher.log');
-    // Очищаем лог при новом запуске
-    fs.writeFileSync(logFile, `--- Log started at ${new Date().toISOString()} ---\n`);
+    // Use a WriteStream for non-blocking logging
+    const logStream = fs.createWriteStream(logFile, { flags: 'w' });
+    logStream.write(`--- Log started at ${new Date().toISOString()} ---\n`);
 
     const sendLog = (msg) => {
-        event.sender.send('log-message', msg);
-        // Пишем в файл
-        try {
-            fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`);
-        } catch (e) {
-            console.error("Failed to write log:", e);
+        if (event.sender && !event.sender.isDestroyed()) {
+            event.sender.send('log-message', msg);
+        }
+        // Write to stream asynchronously
+        if (logStream && !logStream.destroyed) {
+            logStream.write(`[${new Date().toISOString()}] ${msg}\n`);
         }
     };
 
@@ -217,7 +278,17 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     // Проверяем и качаем Forge
     const forgeInstallerPath = path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`);
-    if (!fs.existsSync(forgeInstallerPath)) {
+    let needForge = !fs.existsSync(forgeInstallerPath);
+    
+    if (!needForge) {
+        if (fs.statSync(forgeInstallerPath).size === 0) {
+            sendLog('Обнаружен поврежденный установщик Forge. Перекачивание...');
+            fs.unlinkSync(forgeInstallerPath);
+            needForge = true;
+        }
+    }
+
+    if (needForge) {
         sendLog('Скачивание установщика Forge...');
         try {
             await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath);
@@ -324,6 +395,11 @@ ipcMain.handle('launch-game', async (event, options) => {
         ]
     };
 
+    // Cleanup empty files before launch to prevent ZipException
+    sendLog('Проверка целостности библиотек...');
+    cleanZeroByteFiles(path.join(rootPath, 'libraries'));
+    cleanZeroByteFiles(path.join(rootPath, 'versions'));
+
     sendLog('Запуск ядра Minecraft...');
     
     // Get window instance to restore it later
@@ -335,6 +411,9 @@ ipcMain.handle('launch-game', async (event, options) => {
         isGameRunning = false;
         sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
         
+        // Close log stream
+        if (logStream) logStream.end();
+
         if (mainWindow && !mainWindow.isDestroyed()) {
             // Restore window if it was minimized or hidden
             if (mainWindow.isMinimized()) mainWindow.restore();
@@ -369,7 +448,11 @@ ipcMain.handle('launch-game', async (event, options) => {
             if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[GAME] ${e}`);
         });
         launcher.on('progress', (e) => {
-            if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[PROGRESS] ${e.type} - ${e.task} (${e.total})`);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('log-message', `[PROGRESS] ${e.type} - ${e.task} (${e.total})`);
+                // Forward progress to renderer for the UI bar
+                mainWindow.webContents.send('progress', { task: e.task, total: e.total, type: e.type });
+            }
         });
         
         launcher.launch(opts).then(() => {

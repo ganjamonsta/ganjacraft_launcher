@@ -62,8 +62,9 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
 
     let processed = 0;
+    let downloaded = 0;
     const totalFiles = manifest.files.length;
-    const CONCURRENCY = 10; // Parallel downloads
+    const CONCURRENCY = 4; // Parallel downloads
 
     // Helper for concurrency
     async function processFile(file) {
@@ -109,15 +110,16 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
                 // Check Hash
                 const localHash = await getFileHash(localPath);
                 if (localHash !== file.hash) {
-                    sendLog(`Хеш не совпадает: ${file.path}`);
+                    // sendLog(`Хеш не совпадает: ${file.path}`); // Too verbose
                     needDownload = true;
                 }
             }
         }
 
         if (needDownload) {
-            sendLog(`Загрузка: ${file.path}`);
+            // sendLog(`Загрузка: ${file.path}`); // Too verbose for 100+ files
             await downloadFile(file.url, localPath);
+            downloaded++;
         }
         
         processed++;
