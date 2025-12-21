@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.12"
+BOOTSTRAP_VERSION = "1.0.13"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
