@@ -42,10 +42,37 @@ const launcher = new Client();
 let isGameRunning = false;
 let isLaunchCancelled = false;
 const FORGE_VERSION = '1.20.1-47.4.0';
-const FORGE_INSTALLER_URL = `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
+// Use our domain as a stable download endpoint (Nginx proxies to official Forge Maven).
+const FORGE_INSTALLER_URL = `https://ganjacraft.ru/files/forge-${FORGE_VERSION}-installer.jar`;
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
+
+function isZipIntact(filePath) {
+    try {
+        if (!fs.existsSync(filePath)) return false;
+        const stats = fs.statSync(filePath);
+        if (!stats.isFile() || stats.size < 22) return false;
+
+        const fd = fs.openSync(filePath, 'r');
+        try {
+            // ZIP local file header: PK\x03\x04
+            const header = Buffer.alloc(4);
+            fs.readSync(fd, header, 0, 4, 0);
+            if (header.toString('hex') !== '504b0304') return false;
+
+            // EOCD signature: PK\x05\x06 must exist near the end.
+            const scanSize = Math.min(stats.size, 64 * 1024);
+            const tail = Buffer.alloc(scanSize);
+            fs.readSync(fd, tail, 0, scanSize, stats.size - scanSize);
+            return tail.includes(Buffer.from([0x50, 0x4B, 0x05, 0x06]));
+        } finally {
+            fs.closeSync(fd);
+        }
+    } catch {
+        return false;
+    }
+}
 
 function cleanZeroByteFiles(dir) {
     if (!fs.existsSync(dir)) return;
@@ -281,9 +308,10 @@ ipcMain.handle('launch-game', async (event, options) => {
     let needForge = !fs.existsSync(forgeInstallerPath);
     
     if (!needForge) {
-        if (fs.statSync(forgeInstallerPath).size === 0) {
-            sendLog('Обнаружен поврежденный установщик Forge. Перекачивание...');
-            fs.unlinkSync(forgeInstallerPath);
+        const size = fs.statSync(forgeInstallerPath).size;
+        if (size === 0 || !isZipIntact(forgeInstallerPath)) {
+            sendLog('Обнаружен поврежденный установщик Forge (битый/не ZIP). Перекачивание...');
+            try { fs.unlinkSync(forgeInstallerPath); } catch {}
             needForge = true;
         }
     }
@@ -291,7 +319,11 @@ ipcMain.handle('launch-game', async (event, options) => {
     if (needForge) {
         sendLog('Скачивание установщика Forge...');
         try {
-            await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath);
+            await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
+            if (!isZipIntact(forgeInstallerPath)) {
+                try { fs.unlinkSync(forgeInstallerPath); } catch {}
+                throw new Error('Downloaded Forge installer is not a valid JAR/ZIP (truncated or HTML response)');
+            }
             sendLog('Установщик Forge скачан.');
         } catch (e) {
             console.error('Failed to download Forge:', e);
@@ -304,10 +336,14 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     // Check and download authlib-injector
     const authlibPath = path.join(rootPath, 'authlib-injector.jar');
-    if (!fs.existsSync(authlibPath)) {
+    if (!fs.existsSync(authlibPath) || !isZipIntact(authlibPath)) {
         sendLog('Скачивание Authlib Injector...');
         try {
-            await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath);
+            await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath, { timeoutMs: 60_000 });
+            if (!isZipIntact(authlibPath)) {
+                try { fs.unlinkSync(authlibPath); } catch {}
+                throw new Error('Downloaded authlib-injector is not a valid JAR/ZIP');
+            }
             sendLog('Authlib Injector скачан.');
         } catch (e) {
             console.error('Failed to download Authlib Injector:', e);
