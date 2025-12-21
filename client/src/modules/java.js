@@ -95,10 +95,36 @@ async function checkAndDownloadJava(dataDir, sendLog) {
 function checkSystemJava() {
     return new Promise((resolve) => {
         const check = spawn('java', ['-version']);
+        let output = '';
+        
+        // java -version prints to stderr
+        check.stderr.on('data', (data) => {
+            output += data.toString();
+        });
+
         check.on('error', () => resolve(null));
+        
         check.on('close', (code) => {
-            if (code === 0) resolve('java'); // 'java' command works
-            else resolve(null);
+            if (code === 0) {
+                // Parse version
+                // Examples: 
+                // java version "1.8.0_311" -> 1.8 -> 8
+                // openjdk version "17.0.2" -> 17
+                const match = output.match(/version "(\d+)(\.(\d+))?/);
+                if (match) {
+                    let major = parseInt(match[1]);
+                    if (major === 1) {
+                        // Handle 1.8, 1.7 etc
+                        major = parseInt(match[3]);
+                    }
+                    
+                    if (major >= 17) {
+                        resolve('java');
+                        return;
+                    }
+                }
+            }
+            resolve(null);
         });
     });
 }
