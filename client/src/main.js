@@ -42,11 +42,133 @@ const launcher = new Client();
 let isGameRunning = false;
 let isLaunchCancelled = false;
 const FORGE_VERSION = '1.20.1-47.4.0';
+const MC_VERSION = '1.20.1';
 // Use our domain as a stable download endpoint (Nginx proxies to official Forge Maven).
 const FORGE_INSTALLER_URL = `https://ganjacraft.ru/files/forge-${FORGE_VERSION}-installer.jar`;
 const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
+
+// Reduce dependency on external networks by routing Mojang/Maven/Forge downloads via our domain.
+// Server-side: Nginx should proxy /mirror/* to upstreams.
+const MIRROR_BASE = 'https://ganjacraft.ru/mirror';
+const VANILLA_VERSION_JSON_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.json`;
+const VANILLA_VERSION_JAR_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.jar`;
+
+function rewriteKnownUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+
+    const rewrites = [
+        ['https://libraries.minecraft.net/', `${MIRROR_BASE}/libraries/`],
+        ['https://resources.download.minecraft.net/', `${MIRROR_BASE}/resources/`],
+        ['https://piston-meta.mojang.com/', `${MIRROR_BASE}/piston-meta/`],
+        ['https://piston-data.mojang.com/', `${MIRROR_BASE}/piston-data/`],
+        ['https://launcher.mojang.com/', `${MIRROR_BASE}/launcher/`],
+        ['https://launchermeta.mojang.com/', `${MIRROR_BASE}/launchermeta/`],
+        ['https://files.minecraftforge.net/maven/', `${MIRROR_BASE}/forge-maven/`],
+        ['https://maven.minecraftforge.net/', `${MIRROR_BASE}/forge-maven/`],
+        ['https://repo1.maven.org/maven2/', `${MIRROR_BASE}/maven-central/`],
+    ];
+
+    for (const [from, to] of rewrites) {
+        if (url.startsWith(from)) return to + url.slice(from.length);
+    }
+    return url;
+}
+
+function rewriteVersionJsonUrls(versionJson) {
+    if (!versionJson || typeof versionJson !== 'object') return versionJson;
+
+    // Top-level downloads
+    if (versionJson.downloads) {
+        if (versionJson.downloads.client?.url) versionJson.downloads.client.url = rewriteKnownUrl(versionJson.downloads.client.url);
+        if (versionJson.downloads.server?.url) versionJson.downloads.server.url = rewriteKnownUrl(versionJson.downloads.server.url);
+    }
+
+    // Asset index
+    if (versionJson.assetIndex?.url) {
+        versionJson.assetIndex.url = rewriteKnownUrl(versionJson.assetIndex.url);
+    }
+
+    // Libraries
+    if (Array.isArray(versionJson.libraries)) {
+        for (const lib of versionJson.libraries) {
+            if (lib?.downloads?.artifact?.url) {
+                lib.downloads.artifact.url = rewriteKnownUrl(lib.downloads.artifact.url);
+            }
+            if (lib?.downloads?.classifiers) {
+                for (const key of Object.keys(lib.downloads.classifiers)) {
+                    const item = lib.downloads.classifiers[key];
+                    if (item?.url) item.url = rewriteKnownUrl(item.url);
+                }
+            }
+        }
+    }
+
+    return versionJson;
+}
+
+async function ensureVanillaVersionFiles(rootPath, sendLog) {
+    const versionDir = path.join(rootPath, 'versions', MC_VERSION);
+    const versionJsonPath = path.join(versionDir, `${MC_VERSION}.json`);
+    const versionJarPath = path.join(versionDir, `${MC_VERSION}.jar`);
+
+    if (!fs.existsSync(versionDir)) fs.mkdirSync(versionDir, { recursive: true });
+
+    // Ensure version JSON exists and is usable.
+    let versionJsonOk = false;
+    if (fs.existsSync(versionJsonPath)) {
+        try {
+            const parsed = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
+            if (parsed && parsed.id) versionJsonOk = true;
+        } catch {
+            versionJsonOk = false;
+        }
+    }
+
+    if (!versionJsonOk) {
+        sendLog(`Скачивание версии Minecraft ${MC_VERSION} (json)...`);
+        const tmpJson = `${versionJsonPath}.tmp`;
+        try {
+            await downloadFile(VANILLA_VERSION_JSON_URL, tmpJson, { timeoutMs: 60_000 });
+            const parsed = JSON.parse(fs.readFileSync(tmpJson, 'utf8'));
+            rewriteVersionJsonUrls(parsed);
+            fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
+            try { fs.unlinkSync(tmpJson); } catch {}
+            sendLog(`Версия ${MC_VERSION} (json) готова.`);
+        } catch (e) {
+            try { if (fs.existsSync(tmpJson)) fs.unlinkSync(tmpJson); } catch {}
+            throw new Error(`Не удалось подготовить ${MC_VERSION}.json: ${e.message}`);
+        }
+    } else {
+        // Rewrite in-place to ensure new mirror rules apply after updates.
+        try {
+            const parsed = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
+            rewriteVersionJsonUrls(parsed);
+            fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
+        } catch {
+            // Ignore; will be handled on next run.
+        }
+    }
+
+    // Ensure client jar exists.
+    let needJar = !fs.existsSync(versionJarPath);
+    if (!needJar && !isZipIntact(versionJarPath)) {
+        sendLog(`Обнаружен поврежденный ${MC_VERSION}.jar. Перекачивание...`);
+        try { fs.unlinkSync(versionJarPath); } catch {}
+        needJar = true;
+    }
+
+    if (needJar) {
+        sendLog(`Скачивание версии Minecraft ${MC_VERSION} (jar)...`);
+        await downloadFile(VANILLA_VERSION_JAR_URL, versionJarPath, { timeoutMs: 180_000 });
+        if (!isZipIntact(versionJarPath)) {
+            try { fs.unlinkSync(versionJarPath); } catch {}
+            throw new Error(`Скачанный ${MC_VERSION}.jar поврежден (невалидный JAR/ZIP)`);
+        }
+        sendLog(`Версия ${MC_VERSION} (jar) скачана.`);
+    }
+}
 
 function isZipIntact(filePath) {
     try {
@@ -281,6 +403,14 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
 
+    // Preload vanilla version files locally so MCLC won't hit external Mojang endpoints directly.
+    try {
+        await ensureVanillaVersionFiles(rootPath, sendLog);
+    } catch (e) {
+        isGameRunning = false;
+        return { success: false, error: e.message };
+    }
+
     // Validate Java Path if set
     let javaPath = config.javaPath;
     if (javaPath) {
@@ -397,8 +527,9 @@ ipcMain.handle('launch-game', async (event, options) => {
             user_properties: "{}"
         },
         root: rootPath,
+        timeout: 180_000,
         version: {
-            number: "1.20.1", // Версия майнкрафта
+            number: MC_VERSION, // Версия майнкрафта
             type: "release"
         },
         forge: forgeInstallerPath, // Путь к инсталлеру Forge
@@ -407,6 +538,18 @@ ipcMain.handle('launch-game', async (event, options) => {
             min: config.memoryMin
         },
         javaPath: javaPath || undefined, // Use detected/downloaded java if available
+        overrides: {
+            // Use our mirrored endpoints. These are mainly used by Forge wrapper and some legacy paths,
+            // but we also rewrite URLs inside the version json (see ensureVanillaVersionFiles).
+            url: {
+                meta: `${MIRROR_BASE}/launchermeta`,
+                resource: `${MIRROR_BASE}/resources`,
+                mavenForge: `${MIRROR_BASE}/forge-maven/`,
+                defaultRepoForge: `${MIRROR_BASE}/libraries/`,
+                fallbackMaven: `${MIRROR_BASE}/maven-fallback?filepath=`,
+            },
+            maxSockets: 4,
+        },
         customArgs: [
             `-javaagent:${authlibPath}=https://ganjacraft.ru/api/yggdrasil`,
             // Optimization Flags
