@@ -3,12 +3,91 @@ const https = require('https');
 const crypto = require('crypto');
 const path = require('path');
 
-function downloadFile(url, dest) {
+function resolveUnderRoot(rootPath, relativePath) {
+    if (typeof relativePath !== 'string' || relativePath.length === 0) {
+        throw new Error('Invalid manifest path');
+    }
+
+    // Disallow absolute paths and obvious traversal.
+    if (path.isAbsolute(relativePath)) {
+        throw new Error(`Absolute paths are not allowed in manifest: ${relativePath}`);
+    }
+
+    const rootResolved = path.resolve(rootPath);
+    const destResolved = path.resolve(rootPath, relativePath);
+    const rootWithSep = rootResolved.endsWith(path.sep) ? rootResolved : rootResolved + path.sep;
+    if (!destResolved.startsWith(rootWithSep)) {
+        throw new Error(`Path traversal detected in manifest path: ${relativePath}`);
+    }
+    return destResolved;
+}
+
+function sha1FileSync(filePath) {
+    const hash = crypto.createHash('sha1');
+    const stream = fs.createReadStream(filePath);
     return new Promise((resolve, reject) => {
-        const request = https.get(url, (response) => {
+        stream.on('error', err => reject(err));
+        stream.on('data', chunk => hash.update(chunk));
+        stream.on('end', () => resolve(hash.digest('hex')));
+    });
+}
+
+function downloadFile(url, dest, options = {}) {
+    const {
+        timeoutMs = 30_000,
+        expectedHash = null,
+        expectedSize = null,
+        maxRedirects = 5,
+    } = options;
+
+    return new Promise((resolve, reject) => {
+        let parsedUrl;
+        try {
+            parsedUrl = new URL(url);
+        } catch {
+            reject(new Error(`Invalid URL: ${url}`));
+            return;
+        }
+
+        if (parsedUrl.protocol !== 'https:') {
+            reject(new Error(`Only https URLs are allowed: ${url}`));
+            return;
+        }
+
+        const destDir = path.dirname(dest);
+        if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir, { recursive: true });
+        }
+
+        const tmpDest = `${dest}.tmp-${crypto.randomUUID()}`;
+
+        const request = https.get(parsedUrl, (response) => {
             // Handle Redirects
             if ([301, 302, 303, 307, 308].includes(response.statusCode)) {
-                downloadFile(response.headers.location, dest).then(resolve).catch(reject);
+                if (maxRedirects <= 0) {
+                    reject(new Error(`Too many redirects while downloading: ${url}`));
+                    return;
+                }
+                const location = response.headers.location;
+                if (!location) {
+                    reject(new Error(`Redirect without Location header while downloading: ${url}`));
+                    return;
+                }
+
+                let redirected;
+                try {
+                    redirected = new URL(location, parsedUrl);
+                } catch {
+                    reject(new Error(`Invalid redirect URL while downloading: ${url}`));
+                    return;
+                }
+
+                downloadFile(redirected.toString(), dest, {
+                    timeoutMs,
+                    expectedHash,
+                    expectedSize,
+                    maxRedirects: maxRedirects - 1,
+                }).then(resolve).catch(reject);
                 return;
             }
 
@@ -17,20 +96,60 @@ function downloadFile(url, dest) {
                 return;
             }
             
-            const file = fs.createWriteStream(dest);
+            const file = fs.createWriteStream(tmpDest);
             file.on('error', (err) => {
-                fs.unlink(dest, () => {});
+                try { if (fs.existsSync(tmpDest)) fs.unlinkSync(tmpDest); } catch {}
+                reject(err);
+            });
+
+            response.on('aborted', () => {
+                try { if (fs.existsSync(tmpDest)) fs.unlinkSync(tmpDest); } catch {}
+                reject(new Error(`Download aborted: ${url}`));
+            });
+            response.on('error', (err) => {
+                try { if (fs.existsSync(tmpDest)) fs.unlinkSync(tmpDest); } catch {}
                 reject(err);
             });
 
             response.pipe(file);
-            file.on('finish', () => {
-                file.close(resolve);
+            file.on('finish', async () => {
+                try {
+                    file.close();
+                    if (typeof expectedSize === 'number' && expectedSize >= 0) {
+                        const stats = fs.statSync(tmpDest);
+                        if (stats.size !== expectedSize) {
+                            try { fs.unlinkSync(tmpDest); } catch {}
+                            reject(new Error(`Size mismatch after download: expected ${expectedSize}, got ${stats.size}`));
+                            return;
+                        }
+                    }
+
+                    if (typeof expectedHash === 'string' && expectedHash.length > 0) {
+                        const actualHash = await sha1FileSync(tmpDest);
+                        if (actualHash !== expectedHash) {
+                            try { fs.unlinkSync(tmpDest); } catch {}
+                            reject(new Error(`Hash mismatch after download`));
+                            return;
+                        }
+                    }
+
+                    // Replace destination atomically-ish.
+                    try { if (fs.existsSync(dest)) fs.rmSync(dest, { force: true }); } catch {}
+                    fs.renameSync(tmpDest, dest);
+                    resolve();
+                } catch (err) {
+                    try { if (fs.existsSync(tmpDest)) fs.unlinkSync(tmpDest); } catch {}
+                    reject(err);
+                }
             });
+        });
+
+        request.setTimeout(timeoutMs, () => {
+            request.destroy(new Error(`Timeout downloading: ${url}`));
         });
         
         request.on('error', (err) => {
-            if (fs.existsSync(dest)) fs.unlink(dest, () => {});
+            try { if (fs.existsSync(tmpDest)) fs.unlinkSync(tmpDest); } catch {}
             reject(err);
         });
     });
@@ -52,13 +171,24 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     // 1. Download Manifest
     const manifestPath = path.join(rootPath, 'manifest.json');
     try {
-        await downloadFile(manifestUrl, manifestPath);
+        await downloadFile(manifestUrl, manifestPath, { timeoutMs: 10_000 });
     } catch (e) {
         sendLog('Ошибка загрузки манифеста: ' + e.message);
         throw e;
     }
 
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    let manifest;
+    try {
+        manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    } catch (e) {
+        sendLog('Ошибка чтения манифеста: некорректный JSON');
+        throw e;
+    }
+
+    if (!manifest || !Array.isArray(manifest.files)) {
+        throw new Error('Invalid manifest format: files[] is missing');
+    }
+
     sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
 
     let processed = 0;
@@ -74,16 +204,20 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         }
 
         // Check if disabled
-        if (disabledMods.includes(file.path)) {
-            const localPath = path.join(rootPath, file.path);
+        if (file && typeof file.path === 'string' && disabledMods.includes(file.path)) {
+            const localPath = resolveUnderRoot(rootPath, file.path);
             if (fs.existsSync(localPath)) {
                 sendLog(`Удаление отключенного мода: ${file.path}`);
-                fs.unlinkSync(localPath);
+                try { fs.rmSync(localPath, { force: true }); } catch {}
             }
             return;
         }
 
-        const localPath = path.join(rootPath, file.path);
+        if (!file || typeof file.path !== 'string' || typeof file.url !== 'string' || typeof file.hash !== 'string') {
+            throw new Error('Invalid manifest file entry');
+        }
+
+        const localPath = resolveUnderRoot(rootPath, file.path);
         const localDir = path.dirname(localPath);
 
         if (!fs.existsSync(localDir)) {
@@ -118,7 +252,10 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
 
         if (needDownload) {
             // sendLog(`Загрузка: ${file.path}`); // Too verbose for 100+ files
-            await downloadFile(file.url, localPath);
+            await downloadFile(file.url, localPath, {
+                expectedHash: file.hash,
+                expectedSize: typeof file.size === 'number' ? file.size : null,
+            });
             downloaded++;
         }
         

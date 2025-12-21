@@ -370,7 +370,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             max: config.memoryMax,
             min: config.memoryMin
         },
-        javaPath: config.javaPath || undefined, // Use custom java if set
+        javaPath: javaPath || undefined, // Use detected/downloaded java if available
         customArgs: [
             `-javaagent:${authlibPath}=https://ganjacraft.ru/api/yggdrasil`,
             // Optimization Flags

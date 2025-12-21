@@ -10,6 +10,7 @@ import zipfile
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from pathlib import Path
 
 # Build trigger
 # Configuration
@@ -27,6 +28,64 @@ LOGO_PATH = "assets/logo.png"
 BG_COLOR = "#121212"
 TEXT_COLOR = "#e0e0e0"
 ACCENT_COLOR = "#4CAF50"
+
+
+def _is_within_directory(base_dir: str, target_path: str) -> bool:
+    base = os.path.abspath(base_dir)
+    target = os.path.abspath(target_path)
+    base_with_sep = base if base.endswith(os.sep) else base + os.sep
+    return target.startswith(base_with_sep)
+
+
+def safe_extract_zip(zip_path: str, dest_dir: str) -> None:
+    """Extracts a zip safely (prevents Zip Slip path traversal)."""
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        for member in zip_ref.infolist():
+            member_name = member.filename
+            # Reject absolute paths and traversal
+            if member_name.startswith(('/', '\\')):
+                raise Exception("Небезопасный ZIP: абсолютный путь")
+
+            out_path = os.path.join(dest_dir, member_name)
+            if not _is_within_directory(dest_dir, out_path):
+                raise Exception("Небезопасный ZIP: попытка выхода из папки установки")
+        zip_ref.extractall(dest_dir)
+
+
+def validate_zip_integrity(zip_path: str, expected_exe_name: str | None = None) -> None:
+    """Basic integrity checks for downloaded update zip."""
+    # 1) Minimal size sanity
+    size = os.path.getsize(zip_path)
+    if size < 1024 * 200:  # 200KB is unrealistically small for this client
+        raise Exception("ZIP слишком маленький — похоже на обрыв загрузки")
+
+    # 2) Header check (PK..)
+    with open(zip_path, 'rb') as f:
+        header = f.read(4)
+        if header not in (b'PK\x03\x04', b'PK\x05\x06', b'PK\x07\x08'):
+            raise Exception("Неверный ZIP (заголовок не PK)")
+
+    # 3) EOCD presence (quick truncation heuristic)
+    # EOCD signature: 0x50 0x4B 0x05 0x06. Scan last 64KB per ZIP spec.
+    scan_size = min(size, 65557)
+    with open(zip_path, 'rb') as f:
+        f.seek(size - scan_size)
+        tail = f.read(scan_size)
+        if b'PK\x05\x06' not in tail:
+            raise Exception("ZIP выглядит обрезанным (нет EOCD)")
+
+    # 4) Can open/list
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as z:
+            names = z.namelist()
+    except zipfile.BadZipFile:
+        raise Exception("ZIP повреждён (BadZipFile)")
+
+    if expected_exe_name:
+        # Either file is at root or within subfolder
+        normalized = [n.replace('\\', '/') for n in names]
+        if not any(n.endswith('/' + expected_exe_name) or n == expected_exe_name for n in normalized):
+            raise Exception(f"В ZIP нет {expected_exe_name} — пакет не похож на клиент")
 
 class BootstrapApp(tk.Tk):
     def __init__(self):
@@ -261,6 +320,7 @@ del "%~f0"
             url = url.replace(" ", "%20")
             
             zip_path = os.path.join(LAUNCHER_DIR, "update.zip")
+            tmp_zip_path = zip_path + ".tmp"
 
             req = urllib.request.Request(url, headers={'User-Agent': 'GanjaCraft Launcher'})
             with urllib.request.urlopen(req, timeout=30) as response:
@@ -268,7 +328,7 @@ del "%~f0"
                 downloaded = 0
                 block_size = 8192
 
-                with open(zip_path, 'wb') as f:
+                with open(tmp_zip_path, 'wb') as f:
                     while True:
                         buffer = response.read(block_size)
                         if not buffer:
@@ -278,14 +338,31 @@ del "%~f0"
                         if total_size > 0:
                             self.update_progress(downloaded, total_size)
 
+            # Size check if server provided it
+            if total_size > 0 and downloaded != total_size:
+                raise Exception(f"Загрузка не завершена: {downloaded}/{total_size} байт")
+
+            # Replace atomically
+            try:
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+            except Exception:
+                pass
+            os.replace(tmp_zip_path, zip_path)
+
+            # Validate zip integrity BEFORE extraction
+            self.update_status("Проверка целостности архива...")
+            self.update_idletasks()
+            validate_zip_integrity(zip_path, expected_exe_name=LAUNCHER_EXE_NAME)
+
             self.update_status("Установка обновления...")
             
             # Extract Zip
             if not os.path.exists(CLIENT_DIR):
                 os.makedirs(CLIENT_DIR)
-                
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(CLIENT_DIR)
+
+            # Safety: extract without Zip Slip
+            safe_extract_zip(zip_path, CLIENT_DIR)
             
             # Clean up zip
             os.remove(zip_path)

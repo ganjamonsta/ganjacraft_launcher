@@ -15,7 +15,7 @@ function authenticateYggdrasil(authUrl, username, token) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': data.length
+                'Content-Length': Buffer.byteLength(data)
             }
         }, (res) => {
             let body = '';
@@ -37,6 +37,10 @@ function authenticateYggdrasil(authUrl, username, token) {
                     reject(new Error(`Auth failed: ${res.statusCode} - ${body}`));
                 }
             });
+        });
+
+        req.setTimeout(10_000, () => {
+            req.destroy(new Error('Auth request timeout'));
         });
 
         req.on('error', (e) => reject(e));
