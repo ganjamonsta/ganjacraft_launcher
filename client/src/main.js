@@ -349,6 +349,46 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+    // First Run / Setup Wizard
+    let config = loadConfig();
+    
+    // If it's a fresh install (isDefault is true) or we want to force a check
+    if (config.isDefault) {
+        const { response } = await dialog.showMessageBox({
+            type: 'question',
+            buttons: ['Выбрать папку установки (Рекомендуется)', 'По умолчанию (%AppData%)'],
+            defaultId: 0,
+            cancelId: 1,
+            title: 'Настройка установки GanjaCraft',
+            message: 'Выберите место для установки игры.',
+            detail: 'Windows часто блокирует файлы в папке AppData. \nДля избежания ошибок "EPERM" и проблем с антивирусом, выберите папку на диске, например C:\\Games\\GanjaCraft.'
+        });
+
+        if (response === 0) {
+            const result = await dialog.showOpenDialog({
+                title: 'Выберите папку для установки GanjaCraft',
+                defaultPath: 'C:\\Games',
+                properties: ['openDirectory', 'createDirectory']
+            });
+
+            if (!result.canceled && result.filePaths.length > 0) {
+                // Use the selected path
+                // We append nothing, we trust the user selected the folder they want to use as root
+                config.installPath = result.filePaths[0];
+                config.isDefault = false;
+                saveConfig(config);
+            } else {
+                // User canceled dialog, fallback to default but mark as configured
+                config.isDefault = false;
+                saveConfig(config);
+            }
+        } else {
+            // User chose default
+            config.isDefault = false;
+            saveConfig(config);
+        }
+    }
+
     createWindow();
 
     app.on('activate', () => {
