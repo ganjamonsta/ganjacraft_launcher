@@ -20,6 +20,7 @@ function loadConfig() {
         memoryMax: '6G',
         hideOnPlay: true,
         enableSnow: true, // Default snow effect
+        debugMode: false, // Default debug mode off
         disabledMods: [] // List of paths to skip
     };
 }

@@ -196,6 +196,7 @@ btnSettings.addEventListener('click', async () => {
     document.getElementById('setting-ram-max').value = currentConfig.memoryMax;
     document.getElementById('setting-hide-on-play').checked = currentConfig.hideOnPlay !== false; // Default true
     document.getElementById('setting-enable-snow').checked = currentConfig.enableSnow !== false; // Default true
+    document.getElementById('setting-debug-mode').checked = currentConfig.debugMode === true; // Default false
     
     // Load Mods
     loadModsList(currentConfig.disabledMods || []);
@@ -228,6 +229,7 @@ btnSaveSettings.addEventListener('click', async () => {
         memoryMax: memMax,
         hideOnPlay: document.getElementById('setting-hide-on-play').checked,
         enableSnow: document.getElementById('setting-enable-snow').checked,
+        debugMode: document.getElementById('setting-debug-mode').checked,
         disabledMods: getDisabledMods()
     };
     
@@ -330,7 +332,7 @@ const MOD_GROUPS = [
         id: 'motor',
         name: 'Motor Assistance',
         description: 'Помощь в управлении игрой геймпадом.',
-        files: ['client-motorassistance', 'client-controllable']
+        files: ['client-motorassistance', 'client-controllable', 'client-framework']
     },
     {
         id: 'tweaks',
@@ -379,10 +381,14 @@ async function loadModsList(disabledMods) {
             groupFiles.forEach(f => handledFiles.add(f.path));
 
             // Check if ALL files in group are enabled (not in disabledMods)
-            // If at least one is disabled, we consider the group unchecked (or partial, but simple checkbox is easier)
-            // Actually, better logic: if ANY is enabled, check it? No, usually "all or nothing".
-            // Let's say: Checked if NONE are disabled.
-            const isChecked = groupFiles.every(f => !disabledMods.includes(f.path));
+            let isChecked;
+            
+            if (currentConfig.isDefault && (group.id === 'fancymenu' || group.id === 'motor')) {
+                // Disable these by default on fresh install
+                isChecked = false;
+            } else {
+                isChecked = groupFiles.every(f => !disabledMods.includes(f.path));
+            }
 
             const div = document.createElement('div');
             div.className = 'mod-item group';

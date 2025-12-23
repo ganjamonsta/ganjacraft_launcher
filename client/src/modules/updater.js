@@ -220,6 +220,17 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         const localPath = resolveUnderRoot(rootPath, file.path);
         const localDir = path.dirname(localPath);
 
+        // PROTECT USER OPTIONS
+        // If options.txt exists, do not overwrite it with the server version.
+        // This allows users to keep their custom settings (keybinds, video settings, etc.)
+        if (file.path === 'options.txt' && fs.existsSync(localPath)) {
+            processed++;
+            if (onProgress) {
+                onProgress({ task: processed, total: totalFiles, type: 'mods' });
+            }
+            return;
+        }
+
         if (!fs.existsSync(localDir)) {
             fs.mkdirSync(localDir, { recursive: true });
         }

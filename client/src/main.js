@@ -49,11 +49,181 @@ const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
 
+// Repair/Recovery URLs for critical files (use existing file structure on server)
+const REPAIR_FILES = {
+    'authlib-injector.jar': 'https://ganjacraft.ru/files/authlib-injector.jar',
+    'forge-installer.jar': `https://ganjacraft.ru/files/forge-${FORGE_VERSION}-installer.jar`,
+    'modlauncher.jar': 'https://ganjacraft.ru/files/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar',
+    'securejarhandler.jar': 'https://ganjacraft.ru/files/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar',
+    'vanilla-client.jar': `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.jar`,
+};
+
 // Reduce dependency on external networks by routing Mojang/Maven/Forge downloads via our domain.
 // Server-side: Nginx should proxy /mirror/* to upstreams.
 const MIRROR_BASE = 'https://ganjacraft.ru/mirror';
 const VANILLA_VERSION_JSON_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.json`;
 const VANILLA_VERSION_JAR_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.jar`;
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
+    // Comprehensive repair: check all critical game files and re-download if corrupt.
+    // This prevents NoClassDefFoundError, "invalid JAR", and other integrity issues.
+    
+    const criticalChecks = [
+        {
+            name: 'Authlib Injector',
+            path: path.join(rootPath, 'authlib-injector.jar'),
+            url: REPAIR_FILES['authlib-injector.jar'],
+        },
+        {
+            name: 'Forge Installer',
+            path: path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`),
+            url: REPAIR_FILES['forge-installer.jar'],
+        },
+        {
+            name: 'ModLauncher (Forge)',
+            path: path.join(rootPath, 'libraries', 'cpw', 'mods', 'modlauncher', '10.0.9', 'modlauncher-10.0.9.jar'),
+            url: REPAIR_FILES['modlauncher.jar'],
+        },
+        {
+            name: 'SecureJarHandler (Forge)',
+            path: path.join(rootPath, 'libraries', 'cpw', 'mods', 'securejarhandler', '2.1.10', 'securejarhandler-2.1.10.jar'),
+            url: REPAIR_FILES['securejarhandler.jar'],
+        },
+        {
+            name: `Minecraft ${MC_VERSION}`,
+            path: path.join(rootPath, 'versions', MC_VERSION, `${MC_VERSION}.jar`),
+            url: REPAIR_FILES['vanilla-client.jar'],
+        },
+    ];
+
+    for (const file of criticalChecks) {
+        const isOk = fs.existsSync(file.path) && isZipIntact(file.path);
+        
+        if (!isOk) {
+            sendLog(`⚠️ Восстанавливаю ${file.name}...`);
+            sendDebug(`Repair: ${file.name} missing or corrupt, downloading from ${file.url}`);
+            
+            try {
+                // Ensure dir exists
+                const dir = path.dirname(file.path);
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                
+                // Delete old corrupt file if it exists
+                try { fs.unlinkSync(file.path); } catch {}
+                
+                // Download with timeout
+                await downloadFile(file.url, file.path, { timeoutMs: 120_000 });
+                
+                // Verify integrity
+                if (!isZipIntact(file.path)) {
+                    try { fs.unlinkSync(file.path); } catch {}
+                    throw new Error(`Downloaded file is not a valid JAR/ZIP (truncated or corrupted)`);
+                }
+                
+                sendLog(`✓ ${file.name} восстановлен`);
+                sendDebug(`Repair: ${file.name} OK`);
+            } catch (e) {
+                sendDebug(`Repair failed for ${file.name}: ${e.message}`);
+                throw new Error(
+                    `Не удалось восстановить ${file.name}.\n` +
+                    `Ошибка: ${e.message}\n\n` +
+                    `Проверьте подключение к интернету и попробуйте снова.`
+                );
+            }
+        } else {
+            sendDebug(`Repair: ${file.name} OK (integrity verified)`);
+        }
+    }
+}
+
+async function assertDirectoryWritable(dirPath) {
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    const testName = `.write-test-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`;
+    const testPath = path.join(dirPath, testName);
+    // If Windows Defender / CFA blocks the folder, openSync('w') tends to throw EPERM.
+    const fd = fs.openSync(testPath, 'w');
+    fs.closeSync(fd);
+    try { fs.unlinkSync(testPath); } catch {}
+}
+
+async function ensureWritableFilePath(filePath) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    if (!fs.existsSync(filePath)) return;
+
+    // Fast-path: if we can open for appending, the file isn't readonly/locked.
+    try {
+        const fd = fs.openSync(filePath, 'a');
+        fs.closeSync(fd);
+        return;
+    } catch (e) {
+        // continue
+    }
+
+    // Try to clear readonly and remove the file so MCLC can re-download it.
+    try {
+        try { fs.chmodSync(filePath, 0o666); } catch {}
+        fs.unlinkSync(filePath);
+    } catch (e) {
+        // EPERM on Windows usually means file is locked by AV scan or another process.
+        const msg = e && e.code ? `${e.code}: ${e.message}` : (e?.message || String(e));
+        throw new Error(
+            `Не удалось подготовить файл библиотек для обновления: ${path.basename(filePath)}\n` +
+            `Причина: ${msg}\n\n` +
+            `Решение (Windows 11):\n` +
+            `1) Закройте игру и лаунчер, перезагрузите ПК\n` +
+            `2) Добавьте папку установки игры в исключения Защитника Windows/антивируса\n` +
+            `3) Отключите "Контролируемый доступ к папкам" (если включен) или разрешите лаунчер\n` +
+            `4) Убедитесь, что папка игры не помечена как "Только чтение"`
+        );
+    }
+}
+
+async function preflightForgeLibraries(rootPath, sendLog, sendDebug) {
+    // Check critical Forge bootstrap libs for integrity. If they're corrupt/missing, delete so MCLC can re-download.
+    const librariesDir = path.join(rootPath, 'libraries');
+    
+    // These versions correspond to FORGE_VERSION 1.20.1-47.4.0.
+    const criticalLibs = [
+        path.join(librariesDir, 'cpw', 'mods', 'modlauncher', '10.0.9', 'modlauncher-10.0.9.jar'),
+        path.join(librariesDir, 'cpw', 'mods', 'securejarhandler', '2.1.10', 'securejarhandler-2.1.10.jar'),
+    ];
+
+    for (const libPath of criticalLibs) {
+        const libName = path.basename(libPath);
+        const libDir = path.dirname(libPath);
+
+        // If file doesn't exist, MCLC will download it.
+        if (!fs.existsSync(libPath)) {
+            sendDebug(`Preflight: ${libName} does not exist, MCLC will download it.`);
+            continue;
+        }
+
+        // Check if file is a valid ZIP/JAR
+        const isValid = isZipIntact(libPath);
+        if (!isValid) {
+            sendDebug(`Preflight: ${libName} is corrupt (invalid ZIP), deleting for re-download...`);
+            sendLog(`Обнаружен повреждённый файл ${libName}, удаляю для переcкачивания...`);
+            try {
+                // Ensure dir exists, clear readonly, delete
+                if (!fs.existsSync(libDir)) fs.mkdirSync(libDir, { recursive: true });
+                try { fs.chmodSync(libPath, 0o666); } catch {}
+                fs.unlinkSync(libPath);
+                sendDebug(`Deleted corrupt ${libName}`);
+            } catch (e) {
+                // If delete fails, we'll let MCLC try — might still work if file is readable
+                sendDebug(`Failed to delete ${libName}: ${e.message}, proceeding anyway`);
+            }
+        } else {
+            sendDebug(`Preflight: ${libName} integrity OK.`);
+        }
+    }
+}
 
 function rewriteKnownUrl(url) {
     if (!url || typeof url !== 'string') return url;
@@ -67,6 +237,7 @@ function rewriteKnownUrl(url) {
         ['https://launchermeta.mojang.com/', `${MIRROR_BASE}/launchermeta/`],
         ['https://files.minecraftforge.net/maven/', `${MIRROR_BASE}/forge-maven/`],
         ['https://maven.minecraftforge.net/', `${MIRROR_BASE}/forge-maven/`],
+        ['https://files.minecraftforge.net/', `${MIRROR_BASE}/forge-files/`],
         ['https://repo1.maven.org/maven2/', `${MIRROR_BASE}/maven-central/`],
     ];
 
@@ -247,6 +418,7 @@ function cleanZeroByteFiles(dir) {
                         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                     } catch (e) {
                         console.error(`[CLEANUP] Failed to delete ${filePath}:`, e);
+                        throw new Error(`Не удалось удалить поврежденный файл: ${path.basename(filePath)}. Возможно, он занят другим процессом. Перезагрузите ПК.`);
                     }
                 }
             }
@@ -427,8 +599,21 @@ ipcMain.handle('launch-game', async (event, options) => {
     if (!fs.existsSync(rootPath)) fs.mkdirSync(rootPath, { recursive: true });
 
     const logFile = path.join(rootPath, 'launcher.log');
+    const debugLogFile = path.join(rootPath, 'debug-launcher.log');
+    
     // Use a WriteStream for non-blocking logging
     const logStream = fs.createWriteStream(logFile, { flags: 'w' });
+    let debugStream = null;
+
+    if (config.debugMode) {
+        debugStream = fs.createWriteStream(debugLogFile, { flags: 'w' });
+        debugStream.write(`--- DEBUG LOG STARTED AT ${new Date().toISOString()} ---\n`);
+        debugStream.write(`System: ${process.platform} ${process.arch} ${process.release.name}\n`);
+        debugStream.write(`Electron: ${process.versions.electron}\n`);
+        debugStream.write(`Node: ${process.versions.node}\n`);
+        debugStream.write(`Config: ${JSON.stringify(config, null, 2)}\n`);
+    }
+
     logStream.write(`--- Log started at ${new Date().toISOString()} ---\n`);
 
     const sendLog = (msg) => {
@@ -436,17 +621,34 @@ ipcMain.handle('launch-game', async (event, options) => {
             event.sender.send('log-message', msg);
         }
         // Write to stream asynchronously
+        const timestamp = new Date().toISOString();
         if (logStream && !logStream.destroyed) {
-            logStream.write(`[${new Date().toISOString()}] ${msg}\n`);
+            logStream.write(`[${timestamp}] ${msg}\n`);
+        }
+        if (debugStream && !debugStream.destroyed) {
+            debugStream.write(`[${timestamp}] [INFO] ${msg}\n`);
+        }
+    };
+
+    const sendDebug = (msg) => {
+        if (config.debugMode) {
+            const timestamp = new Date().toISOString();
+            if (debugStream && !debugStream.destroyed) {
+                debugStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
+            }
         }
     };
 
     sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
+    if (config.debugMode) sendLog('РЕЖИМ ОТЛАДКИ ВКЛЮЧЕН. Подробный лог пишется в debug-launcher.log');
 
     // Preload vanilla version files locally so MCLC won't hit external Mojang endpoints directly.
     try {
+        sendDebug('Starting ensureVanillaVersionFiles...');
         await ensureVanillaVersionFiles(rootPath, sendLog);
+        sendDebug('ensureVanillaVersionFiles completed.');
     } catch (e) {
+        sendDebug(`ensureVanillaVersionFiles failed: ${e.stack}`);
         isGameRunning = false;
         return { success: false, error: e.message };
     }
@@ -454,6 +656,7 @@ ipcMain.handle('launch-game', async (event, options) => {
     // Validate Java Path if set
     let javaPath = config.javaPath;
     if (javaPath) {
+        sendDebug(`Using custom Java path: ${javaPath}`);
         if (!fs.existsSync(javaPath)) {
             isGameRunning = false;
             sendLog(`[ОШИБКА] Указанный путь к Java не существует: ${javaPath}`);
@@ -462,12 +665,15 @@ ipcMain.handle('launch-game', async (event, options) => {
     } else {
         // Auto-download Java if not set
         try {
+            sendDebug('Checking/Downloading Java...');
             const downloadedJava = await checkAndDownloadJava(rootPath, sendLog);
             if (downloadedJava) {
                 javaPath = downloadedJava;
+                sendDebug(`Java downloaded/found at: ${javaPath}`);
             }
         } catch (e) {
             console.error('Java download failed:', e);
+            sendDebug(`Java download failed: ${e.stack}`);
             isGameRunning = false;
             return { success: false, error: "Ошибка загрузки Java: " + e.message };
         }
@@ -489,6 +695,7 @@ ipcMain.handle('launch-game', async (event, options) => {
     if (needForge) {
         sendLog('Скачивание установщика Forge...');
         try {
+            sendDebug(`Downloading Forge from ${FORGE_INSTALLER_URL}`);
             await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
             if (!isZipIntact(forgeInstallerPath)) {
                 try { fs.unlinkSync(forgeInstallerPath); } catch {}
@@ -497,6 +704,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             sendLog('Установщик Forge скачан.');
         } catch (e) {
             console.error('Failed to download Forge:', e);
+            sendDebug(`Forge download failed: ${e.stack}`);
             isGameRunning = false;
             return { success: false, error: "Не удалось скачать Forge: " + e.message };
         }
@@ -509,6 +717,7 @@ ipcMain.handle('launch-game', async (event, options) => {
     if (!fs.existsSync(authlibPath) || !isZipIntact(authlibPath)) {
         sendLog('Скачивание Authlib Injector...');
         try {
+            sendDebug(`Downloading Authlib from ${AUTHLIB_INJECTOR_URL}`);
             await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath, { timeoutMs: 60_000 });
             if (!isZipIntact(authlibPath)) {
                 try { fs.unlinkSync(authlibPath); } catch {}
@@ -517,6 +726,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             sendLog('Authlib Injector скачан.');
         } catch (e) {
             console.error('Failed to download Authlib Injector:', e);
+            sendDebug(`Authlib download failed: ${e.stack}`);
             isGameRunning = false;
             return { success: false, error: "Не удалось скачать Authlib Injector: " + e.message };
         }
@@ -529,7 +739,9 @@ ipcMain.handle('launch-game', async (event, options) => {
                 event.sender.send('progress', p);
             }
         };
+        sendDebug('Starting syncFiles...');
         await syncFiles(rootPath, MANIFEST_URL, sendLog, onSyncProgress, config.disabledMods, () => isLaunchCancelled);
+        sendDebug('syncFiles completed.');
     } catch (e) {
         if (e.message === 'CANCELLED') {
             sendLog('Запуск отменен пользователем.');
@@ -537,6 +749,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             return { success: false, error: "Запуск отменен" };
         }
         sendLog('ВНИМАНИЕ: Ошибка синхронизации модов. Игра может работать нестабильно.');
+        sendDebug(`Sync error: ${e.stack}`);
         console.error(e);
     }
 
@@ -549,10 +762,13 @@ ipcMain.handle('launch-game', async (event, options) => {
     sendLog('Авторизация в GanjaCraft Yggdrasil...');
     let authSession;
     try {
+        sendDebug(`Authenticating user: ${options.username}`);
         authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token);
         sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
+        sendDebug(`Auth success. UUID: ${authSession.uuid}, Name: ${authSession.name}`);
     } catch (e) {
         console.error('Authentication failed:', e);
+        sendDebug(`Auth failed: ${e.stack}`);
         isGameRunning = false;
         return { success: false, error: "Ошибка авторизации: " + e.message };
     }
@@ -586,6 +802,7 @@ ipcMain.handle('launch-game', async (event, options) => {
                 resource: `${MIRROR_BASE}/resources`,
                 mavenForge: `${MIRROR_BASE}/forge-maven/`,
                 defaultRepoForge: `${MIRROR_BASE}/libraries/`,
+                library: `${MIRROR_BASE}/libraries/`,
                 fallbackMaven: `${MIRROR_BASE}/maven-fallback?filepath=`,
             },
             maxSockets: 4,
@@ -616,10 +833,39 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     // Cleanup empty files before launch to prevent ZipException
     sendLog('Проверка целостности библиотек...');
-    cleanZeroByteFiles(path.join(rootPath, 'libraries'));
-    cleanZeroByteFiles(path.join(rootPath, 'versions'));
+    try {
+        cleanZeroByteFiles(path.join(rootPath, 'libraries'));
+        cleanZeroByteFiles(path.join(rootPath, 'versions'));
+    } catch (e) {
+        isGameRunning = false;
+        return { success: false, error: e.message };
+    }
+
+    // Comprehensive repair: verify and restore all critical game files
+    try {
+        sendDebug('Starting comprehensive repair of critical files...');
+        await repairCriticalFiles(rootPath, sendLog, sendDebug);
+        sendDebug('Critical files repair completed successfully.');
+    } catch (e) {
+        sendDebug(`Critical files repair failed: ${e.stack || e.message}`);
+        isGameRunning = false;
+        return { success: false, error: e.message };
+    }
+
+    // Windows-specific preflight: make sure critical Forge libs are writable.
+    // If Defender/AV blocks write, MCLC can't download modlauncher/securejarhandler and the game crashes.
+    try {
+        sendDebug('Preflight: checking Forge library writability...');
+        await preflightForgeLibraries(rootPath, sendLog, sendDebug);
+        sendDebug('Preflight: Forge library writability OK.');
+    } catch (e) {
+        sendDebug(`Preflight failed: ${e.stack || e.message}`);
+        isGameRunning = false;
+        return { success: false, error: e.message };
+    }
 
     sendLog('Запуск ядра Minecraft...');
+    sendDebug('Launching MCLC with options: ' + JSON.stringify(opts, null, 2));
     
     // Get window instance to restore it later
     const mainWindow = BrowserWindow.fromWebContents(event.sender);
@@ -629,9 +875,11 @@ ipcMain.handle('launch-game', async (event, options) => {
     launcher.once('close', (code) => {
         isGameRunning = false;
         sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
+        sendDebug(`Game closed with code ${code}`);
         
         // Close log stream
         if (logStream) logStream.end();
+        if (debugStream) debugStream.end();
 
         if (mainWindow && !mainWindow.isDestroyed()) {
             // Restore window if it was minimized or hidden
@@ -644,6 +892,13 @@ ipcMain.handle('launch-game', async (event, options) => {
         }
     });
     
+    // Capture MCLC debug output
+    if (config.debugMode) {
+        launcher.on('debug', (e) => sendDebug(`[MCLC] ${e}`));
+        launcher.on('data', (e) => sendDebug(`[GAME STDOUT] ${e}`));
+        launcher.on('error', (e) => sendDebug(`[GAME STDERR] ${e}`));
+    }
+
     return new Promise((resolve, reject) => {
         let hasResolved = false;
 
@@ -651,6 +906,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             if (!hasResolved) {
                 hasResolved = true;
                 sendLog('[LAUNCHER] Процесс игры запускается...');
+                sendDebug('Game process arguments generated.');
                 resolve({ success: true });
             }
         };
@@ -660,34 +916,84 @@ ipcMain.handle('launch-game', async (event, options) => {
         // Also listen for data (stdout) just in case arguments is missed or behavior changes
         launcher.once('data', onArguments);
 
+        // Standard logging listeners (always active for UI)
         launcher.on('debug', (e) => {
-            if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
+            // Only send to UI if debug mode is on, otherwise it's too spammy
+            if (config.debugMode && mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
+            }
         });
         launcher.on('data', (e) => {
             if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[GAME] ${e}`);
         });
         launcher.on('progress', (e) => {
             if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('log-message', `[PROGRESS] ${e.type} - ${e.task} (${e.total})`);
+                // Try to get filename from event
+                const fileName = e.name || e.file || '';
+                const msg = `[PROGRESS] ${e.type} - ${e.task} (${e.total}) ${fileName ? '- ' + fileName : ''}`;
+                // Don't spam UI log with progress, just update bar
+                // mainWindow.webContents.send('log-message', msg);
+                
                 // Forward progress to renderer for the UI bar
                 mainWindow.webContents.send('progress', { task: e.task, total: e.total, type: e.type });
             }
         });
         
-        launcher.launch(opts).then(() => {
-            if (!hasResolved) {
-                hasResolved = true;
-                resolve({ success: true });
-            }
-        }).catch(error => {
-            if (!hasResolved) {
-                hasResolved = true;
-                console.error(error);
-                isGameRunning = false;
-                resolve({ success: false, error: error.message });
-            } else {
-                if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
-            }
-        });
+        try {
+            launcher.launch(opts).then(() => {
+                if (!hasResolved) {
+                    hasResolved = true;
+                    resolve({ success: true });
+                }
+            }).catch(error => {
+                sendDebug(`Launcher promise rejected: ${error.stack}`);
+                if (!hasResolved) {
+                    hasResolved = true;
+                    console.error(error);
+                    isGameRunning = false;
+                    const msg = (error && error.message) ? error.message : String(error);
+                    const isEperm = msg.includes('EPERM') || error?.code === 'EPERM';
+                    const isClassNotFound = msg.includes('NoClassDefFoundError') || msg.includes('modlauncher') || msg.includes('securejarhandler');
+                    
+                    if (isClassNotFound) {
+                        resolve({
+                            success: false,
+                            error:
+                                `Критичные файлы Forge повреждены или не скачались.\n\n` +
+                                `Быстрое решение:\n` +
+                                `1) Удалите папку: ${rootPath}\\libraries\\cpw\\mods\\\n` +
+                                `2) Попробуйте запустить игру ещё раз (лаунчер переcкачает файлы)\n\n` +
+                                `Если не сработало:\n` +
+                                `3) Скопируйте файлы из рабочей установки GanjaCraft:\n` +
+                                `   - modlauncher-10.0.9.jar\n` +
+                                `   - securejarhandler-2.1.10.jar\n` +
+                                `   в папку: ${rootPath}\\libraries\\cpw\\mods\\\n\n` +
+                                `Техническая ошибка: ${msg}`
+                        });
+                    } else if (isEperm) {
+                        resolve({
+                            success: false,
+                            error:
+                                `Windows блокирует запись файлов игры (EPERM).\n\n` +
+                                `Быстрое решение:\n` +
+                                `1) Закройте лаунчер/игру, перезагрузите ПК\n` +
+                                `2) Добавьте папку ${rootPath} в исключения Защитника Windows/антивируса\n\n` +
+                                `Если не сработает:\n` +
+                                `3) Скопируйте рабочие файлы из другой установки:\n` +
+                                `   ${rootPath}\\libraries\\cpw\\mods\\modlauncher\\10.0.9\\modlauncher-10.0.9.jar\n` +
+                                `   ${rootPath}\\libraries\\cpw\\mods\\securejarhandler\\2.1.10\\securejarhandler-2.1.10.jar\n\n` +
+                                `Техническая ошибка: ${msg}`
+                        });
+                    } else {
+                        resolve({ success: false, error: msg });
+                    }
+                } else {
+                    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
+                }
+            });
+        } catch (e) {
+            sendDebug(`Launcher launch exception: ${e.stack}`);
+            reject(e);
+        }
     });
 });
