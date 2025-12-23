@@ -19,6 +19,19 @@ async function fetchWithTimeout(resource, options = {}) {
     }
 }
 
+async function readJsonOrThrow(response) {
+    const text = await response.text();
+    if (!text) {
+        throw new Error('Empty response from server');
+    }
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        // Preserve body for diagnostics
+        throw new Error(`Invalid JSON response: ${text}`);
+    }
+}
+
 contextBridge.exposeInMainWorld('api', {
     launchGame: (options) => ipcRenderer.invoke('launch-game', options),
     // Функция для запроса к нашему API серверу (Python API)
@@ -28,15 +41,19 @@ contextBridge.exposeInMainWorld('api', {
             const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({ username }),
+                timeout: 15000
             });
             if (!response.ok) {
                 const text = await response.text();
                 throw new Error(`API Error: ${response.status} - ${text}`);
             }
-            return response.json();
+            return readJsonOrThrow(response);
         } catch (e) {
-            throw new Error(e.message);
+            if (e && e.name === 'AbortError') {
+                throw new Error('Таймаут сети (сервер не ответил вовремя)');
+            }
+            throw new Error(e?.message || String(e));
         }
     },
     verifyAuth: async (username, code) => {
@@ -44,15 +61,19 @@ contextBridge.exposeInMainWorld('api', {
             const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, code })
+                body: JSON.stringify({ username, code }),
+                timeout: 15000
             });
             if (!response.ok) {
                 const text = await response.text();
                 throw new Error(`API Error: ${response.status} - ${text}`);
             }
-            return response.json();
+            return readJsonOrThrow(response);
         } catch (e) {
-            throw new Error(e.message);
+            if (e && e.name === 'AbortError') {
+                throw new Error('Таймаут сети (сервер не ответил вовремя)');
+            }
+            throw new Error(e?.message || String(e));
         }
     },
     checkAuth: async (username, token) => {
@@ -63,15 +84,19 @@ contextBridge.exposeInMainWorld('api', {
                     'Content-Type': 'application/json',
                     'X-Auth-Token': token
                 },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({ username }),
+                timeout: 15000
             });
             if (!response.ok) {
                 // Don't throw here, just return success: false, as this is a background check
                 return { success: false, message: `API Error: ${response.status}` };
             }
-            return response.json();
+            return readJsonOrThrow(response);
         } catch (e) {
-            return { success: false, message: e.message };
+            if (e && e.name === 'AbortError') {
+                return { success: false, message: 'Таймаут сети (сервер не ответил вовремя)' };
+            }
+            return { success: false, message: e?.message || String(e) };
         }
     },
     getNews: async () => {

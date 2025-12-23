@@ -574,7 +574,9 @@ document.getElementById('verify-btn').addEventListener('click', async () => {
             btn.innerText = 'Подтвердить';
         }
     } catch (e) {
-        showAuthError('code-error', 'Ошибка сети');
+        const message = (e && e.message) ? e.message : String(e);
+        showAuthError('code-error', message || 'Ошибка сети');
+        console.error('[AUTH] verify failed', e);
         btn.disabled = false;
         btn.innerText = 'Подтвердить';
     }
