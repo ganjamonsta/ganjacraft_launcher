@@ -19,7 +19,7 @@ const { Client } = require('minecraft-launcher-core');
 const { loadConfig, saveConfig } = require('./modules/config');
 const { syncFiles, downloadFile } = require('./modules/updater');
 const { authenticateYggdrasil } = require('./modules/auth');
-const { checkAndDownloadJava } = require('./modules/java');
+const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR } = require('./modules/java');
 
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -661,6 +661,30 @@ ipcMain.handle('launch-game', async (event, options) => {
             isGameRunning = false;
             sendLog(`[ОШИБКА] Указанный путь к Java не существует: ${javaPath}`);
             return { success: false, error: "Неверный путь к Java. Проверьте настройки." };
+        }
+
+        // Verify Java version (Forge 1.20.1 requires Java 17+)
+        try {
+            const info = await getJavaVersionInfo(javaPath);
+            if (!info || info.major < REQUIRED_JAVA_MAJOR) {
+                isGameRunning = false;
+                sendLog(`[ОШИБКА] Java не подходит. Требуется Java ${REQUIRED_JAVA_MAJOR}+. Текущая: ${info?.major || 'неизвестно'}`);
+                return {
+                    success: false,
+                    error:
+                        `У вас указана неподходящая Java (нужна Java ${REQUIRED_JAVA_MAJOR}+ для Minecraft ${MC_VERSION}).\n\n` +
+                        `Решение:\n` +
+                        `1) Откройте настройки лаунчера и очистите поле "Java" (оставьте пустым) — лаунчер сам скачает JRE ${REQUIRED_JAVA_MAJOR}.\n` +
+                        `или\n` +
+                        `2) Укажите путь к java.exe из Java ${REQUIRED_JAVA_MAJOR}+.\n\n` +
+                        `Текущая Java: ${info?.major || 'не удалось определить'}`
+                };
+            }
+            sendDebug(`Custom Java version OK: ${info.major}`);
+        } catch (e) {
+            isGameRunning = false;
+            sendLog(`[ОШИБКА] Не удалось проверить версию Java: ${e.message}`);
+            return { success: false, error: `Не удалось проверить версию Java. ${e.message}` };
         }
     } else {
         // Auto-download Java if not set

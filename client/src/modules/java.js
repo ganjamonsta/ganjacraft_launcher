@@ -3,8 +3,67 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { downloadFile } = require('./updater');
 
+const REQUIRED_JAVA_MAJOR = 17;
+
 // Adoptium JRE 17 for Windows x64
 const JAVA_URL_WIN = 'https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse';
+
+function parseJavaMajor(versionOutput) {
+    if (!versionOutput || typeof versionOutput !== 'string') return null;
+
+    // Typical outputs:
+    // - java version "1.8.0_361"
+    // - openjdk version "17.0.9" 2023-10-17
+    // - openjdk version "21" 2023-09-19
+    const m = versionOutput.match(/version\s+"([^"]+)"/i);
+    if (!m) return null;
+
+    const v = m[1].trim();
+    // Legacy: 1.8.x => major 8
+    if (v.startsWith('1.')) {
+        const parts = v.split('.');
+        const major = Number.parseInt(parts[1], 10);
+        return Number.isFinite(major) ? major : null;
+    }
+
+    const major = Number.parseInt(v.split('.')[0], 10);
+    return Number.isFinite(major) ? major : null;
+}
+
+function getJavaVersionInfo(javaCommandOrPath, { timeoutMs = 5000 } = {}) {
+    return new Promise((resolve) => {
+        if (!javaCommandOrPath) return resolve(null);
+
+        let output = '';
+        let settled = false;
+
+        const child = spawn(javaCommandOrPath, ['-version'], {
+            windowsHide: true,
+        });
+
+        const timer = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            try { child.kill(); } catch {}
+            resolve(null);
+        }, timeoutMs);
+
+        const finish = (code) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            if (code !== 0 && !output) return resolve(null);
+            const major = parseJavaMajor(output);
+            if (!major) return resolve(null);
+            resolve({ major, raw: output });
+        };
+
+        child.stdout?.on('data', (d) => { output += d.toString(); });
+        child.stderr?.on('data', (d) => { output += d.toString(); });
+        child.on('error', () => finish(1));
+        child.on('close', (code) => finish(code));
+    });
+}
 
 async function checkAndDownloadJava(dataDir, sendLog) {
     const runtimeDir = path.join(dataDir, 'runtime');
@@ -16,23 +75,27 @@ async function checkAndDownloadJava(dataDir, sendLog) {
         : path.join(javaDir, 'bin', 'java');
 
     if (fs.existsSync(javaExec)) {
-        sendLog('Используется локальная Java: ' + javaExec);
-        return javaExec;
+        const info = await getJavaVersionInfo(javaExec);
+        if (info && info.major >= REQUIRED_JAVA_MAJOR) {
+            sendLog('Используется локальная Java: ' + javaExec);
+            return javaExec;
+        }
+        sendLog(`Локальная Java найдена, но версия не подходит (нужна Java ${REQUIRED_JAVA_MAJOR}+). Буду использовать другую.`);
     }
 
     // 2. Check for System Java
     try {
         const systemJava = await checkSystemJava();
         if (systemJava) {
-            sendLog('Найдена системная Java: ' + systemJava);
-            return systemJava; // Return 'java' or path
+            sendLog(`Найдена системная Java (подходит): Java ${systemJava.major}+`);
+            return systemJava.command; // typically 'java'
         }
     } catch (e) {
         // Ignore error, proceed to download
     }
 
-    // 3. Download if not found
-    sendLog('Java не найдена. Скачивание JRE 17...');
+    // 3. Download if not found (or system Java is too old)
+    sendLog(`Подходящая Java не найдена. Скачивание JRE ${REQUIRED_JAVA_MAJOR}...`);
     
     if (!fs.existsSync(runtimeDir)) fs.mkdirSync(runtimeDir, { recursive: true });
 
@@ -40,8 +103,13 @@ async function checkAndDownloadJava(dataDir, sendLog) {
     const url = process.platform === 'win32' ? JAVA_URL_WIN : null;
 
     if (!url) {
-        sendLog('Автоматическое скачивание Java не поддерживается для этой ОС. Используется системная Java.');
-        return null; // Fallback to system java
+        // Non-Windows: we can't auto-install right now.
+        const systemInfo = await getJavaVersionInfo('java').catch(() => null);
+        if (systemInfo && systemInfo.major >= REQUIRED_JAVA_MAJOR) {
+            sendLog('Автоматическое скачивание Java не поддерживается для этой ОС. Используется системная Java.');
+            return 'java';
+        }
+        throw new Error(`Нужна Java ${REQUIRED_JAVA_MAJOR}+ для запуска Minecraft ${process.env.MC_VERSION || ''}. Установите подходящую Java и попробуйте снова.`);
     }
 
     try {
@@ -80,6 +148,10 @@ async function checkAndDownloadJava(dataDir, sendLog) {
         if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
         if (fs.existsSync(javaExec)) {
+            const info = await getJavaVersionInfo(javaExec);
+            if (!info || info.major < REQUIRED_JAVA_MAJOR) {
+                throw new Error(`Скачанная Java имеет неподходящую версию. Требуется Java ${REQUIRED_JAVA_MAJOR}+.`);
+            }
             return javaExec;
         } else {
             throw new Error('Не удалось найти java.exe после распаковки.');
@@ -93,13 +165,11 @@ async function checkAndDownloadJava(dataDir, sendLog) {
 }
 
 function checkSystemJava() {
-    return new Promise((resolve) => {
-        const check = spawn('java', ['-version']);
-        check.on('error', () => resolve(null));
-        check.on('close', (code) => {
-            if (code === 0) resolve('java'); // 'java' command works
-            else resolve(null);
-        });
+    return new Promise(async (resolve) => {
+        const info = await getJavaVersionInfo('java').catch(() => null);
+        if (!info) return resolve(null);
+        if (info.major < REQUIRED_JAVA_MAJOR) return resolve(null);
+        resolve({ command: 'java', major: info.major, raw: info.raw });
     });
 }
 
@@ -127,4 +197,9 @@ function extractZip(zipPath, destDir) {
     });
 }
 
-module.exports = { checkAndDownloadJava };
+module.exports = {
+    REQUIRED_JAVA_MAJOR,
+    parseJavaMajor,
+    getJavaVersionInfo,
+    checkAndDownloadJava,
+};
