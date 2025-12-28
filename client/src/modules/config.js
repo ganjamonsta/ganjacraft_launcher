@@ -2,7 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 
-const CONFIG_FILE = path.join(app.getPath('appData'), '.ganjacraft', 'launcher_config.json');
+// Store config under userData so it follows app.setPath('userData', ...) in the main process.
+// This prevents config loss when the launcher relocates its data directory and improves write reliability on Windows.
+const CONFIG_FILE = path.join(app.getPath('userData'), 'launcher_config.json');
+
+// Legacy location (older builds stored config next to .ganjacraft root).
+const LEGACY_CONFIG_FILE = path.join(app.getPath('appData'), '.ganjacraft', 'launcher_config.json');
 
 function getDefaultConfig() {
     return {
@@ -47,7 +52,8 @@ function normalizeLoadedConfig(config) {
 
     // Migration for older configs (before modsDefaultsApplied existed).
     // We assume existing users already chose their mod state, so don't suddenly disable anything.
-    if (!Object.prototype.hasOwnProperty.call(merged, 'modsDefaultsApplied')) {
+    // IMPORTANT: check the original loaded object, not `merged` (defaults always include the key).
+    if (hasObj && !Object.prototype.hasOwnProperty.call(config, 'modsDefaultsApplied')) {
         merged.modsDefaultsApplied = true;
     }
 
@@ -64,9 +70,25 @@ function normalizeLoadedConfig(config) {
 
 function loadConfig() {
     try {
+        // Prefer new location.
         if (fs.existsSync(CONFIG_FILE)) {
             const parsed = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
             return normalizeLoadedConfig(parsed);
+        }
+
+        // Migrate from legacy location once.
+        if (fs.existsSync(LEGACY_CONFIG_FILE)) {
+            const parsed = JSON.parse(fs.readFileSync(LEGACY_CONFIG_FILE, 'utf-8'));
+            const normalized = normalizeLoadedConfig(parsed);
+            // Best-effort write into the new location.
+            try {
+                const dir = path.dirname(CONFIG_FILE);
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                fs.writeFileSync(CONFIG_FILE, JSON.stringify(normalized, null, 4));
+            } catch (_) {
+                // ignore migration write errors; we can still return the parsed config
+            }
+            return normalized;
         }
     } catch (e) { console.error("Config load error:", e); }
     
@@ -76,7 +98,13 @@ function loadConfig() {
 function saveConfig(config) {
     try {
         const normalized = normalizeLoadedConfig(config);
-        fs.writeFileSync(CONFIG_FILE, JSON.stringify(normalized, null, 4));
+        const dir = path.dirname(CONFIG_FILE);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+        // Atomic-ish write to avoid partially-written JSON (which would cause settings to reset on next load).
+        const tmpPath = `${CONFIG_FILE}.tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        fs.writeFileSync(tmpPath, JSON.stringify(normalized, null, 4));
+        fs.renameSync(tmpPath, CONFIG_FILE);
         return true;
     } catch (e) {
         console.error("Config save error:", e);

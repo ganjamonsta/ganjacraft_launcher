@@ -258,7 +258,10 @@ btnSaveSettings.addEventListener('click', async () => {
     if (!/^\d+[MG]$/.test(memMin)) memMin = '2G';
     if (!/^\d+[MG]$/.test(memMax)) memMax = '6G';
 
+    // IMPORTANT: preserve existing config flags and mark mod defaults as applied.
+    // Otherwise the UI will keep forcing some groups disabled on each open.
     const newConfig = {
+        ...currentConfig,
         installPath: document.getElementById('setting-path').value,
         javaPath: document.getElementById('setting-java').value,
         memoryMin: memMin,
@@ -268,10 +271,15 @@ btnSaveSettings.addEventListener('click', async () => {
         enableSmoke: document.getElementById('setting-enable-smoke').checked,
         enableParallax: document.getElementById('setting-enable-parallax').checked,
         debugMode: document.getElementById('setting-debug-mode').checked,
-        disabledMods: getDisabledMods()
+        disabledMods: getDisabledMods(),
+        modsDefaultsApplied: true,
     };
     
-    await window.api.saveConfig(newConfig);
+    const ok = await window.api.saveConfig(newConfig);
+    if (!ok) {
+        logToConsole('[SETTINGS] Ошибка сохранения настроек (конфиг не записан).');
+        return;
+    }
     currentConfig = newConfig; // Update local config immediately
     
     // Apply Snow Effect
