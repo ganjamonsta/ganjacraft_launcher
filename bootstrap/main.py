@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import time
+import base64
 import subprocess
 import threading
 import urllib.request
@@ -12,9 +13,18 @@ from tkinter import ttk
 from tkinter import messagebox
 from pathlib import Path
 
+try:
+    from cryptography.exceptions import InvalidSignature
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+except Exception:  # cryptography will be bundled in the compiled bootstrap
+    InvalidSignature = None
+    load_pem_public_key = None
+    ed25519 = None
+
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.13"
+BOOTSTRAP_VERSION = "1.0.14"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -28,6 +38,56 @@ LOGO_PATH = "assets/logo.png"
 BG_COLOR = "#121212"
 TEXT_COLOR = "#e0e0e0"
 ACCENT_COLOR = "#4CAF50"
+
+
+# Pinned public key used to verify launcher update ZIP signatures.
+# This is NOT a secret.
+UPDATE_PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAQv9ZFfputwoW/JzVhRwLIiUy3/3Mgaj0aDrz+t5y2+s=
+-----END PUBLIC KEY-----
+"""
+
+_UPDATE_PUBLIC_KEY = None
+
+
+def _get_update_public_key():
+    global _UPDATE_PUBLIC_KEY
+    if _UPDATE_PUBLIC_KEY is not None:
+        return _UPDATE_PUBLIC_KEY
+
+    if load_pem_public_key is None or ed25519 is None:
+        raise Exception("Отсутствует криптобиблиотека для проверки подписи обновлений. Переустановите лаунчер.")
+
+    key = load_pem_public_key(UPDATE_PUBLIC_KEY_PEM.encode('utf-8'))
+    if not isinstance(key, ed25519.Ed25519PublicKey):
+        raise Exception("Неверный тип ключа подписи обновлений (ожидался Ed25519)")
+
+    _UPDATE_PUBLIC_KEY = key
+    return _UPDATE_PUBLIC_KEY
+
+
+def verify_update_signature(zip_path: str, signature_b64: str) -> None:
+    """Verify downloaded update zip against signature from version.json."""
+    if not signature_b64:
+        raise Exception("Обновление не подписано. Установка заблокирована из соображений безопасности.")
+
+    try:
+        signature = base64.b64decode(signature_b64, validate=True)
+    except Exception:
+        raise Exception("Неверная подпись обновления (base64)")
+
+    # Ed25519 signatures are always 64 bytes.
+    if len(signature) != 64:
+        raise Exception("Неверная подпись обновления (длина)")
+
+    public_key = _get_update_public_key()
+    with open(zip_path, 'rb') as f:
+        data = f.read()
+
+    try:
+        public_key.verify(signature, data)
+    except InvalidSignature:
+        raise Exception("Подпись обновления не совпадает. Возможна подмена файла.")
 
 
 def _is_within_directory(base_dir: str, target_path: str) -> bool:
@@ -205,6 +265,7 @@ class BootstrapApp(tk.Tk):
                     remote_data = json.loads(data)
                     remote_version = remote_data.get("version")
                     download_url = remote_data.get("url")
+                    signature = remote_data.get("signature")
             except Exception as e:
                 print(f"Network error: {e}")
                 self.launch_existing_or_fail("Ошибка сети. Запуск оффлайн...")
@@ -218,7 +279,7 @@ class BootstrapApp(tk.Tk):
                     local_version = f.read().strip()
 
             if remote_version != local_version:
-                self.download_update(download_url, remote_version)
+                self.download_update(download_url, remote_version, signature)
             else:
                 self.update_status("Клиент обновлен.")
                 self.update_progress(100)
@@ -313,7 +374,7 @@ del "%~f0"
             # Continue to client update if self-update fails
             return
 
-    def download_update(self, url, version):
+    def download_update(self, url, version, signature_b64):
         self.update_status(f"Загрузка версии {version}...")
         try:
             # Handle spaces in URL if not already handled
@@ -349,6 +410,11 @@ del "%~f0"
             except Exception:
                 pass
             os.replace(tmp_zip_path, zip_path)
+
+            # Verify signature BEFORE doing any zip parsing/extraction.
+            self.update_status("Проверка подписи обновления...")
+            self.update_idletasks()
+            verify_update_signature(zip_path, signature_b64)
 
             # Validate zip integrity BEFORE extraction
             self.update_status("Проверка целостности архива...")

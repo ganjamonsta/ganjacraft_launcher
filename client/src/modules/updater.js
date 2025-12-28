@@ -221,9 +221,9 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         const localDir = path.dirname(localPath);
 
         // PROTECT USER OPTIONS
-        // If options.txt exists, do not overwrite it with the server version.
+        // If options.txt or config files exist, do not overwrite them with the server version.
         // This allows users to keep their custom settings (keybinds, video settings, etc.)
-        if (file.path === 'options.txt' && fs.existsSync(localPath)) {
+        if ((file.path === 'options.txt' || file.path.startsWith('config/')) && fs.existsSync(localPath)) {
             processed++;
             if (onProgress) {
                 onProgress({ task: processed, total: totalFiles, type: 'mods' });
