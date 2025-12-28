@@ -27,7 +27,7 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.16"
+BOOTSTRAP_VERSION = "1.0.17"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -274,16 +274,16 @@ class BootstrapApp(tk.Tk):
         super().__init__()
 
         self.title("GanjaCraft Updater")
-        self.geometry("400x300")
+        self.geometry("420x340")
         self.configure(bg=BG_COLOR)
         self.overrideredirect(True)  # Frameless
 
         # Center window
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        x = (screen_width - 400) // 2
-        y = (screen_height - 300) // 2
-        self.geometry(f"400x300+{x}+{y}")
+        x = (screen_width - 420) // 2
+        y = (screen_height - 340) // 2
+        self.geometry(f"420x340+{x}+{y}")
 
         # Dragging functionality
         self.x_offset = 0
@@ -322,8 +322,16 @@ class BootstrapApp(tk.Tk):
             print(f"Logo error: {e}")
 
         # Label
-        self.label = tk.Label(self.main_frame, text="Проверка обновлений...", font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR, bg=BG_COLOR)
-        self.label.pack(pady=(10, 20))
+        self.label = tk.Label(
+            self.main_frame,
+            text="Проверка обновлений...",
+            font=("Segoe UI", 12, "bold"),
+            fg=TEXT_COLOR,
+            bg=BG_COLOR,
+            wraplength=360,
+            justify="center",
+        )
+        self.label.pack(pady=(10, 14))
         self.label.bind("<ButtonPress-1>", self.start_move)
         self.label.bind("<B1-Motion>", self.do_move)
 
@@ -333,19 +341,32 @@ class BootstrapApp(tk.Tk):
         style.configure("Green.Horizontal.TProgressbar",
                         troughcolor=BG_COLOR,
                         background=ACCENT_COLOR,
-                        thickness=10,
+                        thickness=14,
                         borderwidth=0)
 
-        self.progress = ttk.Progressbar(self.main_frame, style="Green.Horizontal.TProgressbar", length=300, mode='determinate')
-        self.progress.pack(pady=10)
+        self.progress = ttk.Progressbar(self.main_frame, style="Green.Horizontal.TProgressbar", length=320, mode='determinate')
+        self.progress.pack(pady=(8, 6))
 
-        self.status_label = tk.Label(self.main_frame, text="", font=("Segoe UI", 9), fg="#888888", bg=BG_COLOR)
-        self.status_label.pack(pady=5)
+        self.percent_label = tk.Label(self.main_frame, text="0%", font=("Segoe UI", 10, "bold"), fg=ACCENT_COLOR, bg=BG_COLOR)
+        self.percent_label.pack(pady=(0, 6))
+        self.percent_label.bind("<ButtonPress-1>", self.start_move)
+        self.percent_label.bind("<B1-Motion>", self.do_move)
+
+        self.status_label = tk.Label(
+            self.main_frame,
+            text="",
+            font=("Segoe UI", 10),
+            fg="#b0b0b0",
+            bg=BG_COLOR,
+            wraplength=360,
+            justify="center",
+        )
+        self.status_label.pack(pady=(6, 0))
         self.status_label.bind("<ButtonPress-1>", self.start_move)
         self.status_label.bind("<B1-Motion>", self.do_move)
 
         # Version Label (Bottom Right)
-        self.version_label = tk.Label(self.main_frame, text=f"v{BOOTSTRAP_VERSION}", font=("Segoe UI", 8), fg="#444444", bg=BG_COLOR)
+        self.version_label = tk.Label(self.main_frame, text=f"v{BOOTSTRAP_VERSION}", font=("Segoe UI", 8), fg="#777777", bg=BG_COLOR)
         self.version_label.place(relx=1.0, rely=1.0, anchor="se", x=-5, y=-5)
 
         # Start update process
@@ -367,6 +388,18 @@ class BootstrapApp(tk.Tk):
     def update_progress(self, value, total=100):
         self.progress['value'] = value
         self.progress['maximum'] = total
+        try:
+            if total and total > 0:
+                pct = int((value / total) * 100)
+                if pct < 0:
+                    pct = 0
+                elif pct > 100:
+                    pct = 100
+                self.percent_label.config(text=f"{pct}%")
+            else:
+                self.percent_label.config(text="")
+        except Exception:
+            pass
         self.update_idletasks()
 
     def run_update_process(self):

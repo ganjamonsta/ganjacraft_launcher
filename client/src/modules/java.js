@@ -8,6 +8,23 @@ const REQUIRED_JAVA_MAJOR = 17;
 // Adoptium JRE 17 for Windows x64
 const JAVA_URL_WIN = 'https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse';
 
+function preferJavaw(javaCommandOrPath) {
+    if (process.platform !== 'win32') return javaCommandOrPath;
+    if (!javaCommandOrPath || typeof javaCommandOrPath !== 'string') return javaCommandOrPath;
+
+    const lower = javaCommandOrPath.toLowerCase();
+    if (lower === 'java') return 'javaw';
+    if (lower === 'javaw') return 'javaw';
+
+    if (lower.endsWith('java.exe')) {
+        const candidate = javaCommandOrPath.replace(/java\.exe$/i, 'javaw.exe');
+        try {
+            if (fs.existsSync(candidate)) return candidate;
+        } catch {}
+    }
+    return javaCommandOrPath;
+}
+
 function parseJavaMajor(versionOutput) {
     if (!versionOutput || typeof versionOutput !== 'string') return null;
 
@@ -70,15 +87,19 @@ async function checkAndDownloadJava(dataDir, sendLog) {
     const javaDir = path.join(runtimeDir, 'java');
     
     // 1. Check if local java exists
-    const javaExec = process.platform === 'win32' 
+    const javaExec = process.platform === 'win32'
         ? path.join(javaDir, 'bin', 'java.exe')
         : path.join(javaDir, 'bin', 'java');
+    const javawExec = process.platform === 'win32'
+        ? path.join(javaDir, 'bin', 'javaw.exe')
+        : null;
+    const preferredLocalExec = (javawExec && fs.existsSync(javawExec)) ? javawExec : javaExec;
 
     if (fs.existsSync(javaExec)) {
-        const info = await getJavaVersionInfo(javaExec);
+        const info = await getJavaVersionInfo(preferredLocalExec);
         if (info && info.major >= REQUIRED_JAVA_MAJOR) {
-            sendLog('Используется локальная Java: ' + javaExec);
-            return javaExec;
+            sendLog('Используется локальная Java: ' + preferredLocalExec);
+            return preferredLocalExec;
         }
         sendLog(`Локальная Java найдена, но версия не подходит (нужна Java ${REQUIRED_JAVA_MAJOR}+). Буду использовать другую.`);
     }
@@ -166,10 +187,17 @@ async function checkAndDownloadJava(dataDir, sendLog) {
 
 function checkSystemJava() {
     return new Promise(async (resolve) => {
+        if (process.platform === 'win32') {
+            const infoW = await getJavaVersionInfo('javaw').catch(() => null);
+            if (infoW && infoW.major >= REQUIRED_JAVA_MAJOR) {
+                return resolve({ command: 'javaw', major: infoW.major, raw: infoW.raw });
+            }
+        }
+
         const info = await getJavaVersionInfo('java').catch(() => null);
         if (!info) return resolve(null);
         if (info.major < REQUIRED_JAVA_MAJOR) return resolve(null);
-        resolve({ command: 'java', major: info.major, raw: info.raw });
+        resolve({ command: preferJavaw('java'), major: info.major, raw: info.raw });
     });
 }
 

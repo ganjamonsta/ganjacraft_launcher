@@ -1,26 +1,50 @@
 // --- Snow Effect ---
 let snowInterval = null;
 
-// --- Smoke Cursor Effect ---
+// --- Visual Effects (Smoke & Parallax) ---
 let mouseX = 0;
 let mouseY = 0;
 let hasMouseMoved = false;
+
+// Parallax State
+let parallaxTargetX = 0;
+let parallaxTargetY = 0;
+let parallaxCurrentX = 0;
+let parallaxCurrentY = 0;
 
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
     hasMouseMoved = true;
 
-    // Parallax Effect
+    // Calculate target parallax offset
+    if (currentConfig.enableParallax !== false) {
+        const main = document.getElementById('main-content');
+        const rect = main ? main.getBoundingClientRect() : null;
+        const centerX = rect ? (rect.left + rect.width / 2) : (window.innerWidth / 2);
+        const centerY = rect ? (rect.top + rect.height / 2) : (window.innerHeight / 2);
+
+        parallaxTargetX = (centerX - e.clientX) * 0.03; // Factor
+        parallaxTargetY = (centerY - e.clientY) * 0.03;
+    }
+});
+
+// Animation Loop for Smooth Parallax
+function animateParallax() {
     if (currentConfig.enableParallax !== false) {
         const bg = document.getElementById('bg-overlay');
         if (bg) {
-            const moveX = (window.innerWidth / 2 - e.clientX) * 0.02;
-            const moveY = (window.innerHeight / 2 - e.clientY) * 0.02;
-            bg.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            // Linear Interpolation (Lerp) for smoothness
+            parallaxCurrentX += (parallaxTargetX - parallaxCurrentX) * 0.05;
+            parallaxCurrentY += (parallaxTargetY - parallaxCurrentY) * 0.05;
+            
+            // Round to avoid sub-pixel blurring if desired, but float is smoother
+            bg.style.transform = `translate(${parallaxCurrentX.toFixed(2)}px, ${parallaxCurrentY.toFixed(2)}px)`;
         }
     }
-});
+    requestAnimationFrame(animateParallax);
+}
+requestAnimationFrame(animateParallax);
 
 // Continuous smoke loop
 setInterval(() => {

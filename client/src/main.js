@@ -467,6 +467,8 @@ function createWindow() {
         width: 900,
         height: 600,
         resizable: false,
+        maximizable: false,
+        fullscreenable: false,
         frame: false, // Custom title bar
         backgroundColor: '#121212',
         webPreferences: {
@@ -477,6 +479,22 @@ function createWindow() {
     });
 
     win.loadFile('src/index.html');
+
+    // Hard-block maximize/fullscreen (Windows can still attempt this via drag-region double-click).
+    win.on('maximize', () => {
+        try { win.unmaximize(); } catch (_) {}
+    });
+    win.on('enter-full-screen', () => {
+        try { win.setFullScreen(false); } catch (_) {}
+    });
+
+    // Block fullscreen hotkeys (Chromium default).
+    win.webContents.on('before-input-event', (event, input) => {
+        const key = input && input.key;
+        if (key === 'F11' || (input.alt && (key === 'Enter' || key === 'Return'))) {
+            event.preventDefault();
+        }
+    });
 
     // Window Control Handlers
     ipcMain.on('window-minimize', () => win.minimize());
@@ -766,6 +784,18 @@ ipcMain.handle('launch-game', async (event, options) => {
             sendDebug(`Java download failed: ${e.stack}`);
             isGameRunning = false;
             return { success: false, error: "Ошибка загрузки Java: " + e.message };
+        }
+    }
+
+    // Windows: prefer javaw.exe to avoid opening a console window.
+    if (process.platform === 'win32' && javaPath && typeof javaPath === 'string') {
+        const lower = javaPath.toLowerCase();
+        if (lower.endsWith('java.exe')) {
+            const candidate = javaPath.replace(/java\.exe$/i, 'javaw.exe');
+            if (fs.existsSync(candidate)) {
+                sendDebug(`Using javaw.exe to avoid console: ${candidate}`);
+                javaPath = candidate;
+            }
         }
     }
 

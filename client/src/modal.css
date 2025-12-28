@@ -5,32 +5,33 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.65);
     z-index: 100;
     display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(1px);
 }
 
 .modal-content {
-    background: #181818; /* Darker background */
+    /* Matte panel: subtle gradient, minimal blur */
+    background: linear-gradient(180deg, rgba(26, 26, 26, 0.9) 0%, rgba(18, 18, 18, 0.9) 100%);
     width: 600px; /* Wider */
     height: 600px; /* Fixed height for stability */
     max-height: 85vh; /* Ensure it fits on screen */
-    border-radius: 6px; /* Less rounded */
-    border: 1px solid #2a2a2a; /* Subtle border */
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.7); /* Deeper shadow */
+    box-shadow: 0 18px 70px rgba(0,0,0,0.55);
 }
 
 .modal-header {
-    padding: 0 10px;
+    padding: 0 12px;
     height: 50px;
-    border-bottom: 1px solid #2a2a2a;
-    background: #1f1f1f;
-    border-radius: 6px 6px 0 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(20, 20, 20, 0.86);
+    border-radius: 12px 12px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -68,7 +69,7 @@
 .tab-content {
     display: none;
     flex: 1;
-    padding: 20px;
+    padding: 18px 20px;
     overflow-y: auto; /* Enable scroll */
 }
 
@@ -90,10 +91,15 @@
 }
 
 .modal-footer {
-    padding: 15px;
-    border-top: 1px solid #333;
-    text-align: right;
-    background: #1f1f1f; /* Match header/footer bg */
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(20, 20, 20, 0.86);
+    border-radius: 0 0 12px 12px;
+}
+
+#save-settings {
+    border-radius: 8px;
+    box-shadow: none;
 }
 
 /* Tabs */
@@ -114,8 +120,8 @@
     width: auto;
     border-radius: 0;
     font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    letter-spacing: 0.7px;
     transition: all 0.2s;
     box-shadow: none; /* Override global button styles */
     transform: none;
@@ -140,15 +146,32 @@
 
 /* Forms */
 .form-group {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     text-align: left;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
     color: #aaa;
     font-size: 12px;
+}
+
+/* Checkboxes (Matte UI) */
+input[type="checkbox"] {
+    accent-color: #4CAF50;
+}
+
+.form-group label[style*="display: flex"] {
+    gap: 10px;
+    margin-bottom: 0;
+    line-height: 1.25;
+    color: #ddd;
+}
+
+.form-group label[style*="display: flex"] input[type="checkbox"] {
+    margin-right: 0 !important;
+    transform: translateY(1px);
 }
 
 .input-group {
@@ -176,9 +199,9 @@
 .danger-zone {
     margin-top: 20px;
     padding: 15px;
-    border: 1px solid #d32f2f;
-    border-radius: 4px;
-    background: rgba(211, 47, 47, 0.05);
+    border: 1px solid rgba(211, 47, 47, 0.6);
+    border-radius: 8px;
+    background: rgba(211, 47, 47, 0.06);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -206,7 +229,7 @@
     border: none;
     padding: 6px 12px;
     font-size: 12px;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
     width: auto; /* Override global button width if any */
@@ -222,9 +245,9 @@
     flex: 1;
     height: auto;
     overflow-y: auto;
-    background: #111;
+    background: rgba(0, 0, 0, 0.25);
     border: none;
-    border-top: 1px solid #2a2a2a;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 0;
     padding: 10px 20px;
 }
@@ -233,11 +256,11 @@
     display: flex;
     align-items: center;
     padding: 5px;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .mod-item:hover {
-    background: #222;
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .mod-item input {
@@ -255,9 +278,13 @@
     width: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #111;
+    background: rgba(0, 0, 0, 0.25);
 }
 ::-webkit-scrollbar-thumb {
-    background: #333;
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.18);
 }
