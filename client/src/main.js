@@ -49,6 +49,40 @@ const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
 const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
 const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
 
+// Default disabled optional client mods (fresh installs).
+// Important: use filename substrings (stable across versions) and map them to exact manifest paths.
+const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
+    // FancyMenu stack
+    'client-fancymenu',
+    'client-konkrete',
+    'client-melody',
+
+    // Gamepad/motor assistance stack
+    'client-motorassistance',
+    'client-controllable',
+    'client-framework',
+
+    // Forgematica (schematics)
+    'client-Forgematica',
+    'client-MaFgLib',
+    'client-badpackets',
+];
+
+function computeDefaultDisabledModsFromManifest(manifest) {
+    try {
+        if (!manifest || !Array.isArray(manifest.files)) return [];
+        return manifest.files
+            .filter(f => f && f.optional && typeof f.path === 'string' && f.path.startsWith('mods/') && f.path.endsWith('.jar'))
+            .filter(f => {
+                const fileName = f.path.split('/').pop();
+                return DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS.some(p => fileName.includes(p));
+            })
+            .map(f => f.path);
+    } catch {
+        return [];
+    }
+}
+
 // Repair/Recovery URLs for critical files (use existing file structure on server)
 const REPAIR_FILES = {
     'authlib-injector.jar': 'https://ganjacraft.ru/files/authlib-injector.jar',
@@ -548,15 +582,19 @@ app.whenReady().then(async () => {
                 // We append nothing, we trust the user selected the folder they want to use as root
                 config.installPath = result.filePaths[0];
                 config.isDefault = false;
+                // Fresh install: defaults for mod toggles must be applied on first launch.
+                config.modsDefaultsApplied = false;
                 saveConfig(config);
             } else {
                 // User canceled dialog, fallback to default but mark as configured
                 config.isDefault = false;
+                config.modsDefaultsApplied = false;
                 saveConfig(config);
             }
         } else {
             // User chose default
             config.isDefault = false;
+            config.modsDefaultsApplied = false;
             saveConfig(config);
         }
     }
@@ -641,6 +679,34 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
     if (config.debugMode) sendLog('РЕЖИМ ОТЛАДКИ ВКЛЮЧЕН. Подробный лог пишется в debug-launcher.log');
+
+    // Apply default mod toggles on fresh installs.
+    // This must happen BEFORE syncFiles(), otherwise optional mods will be downloaded/enabled.
+    if (config.modsDefaultsApplied !== true) {
+        sendLog('[SETUP] Применяю дефолтные настройки модов...');
+        try {
+            const manifestPath = path.join(rootPath, 'manifest.json');
+            await downloadFile(MANIFEST_URL, manifestPath, { timeoutMs: 15_000 });
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+            const defaults = computeDefaultDisabledModsFromManifest(manifest);
+
+            const existing = Array.isArray(config.disabledMods) ? config.disabledMods : [];
+            const merged = Array.from(new Set([...existing, ...defaults]));
+            config.disabledMods = merged;
+            config.modsDefaultsApplied = true;
+            saveConfig(config);
+
+            if (defaults.length > 0) {
+                sendDebug(`Default disabled optional mods: ${JSON.stringify(defaults)}`);
+            } else {
+                sendDebug('Default disabled optional mods: none matched.');
+            }
+        } catch (e) {
+            // Don't block launch if manifest fetch fails; user can toggle in settings later.
+            sendLog('[SETUP] Не удалось применить дефолтные моды (продолжаю запуск).');
+            sendDebug(`Default mods apply failed: ${e.stack || e.message}`);
+        }
+    }
 
     // Preload vanilla version files locally so MCLC won't hit external Mojang endpoints directly.
     try {

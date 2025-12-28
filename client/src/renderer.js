@@ -337,8 +337,14 @@ const MOD_GROUPS = [
     {
         id: 'tweaks',
         name: 'Epic Tweaks',
-        description: 'Различные мелкие улучшения клиента.',
+        description: 'Твики Epic Fight.',
         files: ['client-epictweaks']
+    },
+    {
+        id: 'schematics',
+        name: 'Схематики (Forgematica)',
+        description: 'Загрузка/просмотр схематики и помощь в строительстве.',
+        files: ['client-Forgematica', 'client-MaFgLib', 'client-badpackets']
     }
 ];
 
@@ -383,7 +389,7 @@ async function loadModsList(disabledMods) {
             // Check if ALL files in group are enabled (not in disabledMods)
             let isChecked;
             
-            if (currentConfig.isDefault && (group.id === 'fancymenu' || group.id === 'motor')) {
+            if (currentConfig.modsDefaultsApplied !== true && (group.id === 'fancymenu' || group.id === 'motor' || group.id === 'schematics')) {
                 // Disable these by default on fresh install
                 isChecked = false;
             } else {
@@ -750,12 +756,12 @@ function logToConsole(text) {
     // Apply Snow Effect
     toggleSnow(currentConfig.enableSnow !== false);
 
-    // Apply default disabled mods if fresh install
-    if (currentConfig.isDefault) {
+    // Apply default disabled mods once (fresh installs)
+    if (currentConfig.modsDefaultsApplied !== true) {
         try {
             const manifest = await window.api.getManifest();
             if (manifest) {
-                const defaultDisabledGroups = ['fancymenu', 'motor'];
+                const defaultDisabledGroups = ['fancymenu', 'motor', 'schematics'];
                 const disabledPaths = [];
                 
                 const allFiles = manifest.files.filter(f => f.optional && f.path.startsWith('mods/'));
@@ -769,9 +775,10 @@ function logToConsole(text) {
                         groupFiles.forEach(f => disabledPaths.push(f.path));
                     }
                 });
-                
-                currentConfig.disabledMods = disabledPaths;
-                delete currentConfig.isDefault;
+
+                const existing = Array.isArray(currentConfig.disabledMods) ? currentConfig.disabledMods : [];
+                currentConfig.disabledMods = Array.from(new Set([...existing, ...disabledPaths]));
+                currentConfig.modsDefaultsApplied = true;
                 await window.api.saveConfig(currentConfig);
                 console.log('[CONFIG] Applied default disabled mods:', disabledPaths);
             }
