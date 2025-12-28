@@ -60,6 +60,11 @@ const targetZip = path.join(TARGET_DIR, zipFile);
 console.log(`📦 Copying .zip: ${zipFile}`);
 fs.copyFileSync(sourceZip, targetZip);
 
+// Get Zip Size
+const zipStats = fs.statSync(targetZip);
+const zipSize = zipStats.size;
+console.log(`📊 Zip Size: ${(zipSize / 1024 / 1024).toFixed(2)} MB`);
+
 function tryExtractZip(zipPath, outDir) {
     if (fs.existsSync(outDir)) {
         fs.rmSync(outDir, { recursive: true, force: true });
@@ -172,6 +177,7 @@ const versionData = {
     baseUrl: 'https://ganjacraft.ru/api/launcher/files/client',
     manifestUrl: `https://ganjacraft.ru/api/launcher/files/${encodeURIComponent(CLIENT_MANIFEST_NAME)}`,
     manifestSignature: manifestSignature,
+    zipSize: zipSize, // Size in bytes for optimization decision
     releaseDate: new Date().toISOString(),
     type: "zip"
 };

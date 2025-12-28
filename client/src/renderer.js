@@ -10,12 +10,22 @@ document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
     hasMouseMoved = true;
+
+    // Parallax Effect
+    if (currentConfig.enableParallax !== false) {
+        const bg = document.getElementById('bg-overlay');
+        if (bg) {
+            const moveX = (window.innerWidth / 2 - e.clientX) * 0.02;
+            const moveY = (window.innerHeight / 2 - e.clientY) * 0.02;
+            bg.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        }
+    }
 });
 
 // Continuous smoke loop
 setInterval(() => {
-    // Optimization: Disable smoke if effects are disabled
-    if (currentConfig.enableSnow === false) return;
+    // Optimization: Disable smoke if disabled
+    if (currentConfig.enableSmoke === false) return;
 
     if (hasMouseMoved) {
         createSmokeParticle(mouseX, mouseY);
@@ -196,6 +206,8 @@ btnSettings.addEventListener('click', async () => {
     document.getElementById('setting-ram-max').value = currentConfig.memoryMax;
     document.getElementById('setting-hide-on-play').checked = currentConfig.hideOnPlay !== false; // Default true
     document.getElementById('setting-enable-snow').checked = currentConfig.enableSnow !== false; // Default true
+    document.getElementById('setting-enable-smoke').checked = currentConfig.enableSmoke !== false; // Default true
+    document.getElementById('setting-enable-parallax').checked = currentConfig.enableParallax !== false; // Default true
     document.getElementById('setting-debug-mode').checked = currentConfig.debugMode === true; // Default false
     
     // Load Mods
@@ -229,6 +241,8 @@ btnSaveSettings.addEventListener('click', async () => {
         memoryMax: memMax,
         hideOnPlay: document.getElementById('setting-hide-on-play').checked,
         enableSnow: document.getElementById('setting-enable-snow').checked,
+        enableSmoke: document.getElementById('setting-enable-smoke').checked,
+        enableParallax: document.getElementById('setting-enable-parallax').checked,
         debugMode: document.getElementById('setting-debug-mode').checked,
         disabledMods: getDisabledMods()
     };
@@ -238,6 +252,12 @@ btnSaveSettings.addEventListener('click', async () => {
     
     // Apply Snow Effect
     toggleSnow(newConfig.enableSnow);
+
+    // Reset Parallax if disabled
+    if (!newConfig.enableParallax) {
+        const bg = document.getElementById('bg-overlay');
+        if (bg) bg.style.transform = 'none';
+    }
 
     // Update UI values to show formatted result
     document.getElementById('setting-ram-min').value = memMin;

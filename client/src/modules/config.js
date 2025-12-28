@@ -19,6 +19,8 @@ function getDefaultConfig() {
         memoryMax: '6G',
         hideOnPlay: true,
         enableSnow: true, // Default snow effect
+        enableSmoke: true, // Default smoke effect
+        enableParallax: true, // Default parallax background
         debugMode: false, // Default debug mode off
 
         // Mods
@@ -47,6 +49,14 @@ function normalizeLoadedConfig(config) {
     // We assume existing users already chose their mod state, so don't suddenly disable anything.
     if (!Object.prototype.hasOwnProperty.call(merged, 'modsDefaultsApplied')) {
         merged.modsDefaultsApplied = true;
+    }
+
+    // Migration: Split effects settings
+    if (!Object.prototype.hasOwnProperty.call(merged, 'enableSmoke')) {
+        merged.enableSmoke = merged.enableSnow;
+    }
+    if (!Object.prototype.hasOwnProperty.call(merged, 'enableParallax')) {
+        merged.enableParallax = true;
     }
 
     return merged;
