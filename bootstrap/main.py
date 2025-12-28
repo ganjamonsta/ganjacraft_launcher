@@ -27,7 +27,7 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.17"
+BOOTSTRAP_VERSION = "1.0.18"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -137,79 +137,6 @@ def _sha256_file(path_: str) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b''):
             h.update(chunk)
     return h.hexdigest()
-
-
-def _download_url_to_file(url: str, dest_path: str, expected_sha256: str | None, expected_size: int | None,
-                          progress_cb=None) -> None:
-    url = url.replace(" ", "%20")
-    tmp_path = dest_path + ".tmp"
-    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-
-    req = urllib.request.Request(url, headers={
-        'User-Agent': 'GanjaCraft Launcher',
-        'Accept-Encoding': 'gzip'
-    })
-    with urllib.request.urlopen(req, timeout=60) as response:
-        is_gzipped = response.info().get('Content-Encoding') == 'gzip'
-        total_size = int(response.info().get('Content-Length', 0))
-        
-        # If gzipped, total_size is compressed size. We can't validate uncompressed size yet.
-        if is_gzipped:
-            # We don't know uncompressed size from headers usually.
-            # Just trust the stream.
-            pass
-        elif expected_size is not None and expected_size >= 0 and total_size > 0 and expected_size != total_size:
-            # Not fatal (CDN/proxy may omit), but can indicate wrong file.
-            pass
-
-        downloaded = 0
-        h = hashlib.sha256()
-        block_size = 64 * 1024
-        
-        stream = gzip.GzipFile(fileobj=response) if is_gzipped else response
-
-        with open(tmp_path, 'wb') as f:
-            while True:
-                buf = stream.read(block_size)
-                if not buf:
-                    break
-                f.write(buf)
-                h.update(buf)
-                downloaded += len(buf)
-                if progress_cb:
-                    # If gzipped, 'downloaded' is uncompressed bytes.
-                    # If we want to show progress based on network transfer, we need to count bytes read from 'response'.
-                    # But GzipFile wraps it.
-                    # For simplicity, just report uncompressed progress if we know expected_size.
-                    if is_gzipped and expected_size:
-                         progress_cb(downloaded)
-                    elif not is_gzipped:
-                         progress_cb(downloaded)
-
-
-    if expected_size is not None and expected_size >= 0:
-        actual_size = os.path.getsize(tmp_path)
-        if actual_size != expected_size:
-            try:
-                os.remove(tmp_path)
-            except Exception:
-                pass
-            raise Exception(f"Размер не совпадает: ожидалось {expected_size}, получено {actual_size}")
-
-    actual_hash = h.hexdigest()
-    if expected_sha256 and actual_hash.lower() != expected_sha256.lower():
-        try:
-            os.remove(tmp_path)
-        except Exception:
-            pass
-        raise Exception("Хеш не совпадает (sha256)")
-
-    try:
-        if os.path.exists(dest_path):
-            os.remove(dest_path)
-    except Exception:
-        pass
-    os.replace(tmp_path, dest_path)
 
 
 def _is_within_directory(base_dir: str, target_path: str) -> bool:
@@ -421,10 +348,7 @@ class BootstrapApp(tk.Tk):
                     remote_version = remote_data.get("version")
                     download_url = remote_data.get("url")
                     signature = remote_data.get("signature")
-                    manifest_url = remote_data.get("manifestUrl")
-                    manifest_signature = remote_data.get("manifestSignature")
-                    base_url = remote_data.get("baseUrl")
-                    zip_size = remote_data.get("zipSize") # Optional optimization hint
+                    # Legacy updates: always download the full zip and extract.
             except Exception as e:
                 print(f"Network error: {e}")
                 self.launch_existing_or_fail("Ошибка сети. Запуск оффлайн...")
@@ -438,11 +362,7 @@ class BootstrapApp(tk.Tk):
                     local_version = f.read().strip()
 
             if remote_version != local_version:
-                # Prefer incremental update if available.
-                if manifest_url and base_url and manifest_signature:
-                    self.download_update_files(manifest_url, base_url, remote_version, manifest_signature, download_url, signature, zip_size)
-                else:
-                    self.download_update(download_url, remote_version, signature)
+                self.download_update(download_url, remote_version, signature)
             else:
                 self.update_status("Клиент обновлен.")
                 self.update_progress(100)
@@ -609,161 +529,6 @@ del "%~f0"
             print(f"Download error: {e}")
             time.sleep(3)
             self.launch_existing_or_fail("Ошибка обновления. Попытка запуска оффлайн...")
-
-    def download_update_files(self, manifest_url, base_url, version, manifest_sig_b64, fallback_zip_url=None, fallback_zip_sig=None, zip_size=None):
-        """Incremental update: download only changed files listed in signed manifest."""
-        self.update_status(f"Проверка манифеста {version}...")
-        try:
-            # 1) Download manifest
-            req = urllib.request.Request(manifest_url, headers={'User-Agent': 'GanjaCraft Launcher'})
-            with urllib.request.urlopen(req, timeout=20) as response:
-                manifest_bytes = response.read()
-
-            # 2) Verify signature
-            self.update_status("Проверка подписи манифеста...")
-            self.update_idletasks()
-            verify_update_signature_bytes(manifest_bytes, manifest_sig_b64)
-
-            # 3) Parse
-            manifest = json.loads(manifest_bytes.decode('utf-8'))
-            if not manifest or not isinstance(manifest, dict) or not isinstance(manifest.get('files'), list):
-                raise Exception("Некорректный манифест")
-            if manifest.get('version') and manifest.get('version') != version:
-                raise Exception("Версия манифеста не совпадает")
-
-            files = manifest.get('files')
-            
-            # Pre-check: Calculate total download size
-            total_download_size = 0
-            files_to_download = []
-            
-            for entry in files:
-                rel_path = entry.get('path')
-                expected_sha256 = entry.get('sha256')
-                expected_size = entry.get('size')
-                
-                if not rel_path: continue
-                
-                local_path = _safe_join(CLIENT_DIR, rel_path)
-                
-                # Check if needs update
-                needs_update = True
-                try:
-                    if os.path.exists(local_path) and os.path.isfile(local_path):
-                        if expected_size is not None and os.path.getsize(local_path) != int(expected_size):
-                            needs_update = True
-                        elif expected_sha256 and _sha256_file(local_path).lower() == expected_sha256.lower():
-                            needs_update = False
-                except Exception:
-                    pass
-                
-                if needs_update:
-                    files_to_download.append(entry)
-                    if expected_size:
-                        total_download_size += int(expected_size)
-
-            # Optimization: If total download size > zip size, fallback to zip
-            if zip_size and total_download_size > zip_size:
-                print(f"Optimization: Incremental ({total_download_size}) > Zip ({zip_size}). Fallback to zip.")
-                raise Exception(f"Полная загрузка выгоднее (Delta: {total_download_size} > Zip: {zip_size})")
-
-            # Determine total bytes for progress (of files to download)
-            total_bytes = total_download_size
-            if total_bytes <= 0:
-                total_bytes = 1
-
-            wanted_paths = set()
-            downloaded_bytes = 0
-
-            def _bump_progress(delta: int):
-                nonlocal downloaded_bytes
-                downloaded_bytes += delta
-                if downloaded_bytes < 0:
-                    downloaded_bytes = 0
-                if downloaded_bytes > total_bytes:
-                    downloaded_bytes = total_bytes
-                self.update_progress(downloaded_bytes, total_bytes)
-
-            self.update_status("Обновление файлов...")
-
-            # Ensure base dir
-            os.makedirs(CLIENT_DIR, exist_ok=True)
-
-            for entry in files:
-                rel_path = entry.get('path')
-                # Add to wanted paths regardless of download status (to avoid deletion)
-                wanted_paths.add(rel_path.replace('\\', '/'))
-
-            for entry in files_to_download:
-                rel_path = entry.get('path')
-                expected_sha256 = entry.get('sha256')
-                expected_size = entry.get('size')
-                
-                if expected_size:
-                    expected_size = int(expected_size)
-
-                local_path = _safe_join(CLIENT_DIR, rel_path)
-
-                # Download
-                # Build URL: base_url + '/' + quoted path (preserve slashes)
-                quoted = '/'.join(urllib.parse.quote(p) for p in rel_path.replace('\\', '/').split('/'))
-                file_url = base_url.rstrip('/') + '/' + quoted
-
-                last_downloaded = 0
-
-                def _progress_cb(current_downloaded: int):
-                    nonlocal last_downloaded
-                    delta = current_downloaded - last_downloaded
-                    last_downloaded = current_downloaded
-                    if delta > 0:
-                        _bump_progress(delta)
-
-                self.update_status(f"Скачивание: {rel_path}")
-                self.update_idletasks()
-                _download_url_to_file(file_url, local_path, expected_sha256, expected_size, progress_cb=_progress_cb)
-
-            # Cleanup extra files
-
-            # Cleanup extra files
-            self.update_status("Очистка...")
-            for root, dirs, files_in_dir in os.walk(CLIENT_DIR):
-                for fn in files_in_dir:
-                    full = os.path.join(root, fn)
-                    rel = os.path.relpath(full, CLIENT_DIR).replace('\\', '/')
-                    if rel not in wanted_paths:
-                        try:
-                            os.remove(full)
-                        except Exception:
-                            pass
-
-            # Remove empty dirs (bottom-up)
-            for root, dirs, _ in os.walk(CLIENT_DIR, topdown=False):
-                for d in dirs:
-                    p = os.path.join(root, d)
-                    try:
-                        if not os.listdir(p):
-                            os.rmdir(p)
-                    except Exception:
-                        pass
-
-            # Update version file
-            with open(os.path.join(LAUNCHER_DIR, VERSION_FILE), "w") as f:
-                f.write(version)
-
-            self.update_status("Обновление завершено!")
-            self.update_progress(total_bytes, total_bytes)
-            time.sleep(0.5)
-            self.launch_client()
-
-        except Exception as e:
-            # Fallback to zip update to keep users unblocked
-            self.status_label.config(text=f"Ошибка инкрементального обновления: {e}")
-            print(f"Incremental update error: {e}")
-            time.sleep(1.5)
-            if fallback_zip_url and fallback_zip_sig:
-                self.download_update(fallback_zip_url, version, fallback_zip_sig)
-            else:
-                self.launch_existing_or_fail("Ошибка обновления. Попытка запуска оффлайн...")
 
     def launch_existing_or_fail(self, message):
         self.update_status(message)
