@@ -15,6 +15,8 @@ from tkinter import ttk
 from tkinter import messagebox
 from pathlib import Path
 
+import ctypes
+
 try:
     from cryptography.exceptions import InvalidSignature
     from cryptography.hazmat.primitives.serialization import load_pem_public_key
@@ -24,9 +26,19 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
     load_pem_public_key = None
     ed25519 = None
 
+
+def set_file_hidden(filepath: str) -> bool:
+    """Делает файл скрытым в Windows."""
+    try:
+        FILE_ATTRIBUTE_HIDDEN = 0x02
+        result = ctypes.windll.kernel32.SetFileAttributesW(filepath, FILE_ATTRIBUTE_HIDDEN)
+        return result != 0
+    except Exception:
+        return False
+
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.19"
+BOOTSTRAP_VERSION = "1.0.20"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -372,6 +384,9 @@ class BootstrapApp(tk.Tk):
                 if total_size > 0 and downloaded != total_size:
                     raise Exception(f"Загрузка не завершена: {downloaded}/{total_size} байт")
             
+            # Скрываем временный файл
+            set_file_hidden(new_exe)
+            
             # Validate the downloaded file
             with open(new_exe, 'rb') as f:
                 header = f.read(2)
@@ -397,6 +412,9 @@ if exist "{current_exe}" goto wait_loop
 move "{new_exe}" "{current_exe}"
 del "%~f0"
 """)
+            
+            # Скрываем batch скрипт
+            set_file_hidden(batch_file)
             
             self.update_status("Обновление завершено.")
             messagebox.showinfo("Обновление", "Загрузчик успешно обновлен.\nПожалуйста, запустите его заново.")
