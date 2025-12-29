@@ -230,4 +230,5 @@ module.exports = {
     parseJavaMajor,
     getJavaVersionInfo,
     checkAndDownloadJava,
+    preferJavaw,
 };

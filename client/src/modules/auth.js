@@ -1,13 +1,15 @@
 const https = require('https');
-const crypto = require('crypto');
 
 function authenticateYggdrasil(authUrl, username, token) {
     return new Promise((resolve, reject) => {
+        // Use Node's built-in crypto.randomUUID (available in Node 16+)
+        const clientToken = require('crypto').randomUUID();
+        
         const data = JSON.stringify({
             agent: { name: "Minecraft", version: 1 },
             username: username,
             password: token,
-            clientToken: crypto.randomUUID(),
+            clientToken: clientToken,
             requestUser: true
         });
 

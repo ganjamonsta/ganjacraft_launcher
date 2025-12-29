@@ -14,7 +14,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from pathlib import Path
-import hashlib
 
 try:
     from cryptography.exceptions import InvalidSignature
@@ -27,7 +26,7 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.18"
+BOOTSTRAP_VERSION = "1.0.19"
 BOOTSTRAP_API_URL = "https://ganjacraft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganjacraft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -91,52 +90,6 @@ def verify_update_signature(zip_path: str, signature_b64: str) -> None:
         public_key.verify(signature, data)
     except InvalidSignature:
         raise Exception("Подпись обновления не совпадает. Возможна подмена файла.")
-
-
-def verify_update_signature_bytes(data: bytes, signature_b64: str) -> None:
-    """Verify arbitrary bytes (e.g. manifest) against signature from version.json."""
-    if not signature_b64:
-        raise Exception("Обновление не подписано. Установка заблокирована из соображений безопасности.")
-
-    try:
-        signature = base64.b64decode(signature_b64, validate=True)
-    except Exception:
-        raise Exception("Неверная подпись обновления (base64)")
-
-    if len(signature) != 64:
-        raise Exception("Неверная подпись обновления (длина)")
-
-    public_key = _get_update_public_key()
-    try:
-        public_key.verify(signature, data)
-    except InvalidSignature:
-        raise Exception("Подпись обновления не совпадает. Возможна подмена файла.")
-
-
-def _safe_join(base_dir: str, rel_path: str) -> str:
-    if not rel_path or not isinstance(rel_path, str):
-        raise Exception("Неверный путь файла обновления")
-
-    rel_path = rel_path.replace('\\', '/')
-    if rel_path.startswith('/') or rel_path.startswith('\\'):
-        raise Exception("Небезопасный путь файла обновления (absolute)")
-
-    normalized = os.path.normpath(rel_path)
-    if os.path.isabs(normalized) or normalized.startswith('..') or normalized.startswith('..' + os.sep):
-        raise Exception("Небезопасный путь файла обновления (traversal)")
-
-    out_path = os.path.join(base_dir, normalized)
-    if not _is_within_directory(base_dir, out_path):
-        raise Exception("Небезопасный путь файла обновления (escaped base)")
-    return out_path
-
-
-def _sha256_file(path_: str) -> str:
-    h = hashlib.sha256()
-    with open(path_, 'rb') as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b''):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def _is_within_directory(base_dir: str, target_path: str) -> bool:

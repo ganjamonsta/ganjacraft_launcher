@@ -12,14 +12,13 @@ if (!fs.existsSync(customUserDataPath)) {
 app.setPath('userData', customUserDataPath);
 
 const https = require('https');
-const { spawn } = require('child_process');
 const { Client } = require('minecraft-launcher-core');
 
 // Modules
 const { loadConfig, saveConfig } = require('./modules/config');
 const { syncFiles, downloadFile } = require('./modules/updater');
 const { authenticateYggdrasil } = require('./modules/auth');
-const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR } = require('./modules/java');
+const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJavaw } = require('./modules/java');
 
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -97,10 +96,6 @@ const REPAIR_FILES = {
 const MIRROR_BASE = 'https://ganjacraft.ru/mirror';
 const VANILLA_VERSION_JSON_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.json`;
 const VANILLA_VERSION_JAR_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.jar`;
-
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
     // Comprehensive repair: check all critical game files and re-download if corrupt.
@@ -219,42 +214,29 @@ async function ensureWritableFilePath(filePath) {
 }
 
 async function preflightForgeLibraries(rootPath, sendLog, sendDebug) {
-    // Check critical Forge bootstrap libs for integrity. If they're corrupt/missing, delete so MCLC can re-download.
+    // Check that critical Forge bootstrap libs are writable (Windows AV/Defender issue).
+    // Integrity is already verified by repairCriticalFiles(), so here we only check write access.
     const librariesDir = path.join(rootPath, 'libraries');
     
-    // These versions correspond to FORGE_VERSION 1.20.1-47.4.0.
     const criticalLibs = [
         path.join(librariesDir, 'cpw', 'mods', 'modlauncher', '10.0.9', 'modlauncher-10.0.9.jar'),
         path.join(librariesDir, 'cpw', 'mods', 'securejarhandler', '2.1.10', 'securejarhandler-2.1.10.jar'),
     ];
 
     for (const libPath of criticalLibs) {
-        const libName = path.basename(libPath);
-        const libDir = path.dirname(libPath);
-
-        // If file doesn't exist, MCLC will download it.
+        // Skip if file doesn't exist - MCLC will download it.
         if (!fs.existsSync(libPath)) {
-            sendDebug(`Preflight: ${libName} does not exist, MCLC will download it.`);
+            sendDebug(`Preflight: ${path.basename(libPath)} does not exist yet.`);
             continue;
         }
-
-        // Check if file is a valid ZIP/JAR
-        const isValid = isZipIntact(libPath);
-        if (!isValid) {
-            sendDebug(`Preflight: ${libName} is corrupt (invalid ZIP), deleting for re-download...`);
-            sendLog(`Обнаружен повреждённый файл ${libName}, удаляю для переcкачивания...`);
-            try {
-                // Ensure dir exists, clear readonly, delete
-                if (!fs.existsSync(libDir)) fs.mkdirSync(libDir, { recursive: true });
-                try { fs.chmodSync(libPath, 0o666); } catch {}
-                fs.unlinkSync(libPath);
-                sendDebug(`Deleted corrupt ${libName}`);
-            } catch (e) {
-                // If delete fails, we'll let MCLC try — might still work if file is readable
-                sendDebug(`Failed to delete ${libName}: ${e.message}, proceeding anyway`);
-            }
-        } else {
-            sendDebug(`Preflight: ${libName} integrity OK.`);
+        
+        // Ensure file is writable (not locked by AV)
+        try {
+            await ensureWritableFilePath(libPath);
+            sendDebug(`Preflight: ${path.basename(libPath)} is writable.`);
+        } catch (e) {
+            sendDebug(`Preflight: ${path.basename(libPath)} write check failed: ${e.message}`);
+            // Don't throw - repairCriticalFiles already handles re-downloads
         }
     }
 }
@@ -407,7 +389,12 @@ function cleanZeroByteFiles(dir) {
         const files = fs.readdirSync(dir);
         for (const file of files) {
             const filePath = path.join(dir, file);
-            const stats = fs.statSync(filePath);
+            let stats;
+            try {
+                stats = fs.statSync(filePath);
+            } catch {
+                continue; // Skip inaccessible files
+            }
             if (stats.isDirectory()) {
                 cleanZeroByteFiles(filePath);
             } else if (stats.isFile()) {
@@ -415,41 +402,17 @@ function cleanZeroByteFiles(dir) {
                 if (stats.size === 0) {
                     shouldDelete = true;
                 } else if (file.endsWith('.jar') || file.endsWith('.zip')) {
-                    try {
-                        const fd = fs.openSync(filePath, 'r');
-                        
-                        // 1. Check Header (PK..)
-                        const headerBuffer = Buffer.alloc(4);
-                        fs.readSync(fd, headerBuffer, 0, 4, 0);
-                        if (headerBuffer.toString('hex') !== '504b0304') {
-                            console.log(`[CLEANUP] Invalid zip header for ${filePath}: ${headerBuffer.toString('hex')}`);
-                            shouldDelete = true;
-                        }
-
-                        // 2. Check Footer (EOCD) - Heuristic: Scan last 4KB
-                        if (!shouldDelete && stats.size > 22) {
-                            const scanSize = Math.min(stats.size, 4096);
-                            const footerBuffer = Buffer.alloc(scanSize);
-                            fs.readSync(fd, footerBuffer, 0, scanSize, stats.size - scanSize);
-                            
-                            // EOCD signature: 50 4B 05 06
-                            if (!footerBuffer.includes(Buffer.from([0x50, 0x4B, 0x05, 0x06]))) {
-                                console.log(`[CLEANUP] Missing EOCD signature (truncated?) for ${filePath}`);
-                                shouldDelete = true;
-                            }
-                        }
-                        
-                        fs.closeSync(fd);
-                    } catch (err) {
-                        console.error(`[CLEANUP] Error checking file ${filePath}:`, err);
-                        shouldDelete = true; // If we can't read it, it's probably bad
+                    // Reuse shared ZIP integrity check
+                    if (!isZipIntact(filePath)) {
+                        console.log(`[CLEANUP] Corrupt JAR/ZIP detected: ${filePath}`);
+                        shouldDelete = true;
                     }
                 }
 
                 if (shouldDelete) {
                     console.log(`[CLEANUP] Deleting corrupted file: ${filePath}`);
                     try {
-                        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                        fs.unlinkSync(filePath);
                     } catch (e) {
                         console.error(`[CLEANUP] Failed to delete ${filePath}:`, e);
                         throw new Error(`Не удалось удалить поврежденный файл: ${path.basename(filePath)}. Возможно, он занят другим процессом. Перезагрузите ПК.`);
@@ -458,6 +421,7 @@ function cleanZeroByteFiles(dir) {
             }
         }
     } catch (e) {
+        if (e.message?.includes('Не удалось удалить')) throw e;
         console.error(`[CLEANUP] Error scanning ${dir}:`, e);
     }
 }
@@ -788,14 +752,11 @@ ipcMain.handle('launch-game', async (event, options) => {
     }
 
     // Windows: prefer javaw.exe to avoid opening a console window.
-    if (process.platform === 'win32' && javaPath && typeof javaPath === 'string') {
-        const lower = javaPath.toLowerCase();
-        if (lower.endsWith('java.exe')) {
-            const candidate = javaPath.replace(/java\.exe$/i, 'javaw.exe');
-            if (fs.existsSync(candidate)) {
-                sendDebug(`Using javaw.exe to avoid console: ${candidate}`);
-                javaPath = candidate;
-            }
+    if (process.platform === 'win32' && javaPath) {
+        const preferredPath = preferJavaw(javaPath);
+        if (preferredPath !== javaPath) {
+            sendDebug(`Using javaw.exe to avoid console: ${preferredPath}`);
+            javaPath = preferredPath;
         }
     }
 
@@ -990,8 +951,11 @@ ipcMain.handle('launch-game', async (event, options) => {
     // Get window instance to restore it later
     const mainWindow = BrowserWindow.fromWebContents(event.sender);
 
-    // Listen for game close event
-    // We use 'once' to avoid stacking listeners if multiple launches happen in one session
+    // IMPORTANT: Remove all previous listeners first to prevent memory leaks and duplicate messages.
+    // The launcher object is reused across multiple game launches.
+    launcher.removeAllListeners();
+
+    // Now register fresh listeners for this launch session
     launcher.once('close', (code) => {
         isGameRunning = false;
         sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
@@ -1011,18 +975,11 @@ ipcMain.handle('launch-game', async (event, options) => {
             mainWindow.webContents.send('game-closed');
         }
     });
-    
-    // Capture MCLC debug output
-    if (config.debugMode) {
-        launcher.on('debug', (e) => sendDebug(`[MCLC] ${e}`));
-        launcher.on('data', (e) => sendDebug(`[GAME STDOUT] ${e}`));
-        launcher.on('error', (e) => sendDebug(`[GAME STDERR] ${e}`));
-    }
 
     return new Promise((resolve, reject) => {
         let hasResolved = false;
 
-        const onArguments = (e) => {
+        const onArguments = () => {
             if (!hasResolved) {
                 hasResolved = true;
                 sendLog('[LAUNCHER] Процесс игры запускается...');
@@ -1033,28 +990,31 @@ ipcMain.handle('launch-game', async (event, options) => {
 
         // Listen for arguments event (emitted just before spawn)
         launcher.once('arguments', onArguments);
-        // Also listen for data (stdout) just in case arguments is missed or behavior changes
-        launcher.once('data', onArguments);
 
-        // Standard logging listeners (always active for UI)
-        launcher.on('debug', (e) => {
-            // Only send to UI if debug mode is on, otherwise it's too spammy
-            if (config.debugMode && mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
+        // Debug logging (only in debug mode)
+        if (config.debugMode) {
+            launcher.on('debug', (e) => {
+                sendDebug(`[MCLC] ${e}`);
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
+                }
+            });
+        }
+
+        // Game stdout/stderr
+        launcher.on('data', (e) => {
+            if (config.debugMode) sendDebug(`[GAME STDOUT] ${e}`);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('log-message', `[GAME] ${e}`);
             }
         });
-        launcher.on('data', (e) => {
-            if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[GAME] ${e}`);
+        launcher.on('error', (e) => {
+            if (config.debugMode) sendDebug(`[GAME STDERR] ${e}`);
         });
+
+        // Progress reporting
         launcher.on('progress', (e) => {
             if (mainWindow && !mainWindow.isDestroyed()) {
-                // Try to get filename from event
-                const fileName = e.name || e.file || '';
-                const msg = `[PROGRESS] ${e.type} - ${e.task} (${e.total}) ${fileName ? '- ' + fileName : ''}`;
-                // Don't spam UI log with progress, just update bar
-                // mainWindow.webContents.send('log-message', msg);
-                
-                // Forward progress to renderer for the UI bar
                 mainWindow.webContents.send('progress', { task: e.task, total: e.total, type: e.type });
             }
         });

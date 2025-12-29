@@ -1,5 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+const API_BASE = 'https://ganjacraft.ru/api';
+const DEFAULT_TIMEOUT = 15000;
+
 async function fetchWithTimeout(resource, options = {}) {
     const { timeout = 5000 } = options;
     
@@ -27,81 +30,54 @@ async function readJsonOrThrow(response) {
     try {
         return JSON.parse(text);
     } catch (e) {
-        // Preserve body for diagnostics
         throw new Error(`Invalid JSON response: ${text}`);
+    }
+}
+
+// Unified API call helper to reduce duplication
+async function apiCall(endpoint, { method = 'POST', body = null, headers = {}, returnErrorAsResult = false } = {}) {
+    try {
+        const response = await fetchWithTimeout(`${API_BASE}${endpoint}`, {
+            method,
+            headers: { 'Content-Type': 'application/json', ...headers },
+            body: body ? JSON.stringify(body) : undefined,
+            timeout: DEFAULT_TIMEOUT
+        });
+        
+        if (!response.ok) {
+            if (returnErrorAsResult) {
+                return { success: false, message: `API Error: ${response.status}` };
+            }
+            const text = await response.text();
+            throw new Error(`API Error: ${response.status} - ${text}`);
+        }
+        return readJsonOrThrow(response);
+    } catch (e) {
+        if (e && e.name === 'AbortError') {
+            const msg = 'Таймаут сети (сервер не ответил вовремя)';
+            if (returnErrorAsResult) return { success: false, message: msg };
+            throw new Error(msg);
+        }
+        if (returnErrorAsResult) return { success: false, message: e?.message || String(e) };
+        throw new Error(e?.message || String(e));
     }
 }
 
 contextBridge.exposeInMainWorld('api', {
     launchGame: (options) => ipcRenderer.invoke('launch-game', options),
-    // Функция для запроса к нашему API серверу (Python API)
-    requestAuth: async (username) => {
-        // Используем реальный адрес сервера вместо localhost
-        try {
-            const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username }),
-                timeout: 15000
-            });
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(`API Error: ${response.status} - ${text}`);
-            }
-            return readJsonOrThrow(response);
-        } catch (e) {
-            if (e && e.name === 'AbortError') {
-                throw new Error('Таймаут сети (сервер не ответил вовремя)');
-            }
-            throw new Error(e?.message || String(e));
-        }
-    },
-    verifyAuth: async (username, code) => {
-        try {
-            const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, code }),
-                timeout: 15000
-            });
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(`API Error: ${response.status} - ${text}`);
-            }
-            return readJsonOrThrow(response);
-        } catch (e) {
-            if (e && e.name === 'AbortError') {
-                throw new Error('Таймаут сети (сервер не ответил вовремя)');
-            }
-            throw new Error(e?.message || String(e));
-        }
-    },
-    checkAuth: async (username, token) => {
-        try {
-            const response = await fetchWithTimeout('https://ganjacraft.ru/api/launcher/auth/check', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Auth-Token': token
-                },
-                body: JSON.stringify({ username }),
-                timeout: 15000
-            });
-            if (!response.ok) {
-                // Don't throw here, just return success: false, as this is a background check
-                return { success: false, message: `API Error: ${response.status}` };
-            }
-            return readJsonOrThrow(response);
-        } catch (e) {
-            if (e && e.name === 'AbortError') {
-                return { success: false, message: 'Таймаут сети (сервер не ответил вовремя)' };
-            }
-            return { success: false, message: e?.message || String(e) };
-        }
-    },
+    
+    // Auth API calls (unified)
+    requestAuth: (username) => apiCall('/launcher/auth/request', { body: { username } }),
+    verifyAuth: (username, code) => apiCall('/launcher/auth/verify', { body: { username, code } }),
+    checkAuth: (username, token) => apiCall('/launcher/auth/check', {
+        body: { username },
+        headers: { 'X-Auth-Token': token },
+        returnErrorAsResult: true  // Background check - don't throw
+    }),
+    
     getNews: async () => {
         try {
-            const response = await fetchWithTimeout('https://ganjacraft.ru/api/news?limit=5');
+            const response = await fetchWithTimeout(`${API_BASE}/news?limit=5`);
             return response.json();
         } catch (e) {
             return { success: false, error: e.message, news: [] };

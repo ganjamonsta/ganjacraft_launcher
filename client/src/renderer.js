@@ -5,12 +5,27 @@ let snowInterval = null;
 let mouseX = 0;
 let mouseY = 0;
 let hasMouseMoved = false;
+let isWindowVisible = true;
 
 // Parallax State
 let parallaxTargetX = 0;
 let parallaxTargetY = 0;
 let parallaxCurrentX = 0;
 let parallaxCurrentY = 0;
+
+// Pause visual effects when window is hidden to save CPU
+document.addEventListener('visibilitychange', () => {
+    isWindowVisible = !document.hidden;
+    if (isWindowVisible && currentConfig.enableSnow !== false) {
+        toggleSnow(true);
+    } else if (!isWindowVisible) {
+        // Pause snow when hidden
+        if (snowInterval) {
+            clearInterval(snowInterval);
+            snowInterval = null;
+        }
+    }
+});
 
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
@@ -29,32 +44,43 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
-// Animation Loop for Smooth Parallax
+// Animation Loop for Smooth Parallax (only when visible)
+let parallaxAnimId = null;
 function animateParallax() {
-    if (currentConfig.enableParallax !== false) {
+    if (isWindowVisible && currentConfig.enableParallax !== false) {
         const bg = document.getElementById('bg-overlay');
         if (bg) {
             // Linear Interpolation (Lerp) for smoothness
             parallaxCurrentX += (parallaxTargetX - parallaxCurrentX) * 0.05;
             parallaxCurrentY += (parallaxTargetY - parallaxCurrentY) * 0.05;
             
-            // Round to avoid sub-pixel blurring if desired, but float is smoother
             bg.style.transform = `translate(${parallaxCurrentX.toFixed(2)}px, ${parallaxCurrentY.toFixed(2)}px)`;
         }
     }
-    requestAnimationFrame(animateParallax);
+    parallaxAnimId = requestAnimationFrame(animateParallax);
 }
 requestAnimationFrame(animateParallax);
 
-// Continuous smoke loop
-setInterval(() => {
-    // Optimization: Disable smoke if disabled
-    if (currentConfig.enableSmoke === false) return;
+// Smoke effect management
+let smokeInterval = null;
 
-    if (hasMouseMoved) {
-        createSmokeParticle(mouseX, mouseY);
+function startSmokeEffect() {
+    if (smokeInterval) return;
+    smokeInterval = setInterval(() => {
+        if (hasMouseMoved) {
+            createSmokeParticle(mouseX, mouseY);
+        }
+    }, 50);
+}
+
+function stopSmokeEffect() {
+    if (smokeInterval) {
+        clearInterval(smokeInterval);
+        smokeInterval = null;
     }
-}, 50);
+}
+
+// Initialize smoke based on config (will be started after config loads)
 
 function createSmokeParticle(x, y) {
     const particle = document.createElement('div');
@@ -77,6 +103,9 @@ function createSmokeParticle(x, y) {
 function createSnowflake() {
     const snowContainer = document.getElementById('snow-container');
     if (!snowContainer) return;
+    
+    // Limit max snowflakes to prevent performance issues
+    if (snowContainer.children.length > 50) return;
 
     const snowflake = document.createElement('div');
     snowflake.classList.add('snowflake');
@@ -282,8 +311,13 @@ btnSaveSettings.addEventListener('click', async () => {
     }
     currentConfig = newConfig; // Update local config immediately
     
-    // Apply Snow Effect
+    // Apply Visual Effects
     toggleSnow(newConfig.enableSnow);
+    if (newConfig.enableSmoke) {
+        startSmokeEffect();
+    } else {
+        stopSmokeEffect();
+    }
 
     // Reset Parallax if disabled
     if (!newConfig.enableParallax) {
@@ -586,10 +620,6 @@ document.getElementById('login-btn').addEventListener('click', async () => {
             
             // Auto-focus code input
             codeInput.focus();
-            
-            // DEBUG: Log code to console for testing
-            console.log('DEBUG CODE:', result.debugCode);
-            logToConsole(`[AUTH] Debug Code: ${result.debugCode}`);
         } else {
             showAuthError('login-error', result.message || 'Ошибка сервера');
         }
@@ -805,39 +835,14 @@ function logToConsole(text) {
     logToConsole('[LAUNCHER] Client initialized.');
     currentConfig = await window.api.loadConfig();
 
-    // Apply Snow Effect
+    // Apply Visual Effects based on config
     toggleSnow(currentConfig.enableSnow !== false);
-
-    // Apply default disabled mods once (fresh installs)
-    if (currentConfig.modsDefaultsApplied !== true) {
-        try {
-            const manifest = await window.api.getManifest();
-            if (manifest) {
-                const defaultDisabledGroups = ['fancymenu', 'motor', 'schematics'];
-                const disabledPaths = [];
-                
-                const allFiles = manifest.files.filter(f => f.optional && f.path.startsWith('mods/'));
-                
-                MOD_GROUPS.forEach(group => {
-                    if (defaultDisabledGroups.includes(group.id)) {
-                        const groupFiles = allFiles.filter(f => {
-                            const fileName = f.path.split('/').pop();
-                            return group.files.some(pattern => fileName.includes(pattern));
-                        });
-                        groupFiles.forEach(f => disabledPaths.push(f.path));
-                    }
-                });
-
-                const existing = Array.isArray(currentConfig.disabledMods) ? currentConfig.disabledMods : [];
-                currentConfig.disabledMods = Array.from(new Set([...existing, ...disabledPaths]));
-                currentConfig.modsDefaultsApplied = true;
-                await window.api.saveConfig(currentConfig);
-                console.log('[CONFIG] Applied default disabled mods:', disabledPaths);
-            }
-        } catch (e) {
-            console.error('Failed to apply default config:', e);
-        }
+    if (currentConfig.enableSmoke !== false) {
+        startSmokeEffect();
     }
+
+    // NOTE: Default disabled mods are now applied in main.js before syncFiles.
+    // This ensures they are applied before the first download, not after UI init.
 
     // Display Version
     try {

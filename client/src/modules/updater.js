@@ -22,16 +22,6 @@ function resolveUnderRoot(rootPath, relativePath) {
     return destResolved;
 }
 
-function sha1FileSync(filePath) {
-    const hash = crypto.createHash('sha1');
-    const stream = fs.createReadStream(filePath);
-    return new Promise((resolve, reject) => {
-        stream.on('error', err => reject(err));
-        stream.on('data', chunk => hash.update(chunk));
-        stream.on('end', () => resolve(hash.digest('hex')));
-    });
-}
-
 function downloadFile(url, dest, options = {}) {
     const {
         timeoutMs = 30_000,
@@ -125,7 +115,7 @@ function downloadFile(url, dest, options = {}) {
                     }
 
                     if (typeof expectedHash === 'string' && expectedHash.length > 0) {
-                        const actualHash = await sha1FileSync(tmpDest);
+                        const actualHash = await getFileHash(tmpDest);
                         if (actualHash !== expectedHash) {
                             try { fs.unlinkSync(tmpDest); } catch {}
                             reject(new Error(`Hash mismatch after download`));
