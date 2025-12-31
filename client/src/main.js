@@ -813,25 +813,30 @@ ipcMain.handle('launch-game', async (event, options) => {
         }
     }
 
-    // Синхронизация модов
-    try {
-        const onSyncProgress = (p) => {
-            if (event.sender && !event.sender.isDestroyed()) {
-                event.sender.send('progress', p);
+    // Синхронизация модов (skip in dev mode)
+    if (options.devMode) {
+        sendLog('[DEV MODE] Пропуск синхронизации файлов...');
+        sendDebug('Dev mode enabled - skipping syncFiles');
+    } else {
+        try {
+            const onSyncProgress = (p) => {
+                if (event.sender && !event.sender.isDestroyed()) {
+                    event.sender.send('progress', p);
+                }
+            };
+            sendDebug('Starting syncFiles...');
+            await syncFiles(rootPath, MANIFEST_URL, sendLog, onSyncProgress, config.disabledMods, () => isLaunchCancelled);
+            sendDebug('syncFiles completed.');
+        } catch (e) {
+            if (e.message === 'CANCELLED') {
+                sendLog('Запуск отменен пользователем.');
+                isGameRunning = false;
+                return { success: false, error: "Запуск отменен" };
             }
-        };
-        sendDebug('Starting syncFiles...');
-        await syncFiles(rootPath, MANIFEST_URL, sendLog, onSyncProgress, config.disabledMods, () => isLaunchCancelled);
-        sendDebug('syncFiles completed.');
-    } catch (e) {
-        if (e.message === 'CANCELLED') {
-            sendLog('Запуск отменен пользователем.');
-            isGameRunning = false;
-            return { success: false, error: "Запуск отменен" };
+            sendLog('ВНИМАНИЕ: Ошибка синхронизации модов. Игра может работать нестабильно.');
+            sendDebug(`Sync error: ${e.stack}`);
+            console.error(e);
         }
-        sendLog('ВНИМАНИЕ: Ошибка синхронизации модов. Игра может работать нестабильно.');
-        sendDebug(`Sync error: ${e.stack}`);
-        console.error(e);
     }
 
     if (isLaunchCancelled) {

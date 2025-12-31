@@ -210,10 +210,25 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         const localPath = resolveUnderRoot(rootPath, file.path);
         const localDir = path.dirname(localPath);
 
-        // PROTECT USER OPTIONS
-        // If options.txt or config files exist, do not overwrite them with the server version.
-        // This allows users to keep their custom settings (keybinds, video settings, etc.)
-        if ((file.path === 'options.txt' || file.path.startsWith('config/')) && fs.existsSync(localPath)) {
+        // PROTECT USER OPTIONS vs FORCE UPDATE SERVER UI
+        // Some files should always be updated (server-controlled UI/menus)
+        // Others should be protected (user keybinds, graphics settings)
+        const isServerControlled = (
+            file.path.startsWith('fancymenu_data/') ||
+            file.path.startsWith('config/fancymenu/') ||
+            file.path.startsWith('config/fancymenu-') ||
+            file.path.startsWith('resourcepacks/[GanjaCraft]') ||
+            file.path.startsWith('kubejs/')
+        );
+
+        // User-controlled files: protect if they exist locally
+        const isUserProtected = (
+            file.path === 'options.txt' ||
+            file.path === 'servers.dat' ||
+            (file.path.startsWith('config/') && !isServerControlled)
+        );
+
+        if (isUserProtected && fs.existsSync(localPath)) {
             processed++;
             if (onProgress) {
                 onProgress({ task: processed, total: totalFiles, type: 'mods' });
@@ -317,6 +332,167 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
                 }
             }
         }
+    }
+
+    // Cleanup: Remove unmanaged thingpacks (JsonThings custom content)
+    const thingpacksDir = path.join(rootPath, 'thingpacks');
+    if (fs.existsSync(thingpacksDir)) {
+        const manifestThingpacks = new Set(
+            manifest.files
+                .filter(f => f.path.startsWith('thingpacks/'))
+                .map(f => f.path.split('/')[1]) // Get thingpack folder name
+        );
+
+        const localThingpacks = fs.readdirSync(thingpacksDir);
+        for (const pack of localThingpacks) {
+            const fullPath = path.join(thingpacksDir, pack);
+            try {
+                if (!fs.statSync(fullPath).isDirectory()) continue;
+            } catch (e) { continue; }
+
+            if (!manifestThingpacks.has(pack)) {
+                sendLog(`Удаление старого thingpack: ${pack}`);
+                try {
+                    fs.rmSync(fullPath, { recursive: true, force: true });
+                } catch (e) {
+                    sendLog(`Не удалось удалить thingpack ${pack}: ${e.message}`);
+                }
+            }
+        }
+    }
+
+    // Cleanup: Remove unmanaged KubeJS scripts (only in synced folders)
+    // We only sync client_scripts, startup_scripts, and assets - leave server_scripts alone
+    const kubejsDir = path.join(rootPath, 'kubejs');
+    const kubejsSyncedFolders = ['client_scripts', 'startup_scripts', 'assets'];
+    
+    if (fs.existsSync(kubejsDir)) {
+        // Get all manifest kubejs paths normalized
+        const manifestKubejs = new Set(
+            manifest.files
+                .filter(f => f.path.startsWith('kubejs/'))
+                .map(f => path.normalize(f.path))
+        );
+
+        // Recursively clean only synced kubejs subdirectories
+        const cleanKubejsDir = (dir, relBase) => {
+            if (!fs.existsSync(dir)) return;
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            
+            for (const entry of entries) {
+                const fullPath = path.join(dir, entry.name);
+                const relPath = path.join(relBase, entry.name);
+                const normalizedPath = path.normalize(relPath);
+
+                if (entry.isDirectory()) {
+                    cleanKubejsDir(fullPath, relPath);
+                    // Remove empty directories
+                    try {
+                        const remaining = fs.readdirSync(fullPath);
+                        if (remaining.length === 0) {
+                            fs.rmdirSync(fullPath);
+                        }
+                    } catch (e) { /* ignore */ }
+                } else {
+                    if (!manifestKubejs.has(normalizedPath)) {
+                        sendLog(`Удаление устаревшего скрипта: ${relPath}`);
+                        try {
+                            fs.unlinkSync(fullPath);
+                        } catch (e) {
+                            sendLog(`Не удалось удалить ${relPath}: ${e.message}`);
+                        }
+                    }
+                }
+            }
+        };
+
+        // Only clean synced folders, not the entire kubejs directory
+        for (const folder of kubejsSyncedFolders) {
+            const folderPath = path.join(kubejsDir, folder);
+            if (fs.existsSync(folderPath)) {
+                cleanKubejsDir(folderPath, path.join('kubejs', folder));
+            }
+        }
+    }
+
+    // Cleanup: Remove outdated [GanjaCraft] resourcepacks (server-controlled)
+    const resourcepacksDir = path.join(rootPath, 'resourcepacks');
+    if (fs.existsSync(resourcepacksDir)) {
+        // Get manifest resourcepack names (only [GanjaCraft]* ones)
+        const manifestResourcepacks = new Set(
+            manifest.files
+                .filter(f => f.path.startsWith('resourcepacks/') && f.path.includes('[GanjaCraft]'))
+                .map(f => {
+                    // resourcepacks/[GanjaCraft] Main/... -> [GanjaCraft] Main
+                    const parts = f.path.split('/');
+                    return parts[1] || '';
+                })
+                .filter(name => name.startsWith('[GanjaCraft]'))
+        );
+
+        const localPacks = fs.readdirSync(resourcepacksDir);
+        for (const pack of localPacks) {
+            // Only cleanup [GanjaCraft]* packs, leave user packs alone
+            if (!pack.startsWith('[GanjaCraft]')) continue;
+
+            const fullPath = path.join(resourcepacksDir, pack);
+            
+            if (!manifestResourcepacks.has(pack)) {
+                sendLog(`Удаление устаревшего ресурспака: ${pack}`);
+                try {
+                    const stat = fs.statSync(fullPath);
+                    if (stat.isDirectory()) {
+                        fs.rmSync(fullPath, { recursive: true, force: true });
+                    } else {
+                        fs.unlinkSync(fullPath);
+                    }
+                } catch (e) {
+                    sendLog(`Не удалось удалить ${pack}: ${e.message}`);
+                }
+            }
+        }
+    }
+
+    // Cleanup: Remove outdated fancymenu_data files (server-controlled UI)
+    const fancymenuDir = path.join(rootPath, 'fancymenu_data');
+    if (fs.existsSync(fancymenuDir)) {
+        const manifestFancymenu = new Set(
+            manifest.files
+                .filter(f => f.path.startsWith('fancymenu_data/'))
+                .map(f => path.normalize(f.path))
+        );
+
+        const cleanFancymenuDir = (dir, relBase) => {
+            if (!fs.existsSync(dir)) return;
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            
+            for (const entry of entries) {
+                const fullPath = path.join(dir, entry.name);
+                const relPath = path.join(relBase, entry.name);
+                const normalizedPath = path.normalize(relPath);
+
+                if (entry.isDirectory()) {
+                    cleanFancymenuDir(fullPath, relPath);
+                    try {
+                        const remaining = fs.readdirSync(fullPath);
+                        if (remaining.length === 0) {
+                            fs.rmdirSync(fullPath);
+                        }
+                    } catch (e) { /* ignore */ }
+                } else {
+                    if (!manifestFancymenu.has(normalizedPath)) {
+                        sendLog(`Удаление устаревшего UI файла: ${relPath}`);
+                        try {
+                            fs.unlinkSync(fullPath);
+                        } catch (e) {
+                            sendLog(`Не удалось удалить ${relPath}: ${e.message}`);
+                        }
+                    }
+                }
+            }
+        };
+
+        cleanFancymenuDir(fancymenuDir, 'fancymenu_data');
     }
 
     if (downloaded > 0) {

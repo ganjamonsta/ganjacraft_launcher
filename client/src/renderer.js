@@ -675,6 +675,16 @@ function showPlayScreen() {
     stepPlay.classList.remove('hidden');
     stepPlay.classList.add('fade-in');
     document.getElementById('welcome-msg').innerText = `Добро пожаловать, ${currentUsername}!`;
+    
+    // Show dev mode checkbox for admins only
+    const devModeContainer = document.getElementById('dev-mode-container');
+    if (devModeContainer) {
+        if (localStorage.getItem('is_admin') === 'true') {
+            devModeContainer.classList.remove('hidden');
+        } else {
+            devModeContainer.classList.add('hidden');
+        }
+    }
 }
 
 document.getElementById('play-btn').addEventListener('click', () => {
@@ -715,9 +725,18 @@ async function startLaunch() {
     consoleOutput.innerHTML = '';
     logToConsole('[LAUNCHER] Запуск игры...');
 
+    // Check dev mode (admin only feature to skip sync)
+    const devModeCheckbox = document.getElementById('dev-mode-checkbox');
+    const devMode = devModeCheckbox && devModeCheckbox.checked && localStorage.getItem('is_admin') === 'true';
+    
+    if (devMode) {
+        logToConsole('[DEV MODE] Синхронизация файлов отключена!');
+    }
+
     const result = await window.api.launchGame({ 
         username: currentUsername,
-        token: localStorage.getItem('auth_token')
+        token: localStorage.getItem('auth_token'),
+        devMode: devMode
     });
     
     if (result.success) {
@@ -928,6 +947,12 @@ async function checkSavedAuth() {
             const result = await window.api.checkAuth(savedUser, savedToken);
             if (result.success) {
                 currentUsername = savedUser;
+                // Store admin status for dev mode
+                if (result.is_admin) {
+                    localStorage.setItem('is_admin', 'true');
+                } else {
+                    localStorage.removeItem('is_admin');
+                }
                 stepLoading.classList.add('hidden');
                 showPlayScreen();
                 return;
@@ -938,6 +963,7 @@ async function checkSavedAuth() {
     }
     
     // If not valid or no token, show login
+    localStorage.removeItem('is_admin');
     stepLoading.classList.add('hidden');
     stepLogin.classList.remove('hidden');
     

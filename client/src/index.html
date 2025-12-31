@@ -167,6 +167,15 @@
             <!-- Step 3: Ready to Play -->
             <div id="step-play" class="hidden">
                 <div id="welcome-msg" style="margin-bottom: 15px; color: #eee; font-size: 14px;">С возвращением!</div>
+                
+                <!-- Dev Mode (Admin Only) -->
+                <div id="dev-mode-container" class="hidden" style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ff9800; font-size: 12px;">
+                        <input type="checkbox" id="dev-mode-checkbox" style="width: auto; margin-right: 8px;">
+                        🔧 Режим разработчика (без синхронизации)
+                    </label>
+                </div>
+                
                 <button id="play-btn" style="background: #4CAF50; font-size: 18px; padding: 12px 40px; font-weight: bold; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">ИГРАТЬ</button>
                 <div style="margin-top: 15px;">
                     <button id="logout-btn" style="background: transparent; border: 1px solid #444; color: #888; font-size: 11px; padding: 5px 10px;">Выйти</button>
