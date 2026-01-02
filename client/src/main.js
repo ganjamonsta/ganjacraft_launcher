@@ -16,7 +16,7 @@ const { Client } = require('minecraft-launcher-core');
 
 // Modules
 const { loadConfig, saveConfig } = require('./modules/config');
-const { syncFiles, downloadFile } = require('./modules/updater');
+const { syncFiles, downloadFile, syncCategory, deleteCategory, getCategoryCounts, fetchServerScripts } = require('./modules/updater');
 const { authenticateYggdrasil } = require('./modules/auth');
 const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJavaw } = require('./modules/java');
 
@@ -533,6 +533,76 @@ function createWindow() {
             }
         });
         return true;
+    });
+
+    // === Admin Dev Tools Handlers ===
+    
+    // Sync specific category
+    ipcMain.handle('dev-sync-category', async (event, category, options = {}) => {
+        const config = loadConfig();
+        const rootPath = config.installPath;
+        
+        const sendProgress = (msg) => {
+            if (event.sender && !event.sender.isDestroyed()) {
+                event.sender.send('dev-progress', { category, message: msg });
+            }
+        };
+        
+        try {
+            const result = await syncCategory(rootPath, MANIFEST_URL, category, {
+                force: options.force || false,
+                kubejsFolders: options.kubejsFolders || ['client_scripts', 'startup_scripts', 'server_scripts'],
+                sendLog: sendProgress
+            });
+            return { success: true, ...result };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    });
+    
+    // Delete category files
+    ipcMain.handle('dev-delete-category', async (event, category) => {
+        const config = loadConfig();
+        const rootPath = config.installPath;
+        
+        try {
+            const result = await deleteCategory(rootPath, category);
+            return { success: true, ...result };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    });
+    
+    // Get file counts for each category
+    ipcMain.handle('dev-get-category-counts', async () => {
+        const config = loadConfig();
+        const rootPath = config.installPath;
+        
+        try {
+            const counts = await getCategoryCounts(rootPath, MANIFEST_URL);
+            return { success: true, counts };
+        } catch (e) {
+            return { success: false, error: e.message, counts: {} };
+        }
+    });
+    
+    // Fetch server_scripts (admin-only extended manifest)
+    ipcMain.handle('dev-fetch-server-scripts', async (event) => {
+        const config = loadConfig();
+        const rootPath = config.installPath;
+        
+        const sendProgress = (msg) => {
+            if (event.sender && !event.sender.isDestroyed()) {
+                event.sender.send('dev-progress', { category: 'server-scripts', message: msg });
+            }
+        };
+        
+        try {
+            const result = await fetchServerScripts(rootPath, MANIFEST_URL, sendProgress);
+            return { success: true, ...result };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     });
 }
 

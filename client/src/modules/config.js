@@ -27,6 +27,7 @@ function getDefaultConfig() {
         enableSmoke: true, // Default smoke effect
         enableParallax: true, // Default parallax background
         debugMode: false, // Default debug mode off
+        skipSync: false, // Skip file sync on launch (debug feature)
 
         // Mods
         disabledMods: [] // List of paths to skip

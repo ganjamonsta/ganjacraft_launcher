@@ -1,5 +1,34 @@
 # 📝 GanjaCraft Launcher Roadmap
 
+## ✅ Completed Features
+
+### � Debug-панель разработчика (Dev Tools)
+**Цель:** Инструменты для разработки модпака и отладки.
+
+#### Возможности:
+- [x] Новая вкладка "🐞 DEBUG" в настройках (для debugMode или админов)
+- [x] Пропуск синхронизации файлов при запуске игры
+- [x] Выборочная синхронизация по категориям:
+  - Моды (mods/)
+  - Конфиги (config/)
+  - KubeJS скрипты (client_scripts, startup_scripts, server_scripts, assets)
+  - Ресурспаки (resourcepacks/)
+  - Thingpacks (thingpacks/)
+- [x] Принудительное перекачивание (игнорирует совпадение хешей)
+- [x] Удаление локальных файлов по категориям
+- [x] Скачивание server_scripts (обычно не синхронизируются для игроков)
+- [x] Отображение количества файлов (локально / в манифесте)
+- [x] Быстрые действия: "Синхронизировать всё", "Принудительно перекачать всё"
+
+#### Файлы:
+- `admin.css` - стили админ-панели
+- `index.html` - HTML вкладки разработчика
+- `preload.js` - API методы для dev tools
+- `main.js` - IPC handlers
+- `modules/updater.js` - функции syncCategory, deleteCategory, getCategoryCounts, fetchServerScripts
+
+---
+
 ## 🔥 High Priority Features
 
 ### 📸 Облачная Галерея Скриншотов (Cloud Gallery)

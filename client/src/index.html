@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="modal.css">
     <link rel="stylesheet" href="mods.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <!-- Snow Container -->
@@ -48,17 +49,25 @@
             </div>
         </div>
 
-        <!-- Settings Modal -->
-        <div id="settings-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="tabs">
-                        <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
-                        <button class="tab-btn" data-tab="mods">МОДЫ</button>
-                    </div>
-                    <button id="close-settings">×</button>
+        <!-- Settings Screen (Full Screen) -->
+        <div id="step-settings" class="settings-screen hidden">
+            <div class="settings-header">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
+                    <button class="tab-btn" data-tab="mods">МОДЫ</button>
+                    <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
                 </div>
-                <div class="modal-body">
+                <div class="settings-header-actions">
+                    <button id="btn-close-settings" class="settings-close-btn" title="Закрыть">×</button>
+                </div>
+            </div>
+            
+            <!-- Floating Save Button (Hidden by default) -->
+            <button id="save-settings" class="floating-save-btn" title="Сохранить настройки">
+                <span class="save-icon">💾</span>
+                <span class="save-text">Сохранить</span>
+            </button>
+            <div class="settings-body">
                     
                     <!-- General Tab -->
                     <div id="tab-general" class="tab-content active">
@@ -134,9 +143,116 @@
                             <div class="loading">Загрузка манифеста...</div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="save-settings">Сохранить и Закрыть</button>
+
+                    <!-- Dev Tab (Debug Mode) -->
+                    <div id="tab-dev" class="tab-content">
+                        <!-- Top Controls Bar -->
+                        <div class="dev-top-bar">
+                            <label class="dev-checkbox-inline">
+                                <input type="checkbox" id="dev-skip-sync-checkbox">
+                                <span>🚫 Skip Sync</span>
+                            </label>
+                            <div class="dev-top-actions">
+                                <button class="dev-btn-mini dev-btn-sync" id="dev-sync-all" title="Синхронизировать всё">🔄 ALL</button>
+                                <button class="dev-btn-mini dev-btn-force" id="dev-force-all" title="Принудительно перекачать всё">⚡ FORCE ALL</button>
+                            </div>
+                        </div>
+
+                        <!-- Categories Compact Grid -->
+                        <div class="dev-grid">
+                            <!-- Mods -->
+                            <div class="dev-card">
+                                <div class="dev-card-header">
+                                    <span class="dev-icon">📦</span>
+                                    <span class="dev-title">Моды</span>
+                                    <span class="dev-badge" id="dev-mods-count">0</span>
+                                </div>
+                                <div class="dev-card-desc">JAR файлы клиента и сервера</div>
+                                <div class="dev-card-actions">
+                                    <button class="dev-action-btn" data-category="mods" data-action="sync" title="Синхронизировать с сервером (только изменённые)">🔄 Sync</button>
+                                    <button class="dev-action-btn" data-category="mods" data-action="force" title="Принудительно перекачать все файлы">⚡ Force</button>
+                                    <button class="dev-action-btn dev-danger" data-category="mods" data-action="delete" title="Удалить все файлы категории">🗑️</button>
+                                </div>
+                                <div class="dev-status" id="dev-status-mods"></div>
+                            </div>
+
+                            <!-- Config -->
+                            <div class="dev-card">
+                                <div class="dev-card-header">
+                                    <span class="dev-icon">⚙️</span>
+                                    <span class="dev-title">Конфиги</span>
+                                    <span class="dev-badge" id="dev-config-count">0</span>
+                                </div>
+                                <div class="dev-card-desc">Настройки модов config/</div>
+                                <div class="dev-card-actions">
+                                    <button class="dev-action-btn" data-category="config" data-action="sync" title="Синхронизировать с сервером (только изменённые)">🔄 Sync</button>
+                                    <button class="dev-action-btn" data-category="config" data-action="force" title="Принудительно перекачать все файлы">⚡ Force</button>
+                                    <button class="dev-action-btn dev-danger" data-category="config" data-action="delete" title="Удалить все файлы категории">🗑️</button>
+                                </div>
+                                <div class="dev-status" id="dev-status-config"></div>
+                            </div>
+
+                            <!-- Resourcepacks -->
+                            <div class="dev-card">
+                                <div class="dev-card-header">
+                                    <span class="dev-icon">🎨</span>
+                                    <span class="dev-title">Ресурспаки</span>
+                                    <span class="dev-badge" id="dev-resourcepacks-count">0</span>
+                                </div>
+                                <div class="dev-card-desc">Серверные [GanjaCraft] паки</div>
+                                <div class="dev-card-actions">
+                                    <button class="dev-action-btn" data-category="resourcepacks" data-action="sync" title="Синхронизировать с сервером (только изменённые)">🔄 Sync</button>
+                                    <button class="dev-action-btn" data-category="resourcepacks" data-action="force" title="Принудительно перекачать все файлы">⚡ Force</button>
+                                    <button class="dev-action-btn dev-danger" data-category="resourcepacks" data-action="delete" title="Удалить все файлы категории">🗑️</button>
+                                </div>
+                                <div class="dev-status" id="dev-status-resourcepacks"></div>
+                            </div>
+
+                            <!-- Thingpacks -->
+                            <div class="dev-card">
+                                <div class="dev-card-header">
+                                    <span class="dev-icon">🧩</span>
+                                    <span class="dev-title">Thingpacks</span>
+                                    <span class="dev-badge" id="dev-thingpacks-count">0</span>
+                                </div>
+                                <div class="dev-card-desc">JsonThings контент</div>
+                                <div class="dev-card-actions">
+                                    <button class="dev-action-btn" data-category="thingpacks" data-action="sync" title="Синхронизировать с сервером (только изменённые)">🔄 Sync</button>
+                                    <button class="dev-action-btn" data-category="thingpacks" data-action="force" title="Принудительно перекачать все файлы">⚡ Force</button>
+                                    <button class="dev-action-btn dev-danger" data-category="thingpacks" data-action="delete" title="Удалить все файлы категории">🗑️</button>
+                                </div>
+                                <div class="dev-status" id="dev-status-thingpacks"></div>
+                            </div>
+
+                            <!-- KubeJS -->
+                            <div class="dev-card dev-card-wide">
+                                <div class="dev-card-header">
+                                    <span class="dev-icon">📜</span>
+                                    <span class="dev-title">KubeJS Scripts</span>
+                                    <span class="dev-badge" id="dev-kubejs-count">0</span>
+                                </div>
+                                <div class="dev-card-desc">
+                                    Скрипты модпака. Кнопка 📥 скачивает server_scripts с сервера (не включены в манифест игрока).
+                                </div>
+                                <div class="dev-kjs-row">
+                                    <div class="dev-kjs-options">
+                                        <label title="Клиентские скрипты"><input type="checkbox" id="dev-kjs-client" checked><span>client</span></label>
+                                        <label title="Скрипты загрузки"><input type="checkbox" id="dev-kjs-startup" checked><span>startup</span></label>
+                                        <label title="Серверные скрипты"><input type="checkbox" id="dev-kjs-server" checked><span>server</span></label>
+                                        <label title="Ассеты KubeJS"><input type="checkbox" id="dev-kjs-assets"><span>assets</span></label>
+                                    </div>
+                                    <div class="dev-card-actions">
+                                        <button class="dev-action-btn" data-category="kubejs" data-action="sync" title="Синхронизировать выбранные папки">🔄 Sync</button>
+                                        <button class="dev-action-btn" data-category="kubejs" data-action="force" title="Принудительно перекачать выбранные папки">⚡ Force</button>
+                                        <button class="dev-action-btn dev-danger" data-category="kubejs" data-action="delete" title="Удалить выбранные папки">🗑️</button>
+                                        <button class="dev-action-btn dev-special" id="dev-fetch-server-scripts" title="Скачать server_scripts с сервера (не в манифесте игрока)">📥 Server</button>
+                                    </div>
+                                </div>
+                                <div class="dev-status" id="dev-status-kubejs"></div>
+                                <div class="dev-status" id="dev-status-server-scripts"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -167,14 +283,6 @@
             <!-- Step 3: Ready to Play -->
             <div id="step-play" class="hidden">
                 <div id="welcome-msg" style="margin-bottom: 15px; color: #eee; font-size: 14px;">С возвращением!</div>
-                
-                <!-- Dev Mode (Admin Only) -->
-                <div id="dev-mode-container" class="hidden" style="margin-bottom: 15px;">
-                    <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ff9800; font-size: 12px;">
-                        <input type="checkbox" id="dev-mode-checkbox" style="width: auto; margin-right: 8px;">
-                        🔧 Режим разработчика (без синхронизации)
-                    </label>
-                </div>
                 
                 <button id="play-btn" style="background: #4CAF50; font-size: 18px; padding: 12px 40px; font-weight: bold; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">ИГРАТЬ</button>
                 <div style="margin-top: 15px;">

@@ -148,6 +148,100 @@ function toggleSnow(enable) {
     }
 }
 
+// Burst effect - snow explosion when settings drop
+function createSnowBurst() {
+    const snowContainer = document.getElementById('snow-container');
+    if (!snowContainer) return;
+    
+    const burstCount = 35; // Снежинок в залпе
+    
+    for (let i = 0; i < burstCount; i++) {
+        setTimeout(() => {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake', 'burst');
+            snowflake.textContent = '❄';
+            
+            // Старт по ВСЕЙ ширине окна
+            const startX = 5 + Math.random() * 90; // 5-95% ширины экрана
+            snowflake.style.left = startX + 'vw';
+            snowflake.style.top = '-10px'; // Выше окна - за пределами видимости
+            
+            // Направление разлёта - меньше дистанция
+            const spreadX = (Math.random() - 0.5) * 150; // -75 to 75 px в стороны
+            const spreadY = 100 + Math.random() * 200; // 100-300px вниз
+            const rotation = (Math.random() - 0.5) * 360; // Случайное вращение
+            
+            snowflake.style.setProperty('--burst-x', spreadX + 'px');
+            snowflake.style.setProperty('--burst-y', spreadY + 'px');
+            snowflake.style.setProperty('--burst-rotate', rotation + 'deg');
+            
+            // Короче анимация
+            const duration = 0.8 + Math.random() * 1.2; // 0.8-2s
+            snowflake.style.animationDuration = duration + 's';
+            
+            snowflake.style.opacity = 0.7 + Math.random() * 0.3;
+            snowflake.style.fontSize = (12 + Math.random() * 14) + 'px';
+            
+            snowContainer.appendChild(snowflake);
+            
+            snowflake.addEventListener('animationend', () => {
+                snowflake.remove();
+            });
+        }, i * 8); // Быстрее спавн для ощущения взрыва
+    }
+}
+
+// Side burst effect - snow explosion from left or right side
+// side: 'left' или 'right'
+function createSideBurst(side) {
+    const snowContainer = document.getElementById('snow-container');
+    if (!snowContainer) return;
+    
+    const burstCount = 20; // Снежинок в боковом залпе
+    
+    for (let i = 0; i < burstCount; i++) {
+        setTimeout(() => {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake', 'burst');
+            snowflake.textContent = '❄';
+            
+            // Старт сбоку окна
+            if (side === 'left') {
+                snowflake.style.left = '-10px';
+            } else {
+                snowflake.style.left = 'calc(100vw + 10px)';
+            }
+            
+            // По всей высоте
+            const startY = 10 + Math.random() * 80; // 10-90% высоты
+            snowflake.style.top = startY + 'vh';
+            
+            // Направление разлёта - в сторону центра и вниз
+            const spreadX = side === 'left' 
+                ? 80 + Math.random() * 150  // влево -> вправо (80-230px)
+                : -(80 + Math.random() * 150); // вправо -> влево (-80 to -230px)
+            const spreadY = (Math.random() - 0.3) * 150; // немного вниз
+            const rotation = (Math.random() - 0.5) * 360;
+            
+            snowflake.style.setProperty('--burst-x', spreadX + 'px');
+            snowflake.style.setProperty('--burst-y', spreadY + 'px');
+            snowflake.style.setProperty('--burst-rotate', rotation + 'deg');
+            
+            const duration = 0.6 + Math.random() * 1.0; // 0.6-1.6s
+            snowflake.style.animationDuration = duration + 's';
+            
+            snowflake.style.opacity = 0.6 + Math.random() * 0.4;
+            snowflake.style.fontSize = (10 + Math.random() * 12) + 'px';
+            
+            snowContainer.appendChild(snowflake);
+            
+            snowflake.addEventListener('animationend', () => {
+                snowflake.remove();
+            });
+        }, i * 10);
+    }
+}
+
 // UI Elements
 const stepLoading = document.getElementById('step-loading');
 const stepLogin = document.getElementById('step-login');
@@ -232,24 +326,198 @@ function setJointProgress(container, burn, endImg, percent) {
 let currentUsername = '';
 let currentConfig = {};
 
+// --- Settings Change Tracking ---
+let initialSettingsState = {};
+let hasUnsavedChanges = false;
+
+// Get current settings state for comparison
+function getCurrentSettingsState() {
+    return {
+        installPath: document.getElementById('setting-path').value,
+        javaPath: document.getElementById('setting-java').value,
+        memoryMin: document.getElementById('setting-ram-min').value.trim().toUpperCase(),
+        memoryMax: document.getElementById('setting-ram-max').value.trim().toUpperCase(),
+        hideOnPlay: document.getElementById('setting-hide-on-play').checked,
+        enableSnow: document.getElementById('setting-enable-snow').checked,
+        enableSmoke: document.getElementById('setting-enable-smoke').checked,
+        enableParallax: document.getElementById('setting-enable-parallax').checked,
+        debugMode: document.getElementById('setting-debug-mode').checked,
+        skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
+        disabledMods: getDisabledMods().sort().join(',')
+    };
+}
+
+// Compare two settings states
+function settingsChanged() {
+    const current = getCurrentSettingsState();
+    return JSON.stringify(current) !== JSON.stringify(initialSettingsState);
+}
+
+// Update floating save button visibility
+function updateSaveButtonVisibility() {
+    const saveBtn = document.getElementById('save-settings');
+    if (!saveBtn) return;
+    
+    hasUnsavedChanges = settingsChanged();
+    
+    if (hasUnsavedChanges) {
+        saveBtn.classList.add('visible');
+    } else {
+        saveBtn.classList.remove('visible');
+    }
+}
+
+// Setup listeners for all settings fields
+function setupSettingsChangeListeners() {
+    // Text inputs
+    const textInputs = [
+        'setting-path',
+        'setting-java', 
+        'setting-ram-min',
+        'setting-ram-max'
+    ];
+    
+    textInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updateSaveButtonVisibility);
+            el.addEventListener('change', updateSaveButtonVisibility);
+        }
+    });
+    
+    // Checkboxes
+    const checkboxes = [
+        'setting-hide-on-play',
+        'setting-enable-snow',
+        'setting-enable-smoke',
+        'setting-enable-parallax',
+        'setting-debug-mode',
+        'dev-skip-sync-checkbox'
+    ];
+    
+    checkboxes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', updateSaveButtonVisibility);
+        }
+    });
+    
+    // Mods list - use event delegation
+    const modsList = document.getElementById('mods-list');
+    if (modsList) {
+        modsList.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                updateSaveButtonVisibility();
+            }
+        });
+    }
+}
+
+// Initialize listeners once
+setupSettingsChangeListeners();
+
 // --- Settings Logic ---
-const settingsModal = document.getElementById('settings-modal');
+const settingsScreen = document.getElementById('step-settings');
 const btnSettings = document.getElementById('btn-settings');
-const btnCloseSettings = document.getElementById('close-settings');
+const btnCloseSettings = document.getElementById('btn-close-settings');
 const btnSaveSettings = document.getElementById('save-settings');
 
 // Tabs
-document.querySelectorAll('.tab-btn').forEach(btn => {
+document.querySelectorAll('.settings-tabs .tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.settings-tabs .tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
     });
 });
 
-// Open Settings
+// Helper to hide/show UI elements when settings open
+function toggleMainUIVisibility(show) {
+    const elements = [
+        { el: document.getElementById('news-section'), defaultTransform: 'none', hideTransform: 'translateX(-120%)', side: 'left' }, // Slide left
+        { el: document.getElementById('server-status-widget'), defaultTransform: 'none', hideTransform: 'translateY(-150%)', side: null }, // Slide up
+        { el: document.querySelector('.auth-container'), defaultTransform: 'translateY(-50%)', hideTransform: 'translateY(-50%) translateX(120%)', side: 'right' } // Slide right
+    ];
+    elements.forEach(({ el, defaultTransform, hideTransform, side }, index) => {
+        if (el) {
+            if (show) {
+                // Быстрый возврат с bounce эффектом
+                const delay = index * 50; // Быстрый stagger
+                el.style.transition = `transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`;
+                el.style.transform = defaultTransform;
+                
+                // Side burst когда элемент выезжает
+                if (side && currentConfig && currentConfig.enableSnow !== false) {
+                    setTimeout(() => createSideBurst(side), delay + 50);
+                }
+            } else {
+                // Быстрый уход
+                const delay = index * 20;
+                el.style.transition = `transform 0.15s cubic-bezier(0.4, 0, 1, 1) ${delay}ms`;
+                el.style.transform = hideTransform;
+            }
+            el.style.pointerEvents = show ? 'auto' : 'none';
+        }
+    });
+}
+
+// Helper function to open settings with animation
+function openSettings() {
+    settingsScreen.classList.remove('hidden', 'closing');
+    settingsScreen.classList.add('opening');
+    
+    // Trigger snow burst effect on impact (after drop animation reaches bottom)
+    setTimeout(() => {
+        if (currentConfig.enableSnow !== false) {
+            createSnowBurst();
+        }
+    }, 150); // Sync with faster drop animation
+}
+
+// Helper function to close settings with animation
+function closeSettings() {
+    settingsScreen.classList.remove('opening');
+    settingsScreen.classList.add('closing');
+    
+    // Snow burst когда окно закрывается (уезжает вверх)
+    if (currentConfig.enableSnow !== false) {
+        createSnowBurst();
+    }
+    
+    // After animation completes, set to hidden
+    setTimeout(() => {
+        settingsScreen.classList.remove('closing');
+        settingsScreen.classList.add('hidden');
+    }, 250); // Быстрее анимация
+}
+
+// Close Settings button
+btnCloseSettings.addEventListener('click', () => {
+    // Start UI elements appearing FIRST (they'll slide in while settings slides up)
+    toggleMainUIVisibility(true);
+    // Start closing animation
+    closeSettings();
+    // Hide save button when closing
+    const saveBtn = document.getElementById('save-settings');
+    if (saveBtn) saveBtn.classList.remove('visible');
+});
+
+// Toggle Settings
 btnSettings.addEventListener('click', async () => {
+    // Toggle: if open - close, if closed - open
+    if (settingsScreen.classList.contains('opening') || 
+        (!settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing'))) {
+        // Start UI elements appearing FIRST
+        toggleMainUIVisibility(true);
+        closeSettings();
+        // Hide save button when closing
+        const saveBtn = document.getElementById('save-settings');
+        if (saveBtn) saveBtn.classList.remove('visible');
+        return;
+    }
+    
+    toggleMainUIVisibility(false);
     currentConfig = await window.api.loadConfig();
     
     // Populate Fields
@@ -266,13 +534,34 @@ btnSettings.addEventListener('click', async () => {
     // Load Mods
     loadModsList(currentConfig.disabledMods || []);
     
-    settingsModal.classList.remove('hidden');
+    // Show/hide dev tab for debug mode or admins
+    const devTab = document.querySelector('.tab-dev');
+    if (devTab) {
+        if (currentConfig.debugMode === true || localStorage.getItem('is_admin') === 'true') {
+            devTab.classList.remove('hidden');
+            // Load category counts and restore skip sync state
+            loadDevCategoryCounts();
+            const skipSyncCheckbox = document.getElementById('dev-skip-sync-checkbox');
+            if (skipSyncCheckbox) {
+                skipSyncCheckbox.checked = currentConfig.skipSync === true;
+            }
+        } else {
+            devTab.classList.add('hidden');
+        }
+    }
+    
+    openSettings();
+    
+    // Save initial state for change detection (after a small delay for mods to load)
+    setTimeout(() => {
+        initialSettingsState = getCurrentSettingsState();
+        hasUnsavedChanges = false;
+        const saveBtn = document.getElementById('save-settings');
+        if (saveBtn) saveBtn.classList.remove('visible');
+    }, 100);
 });
 
-// Close Settings
-btnCloseSettings.addEventListener('click', () => {
-    settingsModal.classList.add('hidden');
-});
+
 
 // Save Settings
 btnSaveSettings.addEventListener('click', async () => {
@@ -300,6 +589,7 @@ btnSaveSettings.addEventListener('click', async () => {
         enableSmoke: document.getElementById('setting-enable-smoke').checked,
         enableParallax: document.getElementById('setting-enable-parallax').checked,
         debugMode: document.getElementById('setting-debug-mode').checked,
+        skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
         disabledMods: getDisabledMods(),
         modsDefaultsApplied: true,
     };
@@ -329,14 +619,24 @@ btnSaveSettings.addEventListener('click', async () => {
     document.getElementById('setting-ram-min').value = memMin;
     document.getElementById('setting-ram-max').value = memMax;
 
-    settingsModal.classList.add('hidden');
+    // Update initial state and hide save button
+    initialSettingsState = getCurrentSettingsState();
+    hasUnsavedChanges = false;
+    const saveBtn = document.getElementById('save-settings');
+    if (saveBtn) saveBtn.classList.remove('visible');
+
+    toggleMainUIVisibility(true);
+    closeSettings();
     logToConsole('[SETTINGS] Saved.');
 });
 
 // Path Selectors
 document.getElementById('btn-select-path').addEventListener('click', async () => {
     const path = await window.api.selectPath('dir');
-    if (path) document.getElementById('setting-path').value = path;
+    if (path) {
+        document.getElementById('setting-path').value = path;
+        updateSaveButtonVisibility();
+    }
 });
 
 document.getElementById('btn-open-path').addEventListener('click', async () => {
@@ -348,11 +648,15 @@ document.getElementById('btn-open-path').addEventListener('click', async () => {
 
 document.getElementById('btn-select-java').addEventListener('click', async () => {
     const path = await window.api.selectPath('file');
-    if (path) document.getElementById('setting-java').value = path;
+    if (path) {
+        document.getElementById('setting-java').value = path;
+        updateSaveButtonVisibility();
+    }
 });
 
 document.getElementById('btn-reset-java').addEventListener('click', () => {
     document.getElementById('setting-java').value = '';
+    updateSaveButtonVisibility();
 });
 
 // Reinstall
@@ -360,7 +664,7 @@ document.getElementById('btn-reinstall').addEventListener('click', async () => {
     if (confirm('Вы уверены? Это удалит все моды и настройки.')) {
         await window.api.reinstallClient();
         alert('Файлы клиента удалены. Пожалуйста, перезапустите лаунчер или нажмите ИГРАТЬ для повторной загрузки.');
-        settingsModal.classList.add('hidden');
+        settingsScreen.classList.add('hidden');
     }
 });
 
@@ -675,16 +979,6 @@ function showPlayScreen() {
     stepPlay.classList.remove('hidden');
     stepPlay.classList.add('fade-in');
     document.getElementById('welcome-msg').innerText = `Добро пожаловать, ${currentUsername}!`;
-    
-    // Show dev mode checkbox for admins only
-    const devModeContainer = document.getElementById('dev-mode-container');
-    if (devModeContainer) {
-        if (localStorage.getItem('is_admin') === 'true') {
-            devModeContainer.classList.remove('hidden');
-        } else {
-            devModeContainer.classList.add('hidden');
-        }
-    }
 }
 
 document.getElementById('play-btn').addEventListener('click', () => {
@@ -725,18 +1019,17 @@ async function startLaunch() {
     consoleOutput.innerHTML = '';
     logToConsole('[LAUNCHER] Запуск игры...');
 
-    // Check dev mode (admin only feature to skip sync)
-    const devModeCheckbox = document.getElementById('dev-mode-checkbox');
-    const devMode = devModeCheckbox && devModeCheckbox.checked && localStorage.getItem('is_admin') === 'true';
+    // Check skip sync from config (set in debug tab)
+    const skipSync = currentConfig.skipSync === true;
     
-    if (devMode) {
-        logToConsole('[DEV MODE] Синхронизация файлов отключена!');
+    if (skipSync) {
+        logToConsole('[DEBUG] Синхронизация файлов отключена!');
     }
 
     const result = await window.api.launchGame({ 
         username: currentUsername,
         token: localStorage.getItem('auth_token'),
-        devMode: devMode
+        devMode: skipSync
     });
     
     if (result.success) {
@@ -970,5 +1263,235 @@ async function checkSavedAuth() {
     if (savedUser) {
         usernameInput.value = savedUser;
     }
+}
+
+// === Admin Dev Tools ===
+
+async function loadDevCategoryCounts() {
+    try {
+        const result = await window.api.devGetCategoryCounts();
+        if (result.success && result.counts) {
+            const counts = result.counts;
+            
+            const updateCount = (id, data) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.textContent = `${data.local} / ${data.manifest}`;
+                    el.title = `Локально: ${data.local}, В манифесте: ${data.manifest}`;
+                }
+            };
+            
+            updateCount('dev-mods-count', counts.mods || { local: 0, manifest: 0 });
+            updateCount('dev-config-count', counts.config || { local: 0, manifest: 0 });
+            updateCount('dev-kubejs-count', counts.kubejs || { local: 0, manifest: 0 });
+            updateCount('dev-resourcepacks-count', counts.resourcepacks || { local: 0, manifest: 0 });
+            updateCount('dev-thingpacks-count', counts.thingpacks || { local: 0, manifest: 0 });
+        }
+    } catch (e) {
+        console.error('Failed to load category counts:', e);
+    }
+}
+
+function showDevStatus(category, message, type = 'info') {
+    const statusEl = document.getElementById(`dev-status-${category}`);
+    if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = `dev-status show ${type}`;
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            statusEl.classList.remove('show');
+        }, 5000);
+    }
+}
+
+function setDevButtonLoading(btn, loading) {
+    if (loading) {
+        btn.disabled = true;
+        btn.dataset.originalHtml = btn.innerHTML;
+        const text = btn.textContent.trim();
+        btn.innerHTML = `<span class="spinner"></span> ${text.substring(2)}`; // Remove emoji
+    } else {
+        btn.disabled = false;
+        if (btn.dataset.originalHtml) {
+            btn.innerHTML = btn.dataset.originalHtml;
+        }
+    }
+}
+
+function getKubejsSelectedFolders() {
+    const folders = [];
+    if (document.getElementById('dev-kjs-client')?.checked) folders.push('client_scripts');
+    if (document.getElementById('dev-kjs-startup')?.checked) folders.push('startup_scripts');
+    if (document.getElementById('dev-kjs-server')?.checked) folders.push('server_scripts');
+    if (document.getElementById('dev-kjs-assets')?.checked) folders.push('assets');
+    return folders;
+}
+
+// Category action handlers
+document.querySelectorAll('.dev-btn[data-category]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const category = btn.dataset.category;
+        const action = btn.dataset.action;
+        
+        if (!category || !action) return;
+        
+        setDevButtonLoading(btn, true);
+        
+        try {
+            if (action === 'delete') {
+                if (!confirm(`Удалить все файлы категории "${category}"?`)) {
+                    setDevButtonLoading(btn, false);
+                    return;
+                }
+                
+                const result = await window.api.devDeleteCategory(category);
+                if (result.success) {
+                    showDevStatus(category, `Удалено: ${result.deleted} элементов`, 'success');
+                } else {
+                    showDevStatus(category, `Ошибка: ${result.error}`, 'error');
+                }
+            } else {
+                // sync or force
+                const force = action === 'force';
+                const options = { force };
+                
+                if (category === 'kubejs') {
+                    options.kubejsFolders = getKubejsSelectedFolders();
+                    if (options.kubejsFolders.length === 0) {
+                        showDevStatus(category, 'Выберите хотя бы одну папку KubeJS', 'error');
+                        setDevButtonLoading(btn, false);
+                        return;
+                    }
+                }
+                
+                const result = await window.api.devSyncCategory(category, options);
+                if (result.success) {
+                    showDevStatus(category, `Скачано: ${result.downloaded}, пропущено: ${result.skipped}`, 'success');
+                } else {
+                    showDevStatus(category, `Ошибка: ${result.error}`, 'error');
+                }
+            }
+            
+            // Refresh counts
+            await loadDevCategoryCounts();
+        } catch (e) {
+            showDevStatus(category, `Ошибка: ${e.message}`, 'error');
+        } finally {
+            setDevButtonLoading(btn, false);
+        }
+    });
+});
+
+// Sync All button
+document.getElementById('dev-sync-all')?.addEventListener('click', async () => {
+    const btn = document.getElementById('dev-sync-all');
+    setDevButtonLoading(btn, true);
+    
+    const categories = ['mods', 'config', 'kubejs', 'resourcepacks', 'thingpacks'];
+    let totalDownloaded = 0;
+    let errors = [];
+    
+    for (const category of categories) {
+        try {
+            const options = {};
+            if (category === 'kubejs') {
+                options.kubejsFolders = getKubejsSelectedFolders();
+            }
+            
+            const result = await window.api.devSyncCategory(category, options);
+            if (result.success) {
+                totalDownloaded += result.downloaded || 0;
+            } else {
+                errors.push(`${category}: ${result.error}`);
+            }
+        } catch (e) {
+            errors.push(`${category}: ${e.message}`);
+        }
+    }
+    
+    await loadDevCategoryCounts();
+    setDevButtonLoading(btn, false);
+    
+    if (errors.length > 0) {
+        alert(`Синхронизация завершена с ошибками:\n\n${errors.join('\n')}\n\nСкачано файлов: ${totalDownloaded}`);
+    } else {
+        alert(`Синхронизация завершена!\nСкачано файлов: ${totalDownloaded}`);
+    }
+});
+
+// Force Sync All button
+document.getElementById('dev-force-all')?.addEventListener('click', async () => {
+    if (!confirm('Принудительно перекачать ВСЕ файлы?\nЭто может занять много времени.')) {
+        return;
+    }
+    
+    const btn = document.getElementById('dev-force-all');
+    setDevButtonLoading(btn, true);
+    
+    const categories = ['mods', 'config', 'kubejs', 'resourcepacks', 'thingpacks'];
+    let totalDownloaded = 0;
+    let errors = [];
+    
+    for (const category of categories) {
+        try {
+            const options = { force: true };
+            if (category === 'kubejs') {
+                options.kubejsFolders = getKubejsSelectedFolders();
+            }
+            
+            const result = await window.api.devSyncCategory(category, options);
+            if (result.success) {
+                totalDownloaded += result.downloaded || 0;
+            } else {
+                errors.push(`${category}: ${result.error}`);
+            }
+        } catch (e) {
+            errors.push(`${category}: ${e.message}`);
+        }
+    }
+    
+    await loadDevCategoryCounts();
+    setDevButtonLoading(btn, false);
+    
+    if (errors.length > 0) {
+        alert(`Принудительная синхронизация завершена с ошибками:\n\n${errors.join('\n')}\n\nСкачано файлов: ${totalDownloaded}`);
+    } else {
+        alert(`Принудительная синхронизация завершена!\nСкачано файлов: ${totalDownloaded}`);
+    }
+});
+
+// Fetch Server Scripts button
+document.getElementById('dev-fetch-server-scripts')?.addEventListener('click', async () => {
+    const btn = document.getElementById('dev-fetch-server-scripts');
+    setDevButtonLoading(btn, true);
+    
+    try {
+        const result = await window.api.devFetchServerScripts();
+        if (result.success) {
+            showDevStatus('server-scripts', `Скачано: ${result.downloaded} файлов`, 'success');
+        } else {
+            showDevStatus('server-scripts', `Ошибка: ${result.error}`, 'error');
+        }
+        
+        await loadDevCategoryCounts();
+    } catch (e) {
+        showDevStatus('server-scripts', `Ошибка: ${e.message}`, 'error');
+    } finally {
+        setDevButtonLoading(btn, false);
+    }
+});
+
+// Dev progress listener
+if (window.api.onDevProgress) {
+    window.api.onDevProgress((data) => {
+        if (data.category && data.message) {
+            const statusEl = document.getElementById(`dev-status-${data.category}`);
+            if (statusEl) {
+                statusEl.textContent = data.message;
+                statusEl.className = 'dev-status show info';
+            }
+        }
+    });
 }
 

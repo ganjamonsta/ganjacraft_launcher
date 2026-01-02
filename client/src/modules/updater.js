@@ -502,4 +502,318 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     }
 }
 
-module.exports = { downloadFile, getFileHash, syncFiles };
+// === Admin Dev Tools Functions ===
+
+/**
+ * Sync a specific category of files from manifest
+ * @param {string} rootPath - Game installation directory
+ * @param {string} manifestUrl - URL to manifest.json
+ * @param {string} category - Category to sync: 'mods', 'config', 'kubejs', 'resourcepacks', 'thingpacks'
+ * @param {object} options - Sync options
+ * @param {boolean} options.force - Force re-download all files (ignore hash match)
+ * @param {string[]} options.kubejsFolders - KubeJS subfolders to sync
+ * @param {function} options.sendLog - Log callback
+ */
+async function syncCategory(rootPath, manifestUrl, category, options = {}) {
+    const { force = false, kubejsFolders = ['client_scripts', 'startup_scripts', 'server_scripts'], sendLog = () => {} } = options;
+
+    // Download manifest
+    const manifestPath = path.join(rootPath, 'manifest.json');
+    try {
+        await downloadFile(manifestUrl, manifestPath, { timeoutMs: 10_000 });
+    } catch (e) {
+        throw new Error(`Ошибка загрузки манифеста: ${e.message}`);
+    }
+
+    let manifest;
+    try {
+        manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    } catch (e) {
+        throw new Error('Ошибка чтения манифеста: некорректный JSON');
+    }
+
+    if (!manifest || !Array.isArray(manifest.files)) {
+        throw new Error('Invalid manifest format');
+    }
+
+    // Filter files by category
+    let files = [];
+    switch (category) {
+        case 'mods':
+            files = manifest.files.filter(f => f.path.startsWith('mods/') && f.path.endsWith('.jar'));
+            break;
+        case 'config':
+            files = manifest.files.filter(f => f.path.startsWith('config/'));
+            break;
+        case 'kubejs':
+            files = manifest.files.filter(f => {
+                if (!f.path.startsWith('kubejs/')) return false;
+                // Check if file is in selected subfolders
+                const subPath = f.path.substring('kubejs/'.length);
+                return kubejsFolders.some(folder => subPath.startsWith(folder + '/') || subPath === folder);
+            });
+            break;
+        case 'resourcepacks':
+            files = manifest.files.filter(f => f.path.startsWith('resourcepacks/'));
+            break;
+        case 'thingpacks':
+            files = manifest.files.filter(f => f.path.startsWith('thingpacks/'));
+            break;
+        default:
+            throw new Error(`Unknown category: ${category}`);
+    }
+
+    sendLog(`Найдено ${files.length} файлов в категории ${category}`);
+
+    let downloaded = 0;
+    let skipped = 0;
+
+    for (const file of files) {
+        if (!file || typeof file.path !== 'string' || typeof file.url !== 'string') {
+            continue;
+        }
+
+        const localPath = resolveUnderRoot(rootPath, file.path);
+        const localDir = path.dirname(localPath);
+
+        if (!fs.existsSync(localDir)) {
+            fs.mkdirSync(localDir, { recursive: true });
+        }
+
+        let needDownload = force;
+
+        if (!needDownload) {
+            if (!fs.existsSync(localPath)) {
+                needDownload = true;
+            } else if (file.hash) {
+                const localHash = await getFileHash(localPath);
+                if (localHash !== file.hash) {
+                    needDownload = true;
+                }
+            }
+        }
+
+        if (needDownload) {
+            sendLog(`Загрузка: ${file.path}`);
+            try {
+                await downloadFile(file.url, localPath, {
+                    expectedHash: force ? null : file.hash,
+                    expectedSize: typeof file.size === 'number' ? file.size : null,
+                });
+                downloaded++;
+            } catch (e) {
+                sendLog(`Ошибка загрузки ${file.path}: ${e.message}`);
+            }
+        } else {
+            skipped++;
+        }
+    }
+
+    sendLog(`Готово. Скачано: ${downloaded}, пропущено: ${skipped}`);
+    return { downloaded, skipped, total: files.length };
+}
+
+/**
+ * Delete all files in a category
+ * @param {string} rootPath - Game installation directory
+ * @param {string} category - Category to delete
+ */
+async function deleteCategory(rootPath, category) {
+    let targetPath;
+    let deletePattern = null;
+
+    switch (category) {
+        case 'mods':
+            targetPath = path.join(rootPath, 'mods');
+            break;
+        case 'config':
+            targetPath = path.join(rootPath, 'config');
+            break;
+        case 'kubejs':
+            targetPath = path.join(rootPath, 'kubejs');
+            break;
+        case 'resourcepacks':
+            targetPath = path.join(rootPath, 'resourcepacks');
+            deletePattern = /^\[GanjaCraft\]/; // Only delete server resourcepacks
+            break;
+        case 'thingpacks':
+            targetPath = path.join(rootPath, 'thingpacks');
+            break;
+        default:
+            throw new Error(`Unknown category: ${category}`);
+    }
+
+    if (!fs.existsSync(targetPath)) {
+        return { deleted: 0, message: 'Папка не существует' };
+    }
+
+    let deleted = 0;
+
+    if (deletePattern) {
+        // Selective deletion (e.g., only [GanjaCraft] resourcepacks)
+        const entries = fs.readdirSync(targetPath);
+        for (const entry of entries) {
+            if (deletePattern.test(entry)) {
+                const fullPath = path.join(targetPath, entry);
+                try {
+                    fs.rmSync(fullPath, { recursive: true, force: true });
+                    deleted++;
+                } catch (e) {
+                    console.error(`Failed to delete ${fullPath}:`, e);
+                }
+            }
+        }
+    } else {
+        // Delete entire directory contents
+        const entries = fs.readdirSync(targetPath);
+        for (const entry of entries) {
+            const fullPath = path.join(targetPath, entry);
+            try {
+                fs.rmSync(fullPath, { recursive: true, force: true });
+                deleted++;
+            } catch (e) {
+                console.error(`Failed to delete ${fullPath}:`, e);
+            }
+        }
+    }
+
+    return { deleted, message: `Удалено ${deleted} элементов` };
+}
+
+/**
+ * Count files in each category (both local and manifest)
+ * @param {string} rootPath - Game installation directory
+ * @param {string} manifestUrl - URL to manifest.json
+ */
+async function getCategoryCounts(rootPath, manifestUrl) {
+    // Try to download fresh manifest
+    let manifest = null;
+    try {
+        const manifestPath = path.join(rootPath, 'manifest.json');
+        await downloadFile(manifestUrl, manifestPath, { timeoutMs: 10_000 });
+        manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    } catch (e) {
+        // Use local manifest if download fails
+        try {
+            const localManifest = path.join(rootPath, 'manifest.json');
+            if (fs.existsSync(localManifest)) {
+                manifest = JSON.parse(fs.readFileSync(localManifest, 'utf-8'));
+            }
+        } catch {}
+    }
+
+    const counts = {
+        mods: { local: 0, manifest: 0 },
+        config: { local: 0, manifest: 0 },
+        kubejs: { local: 0, manifest: 0 },
+        resourcepacks: { local: 0, manifest: 0 },
+        thingpacks: { local: 0, manifest: 0 }
+    };
+
+    // Count local files
+    const countLocalFiles = (dir, recursive = true) => {
+        if (!fs.existsSync(dir)) return 0;
+        let count = 0;
+        try {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+                if (entry.isFile()) {
+                    count++;
+                } else if (entry.isDirectory() && recursive) {
+                    count += countLocalFiles(path.join(dir, entry.name), true);
+                }
+            }
+        } catch {}
+        return count;
+    };
+
+    counts.mods.local = countLocalFiles(path.join(rootPath, 'mods'), false);
+    counts.config.local = countLocalFiles(path.join(rootPath, 'config'), true);
+    counts.kubejs.local = countLocalFiles(path.join(rootPath, 'kubejs'), true);
+    counts.resourcepacks.local = countLocalFiles(path.join(rootPath, 'resourcepacks'), true);
+    counts.thingpacks.local = countLocalFiles(path.join(rootPath, 'thingpacks'), true);
+
+    // Count manifest files
+    if (manifest && Array.isArray(manifest.files)) {
+        for (const f of manifest.files) {
+            if (!f || typeof f.path !== 'string') continue;
+            if (f.path.startsWith('mods/')) counts.mods.manifest++;
+            else if (f.path.startsWith('config/')) counts.config.manifest++;
+            else if (f.path.startsWith('kubejs/')) counts.kubejs.manifest++;
+            else if (f.path.startsWith('resourcepacks/')) counts.resourcepacks.manifest++;
+            else if (f.path.startsWith('thingpacks/')) counts.thingpacks.manifest++;
+        }
+    }
+
+    return counts;
+}
+
+/**
+ * Fetch server_scripts from admin manifest endpoint
+ * Server scripts are normally NOT included in the regular manifest for players
+ * @param {string} rootPath - Game installation directory
+ * @param {string} manifestUrl - Base manifest URL (will request admin variant)
+ * @param {function} sendLog - Log callback
+ */
+async function fetchServerScripts(rootPath, manifestUrl, sendLog = () => {}) {
+    // For now, we'll just sync the kubejs/server_scripts from the regular manifest
+    // In future, could add an admin-only endpoint with extended manifest
+    
+    sendLog('Загрузка server_scripts из манифеста...');
+    
+    const manifestPath = path.join(rootPath, 'manifest.json');
+    try {
+        await downloadFile(manifestUrl, manifestPath, { timeoutMs: 10_000 });
+    } catch (e) {
+        throw new Error(`Ошибка загрузки манифеста: ${e.message}`);
+    }
+
+    let manifest;
+    try {
+        manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    } catch (e) {
+        throw new Error('Ошибка чтения манифеста');
+    }
+
+    if (!manifest || !Array.isArray(manifest.files)) {
+        throw new Error('Invalid manifest format');
+    }
+
+    // Filter for server_scripts
+    const serverScripts = manifest.files.filter(f => 
+        f.path.startsWith('kubejs/server_scripts/')
+    );
+
+    if (serverScripts.length === 0) {
+        sendLog('server_scripts не найдены в манифесте');
+        return { downloaded: 0, message: 'Нет server_scripts в манифесте' };
+    }
+
+    sendLog(`Найдено ${serverScripts.length} server_scripts файлов`);
+
+    let downloaded = 0;
+    for (const file of serverScripts) {
+        const localPath = resolveUnderRoot(rootPath, file.path);
+        const localDir = path.dirname(localPath);
+
+        if (!fs.existsSync(localDir)) {
+            fs.mkdirSync(localDir, { recursive: true });
+        }
+
+        sendLog(`Загрузка: ${file.path}`);
+        try {
+            await downloadFile(file.url, localPath, {
+                expectedHash: file.hash,
+                expectedSize: typeof file.size === 'number' ? file.size : null,
+            });
+            downloaded++;
+        } catch (e) {
+            sendLog(`Ошибка: ${e.message}`);
+        }
+    }
+
+    sendLog(`Готово. Скачано: ${downloaded} файлов`);
+    return { downloaded, total: serverScripts.length };
+}
+
+module.exports = { downloadFile, getFileHash, syncFiles, syncCategory, deleteCategory, getCategoryCounts, fetchServerScripts };
