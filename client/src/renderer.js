@@ -150,10 +150,10 @@ function toggleSnow(enable) {
 
 // Burst effect - snow explosion when settings drop
 function createSnowBurst() {
-    const snowContainer = document.getElementById('snow-container');
-    if (!snowContainer) return;
+    const burstContainer = document.getElementById('snow-burst-container') || document.getElementById('snow-container');
+    if (!burstContainer) return;
     
-    const burstCount = 35; // Снежинок в залпе
+    const burstCount = 60; // Снежинок в залпе
     
     for (let i = 0; i < burstCount; i++) {
         setTimeout(() => {
@@ -166,9 +166,9 @@ function createSnowBurst() {
             snowflake.style.left = startX + 'vw';
             snowflake.style.top = '-10px'; // Выше окна - за пределами видимости
             
-            // Направление разлёта - меньше дистанция
-            const spreadX = (Math.random() - 0.5) * 150; // -75 to 75 px в стороны
-            const spreadY = 100 + Math.random() * 200; // 100-300px вниз
+            // Направление разлёта - больше дистанция
+            const spreadX = (Math.random() - 0.5) * 200; // -100 to 100 px в стороны
+            const spreadY = 120 + Math.random() * 280; // 120-400px вниз
             const rotation = (Math.random() - 0.5) * 360; // Случайное вращение
             
             snowflake.style.setProperty('--burst-x', spreadX + 'px');
@@ -176,26 +176,26 @@ function createSnowBurst() {
             snowflake.style.setProperty('--burst-rotate', rotation + 'deg');
             
             // Короче анимация
-            const duration = 0.8 + Math.random() * 1.2; // 0.8-2s
+            const duration = 0.7 + Math.random() * 1.0; // 0.7-1.7s
             snowflake.style.animationDuration = duration + 's';
             
-            snowflake.style.opacity = 0.7 + Math.random() * 0.3;
-            snowflake.style.fontSize = (12 + Math.random() * 14) + 'px';
+            snowflake.style.opacity = 0.75 + Math.random() * 0.25;
+            snowflake.style.fontSize = (14 + Math.random() * 16) + 'px';
             
-            snowContainer.appendChild(snowflake);
+            burstContainer.appendChild(snowflake);
             
             snowflake.addEventListener('animationend', () => {
                 snowflake.remove();
             });
-        }, i * 8); // Быстрее спавн для ощущения взрыва
+        }, i * 5); // Ещё быстрее спавн для ощущения взрыва
     }
 }
 
 // Side burst effect - snow explosion from left or right side
 // side: 'left' или 'right'
 function createSideBurst(side) {
-    const snowContainer = document.getElementById('snow-container');
-    if (!snowContainer) return;
+    const burstContainer = document.getElementById('snow-burst-container') || document.getElementById('snow-container');
+    if (!burstContainer) return;
     
     const burstCount = 20; // Снежинок в боковом залпе
     
@@ -233,7 +233,7 @@ function createSideBurst(side) {
             snowflake.style.opacity = 0.6 + Math.random() * 0.4;
             snowflake.style.fontSize = (10 + Math.random() * 12) + 'px';
             
-            snowContainer.appendChild(snowflake);
+            burstContainer.appendChild(snowflake);
             
             snowflake.addEventListener('animationend', () => {
                 snowflake.remove();
@@ -422,6 +422,160 @@ const btnSettings = document.getElementById('btn-settings');
 const btnCloseSettings = document.getElementById('btn-close-settings');
 const btnSaveSettings = document.getElementById('save-settings');
 
+// --- Animation Lock: защита от быстрого переключения ---
+let settingsAnimating = false;
+
+// --- Easter Egg: Двухэтапная пасхалка "Веб-камера" ---
+const EASTER_EGG_CHANCE = 0.05; // 5% шанс
+const EASTER_EGG_IMAGE = 'assets/images/easter_egg.jpg';
+let easterEggActive = false;
+let easterEggStage = 0; // 0 = неактивна, 1 = картинка, 2 = "запись"
+let originalNewsContent = null;
+let originalPanelTitle = null;
+
+function triggerSettingsEasterEgg() {
+    const newsList = document.getElementById('news-list');
+    const consoleOutput = document.getElementById('console-output');
+    const panelTitleEl = document.getElementById('panel-title');
+    
+    // Пасхалка срабатывает ТОЛЬКО когда видны новости (не консоль)
+    if (!newsList || easterEggActive) return;
+    if (consoleOutput && !consoleOutput.classList.contains('hidden')) return;
+    
+    // Сохраняем оригинальный контент и заголовок
+    originalNewsContent = newsList.innerHTML;
+    originalPanelTitle = panelTitleEl ? panelTitleEl.innerText : 'Новости';
+    easterEggActive = true;
+    easterEggStage = 1;
+    
+    // Меняем заголовок на "Веб-камера"
+    if (panelTitleEl) {
+        panelTitleEl.innerText = '📹 Веб-камера';
+    }
+    
+    // Показываем пасхалку - этап 1 (картинка)
+    newsList.innerHTML = `
+        <div class="easter-egg-container" style="display: flex; justify-content: center; align-items: center; height: 100%; padding: 10px;">
+            <img src="${EASTER_EGG_IMAGE}" style="max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        </div>
+    `;
+    
+    console.log('🥚 Easter egg Stage 1: Веб-камера активирована!');
+}
+
+function triggerEasterEggStage2() {
+    const newsList = document.getElementById('news-list');
+    const panelTitleEl = document.getElementById('panel-title');
+    const mainContent = document.getElementById('main-content');
+    
+    if (!easterEggActive || easterEggStage !== 1) return;
+    
+    easterEggStage = 2;
+    
+    // Добавляем CSS стили для эффектов если их нет
+    if (!document.getElementById('easter-egg-styles')) {
+        const style = document.createElement('style');
+        style.id = 'easter-egg-styles';
+        style.textContent = `
+            @keyframes rainbow-hue {
+                0% { filter: hue-rotate(0deg) saturate(1.5); }
+                100% { filter: hue-rotate(360deg) saturate(1.5); }
+            }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+            @keyframes glitch {
+                0%, 100% { transform: translate(0); filter: hue-rotate(0deg); }
+                20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+                40% { transform: translate(2px, -2px); filter: hue-rotate(180deg); }
+                60% { transform: translate(-2px, -2px); filter: hue-rotate(270deg); }
+                80% { transform: translate(2px, 2px); filter: hue-rotate(360deg); }
+            }
+            .easter-egg-rainbow {
+                animation: rainbow-hue 2s linear infinite !important;
+            }
+            .easter-egg-shake {
+                animation: shake 0.5s ease-in-out;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Меняем заголовок
+    if (panelTitleEl) {
+        panelTitleEl.innerText = '🌈 ЁБАНЫЙ НАСОС';
+    }
+    
+    // Показываем хаотичный контент
+    newsList.innerHTML = `
+        <div class="easter-egg-container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; text-align: center;">
+            <div style="font-size: 64px; animation: glitch 0.3s infinite;">🌈🔥💀🎉</div>
+            <div style="font-size: 24px; color: #ff00ff; font-weight: bold; margin: 15px 0; text-shadow: 2px 2px #00ffff, -2px -2px #ffff00;">ВСЁ СЛОМАЛОСЬ</div>
+            <div style="font-size: 14px; color: #00ff00;">Нажми ещё раз чтобы починить</div>
+        </div>
+    `;
+    
+    // Радужный эффект на весь интерфейс
+    if (mainContent) {
+        mainContent.classList.add('easter-egg-rainbow', 'easter-egg-shake');
+    }
+    
+    // Запускаем хаос из burst эффектов
+    const burstChaos = () => {
+        if (!easterEggActive || easterEggStage !== 2) return;
+        
+        // Snow burst сверху
+        createSnowBurst();
+        
+        // Side bursts с обеих сторон
+        setTimeout(() => {
+            if (easterEggActive && easterEggStage === 2) createSideBurst('left');
+        }, 200);
+        setTimeout(() => {
+            if (easterEggActive && easterEggStage === 2) createSideBurst('right');
+        }, 400);
+        
+        // Повторяем пока активна пасхалка
+        setTimeout(() => {
+            if (easterEggActive && easterEggStage === 2) burstChaos();
+        }, 800);
+    };
+    
+    // Запускаем хаос
+    burstChaos();
+    
+    console.log('🥚 Easter egg Stage 2: ХАОС АКТИВИРОВАН!');
+}
+
+function hideEasterEgg() {
+    if (!easterEggActive || !originalNewsContent) return;
+    
+    const newsList = document.getElementById('news-list');
+    const panelTitleEl = document.getElementById('panel-title');
+    const mainContent = document.getElementById('main-content');
+    
+    if (newsList) {
+        newsList.innerHTML = originalNewsContent;
+    }
+    
+    // Восстанавливаем заголовок
+    if (panelTitleEl && originalPanelTitle) {
+        panelTitleEl.innerText = originalPanelTitle;
+    }
+    
+    // Убираем радужные эффекты
+    if (mainContent) {
+        mainContent.classList.remove('easter-egg-rainbow', 'easter-egg-shake');
+    }
+    
+    easterEggActive = false;
+    easterEggStage = 0;
+    originalNewsContent = null;
+    originalPanelTitle = null;
+}
+
 // Tabs
 document.querySelectorAll('.settings-tabs .tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -456,6 +610,11 @@ function toggleMainUIVisibility(show) {
                 const delay = index * 20;
                 el.style.transition = `transform 0.15s cubic-bezier(0.4, 0, 1, 1) ${delay}ms`;
                 el.style.transform = hideTransform;
+                
+                // Easter egg: скрываем пасхалку ПОСЛЕ анимации ухода панели новостей
+                if (index === 0 && easterEggActive) {
+                    setTimeout(() => hideEasterEgg(), 150 + delay);
+                }
             }
             el.style.pointerEvents = show ? 'auto' : 'none';
         }
@@ -464,36 +623,45 @@ function toggleMainUIVisibility(show) {
 
 // Helper function to open settings with animation
 function openSettings() {
+    if (settingsAnimating) return;
+    settingsAnimating = true;
+    
     settingsScreen.classList.remove('hidden', 'closing');
     settingsScreen.classList.add('opening');
     
-    // Trigger snow burst effect on impact (after drop animation reaches bottom)
-    setTimeout(() => {
-        if (currentConfig.enableSnow !== false) {
-            createSnowBurst();
-        }
-    }, 150); // Sync with faster drop animation
+    // Trigger snow burst effect immediately with opening animation
+    if (currentConfig.enableSnow !== false) {
+        createSnowBurst();
+    }
+    
+    // Разблокировка через 300мс
+    setTimeout(() => { settingsAnimating = false; }, 300);
 }
 
 // Helper function to close settings with animation
 function closeSettings() {
+    if (settingsAnimating) return;
+    settingsAnimating = true;
+    
     settingsScreen.classList.remove('opening');
     settingsScreen.classList.add('closing');
-    
-    // Snow burst когда окно закрывается (уезжает вверх)
-    if (currentConfig.enableSnow !== false) {
-        createSnowBurst();
-    }
     
     // After animation completes, set to hidden
     setTimeout(() => {
         settingsScreen.classList.remove('closing');
         settingsScreen.classList.add('hidden');
+        settingsAnimating = false; // Разблокировка после завершения анимации
     }, 250); // Быстрее анимация
 }
 
 // Close Settings button
 btnCloseSettings.addEventListener('click', () => {
+    if (settingsAnimating) return; // Защита от быстрых кликов
+    
+    // Easter egg: шанс на пасхалку при закрытии
+    if (Math.random() < EASTER_EGG_CHANCE) {
+        triggerSettingsEasterEgg();
+    }
     // Start UI elements appearing FIRST (they'll slide in while settings slides up)
     toggleMainUIVisibility(true);
     // Start closing animation
@@ -505,9 +673,15 @@ btnCloseSettings.addEventListener('click', () => {
 
 // Toggle Settings
 btnSettings.addEventListener('click', async () => {
+    if (settingsAnimating) return; // Защита от быстрых кликов
+    
     // Toggle: if open - close, if closed - open
     if (settingsScreen.classList.contains('opening') || 
         (!settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing'))) {
+        // Easter egg: шанс на пасхалку при закрытии
+        if (Math.random() < EASTER_EGG_CHANCE) {
+            triggerSettingsEasterEgg();
+        }
         // Start UI elements appearing FIRST
         toggleMainUIVisibility(true);
         closeSettings();
@@ -854,6 +1028,18 @@ const newsList = document.getElementById('news-list');
 const panelTitle = document.getElementById('panel-title');
 
 consoleToggleBtn.addEventListener('click', () => {
+    // Easter egg: если пасхалка активна на первом этапе - переходим на второй
+    if (easterEggActive && easterEggStage === 1) {
+        triggerEasterEggStage2();
+        return;
+    }
+    
+    // Easter egg: если на втором этапе - скрываем пасхалку и показываем новости
+    if (easterEggActive && easterEggStage === 2) {
+        hideEasterEgg();
+        return;
+    }
+    
     const isConsoleVisible = !consoleOutput.classList.contains('hidden');
     
     if (isConsoleVisible) {
