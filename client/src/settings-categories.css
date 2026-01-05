@@ -1,0 +1,583 @@
+/* ========================================
+   GanjaCraft Launcher - Settings Categories
+   Modern categorized settings design
+   Uses CSS variables from unified-styles.css
+   ======================================== */
+
+/* Settings Categories Container */
+.settings-categories {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 0;
+    max-width: 100%;
+    width: 100%;
+}
+
+/* Category Card */
+.settings-category {
+    background: var(--gc-bg-card, rgba(30, 30, 30, 0.6));
+    border: 1px solid var(--gc-border, rgba(255, 255, 255, 0.06));
+    border-radius: var(--gc-radius-lg, 10px);
+    overflow: hidden;
+    transition: 
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.settings-category:hover {
+    border-color: rgba(76, 175, 80, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Category Header */
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: var(--gc-spacing-md, 12px) 14px;
+    background: var(--gc-bg-header, rgba(40, 40, 40, 0.5));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.category-header h4 {
+    margin: 0;
+    font-size: var(--gc-font-md, 12px);
+    font-weight: 600;
+    color: #e0e0e0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.category-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--gc-green, #4CAF50);
+    flex-shrink: 0;
+}
+
+/* Category Content */
+.category-content {
+    padding: 4px 0;
+}
+
+/* Setting Item */
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    gap: 12px;
+    transition: background 0.15s ease;
+}
+
+/* Clickable toggle items */
+.setting-item-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.setting-item-toggle:hover {
+    background: rgba(76, 175, 80, 0.08);
+}
+
+.setting-item-toggle:active {
+    background: rgba(76, 175, 80, 0.12);
+}
+
+.setting-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.setting-item:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Stacked layout - инпут на отдельной строке */
+.setting-item-stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.setting-item-stacked .setting-control {
+    width: 100%;
+}
+
+.setting-item-stacked .path-control input {
+    flex: 1;
+}
+
+/* Setting Label (Left side) */
+.setting-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.setting-icon {
+    width: 16px;
+    height: 16px;
+    color: #888;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.setting-item:hover .setting-icon {
+    color: #aaa;
+}
+
+.setting-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.setting-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+.setting-desc {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.3;
+}
+
+.setting-desc strong {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+/* Setting Control (Right side) */
+.setting-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Path Control */
+.path-control {
+    max-width: 320px;
+    flex: 1;
+}
+
+/* Stacked path control - на всю ширину */
+.setting-item-stacked .path-control {
+    max-width: none;
+}
+
+.path-control input[type="text"] {
+    flex: 1;
+    min-width: 120px;
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: #ccc;
+    margin: 0;
+    transition: 
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.path-control input[type="text"]:focus {
+    border-color: #4CAF50;
+    background: rgba(30, 30, 30, 0.9);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+    outline: none;
+}
+
+.path-control input[type="text"]::placeholder {
+    color: #555;
+}
+
+/* Icon Buttons */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(76, 175, 80, 0.12);
+    border: 1px solid rgba(76, 175, 80, 0.25);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(76, 175, 80, 0.25);
+    border-color: rgba(76, 175, 80, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.icon-btn:active {
+    transform: translateY(0);
+}
+
+.icon-btn .btn-icon {
+    width: 15px;
+    height: 15px;
+    color: #4CAF50;
+}
+
+.icon-btn.reset {
+    background: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.icon-btn.reset:hover {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: rgba(255, 193, 7, 0.5);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+.icon-btn.reset .btn-icon {
+    color: #ffc107;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(80, 80, 80, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 28px;
+    transition: 
+        background 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: #ccc;
+    border-radius: 50%;
+    transition: 
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background 0.3s ease,
+        box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: rgba(76, 175, 80, 0.4);
+    border-color: rgba(76, 175, 80, 0.5);
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.15);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+    background: #4CAF50;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+}
+
+.toggle-switch:hover .toggle-slider {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.toggle-switch:hover .toggle-slider::before {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================
+   RAM Slider (Dual Range)
+   ======================================== */
+
+.ram-setting {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.ram-setting .setting-label {
+    width: 100%;
+}
+
+.ram-setting .setting-control {
+    width: 100%;
+}
+
+.ram-control {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.ram-slider-container {
+    width: 100%;
+    padding: 8px 4px;
+}
+
+.ram-slider-wrapper {
+    position: relative;
+    height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.ram-track {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    background: rgba(60, 60, 60, 0.8);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ram-range {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, #2e7d32, #4CAF50);
+    border-radius: 4px;
+    transition: left 0.1s ease, width 0.1s ease;
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.3);
+}
+
+.ram-slider {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    background: transparent;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.ram-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #4CAF50, #2e7d32);
+    border: 3px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        0 0 0 3px rgba(76, 175, 80, 0.2);
+    transition: 
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.ram-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.5),
+        0 0 0 6px rgba(76, 175, 80, 0.25);
+}
+
+.ram-slider::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+}
+
+.ram-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #4CAF50, #2e7d32);
+    border: 3px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        0 0 0 3px rgba(76, 175, 80, 0.2);
+    transition: 
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.ram-labels {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 8px;
+    font-size: 10px;
+    color: #666;
+    user-select: none;
+}
+
+.ram-labels span {
+    flex: 1;
+    text-align: center;
+}
+
+.ram-labels span:first-child {
+    text-align: left;
+}
+
+.ram-labels span:last-child {
+    text-align: right;
+}
+
+/* ========================================
+   Danger Zone Category
+   ======================================== */
+
+.category-danger {
+    border-color: rgba(211, 47, 47, 0.25);
+    background: rgba(211, 47, 47, 0.05);
+}
+
+.category-danger:hover {
+    border-color: rgba(211, 47, 47, 0.4);
+    box-shadow: 0 8px 32px rgba(211, 47, 47, 0.15);
+}
+
+.category-danger .category-header {
+    background: rgba(211, 47, 47, 0.1);
+    border-bottom-color: rgba(211, 47, 47, 0.15);
+}
+
+.category-danger .category-icon {
+    color: #ef5350;
+}
+
+.category-danger .category-header h4 {
+    color: #ef5350;
+}
+
+.danger-item .setting-icon {
+    color: #ef5350;
+}
+
+/* Danger Button */
+.danger-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(211, 47, 47, 0.15);
+    border: 1px solid rgba(211, 47, 47, 0.4);
+    border-radius: 10px;
+    color: #ef5350;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    width: auto;
+    margin: 0;
+    transition: 
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+
+.danger-btn:hover {
+    background: rgba(211, 47, 47, 0.25);
+    border-color: rgba(211, 47, 47, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(211, 47, 47, 0.25);
+}
+
+.danger-btn:active {
+    transform: translateY(0);
+}
+
+.danger-btn .btn-icon {
+    width: 16px;
+    height: 16px;
+    color: #ef5350;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 600px) {
+    .settings-categories {
+        grid-template-columns: 1fr;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .setting-control {
+        width: 100%;
+    }
+    
+    .path-control {
+        max-width: none;
+    }
+    
+    .toggle-switch {
+        align-self: flex-end;
+    }
+}
+
+/* ========================================
+   Animations (disabled for cleaner UX)
+   ======================================== */
+
+/* No category animations */
+
+/* Hover glow effect for toggle */
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+/* Category hover accent line */
+.settings-category::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    border-radius: 3px 0 0 3px;
+    transition: background 0.3s ease;
+}
+
+.settings-category {
+    position: relative;
+}
+
+.settings-category:hover::before {
+    background: linear-gradient(180deg, #4CAF50, transparent);
+}
+
+.category-danger:hover::before {
+    background: linear-gradient(180deg, #ef5350, transparent);
+}

@@ -105,6 +105,7 @@ contextBridge.exposeInMainWorld('api', {
     devDeleteCategory: (category) => ipcRenderer.invoke('dev-delete-category', category),
     devGetCategoryCounts: () => ipcRenderer.invoke('dev-get-category-counts'),
     devFetchServerScripts: () => ipcRenderer.invoke('dev-fetch-server-scripts'),
+    devCancelOperation: (category) => ipcRenderer.send('dev-cancel-operation', category),
     onDevProgress: (callback) => ipcRenderer.on('dev-progress', (event, data) => callback(data)),
     
     // Events
