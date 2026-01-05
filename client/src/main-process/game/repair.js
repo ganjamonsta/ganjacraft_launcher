@@ -49,7 +49,7 @@ async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
     ];
 
     for (const file of criticalChecks) {
-        const isOk = fs.existsSync(file.path) && isZipIntact(file.path);
+        const isOk = fs.existsSync(file.path) && (await isZipIntact(file.path));
         
         if (!isOk) {
             sendLog(`⚠️ Восстанавливаю ${file.name}...`);
@@ -69,7 +69,7 @@ async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
                 await downloadFile(file.url, file.path, { timeoutMs: 120_000 });
                 
                 // Verify integrity
-                if (!isZipIntact(file.path)) {
+                if (!(await isZipIntact(file.path))) {
                     try { fs.unlinkSync(file.path); } catch {}
                     throw new Error(`Downloaded file is not a valid JAR/ZIP (truncated or corrupted)`);
                 }

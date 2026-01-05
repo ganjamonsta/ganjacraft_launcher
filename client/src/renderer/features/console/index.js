@@ -4,9 +4,7 @@
 
 export {
     logToConsole,
-    clearConsole,
     isConsoleVisible,
     showConsole,
-    hideConsole,
-    toggleConsole
+    hideConsole
 } from './console.js';

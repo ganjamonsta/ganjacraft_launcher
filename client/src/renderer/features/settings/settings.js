@@ -3,14 +3,14 @@
  * Управление настройками лаунчера
  */
 
-import { appState } from '../../state/app-state.js';
 import { dom } from '../../utils/dom.js';
-import { customAlert } from '../../ui/modals.js';
+import { customAlert, customConfirm } from '../../ui/modals.js';
 import { toggleSnow, createSnowBurst, createDirectionalBurst, createSideBurst } from '../../ui/effects/index.js';
 import { startSmokeEffect, stopSmokeEffect } from '../../ui/effects/smoke.js';
+import { startParallax, stopParallax } from '../../ui/effects/parallax.js';
 import { loadModsList, getDisabledMods, updateModsCounter, updateCategorySidebar } from '../mods/index.js';
 import { logToConsole } from '../console/console.js';
-import { initRamSlider, getRamSliderValues, setRamSliderValues } from './ram-slider.js';
+import { initRamSlider } from './ram-slider.js';
 import { debounce } from '../../utils/performance.js';
 
 // Стейт для отслеживания изменений
@@ -143,17 +143,23 @@ export function setupSettingsChangeListeners() {
     }
 }
 
+// Кеш для UI элементов в toggleMainUIVisibility
+let cachedUIElements = null;
+
 /**
- * Показать/скрыть основные UI элементы
+ * Показать/скрыть основные UI элементы (оптимизировано)
  */
 export function toggleMainUIVisibility(show, config) {
-    const elements = [
-        { el: document.getElementById('news-section'), defaultTransform: 'none', hideTransform: 'translateX(-120%)', side: 'left' },
-        { el: document.getElementById('server-status-widget'), defaultTransform: 'none', hideTransform: 'translateY(-150%)', side: null },
-        { el: document.querySelector('.auth-container'), defaultTransform: 'translateY(-50%)', hideTransform: 'translateY(-50%) translateX(120%)', side: 'right' }
-    ];
+    // Ленивая инициализация кеша элементов
+    if (!cachedUIElements) {
+        cachedUIElements = [
+            { el: document.getElementById('news-section'), defaultTransform: 'none', hideTransform: 'translateX(-120%)', side: 'left' },
+            { el: document.getElementById('server-status-widget'), defaultTransform: 'none', hideTransform: 'translateY(-150%)', side: null },
+            { el: document.querySelector('.auth-container'), defaultTransform: 'translateY(-50%)', hideTransform: 'translateY(-50%) translateX(120%)', side: 'right' }
+        ];
+    }
     
-    elements.forEach(({ el, defaultTransform, hideTransform, side }, index) => {
+    cachedUIElements.forEach(({ el, defaultTransform, hideTransform, side }, index) => {
         if (el) {
             if (show) {
                 const delay = index * 50;
@@ -284,7 +290,6 @@ export async function saveSettings() {
     }
     
     currentConfig = newConfig;
-    appState.set('config', newConfig);
     
     // Apply Visual Effects
     toggleSnow(newConfig.enableSnow);
@@ -293,11 +298,12 @@ export async function saveSettings() {
     } else {
         stopSmokeEffect();
     }
-
-    // Reset Parallax if disabled
-    if (!newConfig.enableParallax) {
-        const bg = document.getElementById('bg-overlay');
-        if (bg) bg.style.transform = 'none';
+    
+    // Toggle Parallax
+    if (newConfig.enableParallax) {
+        startParallax();
+    } else {
+        stopParallax();
     }
 
     // Update UI values
@@ -418,7 +424,11 @@ export function initReinstallButton() {
     const reinstallBtn = document.getElementById('btn-reinstall');
     if (reinstallBtn) {
         reinstallBtn.addEventListener('click', async () => {
-            if (confirm('Вы уверены? Это удалит все моды и настройки.')) {
+            const confirmed = await customConfirm(
+                'Это удалит все моды и настройки игры. Продолжить?',
+                '⚠️ Переустановка клиента'
+            );
+            if (confirmed) {
                 await window.api.reinstallClient();
                 await customAlert('Файлы клиента удалены. Пожалуйста, перезапустите лаунчер или нажмите ИГРАТЬ для повторной загрузки.', '✅ Переустановка завершена');
                 settingsScreen?.classList.add('hidden');

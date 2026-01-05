@@ -7,10 +7,10 @@
     height: calc(100% - 40px);
     padding-left: 3%;
     padding-right: 3%;
-    background: rgba(12, 12, 12, 0.95); /* Slightly more opaque to hide seams */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    z-index: 100; /* Below visual effects (500) and title bar (1000) */
+    background: rgba(12, 12, 12, 0.98); /* Solid background instead of blur */
+    /* backdrop-filter: blur(12px); - DISABLED FOR TESTING */
+    /* -webkit-backdrop-filter: blur(12px); */
+    z-index: 800; /* Above visual effects (500) and other UI (600), below title bar (1000) */
     display: flex;
     flex-direction: column;
     
@@ -73,16 +73,19 @@
 .settings-screen.opening {
     animation: settings-drop 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
     pointer-events: auto;
-    /* GPU ускорение */
-    will-change: transform, opacity;
+    backface-visibility: hidden;
+}
+
+/* Visible state (after opening, not hidden, not closing) */
+.settings-screen:not(.hidden):not(.closing) {
+    pointer-events: auto;
 }
 
 /* Closing state - быстрее */
 .settings-screen.closing {
     animation: settings-slideup 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
     pointer-events: none;
-    /* GPU ускорение */
-    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* Hidden state (after closing animation) */
@@ -214,11 +217,12 @@
 
 .settings-body {
     padding: 0;
-    overflow: hidden;
+    overflow: visible;
     flex: 1;
     display: flex;
     flex-direction: column;
     position: relative;
+    pointer-events: auto; /* Ensure clicks work */
 }
 
 .settings-body.animating {
@@ -234,6 +238,7 @@
     height: 100%;
     padding: 18px 20px;
     overflow-y: auto; /* Enable scroll */
+    pointer-events: auto; /* Ensure clicks work */
 }
 
 .tab-content.active,
@@ -244,7 +249,8 @@
 }
 
 .tab-content.active:not(.slide-in-from-left):not(.slide-in-from-right):not(.slide-out-to-left):not(.slide-out-to-right) {
-    position: relative; /* Возвращаем в нормальное состояние после анимации */
+    position: absolute; /* Keep absolute to ensure clickability */
+    z-index: 10;
 }
 
 .tab-content.active {
@@ -308,21 +314,27 @@
 .tab-content.slide-in-from-left {
     animation: slide-in-left 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     z-index: 1;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .tab-content.slide-in-from-right {
     animation: slide-in-right 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     z-index: 1;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .tab-content.slide-out-to-left {
     animation: slide-out-left 0.15s cubic-bezier(0.5, 0, 0.75, 1) forwards;
     z-index: 2;
+    backface-visibility: hidden;
 }
 
 .tab-content.slide-out-to-right {
     animation: slide-out-right 0.15s cubic-bezier(0.5, 0, 0.75, 1) forwards;
     z-index: 2;
+    backface-visibility: hidden;
 }
 
 /* Mods Tab Specifics */

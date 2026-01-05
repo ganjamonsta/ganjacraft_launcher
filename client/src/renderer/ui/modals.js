@@ -162,3 +162,57 @@ export function showError(elementId, message) {
         el.innerText = '';
     }, ERROR_DISPLAY_TIME);
 }
+
+/**
+ * Показать всплывающее уведомление (Toast)
+ * @param {string} message - Текст сообщения
+ * @param {string} type - Тип (success, error, info, warning)
+ * @param {string} title - Заголовок (опционально)
+ * @param {number} duration - Длительность в мс (по умолчанию 3000)
+ */
+export function showNotification(message, type = 'info', title = '', duration = 3000) {
+    const container = document.getElementById('notification-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `notification-toast ${type}`;
+    
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'warning') icon = '⚠️';
+
+    // Если заголовок не передан, используем дефолтный по типу
+    if (!title) {
+        if (type === 'success') title = 'Успешно';
+        if (type === 'error') title = 'Ошибка';
+        if (type === 'warning') title = 'Внимание';
+        if (type === 'info') title = 'Информация';
+    }
+
+    toast.innerHTML = `
+        <div class="notification-icon">${icon}</div>
+        <div class="notification-content">
+            <div class="notification-title">${title}</div>
+            <div class="notification-message">${message}</div>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger reflow
+    toast.offsetHeight;
+
+    // Show
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Hide and remove
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.addEventListener('transitionend', () => {
+            toast.remove();
+        });
+    }, duration);
+}

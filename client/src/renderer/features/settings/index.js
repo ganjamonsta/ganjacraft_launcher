@@ -32,7 +32,5 @@ export {
 } from './easter-egg.js';
 
 export {
-    initRamSlider,
-    getRamSliderValues,
-    setRamSliderValues
+    initRamSlider
 } from './ram-slider.js';

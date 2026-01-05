@@ -42,21 +42,17 @@ function createWindow() {
     // Абсолютный путь = другой origin = потеря данных
     mainWindow.loadFile('src/index.html');
     
-    // DevTools по Ctrl+Shift+I или F12
+    // Block DevTools and fullscreen hotkeys
     mainWindow.webContents.on('before-input-event', (event, input) => {
-        if (input.control && input.shift && input.key.toLowerCase() === 'i') {
-            mainWindow.webContents.toggleDevTools();
-            event.preventDefault();
-            return;
-        }
-        if (input.key === 'F12') {
-            mainWindow.webContents.toggleDevTools();
+        const key = input && input.key;
+        
+        // Block DevTools: F12, Ctrl+Shift+I
+        if (key === 'F12' || (input.control && input.shift && key.toLowerCase() === 'i')) {
             event.preventDefault();
             return;
         }
         
         // Block fullscreen hotkeys (Chromium default)
-        const key = input && input.key;
         if (key === 'F11' || (input.alt && (key === 'Enter' || key === 'Return'))) {
             event.preventDefault();
         }

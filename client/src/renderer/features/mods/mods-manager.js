@@ -5,15 +5,9 @@
 
 import { dom } from '../../utils/dom.js';
 import { MOD_GROUPS, CATEGORY_ORDER } from './mod-groups.js';
-import { whenIdle } from '../../utils/performance.js';
-
-// Локальный стейт
-let allModsData = [];
-let categorizedMods = {};
 
 // Кеш для DOM элементов
 let cachedModsList = null;
-let cachedSidebar = null;
 
 /**
  * Загрузить список модов
@@ -45,7 +39,6 @@ export async function loadModsList(disabledMods, config) {
     }
 
     const handledFiles = new Set();
-    allModsData = [];
 
     // Группируем по категориям
     const categorized = {};
@@ -100,13 +93,6 @@ export async function loadModsList(disabledMods, config) {
         });
     }
 
-    // Сохраняем данные для фильтрации
-    Object.keys(categorized).forEach(cat => {
-        categorized[cat].forEach(mod => {
-            allModsData.push({ ...mod, category: cat });
-        });
-    });
-
     renderModsList(categorized);
     updateModsCounter();
 }
@@ -117,8 +103,6 @@ export async function loadModsList(disabledMods, config) {
  * @param {Object} categorized 
  */
 export function renderModsList(categorized) {
-    categorizedMods = categorized;
-    
     const sidebar = dom.get('mods-categories-list');
     const list = dom.get('mods-list');
     
@@ -282,18 +266,4 @@ export function initModsListeners(onChangeCallback) {
             if (onChangeCallback) onChangeCallback();
         }
     });
-}
-
-/**
- * Получить все данные модов
- */
-export function getAllModsData() {
-    return allModsData;
-}
-
-/**
- * Получить категоризированные моды
- */
-export function getCategorizedMods() {
-    return categorizedMods;
 }

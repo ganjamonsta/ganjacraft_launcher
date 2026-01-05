@@ -4,7 +4,6 @@
  */
 
 // === Core Imports ===
-import { appState } from './state/app-state.js';
 import { dom } from './utils/dom.js';
 
 // === UI Imports ===
@@ -262,7 +261,6 @@ async function init() {
     // Load config
     currentConfig = await window.api.loadConfig();
     setCurrentConfig(currentConfig);
-    appState.set('config', currentConfig);
     
     // Init visual effects
     initSmokeMouseTracking();

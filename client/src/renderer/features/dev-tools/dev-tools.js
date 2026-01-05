@@ -4,7 +4,7 @@
  */
 
 import { dom } from '../../utils/dom.js';
-import { customConfirm, customAlert } from '../../ui/modals.js';
+import { customConfirm, customAlert, showNotification } from '../../ui/modals.js';
 import { logToConsole, showConsole } from '../console/console.js';
 
 // Отслеживание активных операций
@@ -353,7 +353,7 @@ export function initDevToolsListeners() {
             if (errors.length > 0) {
                 await customAlert(`Синхронизация завершена с ошибками:\n\n${errors.join('\n')}\n\nСкачано файлов: ${totalDownloaded}`, '⚠️ Синхронизация завершена');
             } else {
-                await customAlert(`Синхронизация завершена!\nСкачано файлов: ${totalDownloaded}`, '✅ Успешно');
+                showNotification(`Скачано файлов: ${totalDownloaded}`, 'success', 'Синхронизация завершена');
             }
         });
     }
@@ -414,7 +414,7 @@ export function initDevToolsListeners() {
             if (errors.length > 0) {
                 await customAlert(`Принудительная синхронизация завершена с ошибками:\n\n${errors.join('\n')}\n\nСкачано файлов: ${totalDownloaded}`, '⚠️ Синхронизация завершена');
             } else {
-                await customAlert(`Принудительная синхронизация завершена!\nСкачано файлов: ${totalDownloaded}`, '✅ Успешно');
+                showNotification(`Скачано файлов: ${totalDownloaded}`, 'success', 'Принудительная синхронизация завершена');
             }
         });
     }
@@ -457,7 +457,7 @@ export function initDevToolsListeners() {
                 const statusEl = document.getElementById(`dev-status-${data.category}`);
                 if (statusEl) {
                     statusEl.textContent = data.message;
-                    statusEl.className = 'dev-status show info';
+                    statusEl.className = 'unified-status show unified-status-info';
                 }
             }
             

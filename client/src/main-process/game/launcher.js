@@ -202,7 +202,7 @@ async function prepareForge(rootPath, sendLog, sendDebug) {
     
     if (!needForge) {
         const size = fs.statSync(forgeInstallerPath).size;
-        if (size === 0 || !isZipIntact(forgeInstallerPath)) {
+        if (size === 0 || !(await isZipIntact(forgeInstallerPath))) {
             sendLog('Обнаружен поврежденный установщик Forge (битый/не ZIP). Перекачивание...');
             try { fs.unlinkSync(forgeInstallerPath); } catch {}
             needForge = true;
@@ -213,7 +213,7 @@ async function prepareForge(rootPath, sendLog, sendDebug) {
         sendLog('Скачивание установщика Forge...');
         sendDebug(`Downloading Forge from ${FORGE_INSTALLER_URL}`);
         await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
-        if (!isZipIntact(forgeInstallerPath)) {
+        if (!(await isZipIntact(forgeInstallerPath))) {
             try { fs.unlinkSync(forgeInstallerPath); } catch {}
             throw new Error('Downloaded Forge installer is not a valid JAR/ZIP (truncated or HTML response)');
         }
@@ -231,11 +231,11 @@ async function prepareForge(rootPath, sendLog, sendDebug) {
 async function prepareAuthlib(rootPath, sendLog, sendDebug) {
     const authlibPath = path.join(rootPath, 'authlib-injector.jar');
     
-    if (!fs.existsSync(authlibPath) || !isZipIntact(authlibPath)) {
+    if (!fs.existsSync(authlibPath) || !(await isZipIntact(authlibPath))) {
         sendLog('Скачивание Authlib Injector...');
         sendDebug(`Downloading Authlib from ${AUTHLIB_INJECTOR_URL}`);
         await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath, { timeoutMs: 60_000 });
-        if (!isZipIntact(authlibPath)) {
+        if (!(await isZipIntact(authlibPath))) {
             try { fs.unlinkSync(authlibPath); } catch {}
             throw new Error('Downloaded authlib-injector is not a valid JAR/ZIP');
         }
@@ -453,8 +453,8 @@ async function launchGame(event, options) {
         // Cleanup empty files before launch
         sendLog('Проверка целостности библиотек...');
         try {
-            cleanZeroByteFiles(path.join(rootPath, 'libraries'));
-            cleanZeroByteFiles(path.join(rootPath, 'versions'));
+            await cleanZeroByteFiles(path.join(rootPath, 'libraries'));
+            await cleanZeroByteFiles(path.join(rootPath, 'versions'));
         } catch (e) {
             isGameRunning = false;
             return { success: false, error: e.message };

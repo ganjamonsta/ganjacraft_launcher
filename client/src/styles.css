@@ -19,10 +19,9 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    /* Smooth font rendering */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    /* Use system default font rendering for crisp text on Windows */
+    -webkit-font-smoothing: auto;
+    text-rendering: geometricPrecision;
 }
 
 /* Smoke Cursor Effect */
@@ -56,7 +55,7 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 500; /* Above settings, below title bar */
+    z-index: 850; /* Above settings (800), below title bar (1000) */
     overflow: hidden;
 }
 

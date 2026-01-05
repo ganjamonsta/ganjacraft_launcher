@@ -7,30 +7,35 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Проверить целостность ZIP/JAR файла
+ * Проверить целостность ZIP/JAR файла (Async)
  * @param {string} filePath - Путь к файлу
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-function isZipIntact(filePath) {
+async function isZipIntact(filePath) {
     try {
-        if (!fs.existsSync(filePath)) return false;
-        const stats = fs.statSync(filePath);
+        try {
+            await fs.promises.access(filePath);
+        } catch {
+            return false;
+        }
+        
+        const stats = await fs.promises.stat(filePath);
         if (!stats.isFile() || stats.size < 22) return false;
 
-        const fd = fs.openSync(filePath, 'r');
+        const handle = await fs.promises.open(filePath, 'r');
         try {
             // ZIP local file header: PK\x03\x04
             const header = Buffer.alloc(4);
-            fs.readSync(fd, header, 0, 4, 0);
+            await handle.read(header, 0, 4, 0);
             if (header.toString('hex') !== '504b0304') return false;
 
             // EOCD signature: PK\x05\x06 must exist near the end.
             const scanSize = Math.min(stats.size, 64 * 1024);
             const tail = Buffer.alloc(scanSize);
-            fs.readSync(fd, tail, 0, scanSize, stats.size - scanSize);
+            await handle.read(tail, 0, scanSize, stats.size - scanSize);
             return tail.includes(Buffer.from([0x50, 0x4B, 0x05, 0x06]));
         } finally {
-            fs.closeSync(fd);
+            await handle.close();
         }
     } catch {
         return false;
@@ -38,92 +43,107 @@ function isZipIntact(filePath) {
 }
 
 /**
- * Очистить нулевые и повреждённые файлы в директории
+ * Очистить нулевые и повреждённые файлы в директории (Async)
  * @param {string} dir - Путь к директории
  */
-function cleanZeroByteFiles(dir) {
-    if (!fs.existsSync(dir)) return;
+async function cleanZeroByteFiles(dir) {
+    try {
+        await fs.promises.access(dir);
+    } catch {
+        return;
+    }
     
     try {
-        const files = fs.readdirSync(dir);
-        for (const file of files) {
-            const filePath = path.join(dir, file);
-            let stats;
-            try {
-                stats = fs.statSync(filePath);
-            } catch {
-                continue; // Skip inaccessible files
-            }
-            
-            if (stats.isDirectory()) {
-                cleanZeroByteFiles(filePath);
-            } else if (stats.isFile()) {
-                let shouldDelete = false;
+        const files = await fs.promises.readdir(dir);
+        // Process files in parallel chunks to avoid too many open files
+        const chunkSize = 50;
+        for (let i = 0; i < files.length; i += chunkSize) {
+            const chunk = files.slice(i, i + chunkSize);
+            await Promise.all(chunk.map(async (file) => {
+                const filePath = path.join(dir, file);
+                let stats;
+                try {
+                    stats = await fs.promises.stat(filePath);
+                } catch {
+                    return;
+                }
                 
-                if (stats.size === 0) {
-                    shouldDelete = true;
-                } else if (file.endsWith('.jar') || file.endsWith('.zip')) {
-                    // Reuse shared ZIP integrity check
-                    if (!isZipIntact(filePath)) {
-                        console.log(`[CLEANUP] Corrupt JAR/ZIP detected: ${filePath}`);
+                if (stats.isDirectory()) {
+                    await cleanZeroByteFiles(filePath);
+                } else if (stats.isFile()) {
+                    let shouldDelete = false;
+                    
+                    if (stats.size === 0) {
                         shouldDelete = true;
+                    } else if (file.endsWith('.jar') || file.endsWith('.zip')) {
+                        // Reuse shared ZIP integrity check
+                        if (!(await isZipIntact(filePath))) {
+                            console.log(`[CLEANUP] Corrupt JAR/ZIP detected: ${filePath}`);
+                            shouldDelete = true;
+                        }
                     }
-                }
 
-                if (shouldDelete) {
-                    console.log(`[CLEANUP] Deleting corrupted file: ${filePath}`);
-                    try {
-                        fs.unlinkSync(filePath);
-                    } catch (e) {
-                        console.error(`[CLEANUP] Failed to delete ${filePath}:`, e);
-                        throw new Error(
-                            `Не удалось удалить поврежденный файл: ${path.basename(filePath)}. ` +
-                            `Возможно, он занят другим процессом. Перезагрузите ПК.`
-                        );
+                    if (shouldDelete) {
+                        console.log(`[CLEANUP] Deleting corrupted file: ${filePath}`);
+                        try {
+                            await fs.promises.unlink(filePath);
+                        } catch (e) {
+                            console.error(`[CLEANUP] Failed to delete ${filePath}:`, e);
+                        }
                     }
                 }
-            }
+            }));
         }
     } catch (e) {
-        if (e.message?.includes('Не удалось удалить')) throw e;
         console.error(`[CLEANUP] Error scanning ${dir}:`, e);
     }
 }
 
 /**
- * Проверить, что директория доступна для записи
+ * Проверить, что директория доступна для записи (Async)
  * @param {string} dirPath - Путь к директории
  */
 async function assertDirectoryWritable(dirPath) {
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
+    try {
+        await fs.promises.access(dirPath);
+    } catch {
+        await fs.promises.mkdir(dirPath, { recursive: true });
     }
     
     const testName = `.write-test-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`;
     const testPath = path.join(dirPath, testName);
     
-    // If Windows Defender / CFA blocks the folder, openSync('w') tends to throw EPERM.
-    const fd = fs.openSync(testPath, 'w');
-    fs.closeSync(fd);
-    try { fs.unlinkSync(testPath); } catch {}
+    try {
+        const handle = await fs.promises.open(testPath, 'w');
+        await handle.close();
+        await fs.promises.unlink(testPath);
+    } catch (e) {
+        throw new Error(`Directory is not writable: ${dirPath} (${e.message})`);
+    }
 }
 
 /**
- * Убедиться, что файл доступен для записи
+ * Убедиться, что файл доступен для записи (Async)
  * @param {string} filePath - Путь к файлу
  */
 async function ensureWritableFilePath(filePath) {
     const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+    try {
+        await fs.promises.access(dir);
+    } catch {
+        await fs.promises.mkdir(dir, { recursive: true });
     }
 
-    if (!fs.existsSync(filePath)) return;
+    try {
+        await fs.promises.access(filePath);
+    } catch {
+        return;
+    }
 
     // Fast-path: if we can open for appending, the file isn't readonly/locked.
     try {
-        const fd = fs.openSync(filePath, 'a');
-        fs.closeSync(fd);
+        const handle = await fs.promises.open(filePath, 'a');
+        await handle.close();
         return;
     } catch (e) {
         // continue
@@ -131,8 +151,8 @@ async function ensureWritableFilePath(filePath) {
 
     // Try to clear readonly and remove the file so MCLC can re-download it.
     try {
-        try { fs.chmodSync(filePath, 0o666); } catch {}
-        fs.unlinkSync(filePath);
+        try { await fs.promises.chmod(filePath, 0o666); } catch {}
+        await fs.promises.unlink(filePath);
     } catch (e) {
         // EPERM on Windows usually means file is locked by AV scan or another process.
         const msg = e && e.code ? `${e.code}: ${e.message}` : (e?.message || String(e));

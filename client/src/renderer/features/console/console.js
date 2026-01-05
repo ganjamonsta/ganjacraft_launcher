@@ -29,16 +29,6 @@ export function logToConsole(text) {
 }
 
 /**
- * Очистить консоль
- */
-export function clearConsole() {
-    const consoleOutput = dom.get('console-output');
-    if (consoleOutput) {
-        consoleOutput.innerHTML = '';
-    }
-}
-
-/**
  * Проверить видна ли консоль
  */
 export function isConsoleVisible() {
@@ -74,15 +64,4 @@ export function hideConsole() {
     if (newsList) newsList.classList.remove('hidden');
     if (consoleToggleBtn) consoleToggleBtn.classList.remove('active');
     if (panelTitle) panelTitle.innerText = 'Новости';
-}
-
-/**
- * Переключить консоль/новости
- */
-export function toggleConsole() {
-    if (isConsoleVisible()) {
-        hideConsole();
-    } else {
-        showConsole();
-    }
 }

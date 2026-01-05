@@ -3,7 +3,6 @@
  * Запуск игры и обработка прогресса
  */
 
-import { appState } from '../../state/app-state.js';
 import { dom } from '../../utils/dom.js';
 import { logToConsole } from '../console/index.js';
 import { getCurrentUsername, getAuthToken } from '../auth/index.js';
@@ -67,26 +66,10 @@ export function setJointProgress(container, burn, endImg, percent) {
         
         if (endImg) endImg.classList.add('hidden');
     }
-    
-    appState.set('game.downloadPercent', Math.max(0, Math.min(100, percent)));
 }
 
 /**
- * Показать экран прогресса
- */
-function showProgressScreen() {
-    const stepPlay = dom.get('step-play');
-    const stepProgress = dom.get('step-progress');
-    
-    if (stepPlay) stepPlay.classList.add('hidden');
-    if (stepProgress) {
-        stepProgress.classList.remove('hidden');
-        stepProgress.classList.add('fade-in');
-    }
-}
-
-/**
- * Показать экран игры
+ * Показать экран игры (после отмены или ошибки запуска)
  */
 function showPlayScreen() {
     const stepPlay = dom.get('step-play');
@@ -128,8 +111,6 @@ export async function startLaunch() {
     if (skipSync) {
         logToConsole('[DEBUG] Синхронизация файлов отключена!');
     }
-
-    appState.set('game.isLaunching', true);
     
     const result = await window.api.launchGame({ 
         username: getCurrentUsername(),
@@ -145,8 +126,6 @@ export async function startLaunch() {
         if (config.hideOnPlay !== false) {
             window.api.minimize();
         }
-        
-        appState.set('game.isRunning', true);
     } else {
         // Error Handling
         console.error(result.error);
@@ -158,7 +137,6 @@ export async function startLaunch() {
             logToConsole('[LAUNCHER] Запуск отменен.');
             showPlayScreen();
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
-            appState.set('game.isLaunching', false);
             return;
         }
         
@@ -181,8 +159,6 @@ export async function startLaunch() {
         if (retryBtn) retryBtn.classList.remove('hidden');
         if (cancelBtn) cancelBtn.classList.add('hidden');
     }
-    
-    appState.set('game.isLaunching', false);
 }
 
 /**
@@ -248,8 +224,6 @@ export function initProgressHandlers() {
             playBtn.disabled = false;
             playBtn.innerText = 'ИГРАТЬ';
         }
-        
-        appState.set('game.isRunning', false);
     });
 }
 
