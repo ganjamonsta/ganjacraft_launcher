@@ -5,6 +5,7 @@
 
 import { dom } from '../../utils/dom.js';
 import { createSnowBurst, createSideBurst } from '../../ui/effects/index.js';
+import { appState } from '../../state/app-state.js';
 import { EASTER_EGG_CHANCE, EASTER_EGG_IMAGE } from '../../constants.js';
 
 let easterEggActive = false;
@@ -74,6 +75,14 @@ export function triggerSettingsEasterEgg() {
         </div>
     `;
     
+    // Add click listener to advance
+    const container = newsList.querySelector('.easter-egg-container');
+    if (container) {
+        container.style.cursor = 'pointer';
+        container.title = 'Нажми меня';
+        container.addEventListener('click', triggerEasterEggStage2);
+    }
+    
     console.log('🥚 Easter egg Stage 1: Веб-камера активирована!');
 }
 
@@ -101,6 +110,13 @@ export function triggerEasterEggStage2() {
             <div style="font-size: 14px; color: #00ff00;">Нажми ещё раз чтобы починить</div>
         </div>
     `;
+    
+    // Add click listener to hide
+    const container = newsList.querySelector('.easter-egg-container');
+    if (container) {
+        container.style.cursor = 'pointer';
+        container.addEventListener('click', hideEasterEgg);
+    }
     
     if (mainContent) {
         mainContent.classList.add('easter-egg-rainbow', 'easter-egg-shake');

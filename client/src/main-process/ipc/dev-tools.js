@@ -93,7 +93,7 @@ function registerDevToolsHandlers(mainWindow) {
     });
     
     // Fetch server_scripts (admin-only)
-    ipcMain.handle('dev-fetch-server-scripts', async (event) => {
+    ipcMain.handle('dev-fetch-server-scripts', async (event, options = {}) => {
         const config = loadConfig();
         const rootPath = config.installPath;
         
@@ -115,7 +115,7 @@ function registerDevToolsHandlers(mainWindow) {
             }
             
             sendProgress('Токен получен, запрос манифеста...');
-            const result = await fetchServerScripts(rootPath, MANIFEST_URL, sendProgress, token);
+            const result = await fetchServerScripts(rootPath, MANIFEST_URL, sendProgress, token, options);
             return result;
         } catch (e) {
             sendProgress(`Ошибка: ${e.message}`);

@@ -211,7 +211,7 @@ export function initDevToolsListeners() {
             setDevButtonLoading(btn, true);
             updateSyncIndicator(category, 'syncing');
             
-            const actionName = action === 'delete' ? 'Удаление' : (action === 'force' ? 'Force Sync' : 'Sync');
+            const actionName = action === 'delete' ? 'Удаление' : (action === 'force' ? 'Force Sync' : (action === 'fetch' ? 'Fetch' : 'Sync'));
             devLog(`${actionName} ${category}...`);
             showConsole();
             
@@ -241,9 +241,23 @@ export function initDevToolsListeners() {
                         showDevStatus(category, `Ошибка: ${result.error}`, 'error');
                         updateSyncIndicator(category, 'error');
                     }
+                } else if (action === 'fetch' && category === 'kubejs') {
+                    // Special handling for Fetch Server Scripts
+                    const result = await window.api.devFetchServerScripts();
+                    
+                    if (result.success) {
+                        devLog(`${category}: Скачано ${result.downloaded} server_scripts`);
+                        showDevStatus(category, `Скачано: ${result.downloaded} server_scripts`, 'success');
+                        updateSyncIndicator(category, 'synced');
+                    } else {
+                        devLog(`${category}: ОШИБКА - ${result.error}`);
+                        showDevStatus(category, `Ошибка: ${result.error}`, 'error');
+                        updateSyncIndicator(category, 'error');
+                    }
                 } else {
                     const force = action === 'force';
                     const options = { force };
+                    let result;
                     
                     if (category === 'kubejs') {
                         options.kubejsFolders = getKubejsSelectedFolders();
@@ -257,9 +271,31 @@ export function initDevToolsListeners() {
                             return;
                         }
                         devLog(`${category}: Папки - ${options.kubejsFolders.join(', ')}`);
+                        
+                        // 1. Standard sync (client_scripts, startup_scripts, assets)
+                        result = await window.api.devSyncCategory(category, options);
+                        
+                        // 2. If server_scripts selected, fetch them too
+                        if (options.kubejsFolders.includes('server_scripts')) {
+                            devLog(`${category}: Загрузка server_scripts...`);
+                            const serverResult = await window.api.devFetchServerScripts({ force });
+                            
+                            if (serverResult.success) {
+                                result.downloaded = (result.downloaded || 0) + (serverResult.downloaded || 0);
+                                devLog(`${category}: server_scripts скачано: ${serverResult.downloaded}`);
+                            } else {
+                                devLog(`${category}: Ошибка server_scripts: ${serverResult.error}`);
+                                // If standard sync succeeded but this failed, mark as error
+                                if (result.success) {
+                                    result.success = false;
+                                    result.error = `Standard sync OK, but server_scripts failed: ${serverResult.error}`;
+                                }
+                            }
+                        }
+                    } else {
+                        // Standard sync for other categories
+                        result = await window.api.devSyncCategory(category, options);
                     }
-                    
-                    const result = await window.api.devSyncCategory(category, options);
                     
                     const op = activeOperations.get(category);
                     if (op?.cancelled) {
@@ -420,8 +456,11 @@ export function initDevToolsListeners() {
     }
 
     // Fetch Server Scripts button
+    // NOTE: This button is now handled by the generic handler above because it has data-action="fetch"
+    // We keep this specific ID check just in case the generic handler doesn't catch it or for legacy reasons,
+    // but the logic is now duplicated. The generic handler is preferred.
     const fetchServerScriptsBtn = document.getElementById('dev-fetch-server-scripts');
-    if (fetchServerScriptsBtn) {
+    if (fetchServerScriptsBtn && !fetchServerScriptsBtn.hasAttribute('data-action')) {
         fetchServerScriptsBtn.addEventListener('click', async () => {
             devLog('Fetch Server Scripts: Запуск...');
             showConsole();

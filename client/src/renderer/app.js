@@ -173,6 +173,14 @@ function initSettingsButton() {
             }
             
             toggleMainUIVisibility(false, currentConfig);
+            
+            // Hide easter egg after animation if active
+            if (isSettingsEasterEggActive()) {
+                setTimeout(() => {
+                    hideEasterEgg();
+                }, 300);
+            }
+
             currentConfig = await window.api.loadConfig();
             setCurrentConfig(currentConfig);
             

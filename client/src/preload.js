@@ -104,7 +104,7 @@ contextBridge.exposeInMainWorld('api', {
     devSyncCategory: (category, options) => ipcRenderer.invoke('dev-sync-category', category, options),
     devDeleteCategory: (category) => ipcRenderer.invoke('dev-delete-category', category),
     devGetCategoryCounts: () => ipcRenderer.invoke('dev-get-category-counts'),
-    devFetchServerScripts: () => ipcRenderer.invoke('dev-fetch-server-scripts'),
+    devFetchServerScripts: (options) => ipcRenderer.invoke('dev-fetch-server-scripts', options),
     devCancelOperation: (category) => ipcRenderer.send('dev-cancel-operation', category),
     onDevProgress: (callback) => ipcRenderer.on('dev-progress', (event, data) => callback(data)),
     

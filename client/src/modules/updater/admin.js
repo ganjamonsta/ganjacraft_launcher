@@ -261,11 +261,11 @@ async function getCategoryCounts(rootPath, manifestUrl) {
     }
 
     const counts = {
-        mods: { local: 0, manifest: 0 },
-        config: { local: 0, manifest: 0 },
-        kubejs: { local: 0, manifest: 0 },
-        resourcepacks: { local: 0, manifest: 0 },
-        thingpacks: { local: 0, manifest: 0 }
+        mods: { local: 0, manifest: 0, size: 0 },
+        config: { local: 0, manifest: 0, size: 0 },
+        kubejs: { local: 0, manifest: 0, size: 0 },
+        resourcepacks: { local: 0, manifest: 0, size: 0 },
+        thingpacks: { local: 0, manifest: 0, size: 0 }
     };
 
     // Подсчёт локальных файлов
@@ -295,11 +295,28 @@ async function getCategoryCounts(rootPath, manifestUrl) {
     if (manifest && Array.isArray(manifest.files)) {
         for (const f of manifest.files) {
             if (!f || typeof f.path !== 'string') continue;
-            if (f.path.startsWith('mods/')) counts.mods.manifest++;
-            else if (f.path.startsWith('config/')) counts.config.manifest++;
-            else if (f.path.startsWith('kubejs/')) counts.kubejs.manifest++;
-            else if (f.path.startsWith('resourcepacks/')) counts.resourcepacks.manifest++;
-            else if (f.path.startsWith('thingpacks/')) counts.thingpacks.manifest++;
+            const size = typeof f.size === 'number' ? f.size : 0;
+            
+            if (f.path.startsWith('mods/')) {
+                counts.mods.manifest++;
+                counts.mods.size += size;
+            }
+            else if (f.path.startsWith('config/')) {
+                counts.config.manifest++;
+                counts.config.size += size;
+            }
+            else if (f.path.startsWith('kubejs/')) {
+                counts.kubejs.manifest++;
+                counts.kubejs.size += size;
+            }
+            else if (f.path.startsWith('resourcepacks/')) {
+                counts.resourcepacks.manifest++;
+                counts.resourcepacks.size += size;
+            }
+            else if (f.path.startsWith('thingpacks/')) {
+                counts.thingpacks.manifest++;
+                counts.thingpacks.size += size;
+            }
         }
     }
 
@@ -315,10 +332,13 @@ async function getCategoryCounts(rootPath, manifestUrl) {
  * @param {string} manifestUrl - Базовый URL (не используется)
  * @param {function} sendLog - Callback логирования
  * @param {string} authToken - Токен администратора
+ * @param {object} options - Опции (force)
  */
-async function fetchServerScripts(rootPath, manifestUrl, sendLog = () => {}, authToken = null) {
+async function fetchServerScripts(rootPath, manifestUrl, sendLog = () => {}, authToken = null, options = {}) {
     sendLog('Подготовка к загрузке server_scripts...');
     
+    const { force = false } = options;
+
     if (!authToken) {
         sendLog('Ошибка: Требуется авторизация администратора');
         sendLog('Функция доступна только для администраторов сервера');
@@ -380,15 +400,34 @@ async function fetchServerScripts(rootPath, manifestUrl, sendLog = () => {}, aut
             const localDir = path.dirname(localPath);
             ensureDir(localDir);
             
-            sendLog(`Загрузка: ${file.path}`);
-            try {
-                await downloadFile(file.url, localPath, {
-                    expectedHash: file.hash,
-                    expectedSize: typeof file.size === 'number' ? file.size : null,
-                });
-                downloaded++;
-            } catch (e) {
-                sendLog(`Ошибка: ${e.message}`);
+            // Check if download is needed
+            let needDownload = force;
+            if (!needDownload) {
+                if (!fs.existsSync(localPath)) {
+                    needDownload = true;
+                } else if (file.hash) {
+                    try {
+                        const localHash = await getFileHash(localPath);
+                        if (localHash !== file.hash) {
+                            needDownload = true;
+                        }
+                    } catch {
+                        needDownload = true;
+                    }
+                }
+            }
+
+            if (needDownload) {
+                sendLog(`Загрузка: ${file.path}`);
+                try {
+                    await downloadFile(file.url, localPath, {
+                        expectedHash: force ? null : file.hash,
+                        expectedSize: typeof file.size === 'number' ? file.size : null,
+                    });
+                    downloaded++;
+                } catch (e) {
+                    sendLog(`Ошибка: ${e.message}`);
+                }
             }
         }
         

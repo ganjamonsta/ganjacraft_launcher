@@ -6,6 +6,7 @@
 import { dom } from '../../utils/dom.js';
 import { customAlert, customConfirm } from '../../ui/modals.js';
 import { toggleSnow, createSnowBurst, createDirectionalBurst, createSideBurst } from '../../ui/effects/index.js';
+import { appState } from '../../state/app-state.js';
 import { startSmokeEffect, stopSmokeEffect } from '../../ui/effects/smoke.js';
 import { startParallax, stopParallax } from '../../ui/effects/parallax.js';
 import { loadModsList, getDisabledMods, updateModsCounter, updateCategorySidebar } from '../mods/index.js';
@@ -166,7 +167,7 @@ export function toggleMainUIVisibility(show, config) {
                 el.style.transition = `transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`;
                 el.style.transform = defaultTransform;
                 
-                if (side && config?.enableSnow !== false) {
+                if (side && appState.get('effects.snowEnabled')) {
                     setTimeout(() => createSideBurst(side), delay + 50);
                 }
             } else {
@@ -200,7 +201,7 @@ export function openSettings(config) {
     }
     
     // Snow burst
-    if (config?.enableSnow !== false) {
+    if (appState.get('effects.snowEnabled')) {
         createSnowBurst();
     }
     
@@ -357,7 +358,7 @@ export function initSettingsTabs(config) {
                 targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
             }, 75);
             
-            if (config?.enableSnow !== false) {
+            if (appState.get('effects.snowEnabled')) {
                 createDirectionalBurst(direction);
             }
             
