@@ -4,3255 +4,3255 @@
       "path": "authlib-injector.jar",
       "hash": "2ade768195bbc2720749cc462bf798e703f9f6d4",
       "size": 341874,
-      "url": "https://ganjacraft.ru/files/authlib-injector.jar",
+      "url": "https://ganj4craft.ru/files/authlib-injector.jar",
       "optional": false
     },
     {
       "path": "libraries/org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar",
       "hash": "f48d81adce2abf5ad3cfe463df517952749e03bc",
       "size": 61388,
-      "url": "https://ganjacraft.ru/files/libraries/org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar",
       "hash": "9d1c0c3a304ae6697ecd477218fa61b850bf57fc",
       "size": 1089277,
-      "url": "https://ganjacraft.ru/files/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar",
       "optional": false
     },
     {
       "path": "libraries/org/jline/jline-reader/3.12.1/jline-reader-3.12.1.jar",
       "hash": "4382ab1382c7b6f379377ed5f665dc2f6e1218bc",
       "size": 150765,
-      "url": "https://ganjacraft.ru/files/libraries/org/jline/jline-reader/3.12.1/jline-reader-3.12.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/jline/jline-reader/3.12.1/jline-reader-3.12.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/jline/jline-terminal/3.12.1/jline-terminal-3.12.1.jar",
       "hash": "c777448314e050d980a6b697c140f3bfe9eb7416",
       "size": 211712,
-      "url": "https://ganjacraft.ru/files/libraries/org/jline/jline-terminal/3.12.1/jline-terminal-3.12.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/jline/jline-terminal/3.12.1/jline-terminal-3.12.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/checkerframework/checker-qual/2.0.0/checker-qual-2.0.0.jar",
       "hash": "518929596ee3249127502a8573b2e008e2d51ed3",
       "size": 343222,
-      "url": "https://ganjacraft.ru/files/libraries/org/checkerframework/checker-qual/2.0.0/checker-qual-2.0.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/checkerframework/checker-qual/2.0.0/checker-qual-2.0.0.jar",
       "optional": false
     },
     {
       "path": "libraries/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
       "hash": "775b7e22fb10026eed3f86e8dc556dfafe35f2d5",
       "size": 3482,
-      "url": "https://ganjacraft.ru/files/libraries/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
       "optional": false
     },
     {
       "path": "libraries/org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar",
       "hash": "428664f05d2b7f7b7610204b5aa7c1763f62011a",
       "size": 337868,
-      "url": "https://ganjacraft.ru/files/libraries/org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.jar",
       "hash": "f67f5ffaa5f5130cf6fb9b133da00c7df3b532a5",
       "size": 2167292,
-      "url": "https://ganjacraft.ru/files/libraries/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.jar",
       "optional": false
     },
     {
       "path": "libraries/org/joml/joml/1.10.5/joml-1.10.5.jar",
       "hash": "22566d58af70ad3d72308bab63b8339906deb649",
       "size": 712082,
-      "url": "https://ganjacraft.ru/files/libraries/org/joml/joml/1.10.5/joml-1.10.5.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/joml/joml/1.10.5/joml-1.10.5.jar",
       "optional": false
     },
     {
       "path": "libraries/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar",
       "hash": "c6842c86792ff03b9f1d1fe2aab8dc23aa6c6f0e",
       "size": 587402,
-      "url": "https://ganjacraft.ru/files/libraries/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar",
       "optional": false
     },
     {
       "path": "libraries/org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar",
       "hash": "5c04bfdd63ce9dceb2e284b81e96b6a70010ee10",
       "size": 27721,
-      "url": "https://ganjacraft.ru/files/libraries/org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar",
       "optional": false
     },
     {
       "path": "libraries/org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar",
       "hash": "ea1b37f38c327596b216542bc636cfdc0b8036fa",
       "size": 317566,
-      "url": "https://ganjacraft.ru/files/libraries/org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar",
       "optional": false
     },
     {
       "path": "libraries/org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar",
       "hash": "3b6eeb4de4c49c0fe38a4ee27188ff5fee44d0bb",
       "size": 1864386,
-      "url": "https://ganjacraft.ru/files/libraries/org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar",
       "optional": false
     },
     {
       "path": "libraries/org/apache/maven/maven-artifact/3.8.5/maven-artifact-3.8.5.jar",
       "hash": "4433f50c07debefaed0553bd0068f4f48d449313",
       "size": 58077,
-      "url": "https://ganjacraft.ru/files/libraries/org/apache/maven/maven-artifact/3.8.5/maven-artifact-3.8.5.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/apache/maven/maven-artifact/3.8.5/maven-artifact-3.8.5.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-analysis/9.7.1/asm-analysis-9.7.1.jar",
       "hash": "f97a3b319f0ed6a8cd944dc79060d3912a28985f",
       "size": 35126,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-analysis/9.7.1/asm-analysis-9.7.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-analysis/9.7.1/asm-analysis-9.7.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.jar",
       "hash": "7487dd756daf96cab9986e44b9d7bcb796a61c10",
       "size": 34257,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-util/9.7.1/asm-util-9.7.1.jar",
       "hash": "9e23359b598ec6b74b23e53110dd5c577adf2243",
       "size": 94519,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-util/9.7.1/asm-util-9.7.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-util/9.7.1/asm-util-9.7.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar",
       "hash": "406c6a2225cfe1819f102a161e54cc16a5c24f75",
       "size": 73459,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar",
       "hash": "f1a9e5508eff490744144565c47326c8648be309",
       "size": 72194,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.jar",
       "hash": "f4d7f0fc9054386f2893b602454d48e07d4fbead",
       "size": 72642,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-tree/9.7.1/asm-tree-9.7.1.jar",
       "hash": "3a53139787663b139de76b627fca0084ab60d32c",
       "size": 51939,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-tree/9.7.1/asm-tree-9.7.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-tree/9.7.1/asm-tree-9.7.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar",
       "hash": "c0cdda9d211e965d2a4448aa3fd86110f2f8c2de",
       "size": 51935,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.jar",
       "hash": "d96c99a30f5e1a19b0e609dbb19a44d8518ac01e",
       "size": 52660,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar",
       "hash": "f0ed132a49244b042cd0e15702ab9f2ce3cc8436",
       "size": 126093,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm/9.6/asm-9.6.jar",
       "hash": "aa205cf0a06dbd8e04ece91c0b37c3f5d567546a",
       "size": 123598,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm/9.6/asm-9.6.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm/9.6/asm-9.6.jar",
       "optional": false
     },
     {
       "path": "libraries/org/ow2/asm/asm/9.2/asm-9.2.jar",
       "hash": "81a03f76019c67362299c40e0ba13405f5467bff",
       "size": 122004,
-      "url": "https://ganjacraft.ru/files/libraries/org/ow2/asm/asm/9.2/asm-9.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/org/ow2/asm/asm/9.2/asm-9.2.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecrell/terminalconsoleappender/1.2.0/terminalconsoleappender-1.2.0.jar",
       "hash": "96d02cd3b384ff015a8fef4223bcb4ccf1717c95",
       "size": 15977,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecrell/terminalconsoleappender/1.2.0/terminalconsoleappender-1.2.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecrell/terminalconsoleappender/1.2.0/terminalconsoleappender-1.2.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/jodah/typetools/0.6.3/typetools-0.6.3.jar",
       "hash": "a01aaa6ddaea9ec07ec4f209487b7a46a526283a",
       "size": 18281,
-      "url": "https://ganjacraft.ru/files/libraries/net/jodah/typetools/0.6.3/typetools-0.6.3.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/jodah/typetools/0.6.3/typetools-0.6.3.jar",
       "optional": false
     },
     {
       "path": "libraries/net/java/dev/jna/jna-platform/5.12.1/jna-platform-5.12.1.jar",
       "hash": "097406a297c852f4a41e688a176ec675f72e8329",
       "size": 1356627,
-      "url": "https://ganjacraft.ru/files/libraries/net/java/dev/jna/jna-platform/5.12.1/jna-platform-5.12.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/java/dev/jna/jna-platform/5.12.1/jna-platform-5.12.1.jar",
       "optional": false
     },
     {
       "path": "libraries/net/java/dev/jna/jna/5.12.1/jna-5.12.1.jar",
       "hash": "b1e93a735caea94f503e95e6fe79bf9cdc1e985d",
       "size": 1866196,
-      "url": "https://ganjacraft.ru/files/libraries/net/java/dev/jna/jna/5.12.1/jna-5.12.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/java/dev/jna/jna/5.12.1/jna-5.12.1.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.0/lowcodelanguage-1.20.1-47.4.0.jar",
       "hash": "e862740d8c84d08dbfedea412bef88fe42e727c5",
       "size": 7399,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.0/lowcodelanguage-1.20.1-47.4.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.0/lowcodelanguage-1.20.1-47.4.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/mclanguage/1.20.1-47.4.0/mclanguage-1.20.1-47.4.0.jar",
       "hash": "5719b3a297a33f877ed5dde4cb4bd75c859096af",
       "size": 4998,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.0/mclanguage-1.20.1-47.4.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.0/mclanguage-1.20.1-47.4.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/forgespi/7.0.1/forgespi-7.0.1.jar",
       "hash": "3b4972a0cdb135853dba219be61a79b22cff1309",
       "size": 29831,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/forgespi/7.0.1/forgespi-7.0.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/forgespi/7.0.1/forgespi-7.0.1.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/forge/1.20.1-47.4.0/win_args.txt",
       "hash": "56ff4ba281b116054330f1eef33a2e6dbc4722ec",
       "size": 5219,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/win_args.txt",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/win_args.txt",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/forge/1.20.1-47.4.0/forge-1.20.1-47.4.0-universal.jar",
       "hash": "45e8b14d52cc0cb555c6340dcd631ef1edf68596",
       "size": 2776081,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/forge-1.20.1-47.4.0-universal.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/forge-1.20.1-47.4.0-universal.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/forge/1.20.1-47.4.0/unix_args.txt",
       "hash": "3529a2f333779da1ba67f5a03dc28b7f6e3707cd",
       "size": 5219,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/unix_args.txt",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/unix_args.txt",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/forge/1.20.1-47.4.0/forge-1.20.1-47.4.0-server.jar",
       "hash": "62f6102e4b5d61a10281410cf5957a876a127e6b",
       "size": 4826828,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/forge-1.20.1-47.4.0-server.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/forge/1.20.1-47.4.0/forge-1.20.1-47.4.0-server.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/mergetool/1.1.5/mergetool-1.1.5-api.jar",
       "hash": "f3da18e12c696d35a47c82cbb2cc8b5aa15e1154",
       "size": 2572,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/mergetool/1.1.5/mergetool-1.1.5-api.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/mergetool/1.1.5/mergetool-1.1.5-api.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/installertools/1.4.1/installertools-1.4.1.jar",
       "hash": "e28bc43bc9bef8a1620460938effc5b12684d825",
       "size": 87401,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/installertools/1.4.1/installertools-1.4.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/installertools/1.4.1/installertools-1.4.1.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/srgutils/0.4.3/srgutils-0.4.3.jar",
       "hash": "84aecb8fc78bd0dd7299bd9963ac9eb83bd00aad",
       "size": 69020,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/srgutils/0.4.3/srgutils-0.4.3.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/srgutils/0.4.3/srgutils-0.4.3.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/srgutils/0.5.6/srgutils-0.5.6.jar",
       "hash": "4844e46a377eebd8bb4da594e6b487126790b18e",
       "size": 72082,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/srgutils/0.5.6/srgutils-0.5.6.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/srgutils/0.5.6/srgutils-0.5.6.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/srgutils/0.4.9/srgutils-0.4.9.jar",
       "hash": "7595dae3ad2554b1dac30ae3a9521bd026639e38",
       "size": 69076,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/srgutils/0.4.9/srgutils-0.4.9.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/srgutils/0.4.9/srgutils-0.4.9.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.0/javafmllanguage-1.20.1-47.4.0.jar",
       "hash": "0f0c0b352173d0a378cbdcec9cfc4ba65899a721",
       "size": 16855,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.0/javafmllanguage-1.20.1-47.4.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.0/javafmllanguage-1.20.1-47.4.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/jarsplitter/1.1.4/jarsplitter-1.1.4.jar",
       "hash": "57ce2d6564c1176b23a911ef57127ff3c45bffb3",
       "size": 7405,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/jarsplitter/1.1.4/jarsplitter-1.1.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/jarsplitter/1.1.4/jarsplitter-1.1.4.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/eventbus/6.0.5/eventbus-6.0.5.jar",
       "hash": "699143dd438431d06b57416944f7cedbe52e1475",
       "size": 53985,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/eventbus/6.0.5/eventbus-6.0.5.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/eventbus/6.0.5/eventbus-6.0.5.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/fmlcore/1.20.1-47.4.0/fmlcore-1.20.1-47.4.0.jar",
       "hash": "235975dafa4309945b59c56b53f31dc5b65a6051",
       "size": 118914,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.0/fmlcore-1.20.1-47.4.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.0/fmlcore-1.20.1-47.4.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/JarJarSelector/0.3.19/JarJarSelector-0.3.19.jar",
       "hash": "376cc9c8ea60720cf027c01fc033de915699801c",
       "size": 17374,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/JarJarSelector/0.3.19/JarJarSelector-0.3.19.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/JarJarSelector/0.3.19/JarJarSelector-0.3.19.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/coremods/5.2.4/coremods-5.2.4.jar",
       "hash": "e30bab269d896613e38396274711410b3a0e4b87",
       "size": 31872,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/coremods/5.2.4/coremods-5.2.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/coremods/5.2.4/coremods-5.2.4.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/accesstransformers/8.0.4/accesstransformers-8.0.4.jar",
       "hash": "272d240aa73f42195b2a68e2ebd8b701ecf41f63",
       "size": 77756,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/accesstransformers/8.0.4/accesstransformers-8.0.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/accesstransformers/8.0.4/accesstransformers-8.0.4.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/binarypatcher/1.1.1/binarypatcher-1.1.1.jar",
       "hash": "23176c4f9fd7a8db961dc0b2ec32ad97ab08513c",
       "size": 21892,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/binarypatcher/1.1.1/binarypatcher-1.1.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/binarypatcher/1.1.1/binarypatcher-1.1.1.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/unsafe/0.2.0/unsafe-0.2.0.jar",
       "hash": "54d7a0a5e8fdb71b973025caa46f341ae5904f39",
       "size": 2834,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/unsafe/0.2.0/unsafe-0.2.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/unsafe/0.2.0/unsafe-0.2.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/fmlearlydisplay/1.20.1-47.4.0/fmlearlydisplay-1.20.1-47.4.0.jar",
       "hash": "5a0c2d1a65a422bd0e64548e58b70f4d011ef788",
       "size": 170517,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/fmlearlydisplay/1.20.1-47.4.0/fmlearlydisplay-1.20.1-47.4.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/fmlearlydisplay/1.20.1-47.4.0/fmlearlydisplay-1.20.1-47.4.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/ForgeAutoRenamingTool/0.1.22/ForgeAutoRenamingTool-0.1.22-all.jar",
       "hash": "0b337aca253a6fe63f9c39d4e6272ca1b2e7cfd8",
       "size": 509933,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/ForgeAutoRenamingTool/0.1.22/ForgeAutoRenamingTool-0.1.22-all.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/ForgeAutoRenamingTool/0.1.22/ForgeAutoRenamingTool-0.1.22-all.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/fmlloader/1.20.1-47.4.0/fmlloader-1.20.1-47.4.0.jar",
       "hash": "350292a3c597f65d130e48b6e419a2b21cba2ac1",
       "size": 267079,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/fmlloader/1.20.1-47.4.0/fmlloader-1.20.1-47.4.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/fmlloader/1.20.1-47.4.0/fmlloader-1.20.1-47.4.0.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/JarJarMetadata/0.3.19/JarJarMetadata-0.3.19.jar",
       "hash": "0083feaa9b770e6ac0e96ee4fc23fa89325c5fe2",
       "size": 15895,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/JarJarMetadata/0.3.19/JarJarMetadata-0.3.19.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/JarJarMetadata/0.3.19/JarJarMetadata-0.3.19.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraftforge/JarJarFileSystems/0.3.19/JarJarFileSystems-0.3.19.jar",
       "hash": "2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020",
       "size": 32195,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraftforge/JarJarFileSystems/0.3.19/JarJarFileSystems-0.3.19.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraftforge/JarJarFileSystems/0.3.19/JarJarFileSystems-0.3.19.jar",
       "optional": false
     },
     {
       "path": "libraries/net/sf/jopt-simple/jopt-simple/6.0-alpha-3/jopt-simple-6.0-alpha-3.jar",
       "hash": "02ab1a73e1e22d2b73469362a0908a98644b681d",
       "size": 79368,
-      "url": "https://ganjacraft.ru/files/libraries/net/sf/jopt-simple/jopt-simple/6.0-alpha-3/jopt-simple-6.0-alpha-3.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/sf/jopt-simple/jopt-simple/6.0-alpha-3/jopt-simple-6.0-alpha-3.jar",
       "optional": false
     },
     {
       "path": "libraries/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar",
       "hash": "4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c",
       "size": 78146,
-      "url": "https://ganjacraft.ru/files/libraries/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1/server-1.20.1.jar",
       "hash": "84194a2f286ef7c14ed7ce0090dba59902951553",
       "size": 47791053,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1/server-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1/server-1.20.1.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-mappings.txt",
       "hash": "0b4dba049482496c507b2387a73a913230ebbd76",
       "size": 6154195,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-mappings.txt",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-mappings.txt",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-extra.jar",
       "hash": "13522e3278befd103064d91a199451df4cd2633f",
       "size": 5229189,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-extra.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-extra.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-extra.jar.cache",
       "hash": "9be5c4f57f8e4dace8399073c6d7c6692fd152e1",
       "size": 142,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-extra.jar.cache",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-extra.jar.cache",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar",
       "hash": "f144368124d2c3b031b1707b74dc68b4de0a2271",
       "size": 14086905,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-slim.jar.cache",
       "hash": "ac7c0889917b64147b0bd94954e46954922f17cc",
       "size": 142,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-slim.jar.cache",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-slim.jar.cache",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-unpacked.jar",
       "hash": "9afed7fc4927dd453c68f77c98176a9473ae6942",
       "size": 14643363,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-unpacked.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-unpacked.jar",
       "optional": false
     },
     {
       "path": "libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-slim.jar",
       "hash": "9e06bdd77ca6d95b2cced0bf372245f753eeb16a",
       "size": 9414196,
-      "url": "https://ganjacraft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-slim.jar",
+      "url": "https://ganj4craft.ru/files/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-slim.jar",
       "optional": false
     },
     {
       "path": "libraries/trove/trove/1.0.2/trove-1.0.2.jar",
       "hash": "112b40581ab9a4d3de4636d49985a7f686d181c8",
       "size": 361155,
-      "url": "https://ganjacraft.ru/files/libraries/trove/trove/1.0.2/trove-1.0.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/trove/trove/1.0.2/trove-1.0.2.jar",
       "optional": false
     },
     {
       "path": "libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar",
       "hash": "51e6a22c6c716beb11e244bf5b8be480f51dd6b5",
       "size": 88749,
-      "url": "https://ganjacraft.ru/files/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar",
+      "url": "https://ganj4craft.ru/files/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar",
       "optional": false
     },
     {
       "path": "libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar",
       "hash": "06d9443f56f50bb85cea383686ff9c867391458b",
       "size": 130343,
-      "url": "https://ganjacraft.ru/files/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar",
+      "url": "https://ganj4craft.ru/files/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar",
       "optional": false
     },
     {
       "path": "libraries/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar",
       "hash": "a2503f302b11ebde7ebc3df41daebe0e4eea3689",
       "size": 327135,
-      "url": "https://ganjacraft.ru/files/libraries/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar",
+      "url": "https://ganj4craft.ru/files/libraries/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar",
       "optional": false
     },
     {
       "path": "libraries/commons-io/commons-io/2.4/commons-io-2.4.jar",
       "hash": "b1b6ea3b7e4aa4f492509a4952029cd8e48019ad",
       "size": 185140,
-      "url": "https://ganjacraft.ru/files/libraries/commons-io/commons-io/2.4/commons-io-2.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/commons-io/commons-io/2.4/commons-io-2.4.jar",
       "optional": false
     },
     {
       "path": "libraries/de/siegmar/fastcsv/2.2.2/fastcsv-2.2.2.jar",
       "hash": "40562843510397296de200889d9ed5f3af155e52",
       "size": 32060,
-      "url": "https://ganjacraft.ru/files/libraries/de/siegmar/fastcsv/2.2.2/fastcsv-2.2.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/de/siegmar/fastcsv/2.2.2/fastcsv-2.2.2.jar",
       "optional": false
     },
     {
       "path": "libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412.zip",
       "hash": "c7d29380ddb38becad7c0819b5b325e43bca23f0",
       "size": 1740711,
-      "url": "https://ganjacraft.ru/files/libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412.zip",
+      "url": "https://ganj4craft.ru/files/libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412.zip",
       "optional": false
     },
     {
       "path": "libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412-mappings.txt",
       "hash": "5b05a5cc0c8ed6df427fb7671a703c1a008bbf92",
       "size": 5653149,
-      "url": "https://ganjacraft.ru/files/libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412-mappings.txt",
+      "url": "https://ganj4craft.ru/files/libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412-mappings.txt",
       "optional": false
     },
     {
       "path": "libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412-mappings-merged.txt",
       "hash": "71c5b7056f45363053876e29fa77d2a125cdd577",
       "size": 4458642,
-      "url": "https://ganjacraft.ru/files/libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412-mappings-merged.txt",
+      "url": "https://ganj4craft.ru/files/libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412-mappings-merged.txt",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-transport-classes-epoll/4.1.82.Final/netty-transport-classes-epoll-4.1.82.Final.jar",
       "hash": "e7c7dd18deac93105797f30057c912651ea76521",
       "size": 142066,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-transport-classes-epoll/4.1.82.Final/netty-transport-classes-epoll-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-transport-classes-epoll/4.1.82.Final/netty-transport-classes-epoll-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-buffer/4.1.82.Final/netty-buffer-4.1.82.Final.jar",
       "hash": "a544270cf1ae8b8077082f5036436a9a9971ea71",
       "size": 304664,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-buffer/4.1.82.Final/netty-buffer-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-buffer/4.1.82.Final/netty-buffer-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-transport-native-unix-common/4.1.82.Final/netty-transport-native-unix-common-4.1.82.Final.jar",
       "hash": "3e895b35ca1b8a0eca56cacff4c2dde5d2c6abce",
       "size": 43684,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-transport-native-unix-common/4.1.82.Final/netty-transport-native-unix-common-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-transport-native-unix-common/4.1.82.Final/netty-transport-native-unix-common-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-codec/4.1.82.Final/netty-codec-4.1.82.Final.jar",
       "hash": "b77200379acb345a9ffdece1c605e591ac3e4e0a",
       "size": 339155,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-codec/4.1.82.Final/netty-codec-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-codec/4.1.82.Final/netty-codec-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-resolver/4.1.82.Final/netty-resolver-4.1.82.Final.jar",
       "hash": "38f665ae8dcd29032eea31245ba7806bed2e0fa8",
       "size": 37776,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-resolver/4.1.82.Final/netty-resolver-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-resolver/4.1.82.Final/netty-resolver-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-transport/4.1.82.Final/netty-transport-4.1.82.Final.jar",
       "hash": "e431a218d91acb6476ccad5f5aafde50aa3945ca",
       "size": 485752,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-transport/4.1.82.Final/netty-transport-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-transport/4.1.82.Final/netty-transport-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-handler/4.1.82.Final/netty-handler-4.1.82.Final.jar",
       "hash": "644041d1fa96a5d3130a29e8978630d716d76e38",
       "size": 538569,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-handler/4.1.82.Final/netty-handler-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-handler/4.1.82.Final/netty-handler-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-common/4.1.82.Final/netty-common-4.1.82.Final.jar",
       "hash": "022d148e85c3f5ebdacc0ce1f5aabb1d420f73f3",
       "size": 653880,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-common/4.1.82.Final/netty-common-4.1.82.Final.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-common/4.1.82.Final/netty-common-4.1.82.Final.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar",
       "hash": "c7350a71920f3ae9142945e25fed4846cce53374",
       "size": 37922,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar",
       "optional": false
     },
     {
       "path": "libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar",
       "hash": "476409d6255001ca53a55f65b01c13822f8dc93a",
       "size": 39489,
-      "url": "https://ganjacraft.ru/files/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar",
+      "url": "https://ganj4craft.ru/files/libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar",
       "optional": false
     },
     {
       "path": "libraries/com/electronwill/night-config/core/3.6.4/core-3.6.4.jar",
       "hash": "510f174abbf1c947494db50ef2445683bd52c230",
       "size": 199834,
-      "url": "https://ganjacraft.ru/files/libraries/com/electronwill/night-config/core/3.6.4/core-3.6.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/electronwill/night-config/core/3.6.4/core-3.6.4.jar",
       "optional": false
     },
     {
       "path": "libraries/com/electronwill/night-config/toml/3.6.4/toml-3.6.4.jar",
       "hash": "51d6cefb2b55ee55ee26b16391212fb2c7dfb4f4",
       "size": 31816,
-      "url": "https://ganjacraft.ru/files/libraries/com/electronwill/night-config/toml/3.6.4/toml-3.6.4.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/electronwill/night-config/toml/3.6.4/toml-3.6.4.jar",
       "optional": false
     },
     {
       "path": "libraries/com/nothome/javaxdelta/2.0.1/javaxdelta-2.0.1.jar",
       "hash": "d4f5d077f1b15c6f67595015d69572303ad3f66d",
       "size": 38995,
-      "url": "https://ganjacraft.ru/files/libraries/com/nothome/javaxdelta/2.0.1/javaxdelta-2.0.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/nothome/javaxdelta/2.0.1/javaxdelta-2.0.1.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/errorprone/error_prone_annotations/2.1.3/error_prone_annotations-2.1.3.jar",
       "hash": "39b109f2cd352b2d71b52a3b5a1a9850e1dc304b",
       "size": 13704,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/errorprone/error_prone_annotations/2.1.3/error_prone_annotations-2.1.3.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/errorprone/error_prone_annotations/2.1.3/error_prone_annotations-2.1.3.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/code/gson/gson/2.10/gson-2.10.jar",
       "hash": "dd9b193aef96e973d5a11ab13cd17430c2e4306b",
       "size": 286235,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/code/gson/gson/2.10/gson-2.10.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/code/gson/gson/2.10/gson-2.10.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar",
       "hash": "b3add478d4382b78ea20b1671390a858002feb6c",
       "size": 283367,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
       "hash": "25ea2e8b0c338a877313bd4672d3fe056ea78f0d",
       "size": 19936,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/guava/guava/25.1-jre/guava-25.1-jre.jar",
       "hash": "6c57e4b22b44e89e548b5c9f70f0c45fe10fb0b4",
       "size": 2734339,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/guava/guava/25.1-jre/guava-25.1-jre.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/guava/guava/25.1-jre/guava-25.1-jre.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar",
       "hash": "60458f877d055d0c9114d9e1a2efb737b4bc282c",
       "size": 2959479,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar",
       "hash": "1dcf1de382a0bf95a3d8b0849546c88bac1292c9",
       "size": 4617,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar",
       "optional": false
     },
     {
       "path": "libraries/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
       "hash": "ed28ded51a8b1c6b112568def5f4b455e6809019",
       "size": 8782,
-      "url": "https://ganjacraft.ru/files/libraries/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
       "optional": false
     },
     {
       "path": "libraries/com/mojang/authlib/4.0.43/authlib-4.0.43.jar",
       "hash": "2ff9d747a77570a07a60d32ac77eb6162ad2a2d9",
       "size": 121766,
-      "url": "https://ganjacraft.ru/files/libraries/com/mojang/authlib/4.0.43/authlib-4.0.43.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/mojang/authlib/4.0.43/authlib-4.0.43.jar",
       "optional": false
     },
     {
       "path": "libraries/com/mojang/logging/1.1.1/logging-1.1.1.jar",
       "hash": "832b8e6674a9b325a5175a3a6267dfaf34c85139",
       "size": 15343,
-      "url": "https://ganjacraft.ru/files/libraries/com/mojang/logging/1.1.1/logging-1.1.1.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/mojang/logging/1.1.1/logging-1.1.1.jar",
       "optional": false
     },
     {
       "path": "libraries/com/mojang/brigadier/1.1.8/brigadier-1.1.8.jar",
       "hash": "5244ce82c3337bba4a196a3ce858bfaecc74404a",
       "size": 77121,
-      "url": "https://ganjacraft.ru/files/libraries/com/mojang/brigadier/1.1.8/brigadier-1.1.8.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/mojang/brigadier/1.1.8/brigadier-1.1.8.jar",
       "optional": false
     },
     {
       "path": "libraries/com/mojang/datafixerupper/6.0.8/datafixerupper-6.0.8.jar",
       "hash": "3ba4a30557a9b057760af4011f909ba619fc5125",
       "size": 689960,
-      "url": "https://ganjacraft.ru/files/libraries/com/mojang/datafixerupper/6.0.8/datafixerupper-6.0.8.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/mojang/datafixerupper/6.0.8/datafixerupper-6.0.8.jar",
       "optional": false
     },
     {
       "path": "libraries/com/github/oshi/oshi-core/6.2.2/oshi-core-6.2.2.jar",
       "hash": "54f5efc19bca95d709d9a37d19ffcbba3d21c1a6",
       "size": 947865,
-      "url": "https://ganjacraft.ru/files/libraries/com/github/oshi/oshi-core/6.2.2/oshi-core-6.2.2.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/github/oshi/oshi-core/6.2.2/oshi-core-6.2.2.jar",
       "optional": false
     },
     {
       "path": "libraries/com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar",
       "hash": "a25db9d4d385ccda4825ae1b47a7a61d86e595af",
       "size": 51041,
-      "url": "https://ganjacraft.ru/files/libraries/com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar",
+      "url": "https://ganj4craft.ru/files/libraries/com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar",
       "optional": false
     },
     {
       "path": "libraries/it/unimi/dsi/fastutil/8.5.9/fastutil-8.5.9.jar",
       "hash": "bb7ea75ecdb216654237830b3a96d87ad91f8cc5",
       "size": 23376043,
-      "url": "https://ganjacraft.ru/files/libraries/it/unimi/dsi/fastutil/8.5.9/fastutil-8.5.9.jar",
+      "url": "https://ganj4craft.ru/files/libraries/it/unimi/dsi/fastutil/8.5.9/fastutil-8.5.9.jar",
       "optional": false
     },
     {
       "path": "mods/fabric-Connector-1.0.0-beta.46+1.20.1.jar",
       "hash": "a4ad6605706bebca9470a5affe6f44abaef5d507",
       "size": 5043375,
-      "url": "https://ganjacraft.ru/files/mods/fabric-Connector-1.0.0-beta.46+1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/fabric-Connector-1.0.0-beta.46+1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/waystones-forge-1.20.1-14.1.17.jar",
       "hash": "0572e124fa1af248b5b978d7c615fb31629103e5",
       "size": 518286,
-      "url": "https://ganjacraft.ru/files/mods/waystones-forge-1.20.1-14.1.17.jar",
+      "url": "https://ganj4craft.ru/files/mods/waystones-forge-1.20.1-14.1.17.jar",
       "optional": false
     },
     {
       "path": "mods/Apotheosis-1.20.1-7.4.8.jar",
       "hash": "e508c4724a24f0c80836818fcdd3df6424b1fc40",
       "size": 2803994,
-      "url": "https://ganjacraft.ru/files/mods/Apotheosis-1.20.1-7.4.8.jar",
+      "url": "https://ganj4craft.ru/files/mods/Apotheosis-1.20.1-7.4.8.jar",
       "optional": false
     },
     {
       "path": "mods/Dungeon-Realm-1.20.1-1.1.7.jar",
       "hash": "b8587edca6b12ceaf1d3b8d61e9f9143d98c83c8",
       "size": 4147897,
-      "url": "https://ganjacraft.ru/files/mods/Dungeon-Realm-1.20.1-1.1.7.jar",
+      "url": "https://ganj4craft.ru/files/mods/Dungeon-Realm-1.20.1-1.1.7.jar",
       "optional": false
     },
     {
       "path": "mods/sophisticatedbackpacks-1.20.1-3.24.15.1445.jar",
       "hash": "69e7951ac4d0bf7313a5a91361beeaf8841f90d9",
       "size": 983465,
-      "url": "https://ganjacraft.ru/files/mods/sophisticatedbackpacks-1.20.1-3.24.15.1445.jar",
+      "url": "https://ganj4craft.ru/files/mods/sophisticatedbackpacks-1.20.1-3.24.15.1445.jar",
       "optional": false
     },
     {
       "path": "mods/supermartijn642corelib-1.1.18-forge-mc1.20.1-rechies.jar",
       "hash": "d37e1148b512c67cee704635b4f07d1f9ea8c31c",
       "size": 515362,
-      "url": "https://ganjacraft.ru/files/mods/supermartijn642corelib-1.1.18-forge-mc1.20.1-rechies.jar",
+      "url": "https://ganj4craft.ru/files/mods/supermartijn642corelib-1.1.18-forge-mc1.20.1-rechies.jar",
       "optional": false
     },
     {
       "path": "mods/CerbonsAPI-Forge-1.20.1-1.1.0.jar",
       "hash": "83cccb66e679d72345a5194e4ca520f647bc97e6",
       "size": 241148,
-      "url": "https://ganjacraft.ru/files/mods/CerbonsAPI-Forge-1.20.1-1.1.0.jar",
+      "url": "https://ganj4craft.ru/files/mods/CerbonsAPI-Forge-1.20.1-1.1.0.jar",
       "optional": false
     },
     {
       "path": "mods/createaddition-1.20.1-1.3.3.jar",
       "hash": "c7d464c451fdc2979bc29a67d7eec2a30858af12",
       "size": 1577313,
-      "url": "https://ganjacraft.ru/files/mods/createaddition-1.20.1-1.3.3.jar",
+      "url": "https://ganj4craft.ru/files/mods/createaddition-1.20.1-1.3.3.jar",
       "optional": false
     },
     {
       "path": "mods/EnderIO-1.20.1-6.2.12-beta-all.jar",
       "hash": "2f0d66a0cfab987f8dd95cb6d5debf449a490ee5",
       "size": 8081612,
-      "url": "https://ganjacraft.ru/files/mods/EnderIO-1.20.1-6.2.12-beta-all.jar",
+      "url": "https://ganj4craft.ru/files/mods/EnderIO-1.20.1-6.2.12-beta-all.jar",
       "optional": false
     },
     {
       "path": "mods/lootjs-forge-1.20.1-2.13.0.jar",
       "hash": "fdf90acf177c19bcbfaa08527f6568bd3e6e622e",
       "size": 242227,
-      "url": "https://ganjacraft.ru/files/mods/lootjs-forge-1.20.1-2.13.0.jar",
+      "url": "https://ganj4craft.ru/files/mods/lootjs-forge-1.20.1-2.13.0.jar",
       "optional": false
     },
     {
       "path": "mods/refinedstorage-1.12.4.jar",
       "hash": "ff9e83c81344d0bfe9e0bb53c6df00c7e0a39cf5",
       "size": 3300191,
-      "url": "https://ganjacraft.ru/files/mods/refinedstorage-1.12.4.jar",
+      "url": "https://ganj4craft.ru/files/mods/refinedstorage-1.12.4.jar",
       "optional": false
     },
     {
       "path": "mods/taczjs-forge-1.3.7-mc1.20.1.jar",
       "hash": "8a97de20e31f7e863a968f82fd90e196f4b3a3b3",
       "size": 90442,
-      "url": "https://ganjacraft.ru/files/mods/taczjs-forge-1.3.7-mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/taczjs-forge-1.3.7-mc1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/ftb-library-forge-2001.2.10.jar",
       "hash": "9472bb30d0e38cb774b9cc7852bdd8dbf845622b",
       "size": 791875,
-      "url": "https://ganjacraft.ru/files/mods/ftb-library-forge-2001.2.10.jar",
+      "url": "https://ganj4craft.ru/files/mods/ftb-library-forge-2001.2.10.jar",
       "optional": false
     },
     {
       "path": "mods/lodestone-1.20.1-1.6.4.1.jar",
       "hash": "e6346060ae70cbf103b231d8a1536bcd044c84a8",
       "size": 670934,
-      "url": "https://ganjacraft.ru/files/mods/lodestone-1.20.1-1.6.4.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/lodestone-1.20.1-1.6.4.1.jar",
       "optional": false
     },
     {
       "path": "mods/Zeta-1.0-30.jar",
       "hash": "1e87aae038570b8f5864bcdd6ae6dabb30162f2d",
       "size": 1006574,
-      "url": "https://ganjacraft.ru/files/mods/Zeta-1.0-30.jar",
+      "url": "https://ganj4craft.ru/files/mods/Zeta-1.0-30.jar",
       "optional": false
     },
     {
       "path": "mods/alexscaves-2.0.2.jar",
       "hash": "a1e5c7b7c7eadda4c8e954acbcbaf75a7b500d53",
       "size": 74871657,
-      "url": "https://ganjacraft.ru/files/mods/alexscaves-2.0.2.jar",
+      "url": "https://ganj4craft.ru/files/mods/alexscaves-2.0.2.jar",
       "optional": false
     },
     {
       "path": "mods/gravestonecurioscompat-1.20.x-Forge-3.0.0.jar",
       "hash": "a563c0daf8ec490eb56426fc0f440adc31e628d8",
       "size": 12430,
-      "url": "https://ganjacraft.ru/files/mods/gravestonecurioscompat-1.20.x-Forge-3.0.0.jar",
+      "url": "https://ganj4craft.ru/files/mods/gravestonecurioscompat-1.20.x-Forge-3.0.0.jar",
       "optional": false
     },
     {
       "path": "mods/TConstruct-1.20.1-3.10.2.92.jar",
       "hash": "74cc057cc01fdb0186504d71623b5811bbe705f9",
       "size": 19792115,
-      "url": "https://ganjacraft.ru/files/mods/TConstruct-1.20.1-3.10.2.92.jar",
+      "url": "https://ganj4craft.ru/files/mods/TConstruct-1.20.1-3.10.2.92.jar",
       "optional": false
     },
     {
       "path": "mods/balm-forge-1.20.1-7.3.37-all.jar",
       "hash": "8ed877e61adf550c68aa4fc75d163ff97c0c5006",
       "size": 590487,
-      "url": "https://ganjacraft.ru/files/mods/balm-forge-1.20.1-7.3.37-all.jar",
+      "url": "https://ganj4craft.ru/files/mods/balm-forge-1.20.1-7.3.37-all.jar",
       "optional": false
     },
     {
       "path": "mods/FastWorkbench-1.20.1-8.0.4.jar",
       "hash": "1a322a85e7c7024b8a0715c12d27b5ed0930d729",
       "size": 28188,
-      "url": "https://ganjacraft.ru/files/mods/FastWorkbench-1.20.1-8.0.4.jar",
+      "url": "https://ganj4craft.ru/files/mods/FastWorkbench-1.20.1-8.0.4.jar",
       "optional": false
     },
     {
       "path": "mods/chisel-forge-2.0.0+mc1.20.1.jar",
       "hash": "c90e989d1f002b70bbe41234f0208c927159e39f",
       "size": 8265809,
-      "url": "https://ganjacraft.ru/files/mods/chisel-forge-2.0.0+mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/chisel-forge-2.0.0+mc1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/epic x parcool-forge-20.12.0.1-1.20.1.jar",
       "hash": "d38194b73c91e5af84ef28a7a07e0eb4340ef76d",
       "size": 408094,
-      "url": "https://ganjacraft.ru/files/mods/epic x parcool-forge-20.12.0.1-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/epic x parcool-forge-20.12.0.1-1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/domum_ornamentum-1.20.1-1.0.292-snapshot-universal.jar",
       "hash": "1b3b96dda8dd4541afba652c7a975ba439fc1026",
       "size": 1141274,
-      "url": "https://ganjacraft.ru/files/mods/domum_ornamentum-1.20.1-1.0.292-snapshot-universal.jar",
+      "url": "https://ganj4craft.ru/files/mods/domum_ornamentum-1.20.1-1.0.292-snapshot-universal.jar",
       "optional": false
     },
     {
       "path": "mods/moogs_structure_lib-1.1.0-1.20-1.20.4-forge.jar",
       "hash": "b7751ee5cc55e6a56bc4b7c1b79bb6e63727e8aa",
       "size": 259848,
-      "url": "https://ganjacraft.ru/files/mods/moogs_structure_lib-1.1.0-1.20-1.20.4-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/moogs_structure_lib-1.1.0-1.20-1.20.4-forge.jar",
       "optional": false
     },
     {
       "path": "mods/ExtraBounties-universal.jar",
       "hash": "8819e846c08e615f0457ca17825dd99935e1bdf9",
       "size": 273462,
-      "url": "https://ganjacraft.ru/files/mods/ExtraBounties-universal.jar",
+      "url": "https://ganj4craft.ru/files/mods/ExtraBounties-universal.jar",
       "optional": false
     },
     {
       "path": "mods/ProjectE-1.20.1-PE1.0.1.jar",
       "hash": "affd130b8a77e60dd7d7f7f3621d0182d82d13e1",
       "size": 2257347,
-      "url": "https://ganjacraft.ru/files/mods/ProjectE-1.20.1-PE1.0.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/ProjectE-1.20.1-PE1.0.1.jar",
       "optional": false
     },
     {
       "path": "mods/AutoLeveling-1.20-1.19b.jar",
       "hash": "134aca414c79b192c183538ac114dd7a989b3f86",
       "size": 73258,
-      "url": "https://ganjacraft.ru/files/mods/AutoLeveling-1.20-1.19b.jar",
+      "url": "https://ganj4craft.ru/files/mods/AutoLeveling-1.20-1.19b.jar",
       "optional": false
     },
     {
       "path": "mods/CraterLib-Forge-1.20-2.1.5.jar",
       "hash": "8ce089dc8006558e1d61bc859b2421e63ed6366e",
       "size": 2011855,
-      "url": "https://ganjacraft.ru/files/mods/CraterLib-Forge-1.20-2.1.5.jar",
+      "url": "https://ganj4craft.ru/files/mods/CraterLib-Forge-1.20-2.1.5.jar",
       "optional": false
     },
     {
       "path": "mods/supplementaries-1.20-3.1.36.jar",
       "hash": "58145767061a4d5bf9229fbacc78451098b9d0c8",
       "size": 13623263,
-      "url": "https://ganjacraft.ru/files/mods/supplementaries-1.20-3.1.36.jar",
+      "url": "https://ganj4craft.ru/files/mods/supplementaries-1.20-3.1.36.jar",
       "optional": false
     },
     {
       "path": "mods/mowziesmobs-1.7.3.jar",
       "hash": "690f2134241544b3f6c38ff895d8e5a2aa77aa4d",
       "size": 35239406,
-      "url": "https://ganjacraft.ru/files/mods/mowziesmobs-1.7.3.jar",
+      "url": "https://ganj4craft.ru/files/mods/mowziesmobs-1.7.3.jar",
       "optional": false
     },
     {
       "path": "mods/tacz-1.20.1-1.1.6-hotfix.jar",
       "hash": "e951d81b5f452bcad47c20d5b491fd26f8de8ce2",
       "size": 47826468,
-      "url": "https://ganjacraft.ru/files/mods/tacz-1.20.1-1.1.6-hotfix.jar",
+      "url": "https://ganj4craft.ru/files/mods/tacz-1.20.1-1.1.6-hotfix.jar",
       "optional": false
     },
     {
       "path": "mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
       "hash": "214da89b2153d496343bde8626283975e358edbd",
       "size": 1320692,
-      "url": "https://ganjacraft.ru/files/mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
       "optional": false
     },
     {
       "path": "mods/obscure_api-15.jar",
       "hash": "30e37354519b4ca06bc617ccb2698cc696fdae9b",
       "size": 497136,
-      "url": "https://ganjacraft.ru/files/mods/obscure_api-15.jar",
+      "url": "https://ganj4craft.ru/files/mods/obscure_api-15.jar",
       "optional": false
     },
     {
       "path": "mods/Kambrik-6.1.1+1.20.1-forge.jar",
       "hash": "48cdc22a0f6698c9059f437538e5546f74900541",
       "size": 325546,
-      "url": "https://ganjacraft.ru/files/mods/Kambrik-6.1.1+1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/Kambrik-6.1.1+1.20.1-forge.jar",
       "optional": false
     },
     {
       "path": "mods/ftb-chunks-forge-2001.3.6.jar",
       "hash": "7fde7917655a3356cab92f17ad2bca34962c4928",
       "size": 1158842,
-      "url": "https://ganjacraft.ru/files/mods/ftb-chunks-forge-2001.3.6.jar",
+      "url": "https://ganj4craft.ru/files/mods/ftb-chunks-forge-2001.3.6.jar",
       "optional": false
     },
     {
       "path": "mods/Jade-1.20.1-Forge-11.13.2.jar",
       "hash": "1997e5fe2db3a0575ca79bfe4720019f01fd2b8c",
       "size": 552486,
-      "url": "https://ganjacraft.ru/files/mods/Jade-1.20.1-Forge-11.13.2.jar",
+      "url": "https://ganj4craft.ru/files/mods/Jade-1.20.1-Forge-11.13.2.jar",
       "optional": false
     },
     {
       "path": "mods/citadel-2.6.2-1.20.1.jar",
       "hash": "06866f4005d3f6ba63ac01f715b352842d809bbd",
       "size": 3185379,
-      "url": "https://ganjacraft.ru/files/mods/citadel-2.6.2-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/citadel-2.6.2-1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/gravestone-forge-1.20.1-1.0.32.jar",
       "hash": "7b1bd6c2d86d8b3d5aafab9ab4b98c82ea2b5da3",
       "size": 317010,
-      "url": "https://ganjacraft.ru/files/mods/gravestone-forge-1.20.1-1.0.32.jar",
+      "url": "https://ganj4craft.ru/files/mods/gravestone-forge-1.20.1-1.0.32.jar",
       "optional": false
     },
     {
       "path": "mods/curios-forge-5.14.1+1.20.1.jar",
       "hash": "452175b95ad3db6ff58bb8968f6bf7a9d1e0f480",
       "size": 398066,
-      "url": "https://ganjacraft.ru/files/mods/curios-forge-5.14.1+1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/curios-forge-5.14.1+1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/ftb-teams-forge-2001.3.1.jar",
       "hash": "c2af94e0b86631cb75daa8de2377ff72527651ca",
       "size": 248592,
-      "url": "https://ganjacraft.ru/files/mods/ftb-teams-forge-2001.3.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/ftb-teams-forge-2001.3.1.jar",
       "optional": false
     },
     {
       "path": "mods/ec_ef_plugin-1.20.1-1.2.5-all.jar",
       "hash": "93ea8837d08e09d1b3d5616dc425a92514510ed9",
       "size": 989762,
-      "url": "https://ganjacraft.ru/files/mods/ec_ef_plugin-1.20.1-1.2.5-all.jar",
+      "url": "https://ganj4craft.ru/files/mods/ec_ef_plugin-1.20.1-1.2.5-all.jar",
       "optional": false
     },
     {
       "path": "mods/simplyswords-forge-1.56.0-1.20.1.jar",
       "hash": "ff801e939da0f9afc2d96cce4375d8c4bb368533",
       "size": 15202091,
-      "url": "https://ganjacraft.ru/files/mods/simplyswords-forge-1.56.0-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/simplyswords-forge-1.56.0-1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/aquamirae-forge-1.20.1-6.1.0.jar",
       "hash": "df119092ff531c2445e7f8d13b00eac212011d94",
       "size": 17323071,
-      "url": "https://ganjacraft.ru/files/mods/aquamirae-forge-1.20.1-6.1.0.jar",
+      "url": "https://ganj4craft.ru/files/mods/aquamirae-forge-1.20.1-6.1.0.jar",
       "optional": false
     },
     {
       "path": "mods/kubejs-forge-2001.6.5-build.16.jar",
       "hash": "93fcf0eacc5dc08a4f719eaaed1dc93f0dc80f66",
       "size": 1654660,
-      "url": "https://ganjacraft.ru/files/mods/kubejs-forge-2001.6.5-build.16.jar",
+      "url": "https://ganj4craft.ru/files/mods/kubejs-forge-2001.6.5-build.16.jar",
       "optional": false
     },
     {
       "path": "mods/BOMD-Forge-1.20.1-1.1.2.jar",
       "hash": "232eb28172423cde46e8e1f038c670a01471fa92",
       "size": 1753623,
-      "url": "https://ganjacraft.ru/files/mods/BOMD-Forge-1.20.1-1.1.2.jar",
+      "url": "https://ganj4craft.ru/files/mods/BOMD-Forge-1.20.1-1.1.2.jar",
       "optional": false
     },
     {
       "path": "mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
       "hash": "9eab28baff36942e1c924489e34753df10f40208",
       "size": 424035,
-      "url": "https://ganjacraft.ru/files/mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/morejs-forge-1.20.1-0.10.1.jar",
       "hash": "c460ca3e95e40894c78fd327c5ba73c7da83f6d3",
       "size": 173745,
-      "url": "https://ganjacraft.ru/files/mods/morejs-forge-1.20.1-0.10.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/morejs-forge-1.20.1-0.10.1.jar",
       "optional": false
     },
     {
       "path": "mods/rhino-forge-2001.2.3-build.10.jar",
       "hash": "c83c9b719a6bab33fbd2b3f2f680eb3adbfc1aa1",
       "size": 1798244,
-      "url": "https://ganjacraft.ru/files/mods/rhino-forge-2001.2.3-build.10.jar",
+      "url": "https://ganj4craft.ru/files/mods/rhino-forge-2001.2.3-build.10.jar",
       "optional": false
     },
     {
       "path": "mods/artifacts-forge-9.5.16.jar",
       "hash": "41b0751ec3f1410f1bee668f4e68e4c5c43f8fac",
       "size": 850457,
-      "url": "https://ganjacraft.ru/files/mods/artifacts-forge-9.5.16.jar",
+      "url": "https://ganj4craft.ru/files/mods/artifacts-forge-9.5.16.jar",
       "optional": false
     },
     {
       "path": "mods/kotlinforforge-4.11.0-all.jar",
       "hash": "1fd8acfd75a2be2dc3cdcc7e816482b2e427d6e5",
       "size": 7193768,
-      "url": "https://ganjacraft.ru/files/mods/kotlinforforge-4.11.0-all.jar",
+      "url": "https://ganj4craft.ru/files/mods/kotlinforforge-4.11.0-all.jar",
       "optional": false
     },
     {
       "path": "mods/MekanismGenerators-1.20.1-10.4.16.80.jar",
       "hash": "53fa707fd204ca1dd099a08995c2197145ff9a36",
       "size": 1054586,
-      "url": "https://ganjacraft.ru/files/mods/MekanismGenerators-1.20.1-10.4.16.80.jar",
+      "url": "https://ganj4craft.ru/files/mods/MekanismGenerators-1.20.1-10.4.16.80.jar",
       "optional": false
     },
     {
       "path": "mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
       "hash": "852d32a59486f1bf13faa70c63c7a6fba28091a5",
       "size": 133781,
-      "url": "https://ganjacraft.ru/files/mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/chefs-delight-1.0.3-forge-1.20.1.jar",
       "hash": "1e2241210818697a6729cdac97d526c17de896af",
       "size": 84059,
-      "url": "https://ganjacraft.ru/files/mods/chefs-delight-1.0.3-forge-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/chefs-delight-1.0.3-forge-1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/JsonThings-1.20.1-0.9.10.jar",
       "hash": "615544d2eb951cea8c94cb65a25e0e42abdde3c0",
       "size": 528287,
-      "url": "https://ganjacraft.ru/files/mods/JsonThings-1.20.1-0.9.10.jar",
+      "url": "https://ganj4craft.ru/files/mods/JsonThings-1.20.1-0.9.10.jar",
       "optional": false
     },
     {
       "path": "mods/expanded_combat-1.20.1-3.2.7-all.jar",
       "hash": "29de3f7ff659ac9c5ec8a5a765311d6fe46aaa63",
       "size": 5223775,
-      "url": "https://ganjacraft.ru/files/mods/expanded_combat-1.20.1-3.2.7-all.jar",
+      "url": "https://ganj4craft.ru/files/mods/expanded_combat-1.20.1-3.2.7-all.jar",
       "optional": false
     },
     {
       "path": "mods/alexsmobs-1.22.9.jar",
       "hash": "dbf93d2f1da19e16739e91e8ea0fc6f4bc2f228f",
       "size": 26350793,
-      "url": "https://ganjacraft.ru/files/mods/alexsmobs-1.22.9.jar",
+      "url": "https://ganj4craft.ru/files/mods/alexsmobs-1.22.9.jar",
       "optional": false
     },
     {
       "path": "mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
       "hash": "285c22b2567b9fdf98ef9808eceb5557de9611d3",
       "size": 3065813,
-      "url": "https://ganjacraft.ru/files/mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/alltheleaks-1.0.8+1.20.1-forge.jar",
       "hash": "cc58ad397f1e40eb7b5ee006195815a8bef131bf",
       "size": 1176184,
-      "url": "https://ganjacraft.ru/files/mods/alltheleaks-1.0.8+1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/alltheleaks-1.0.8+1.20.1-forge.jar",
       "optional": false
     },
     {
       "path": "mods/cofh_core-1.20.1-11.0.2.56.jar",
       "hash": "6f7c0056fece31bf393df450d79482810ed444af",
       "size": 1509649,
-      "url": "https://ganjacraft.ru/files/mods/cofh_core-1.20.1-11.0.2.56.jar",
+      "url": "https://ganj4craft.ru/files/mods/cofh_core-1.20.1-11.0.2.56.jar",
       "optional": false
     },
     {
       "path": "mods/malum-1.20.1-1.6.7.jar",
       "hash": "ecf1d9a6e4e69119f9583f90b9587107a75d8195",
       "size": 26296223,
-      "url": "https://ganjacraft.ru/files/mods/malum-1.20.1-1.6.7.jar",
+      "url": "https://ganj4craft.ru/files/mods/malum-1.20.1-1.6.7.jar",
       "optional": false
     },
     {
       "path": "mods/lootr-forge-1.20-0.7.35.94.jar",
       "hash": "1ec77a7df8adbf3290a296bf25b8f99f37a60020",
       "size": 463485,
-      "url": "https://ganjacraft.ru/files/mods/lootr-forge-1.20-0.7.35.94.jar",
+      "url": "https://ganj4craft.ru/files/mods/lootr-forge-1.20-0.7.35.94.jar",
       "optional": false
     },
     {
       "path": "mods/geckolib-forge-1.20.1-4.7.3.jar",
       "hash": "37931d750fe7772f1665da3310321ba812cfcb46",
       "size": 1012611,
-      "url": "https://ganjacraft.ru/files/mods/geckolib-forge-1.20.1-4.7.3.jar",
+      "url": "https://ganj4craft.ru/files/mods/geckolib-forge-1.20.1-4.7.3.jar",
       "optional": false
     },
     {
       "path": "mods/lionfishapi-2.4-Fix.jar",
       "hash": "b198f38fb27dfc6db490b496d56aa1622d5a5b87",
       "size": 162767,
-      "url": "https://ganjacraft.ru/files/mods/lionfishapi-2.4-Fix.jar",
+      "url": "https://ganj4craft.ru/files/mods/lionfishapi-2.4-Fix.jar",
       "optional": false
     },
     {
       "path": "mods/sophisticatedcore-1.20.1-1.2.114.1323.jar",
       "hash": "f74a572a7ed2697dcb0b398f2729dac82e934559",
       "size": 1442992,
-      "url": "https://ganjacraft.ru/files/mods/sophisticatedcore-1.20.1-1.2.114.1323.jar",
+      "url": "https://ganj4craft.ru/files/mods/sophisticatedcore-1.20.1-1.2.114.1323.jar",
       "optional": false
     },
     {
       "path": "mods/everycomp-1.20-2.9.12-forge.jar",
       "hash": "1a9fab9e9273ab45f0a312b7a71aeade41716a4a",
       "size": 2807757,
-      "url": "https://ganjacraft.ru/files/mods/everycomp-1.20-2.9.12-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/everycomp-1.20-2.9.12-forge.jar",
       "optional": false
     },
     {
       "path": "mods/architectury-9.2.14-forge.jar",
       "hash": "a52918a500ff421180a1cbd1a0cabee712134ec4",
       "size": 580602,
-      "url": "https://ganjacraft.ru/files/mods/architectury-9.2.14-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/architectury-9.2.14-forge.jar",
       "optional": false
     },
     {
       "path": "mods/ImmediatelyFast-Forge-1.5.2+1.20.4.jar",
       "hash": "2eeca5deb063ed49bb9c6be8b162ca6270202239",
       "size": 425140,
-      "url": "https://ganjacraft.ru/files/mods/ImmediatelyFast-Forge-1.5.2+1.20.4.jar",
+      "url": "https://ganj4craft.ru/files/mods/ImmediatelyFast-Forge-1.5.2+1.20.4.jar",
       "optional": false
     },
     {
       "path": "mods/epicfight-forge-20.13.6-1.20.1.jar",
       "hash": "dd2172a43a21190b122c3dc234f7afd9cb2871c6",
       "size": 7970266,
-      "url": "https://ganjacraft.ru/files/mods/epicfight-forge-20.13.6-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/epicfight-forge-20.13.6-1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/L_Enders_Cataclysm-3.15.jar",
       "hash": "3e4a4bc3c3df4106f9733899fbe139826f0ab92f",
       "size": 127992906,
-      "url": "https://ganjacraft.ru/files/mods/L_Enders_Cataclysm-3.15.jar",
+      "url": "https://ganj4craft.ru/files/mods/L_Enders_Cataclysm-3.15.jar",
       "optional": false
     },
     {
       "path": "mods/Placebo-1.20.1-8.6.3.jar",
       "hash": "e85f53de2e582a79ce25ff1df1e7b5b5fc08440f",
       "size": 282474,
-      "url": "https://ganjacraft.ru/files/mods/Placebo-1.20.1-8.6.3.jar",
+      "url": "https://ganj4craft.ru/files/mods/Placebo-1.20.1-8.6.3.jar",
       "optional": false
     },
     {
       "path": "mods/BrandonsCore-1.20.1-3.2.1.302-universal.jar",
       "hash": "1378ba5f84267c18f945c52d787ac86e40d6c241",
       "size": 1358270,
-      "url": "https://ganjacraft.ru/files/mods/BrandonsCore-1.20.1-3.2.1.302-universal.jar",
+      "url": "https://ganj4craft.ru/files/mods/BrandonsCore-1.20.1-3.2.1.302-universal.jar",
       "optional": false
     },
     {
       "path": "mods/ferritecore-6.0.1-forge.jar",
       "hash": "417fb6ce8f52abf40bd9d0390371790f9576f8ba",
       "size": 123034,
-      "url": "https://ganjacraft.ru/files/mods/ferritecore-6.0.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/ferritecore-6.0.1-forge.jar",
       "optional": false
     },
     {
       "path": "mods/CodeChickenLib-1.20.1-4.4.0.516-universal.jar",
       "hash": "f9b90ff58442b5967366fd90d24980a34540518d",
       "size": 1472390,
-      "url": "https://ganjacraft.ru/files/mods/CodeChickenLib-1.20.1-4.4.0.516-universal.jar",
+      "url": "https://ganj4craft.ru/files/mods/CodeChickenLib-1.20.1-4.4.0.516-universal.jar",
       "optional": false
     },
     {
       "path": "mods/constructionwand-1.20.1-2.11.jar",
       "hash": "80bd5223cd8984dc1038cb9f2d1cb6b97f31998a",
       "size": 210312,
-      "url": "https://ganjacraft.ru/files/mods/constructionwand-1.20.1-2.11.jar",
+      "url": "https://ganj4craft.ru/files/mods/constructionwand-1.20.1-2.11.jar",
       "optional": false
     },
     {
       "path": "mods/CCTVCraft-1.20.1-Forge-5.0.1.jar",
       "hash": "015654fdd959fdeb756366592b37036fd05aab73",
       "size": 1326448,
-      "url": "https://ganjacraft.ru/files/mods/CCTVCraft-1.20.1-Forge-5.0.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/CCTVCraft-1.20.1-Forge-5.0.1.jar",
       "optional": false
     },
     {
       "path": "mods/Library_of_Exile-1.20.1-2.1.5.jar",
       "hash": "fd33c0e3c016f9c4e4db3ff7c626db314de9a3ad",
       "size": 634987,
-      "url": "https://ganjacraft.ru/files/mods/Library_of_Exile-1.20.1-2.1.5.jar",
+      "url": "https://ganj4craft.ru/files/mods/Library_of_Exile-1.20.1-2.1.5.jar",
       "optional": false
     },
     {
       "path": "mods/fabric-TLA-Api-1.0.0.jar",
       "hash": "1997980d5767064bf0a65765d883a819c4a5fb0c",
       "size": 90750,
-      "url": "https://ganjacraft.ru/files/mods/fabric-TLA-Api-1.0.0.jar",
+      "url": "https://ganj4craft.ru/files/mods/fabric-TLA-Api-1.0.0.jar",
       "optional": false
     },
     {
       "path": "mods/mekanism_extras-1.20.1-1.4.6.jar",
       "hash": "95eac643afbf02511e90d0f5d57ca840ac05b080",
       "size": 1536662,
-      "url": "https://ganjacraft.ru/files/mods/mekanism_extras-1.20.1-1.4.6.jar",
+      "url": "https://ganj4craft.ru/files/mods/mekanism_extras-1.20.1-1.4.6.jar",
       "optional": false
     },
     {
       "path": "mods/twilightforest-1.20.1-4.3.2508-universal.jar",
       "hash": "fa3b506a45d3e9c465551cd533fd50c899496e9f",
       "size": 23332091,
-      "url": "https://ganjacraft.ru/files/mods/twilightforest-1.20.1-4.3.2508-universal.jar",
+      "url": "https://ganj4craft.ru/files/mods/twilightforest-1.20.1-4.3.2508-universal.jar",
       "optional": false
     },
     {
       "path": "mods/Bountiful-6.0.4+1.20.1-forge.jar",
       "hash": "3627112f17aeef9018d98883a2469e7f90afc3c4",
       "size": 502662,
-      "url": "https://ganjacraft.ru/files/mods/Bountiful-6.0.4+1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/Bountiful-6.0.4+1.20.1-forge.jar",
       "optional": false
     },
     {
       "path": "mods/ftb-quests-forge-2001.4.14.jar",
       "hash": "479d9ad654984f5cedf23c14a311f3cff4efbcb7",
       "size": 1222711,
-      "url": "https://ganjacraft.ru/files/mods/ftb-quests-forge-2001.4.14.jar",
+      "url": "https://ganj4craft.ru/files/mods/ftb-quests-forge-2001.4.14.jar",
       "optional": false
     },
     {
       "path": "mods/relics-1.20.1-0.8.0.11.jar",
       "hash": "7cae606158a0ddcecd0c68c1d82a29ad89da6ce2",
       "size": 1518437,
-      "url": "https://ganjacraft.ru/files/mods/relics-1.20.1-0.8.0.11.jar",
+      "url": "https://ganj4craft.ru/files/mods/relics-1.20.1-0.8.0.11.jar",
       "optional": false
     },
     {
       "path": "mods/thermal_foundation-1.20.1-11.0.6.70.jar",
       "hash": "7c1fbd79c9bda7478560faa886eaadf0dd8d181f",
       "size": 4549423,
-      "url": "https://ganjacraft.ru/files/mods/thermal_foundation-1.20.1-11.0.6.70.jar",
+      "url": "https://ganj4craft.ru/files/mods/thermal_foundation-1.20.1-11.0.6.70.jar",
       "optional": false
     },
     {
       "path": "mods/fabric-ConnectorExtras-1.11.2+1.20.1.jar",
       "hash": "9336db4e6ce458bccf7724c039f0371e822397ae",
       "size": 182464,
-      "url": "https://ganjacraft.ru/files/mods/fabric-ConnectorExtras-1.11.2+1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/fabric-ConnectorExtras-1.11.2+1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/ParCool-1.20.1-3.4.1.5.jar",
       "hash": "ad61d32c5185bd9daa43722657af3a8a5aa751a0",
       "size": 1133021,
-      "url": "https://ganjacraft.ru/files/mods/ParCool-1.20.1-3.4.1.5.jar",
+      "url": "https://ganj4craft.ru/files/mods/ParCool-1.20.1-3.4.1.5.jar",
       "optional": false
     },
     {
       "path": "mods/modernfix-forge-5.25.1+mc1.20.1.jar",
       "hash": "124ea5db8c3b7dc00166806ef0fc412177882fda",
       "size": 895267,
-      "url": "https://ganjacraft.ru/files/mods/modernfix-forge-5.25.1+mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/modernfix-forge-5.25.1+mc1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/Mantle-1.20.1-1.11.79.jar",
       "hash": "db1ab527fcc48852775e01f9504c7a3ec3083743",
       "size": 1480444,
-      "url": "https://ganjacraft.ru/files/mods/Mantle-1.20.1-1.11.79.jar",
+      "url": "https://ganj4craft.ru/files/mods/Mantle-1.20.1-1.11.79.jar",
       "optional": false
     },
     {
       "path": "mods/Ping-Wheel-1.12.0-forge-1.20.1.jar",
       "hash": "295637cddcc338a7741cd7891929b1ff99706da2",
       "size": 156783,
-      "url": "https://ganjacraft.ru/files/mods/Ping-Wheel-1.12.0-forge-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/Ping-Wheel-1.12.0-forge-1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/immersive_aircraft-1.3.3+1.20.1-forge.jar",
       "hash": "0749b5c005eafdcf5c8a19760c5c64b3cb021633",
       "size": 2391382,
-      "url": "https://ganjacraft.ru/files/mods/immersive_aircraft-1.3.3+1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/immersive_aircraft-1.3.3+1.20.1-forge.jar",
       "optional": false
     },
     {
       "path": "mods/ftb-team-bases-20.1.2.jar",
       "hash": "af1db49135edb84ddd491cd82e3635e201e565d4",
       "size": 335256,
-      "url": "https://ganjacraft.ru/files/mods/ftb-team-bases-20.1.2.jar",
+      "url": "https://ganj4craft.ru/files/mods/ftb-team-bases-20.1.2.jar",
       "optional": false
     },
     {
       "path": "mods/ironchest-1.20.1-14.4.4.jar",
       "hash": "4b2dd0f581e40f8bd6f6e63b2d84c06dfde2c4eb",
       "size": 311290,
-      "url": "https://ganjacraft.ru/files/mods/ironchest-1.20.1-14.4.4.jar",
+      "url": "https://ganj4craft.ru/files/mods/ironchest-1.20.1-14.4.4.jar",
       "optional": false
     },
     {
       "path": "mods/mowzies_cataclysm-1.2.0.jar",
       "hash": "75bbbac8e9d394a30f6751570ed3506a6dfbb846",
       "size": 29105,
-      "url": "https://ganjacraft.ru/files/mods/mowzies_cataclysm-1.2.0.jar",
+      "url": "https://ganj4craft.ru/files/mods/mowzies_cataclysm-1.2.0.jar",
       "optional": false
     },
     {
       "path": "mods/create-1.20.1-6.0.6.jar",
       "hash": "c5eb5efad7a4776d558b44b28891f2e33eef03e4",
       "size": 18764522,
-      "url": "https://ganjacraft.ru/files/mods/create-1.20.1-6.0.6.jar",
+      "url": "https://ganj4craft.ru/files/mods/create-1.20.1-6.0.6.jar",
       "optional": false
     },
     {
       "path": "mods/thermal_innovation-1.20.1-11.0.1.23.jar",
       "hash": "5c6881416ff4fb116d05f4a48acf12b30f10af82",
       "size": 225344,
-      "url": "https://ganjacraft.ru/files/mods/thermal_innovation-1.20.1-11.0.1.23.jar",
+      "url": "https://ganj4craft.ru/files/mods/thermal_innovation-1.20.1-11.0.1.23.jar",
       "optional": false
     },
     {
       "path": "mods/IronBarrels1.20.1-V1.01.jar",
       "hash": "2b822fecf18a53de801db3a7c8d8129fa663f67f",
       "size": 464358,
-      "url": "https://ganjacraft.ru/files/mods/IronBarrels1.20.1-V1.01.jar",
+      "url": "https://ganj4craft.ru/files/mods/IronBarrels1.20.1-V1.01.jar",
       "optional": false
     },
     {
       "path": "mods/Draconic-Evolution-1.20.1-3.1.2.621-universal.jar",
       "hash": "8abd0ee849f9654ec91d3ecbd115e2c296f08c73",
       "size": 5934411,
-      "url": "https://ganjacraft.ru/files/mods/Draconic-Evolution-1.20.1-3.1.2.621-universal.jar",
+      "url": "https://ganj4craft.ru/files/mods/Draconic-Evolution-1.20.1-3.1.2.621-universal.jar",
       "optional": false
     },
     {
       "path": "mods/baguettelib-1.20.1-Forge-1.1.5.jar",
       "hash": "7aaab6216e7fc72e1606b1e35f1f56a18f01153f",
       "size": 31868,
-      "url": "https://ganjacraft.ru/files/mods/baguettelib-1.20.1-Forge-1.1.5.jar",
+      "url": "https://ganj4craft.ru/files/mods/baguettelib-1.20.1-Forge-1.1.5.jar",
       "optional": false
     },
     {
       "path": "mods/moonlight-1.20-2.16.15-forge.jar",
       "hash": "5b87fafe107c93754765b0490fbf0250df520b6e",
       "size": 1333278,
-      "url": "https://ganjacraft.ru/files/mods/moonlight-1.20-2.16.15-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/moonlight-1.20-2.16.15-forge.jar",
       "optional": false
     },
     {
       "path": "mods/ApothicAttributes-1.20.1-1.3.7.jar",
       "hash": "1dc0744d17f0861fe6b067798d39abce9d8e0e86",
       "size": 227511,
-      "url": "https://ganjacraft.ru/files/mods/ApothicAttributes-1.20.1-1.3.7.jar",
+      "url": "https://ganj4craft.ru/files/mods/ApothicAttributes-1.20.1-1.3.7.jar",
       "optional": false
     },
     {
       "path": "mods/baubley-heart-canisters-1.20.1-1.1.0.jar",
       "hash": "d34860a7dd8d0b245035d197b5408b83fd791cd9",
       "size": 120810,
-      "url": "https://ganjacraft.ru/files/mods/baubley-heart-canisters-1.20.1-1.1.0.jar",
+      "url": "https://ganj4craft.ru/files/mods/baubley-heart-canisters-1.20.1-1.1.0.jar",
       "optional": false
     },
     {
       "path": "mods/client-JustEnoughResources-1.20.1-1.4.0.247.jar",
       "hash": "2747c58f439c37a01139d35cab59ca1a54114009",
       "size": 276231,
-      "url": "https://ganjacraft.ru/files/mods/client-JustEnoughResources-1.20.1-1.4.0.247.jar",
+      "url": "https://ganj4craft.ru/files/mods/client-JustEnoughResources-1.20.1-1.4.0.247.jar",
       "optional": false
     },
     {
       "path": "mods/ftb-xmod-compat-forge-2.1.3.jar",
       "hash": "0584f628d2bc6a612d79dee368324357ebae1423",
       "size": 129725,
-      "url": "https://ganjacraft.ru/files/mods/ftb-xmod-compat-forge-2.1.3.jar",
+      "url": "https://ganj4craft.ru/files/mods/ftb-xmod-compat-forge-2.1.3.jar",
       "optional": false
     },
     {
       "path": "mods/mowzie_respawner-1.1.0-forge-1.20.1.jar",
       "hash": "2d0ffabfc0fd1e0b3e12ca143bd3f458fc808d05",
       "size": 335873,
-      "url": "https://ganjacraft.ru/files/mods/mowzie_respawner-1.1.0-forge-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/mowzie_respawner-1.1.0-forge-1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/FarmersDelight-1.20.1-1.2.9.jar",
       "hash": "ca9417c369e75d38dacdac59937223e5f6adcc18",
       "size": 2978080,
-      "url": "https://ganjacraft.ru/files/mods/FarmersDelight-1.20.1-1.2.9.jar",
+      "url": "https://ganj4craft.ru/files/mods/FarmersDelight-1.20.1-1.2.9.jar",
       "optional": false
     },
     {
       "path": "mods/cloth-config-11.1.136-forge.jar",
       "hash": "c65d07748acc57ceb45d53b3964368b84f34d54f",
       "size": 1181413,
-      "url": "https://ganjacraft.ru/files/mods/cloth-config-11.1.136-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/cloth-config-11.1.136-forge.jar",
       "optional": false
     },
     {
       "path": "mods/twilightdelight-2.0.17.jar",
       "hash": "da1644411c053e1ff0a304151db1e752370c0e12",
       "size": 1433333,
-      "url": "https://ganjacraft.ru/files/mods/twilightdelight-2.0.17.jar",
+      "url": "https://ganj4craft.ru/files/mods/twilightdelight-2.0.17.jar",
       "optional": false
     },
     {
       "path": "mods/jei-1.20.1-forge-15.20.0.112.jar",
       "hash": "f12b3781af6337794ae6e010420a97585360ea2f",
       "size": 1385600,
-      "url": "https://ganjacraft.ru/files/mods/jei-1.20.1-forge-15.20.0.112.jar",
+      "url": "https://ganj4craft.ru/files/mods/jei-1.20.1-forge-15.20.0.112.jar",
       "optional": false
     },
     {
       "path": "mods/fabric-psychedelicraft-1.8.9+1.20.1.jar",
       "hash": "47b590cd376f12a072742aa81d12860a2567c9ee",
       "size": 5868332,
-      "url": "https://ganjacraft.ru/files/mods/fabric-psychedelicraft-1.8.9+1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/mods/fabric-psychedelicraft-1.8.9+1.20.1.jar",
       "optional": false
     },
     {
       "path": "mods/Mekanism-1.20.1-10.4.16.80.jar",
       "hash": "b7f12ae710888b01746507a0aa8cb375f5897158",
       "size": 12558456,
-      "url": "https://ganjacraft.ru/files/mods/Mekanism-1.20.1-10.4.16.80.jar",
+      "url": "https://ganj4craft.ru/files/mods/Mekanism-1.20.1-10.4.16.80.jar",
       "optional": false
     },
     {
       "path": "mods/Quark-4.0-462.jar",
       "hash": "9b0fb82995622a0070c00827c698c43b49d9d14b",
       "size": 14935230,
-      "url": "https://ganjacraft.ru/files/mods/Quark-4.0-462.jar",
+      "url": "https://ganj4craft.ru/files/mods/Quark-4.0-462.jar",
       "optional": false
     },
     {
       "path": "mods/thermal_expansion-1.20.1-11.0.1.29.jar",
       "hash": "c79fe5b922653d109cdcee45f4bca24c86daf6c0",
       "size": 574141,
-      "url": "https://ganjacraft.ru/files/mods/thermal_expansion-1.20.1-11.0.1.29.jar",
+      "url": "https://ganj4craft.ru/files/mods/thermal_expansion-1.20.1-11.0.1.29.jar",
       "optional": false
     },
     {
       "path": "mods/immersive_paintings-0.6.8+1.20.1-forge.jar",
       "hash": "f3a464ae2cb3173c7a7b765b4b9e61591f71833c",
       "size": 4854834,
-      "url": "https://ganjacraft.ru/files/mods/immersive_paintings-0.6.8+1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/mods/immersive_paintings-0.6.8+1.20.1-forge.jar",
       "optional": false
     },
     {
       "path": "mods/amendments-1.20-2.2.3.jar",
       "hash": "c328e0a49a4e3366b2621d84c64ac87582bafde1",
       "size": 1293221,
-      "url": "https://ganjacraft.ru/files/mods/amendments-1.20-2.2.3.jar",
+      "url": "https://ganj4craft.ru/files/mods/amendments-1.20-2.2.3.jar",
       "optional": false
     },
     {
       "path": "mods/supermartijn642configlib-1.1.8-forge-mc1.20-rechies.jar",
       "hash": "f80f9eed728966adcfbcc848633e789645057281",
       "size": 206584,
-      "url": "https://ganjacraft.ru/files/mods/supermartijn642configlib-1.1.8-forge-mc1.20-rechies.jar",
+      "url": "https://ganj4craft.ru/files/mods/supermartijn642configlib-1.1.8-forge-mc1.20-rechies.jar",
       "optional": false
     },
     {
       "path": "thingpacks/ganjacraft_mekanism/pack.mcmeta",
       "hash": "3fc83db473eafc28ea8f045c609079503d116b34",
       "size": 130,
-      "url": "https://ganjacraft.ru/files/thingpacks/ganjacraft_mekanism/pack.mcmeta",
+      "url": "https://ganj4craft.ru/files/thingpacks/ganjacraft_mekanism/pack.mcmeta",
       "optional": false
     },
     {
       "path": "thingpacks/ganjacraft_mekanism/things/ganjacraft/mekanism/infuse_type/draconium.json",
       "hash": "5e94af2cc17a683477422acb8826c7a8f2a139ab",
       "size": 164,
-      "url": "https://ganjacraft.ru/files/thingpacks/ganjacraft_mekanism/things/ganjacraft/mekanism/infuse_type/draconium.json",
+      "url": "https://ganj4craft.ru/files/thingpacks/ganjacraft_mekanism/things/ganjacraft/mekanism/infuse_type/draconium.json",
       "optional": false
     },
     {
       "path": "kubejs/client_scripts/drug_tooltips.js",
       "hash": "a7edc25fd3f6719d4f95202f3e62d401a1951bc5",
       "size": 8752,
-      "url": "https://ganjacraft.ru/files/kubejs/client_scripts/drug_tooltips.js",
+      "url": "https://ganj4craft.ru/files/kubejs/client_scripts/drug_tooltips.js",
       "optional": false
     },
     {
       "path": "kubejs/client_scripts/jei_hide.js",
       "hash": "32f7dd123cb1d4559b62186fa3e5eebf16864674",
       "size": 3442,
-      "url": "https://ganjacraft.ru/files/kubejs/client_scripts/jei_hide.js",
+      "url": "https://ganj4craft.ru/files/kubejs/client_scripts/jei_hide.js",
       "optional": false
     },
     {
       "path": "kubejs/client_scripts/tacz_tooltips.js",
       "hash": "32478f50b736108bd711c7363e923fdd3e05c823",
       "size": 3643,
-      "url": "https://ganjacraft.ru/files/kubejs/client_scripts/tacz_tooltips.js",
+      "url": "https://ganj4craft.ru/files/kubejs/client_scripts/tacz_tooltips.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/jsconfig.json",
       "hash": "85a16c92659f9f0aa1dc1460574d4747b46dfbc3",
       "size": 412,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/jsconfig.json",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/jsconfig.json",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/tacz_weapons.js",
       "hash": "24132012310d063fa03c88822ed51d7762ccf42b",
       "size": 3738,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/tacz_weapons.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/tacz_weapons.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/simplyswords_items.js",
       "hash": "a554e84b955f4e0db5e99b5e0837379a91da7684",
       "size": 77,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/simplyswords_items.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/simplyswords_items.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/military_items.js",
       "hash": "d79c80078b2dda0ce25333adf83e7f314947d224",
       "size": 318,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/military_items.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/military_items.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/example.js",
       "hash": "bbeca4224e5e4dd007400d47b0f1e6618e8c68ec",
       "size": 127,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/example.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/example.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/tconstruct/init_fluid.js",
       "hash": "60d03992e2ee659717412b9fa508a31449414970",
       "size": 1363,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/tconstruct/init_fluid.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/tconstruct/init_fluid.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/projecte/unbreaking_block.js",
       "hash": "675c7939fd561b572bcf6b4a20153702fc323f88",
       "size": 897,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/projecte/unbreaking_block.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/projecte/unbreaking_block.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/apotheosis/flying_potion_brewing_nerf.js",
       "hash": "261d7abfda85119f88eb48fa90df721616a24fb7",
       "size": 1018,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/apotheosis/flying_potion_brewing_nerf.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/apotheosis/flying_potion_brewing_nerf.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/apotheosis/potion_charm_items.js",
       "hash": "9af64aaa499a26096f810e8fdd434aab020cdcd0",
       "size": 5437,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/apotheosis/potion_charm_items.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/apotheosis/potion_charm_items.js",
       "optional": false
     },
     {
       "path": "kubejs/startup_scripts/apotheosis/flying_potion_duration_nerf.js",
       "hash": "b50d0a4021a3b9f5a961e7bde19340e8fae081d2",
       "size": 3134,
-      "url": "https://ganjacraft.ru/files/kubejs/startup_scripts/apotheosis/flying_potion_duration_nerf.js",
+      "url": "https://ganj4craft.ru/files/kubejs/startup_scripts/apotheosis/flying_potion_duration_nerf.js",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/weapon_grade_gunpowder.png",
       "hash": "416d331ef5587860a3955947b4596947fd8ae925",
       "size": 445,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/weapon_grade_gunpowder.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/weapon_grade_gunpowder.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/shard_of_hydra.png",
       "hash": "19d494b820760ea22c5c2c1f8eba912b73730ca0",
       "size": 170,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_hydra.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_hydra.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/activated_naga_essence.png",
       "hash": "0d6ba2a86b560c895a210949e26eb8c76918c249",
       "size": 201,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/activated_naga_essence.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/activated_naga_essence.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/empty_potion_charm.png",
       "hash": "8d77b5cd93dbad3dfd57fee74faea5c6183d214a",
       "size": 135,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/empty_potion_charm.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/empty_potion_charm.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/shard_of_lich.png",
       "hash": "97bcdac7da2acbd9601b98c4f1252e9d9a78c792",
       "size": 177,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_lich.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_lich.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/activated_hydra_essence.png",
       "hash": "e6c70481ba1fab8bff89605b201501bdc531e3fd",
       "size": 199,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/activated_hydra_essence.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/activated_hydra_essence.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/example_item.png",
       "hash": "d9912cb709ad496b10f19f8b2c66d1e419eb760c",
       "size": 372,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/example_item.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/example_item.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/activated_urghast_essence.png",
       "hash": "d01517812d1d100fcd5945a3df5c7b4041cd4283",
       "size": 202,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/activated_urghast_essence.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/activated_urghast_essence.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/activated_lich_essence.png",
       "hash": "c2833f0ece11a397e41742ba57cdbdc1e1ff9e13",
       "size": 202,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/activated_lich_essence.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/activated_lich_essence.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/shard_of_naga.png",
       "hash": "f4cf003ff53ce64fa92cb9a051e7c068b1d30263",
       "size": 177,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_naga.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_naga.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/item/shard_of_urghast.png",
       "hash": "204f337ae55fd7224189c17fd2eb1c6dfd3162a2",
       "size": 175,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_urghast.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/item/shard_of_urghast.png",
       "optional": false
     },
     {
       "path": "kubejs/assets/kubejs/textures/block/example_block.png",
       "hash": "87f5ec8c26493050fc83543af8d33f2d28a98766",
       "size": 247,
-      "url": "https://ganjacraft.ru/files/kubejs/assets/kubejs/textures/block/example_block.png",
+      "url": "https://ganj4craft.ru/files/kubejs/assets/kubejs/textures/block/example_block.png",
       "optional": false
     },
     {
       "path": "options.txt",
       "hash": "2e6c26880c709162b74f4f805d268c08c47955e1",
       "size": 15115,
-      "url": "https://ganjacraft.ru/files/client/options.txt",
+      "url": "https://ganj4craft.ru/files/client/options.txt",
       "optional": true
     },
     {
       "path": "servers.dat",
       "hash": "f18b2b828baaaae7cca1b8e2b9133524c7a5ca4d",
       "size": 16899,
-      "url": "https://ganjacraft.ru/files/client/servers.dat",
+      "url": "https://ganj4craft.ru/files/client/servers.dat",
       "optional": true
     },
     {
       "path": "shaderpacks/BSL_v8.4.01.2.zip",
       "hash": "85e4028be9fb9feda2d4eb7addd54795e0c5cd43",
       "size": 1105709,
-      "url": "https://ganjacraft.ru/files/client/shaderpacks/BSL_v8.4.01.2.zip",
+      "url": "https://ganj4craft.ru/files/client/shaderpacks/BSL_v8.4.01.2.zip",
       "optional": true
     },
     {
       "path": "shaderpacks/ComplementaryUnbound_r5.3.zip",
       "hash": "9474a8bc55e4f37786568ae532e4336aab72ba42",
       "size": 446661,
-      "url": "https://ganjacraft.ru/files/client/shaderpacks/ComplementaryUnbound_r5.3.zip",
+      "url": "https://ganj4craft.ru/files/client/shaderpacks/ComplementaryUnbound_r5.3.zip",
       "optional": true
     },
     {
       "path": "mods/client-entityculling-forge-1.9.3-mc1.20.1.jar",
       "hash": "8faea4818faab6b870ee370b52434b016542b519",
       "size": 477884,
-      "url": "https://ganjacraft.ru/files/client/mods/client-entityculling-forge-1.9.3-mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-entityculling-forge-1.9.3-mc1.20.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-fancymenu_forge_3.8.1_MC_1.20.1.jar",
       "hash": "1fef1d8ab0dc2dec116bc6d6cb6f789fd33b23b0",
       "size": 4472193,
-      "url": "https://ganjacraft.ru/files/client/mods/client-fancymenu_forge_3.8.1_MC_1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-fancymenu_forge_3.8.1_MC_1.20.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-controllable-forge-1.20.1-0.21.7.jar",
       "hash": "45bf6729d334de98a86e717e81475365607b4a6b",
       "size": 7567057,
-      "url": "https://ganjacraft.ru/files/client/mods/client-controllable-forge-1.20.1-0.21.7.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-controllable-forge-1.20.1-0.21.7.jar",
       "optional": true
     },
     {
       "path": "mods/client-motorassistance-2.1.0-MC1.20.1-forge.jar",
       "hash": "18778a3dcb9a13b89cc0fea50d0e9754e1b16a6f",
       "size": 61231,
-      "url": "https://ganjacraft.ru/files/client/mods/client-motorassistance-2.1.0-MC1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-motorassistance-2.1.0-MC1.20.1-forge.jar",
       "optional": true
     },
     {
       "path": "mods/client-Forgematica-0.1.13-mc1.20.1.jar",
       "hash": "d235d2ac0ce0143425d4d1e3d9a32d32fc994a93",
       "size": 997501,
-      "url": "https://ganjacraft.ru/files/client/mods/client-Forgematica-0.1.13-mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-Forgematica-0.1.13-mc1.20.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
       "hash": "e0942d396a70c09038e6c2e5e1da6505178249b8",
       "size": 37178,
-      "url": "https://ganjacraft.ru/files/client/mods/client-melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
       "optional": true
     },
     {
       "path": "mods/client-epictweaks-forge-1.20.1-1.1.1.jar",
       "hash": "d973d831a541719950eb0d391c752ae06a18fd11",
       "size": 24522,
-      "url": "https://ganjacraft.ru/files/client/mods/client-epictweaks-forge-1.20.1-1.1.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-epictweaks-forge-1.20.1-1.1.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
       "hash": "2019d821bed9071daabed43979433a5473ceee49",
       "size": 625185,
-      "url": "https://ganjacraft.ru/files/client/mods/client-konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-Searchables-forge-1.20.1-1.0.3.jar",
       "hash": "ed5a23ec30c90fd06b3f1d8140614028e1fafaee",
       "size": 77732,
-      "url": "https://ganjacraft.ru/files/client/mods/client-Searchables-forge-1.20.1-1.0.3.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-Searchables-forge-1.20.1-1.0.3.jar",
       "optional": true
     },
     {
       "path": "mods/client-badpackets-forge-0.4.3.jar",
       "hash": "34b4ae0b51fe8bb55529dd20968bf58e20b4a21e",
       "size": 27919,
-      "url": "https://ganjacraft.ru/files/client/mods/client-badpackets-forge-0.4.3.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-badpackets-forge-0.4.3.jar",
       "optional": true
     },
     {
       "path": "mods/client-embeddium-0.3.31+mc1.20.1.jar",
       "hash": "bb2fa8f3e493af16af9160d049f96c614a1faf2f",
       "size": 1320675,
-      "url": "https://ganjacraft.ru/files/client/mods/client-embeddium-0.3.31+mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-embeddium-0.3.31+mc1.20.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-MaFgLib-0.1.14-mc1.20.1.jar",
       "hash": "fd18a3d8a9a72ee27cbb709a88c061b2347d2244",
       "size": 521709,
-      "url": "https://ganjacraft.ru/files/client/mods/client-MaFgLib-0.1.14-mc1.20.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-MaFgLib-0.1.14-mc1.20.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-athena-forge-1.20.1-3.1.2.jar",
       "hash": "2acee24454af859988a691f0506271a465f68f7b",
       "size": 91808,
-      "url": "https://ganjacraft.ru/files/client/mods/client-athena-forge-1.20.1-3.1.2.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-athena-forge-1.20.1-3.1.2.jar",
       "optional": true
     },
     {
       "path": "mods/client-BetterAdvancements-Forge-1.20.1-0.4.2.25.jar",
       "hash": "c747ebbb7654b67c2b62b669605bcda041970ca4",
       "size": 98124,
-      "url": "https://ganjacraft.ru/files/client/mods/client-BetterAdvancements-Forge-1.20.1-0.4.2.25.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-BetterAdvancements-Forge-1.20.1-0.4.2.25.jar",
       "optional": true
     },
     {
       "path": "mods/client-entity_texture_features_forge_1.20.1-6.2.9.jar",
       "hash": "55c8a7db3b4ddd28485c4d2bab7381a756b771c6",
       "size": 676887,
-      "url": "https://ganjacraft.ru/files/client/mods/client-entity_texture_features_forge_1.20.1-6.2.9.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-entity_texture_features_forge_1.20.1-6.2.9.jar",
       "optional": true
     },
     {
       "path": "mods/client-framework-forge-1.20.1-0.7.15.jar",
       "hash": "0963ba5c19634030dbf1358b5c5f5fb341fede73",
       "size": 309560,
-      "url": "https://ganjacraft.ru/files/client/mods/client-framework-forge-1.20.1-0.7.15.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-framework-forge-1.20.1-0.7.15.jar",
       "optional": true
     },
     {
       "path": "mods/client-oculus-mc1.20.1-1.8.0.jar",
       "hash": "984f774e71790deaec674c7587bd24e0711871b2",
       "size": 2851119,
-      "url": "https://ganjacraft.ru/files/client/mods/client-oculus-mc1.20.1-1.8.0.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-oculus-mc1.20.1-1.8.0.jar",
       "optional": true
     },
     {
       "path": "mods/client-citreforged-mc1.20.1-1.0.2.jar",
       "hash": "ae4235a6295e02c377b369e8b3b08fe0cdaa18da",
       "size": 221864,
-      "url": "https://ganjacraft.ru/files/client/mods/client-citreforged-mc1.20.1-1.0.2.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-citreforged-mc1.20.1-1.0.2.jar",
       "optional": true
     },
     {
       "path": "mods/client-moreoverlays-1.24.1-mc1.20.1-forge.jar",
       "hash": "f34bd1fde7a4b458493ddf464b4fb94c6108edf7",
       "size": 114550,
-      "url": "https://ganjacraft.ru/files/client/mods/client-moreoverlays-1.24.1-mc1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-moreoverlays-1.24.1-mc1.20.1-forge.jar",
       "optional": true
     },
     {
       "path": "mods/client-entity_model_features_forge_1.20.1-2.4.1.jar",
       "hash": "2ed40fd0bf3266e67036e5b3857da84c24b045e1",
       "size": 445642,
-      "url": "https://ganjacraft.ru/files/client/mods/client-entity_model_features_forge_1.20.1-2.4.1.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-entity_model_features_forge_1.20.1-2.4.1.jar",
       "optional": true
     },
     {
       "path": "mods/client-leawind_third_person-v2.2.0-mc1.20-1.20.1-forge.jar",
       "hash": "acd53eaae56f6bc0b3b60b9cda1f37dcc71ec9d3",
       "size": 347536,
-      "url": "https://ganjacraft.ru/files/client/mods/client-leawind_third_person-v2.2.0-mc1.20-1.20.1-forge.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-leawind_third_person-v2.2.0-mc1.20-1.20.1-forge.jar",
       "optional": true
     },
     {
       "path": "mods/client-Controlling-forge-1.20.1-12.0.2.jar",
       "hash": "f6d3cdd3ec68c5590cf5b2e89c38dbf031824bfd",
       "size": 115280,
-      "url": "https://ganjacraft.ru/files/client/mods/client-Controlling-forge-1.20.1-12.0.2.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-Controlling-forge-1.20.1-12.0.2.jar",
       "optional": true
     },
     {
       "path": "mods/client-SimpleRPC-4.0.4.jar",
       "hash": "36b4246bb5ce216ecc3e3b92a56fa5eb103a9786",
       "size": 713920,
-      "url": "https://ganjacraft.ru/files/client/mods/client-SimpleRPC-4.0.4.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-SimpleRPC-4.0.4.jar",
       "optional": true
     },
     {
       "path": "mods/client-chloride-FORGE-mc1.20.1-v1.7.2.jar",
       "hash": "d04b7bcd14a210a670877ff3f425fbf760dadda3",
       "size": 944500,
-      "url": "https://ganjacraft.ru/files/client/mods/client-chloride-FORGE-mc1.20.1-v1.7.2.jar",
+      "url": "https://ganj4craft.ru/files/client/mods/client-chloride-FORGE-mc1.20.1-v1.7.2.jar",
       "optional": true
     },
     {
       "path": "config/chloride-client.json",
       "hash": "dd8bb76fc567d6d7980f38cd3f92fe402e3cfb1d",
       "size": 1827,
-      "url": "https://ganjacraft.ru/files/client/config/chloride-client.json",
+      "url": "https://ganj4craft.ru/files/client/config/chloride-client.json",
       "optional": true
     },
     {
       "path": "config/embeddium-mixins.properties",
       "hash": "a729ee50d18cf2204ff9fc33bc21641d55185c88",
       "size": 269,
-      "url": "https://ganjacraft.ru/files/client/config/embeddium-mixins.properties",
+      "url": "https://ganj4craft.ru/files/client/config/embeddium-mixins.properties",
       "optional": true
     },
     {
       "path": "config/embeddium-options.json",
       "hash": "14415c11c896834c0339118563226c90339a23ab",
       "size": 852,
-      "url": "https://ganjacraft.ru/files/client/config/embeddium-options.json",
+      "url": "https://ganj4craft.ru/files/client/config/embeddium-options.json",
       "optional": true
     },
     {
       "path": "config/entity_model_features.json",
       "hash": "811c0f2fdd5cedb153560a9f8a8dd3f1d95b2534",
       "size": 1115,
-      "url": "https://ganjacraft.ru/files/client/config/entity_model_features.json",
+      "url": "https://ganj4craft.ru/files/client/config/entity_model_features.json",
       "optional": true
     },
     {
       "path": "config/psychedelicraft_client.json",
       "hash": "02f2e90adab80937312b9e0abb6ae6e88e64a9b9",
       "size": 2919,
-      "url": "https://ganjacraft.ru/files/client/config/psychedelicraft_client.json",
+      "url": "https://ganj4craft.ru/files/client/config/psychedelicraft_client.json",
       "optional": true
     },
     {
       "path": "config/embeddium-fingerprint.json",
       "hash": "6fde09dd8445003f3ea070f00e8d648c46f66f98",
       "size": 427,
-      "url": "https://ganjacraft.ru/files/client/config/embeddium-fingerprint.json",
+      "url": "https://ganj4craft.ru/files/client/config/embeddium-fingerprint.json",
       "optional": true
     },
     {
       "path": "config/epicfight-client.toml",
       "hash": "abbfa958e0f1a9af4c6798e9bd4ab95cc981c77f",
       "size": 2004,
-      "url": "https://ganjacraft.ru/files/client/config/epicfight-client.toml",
+      "url": "https://ganj4craft.ru/files/client/config/epicfight-client.toml",
       "optional": true
     },
     {
       "path": "config/epictweaks-client.toml",
       "hash": "73c9d3191321800f13c9e0193430c7605a5c24a5",
       "size": 773,
-      "url": "https://ganjacraft.ru/files/client/config/epictweaks-client.toml",
+      "url": "https://ganj4craft.ru/files/client/config/epictweaks-client.toml",
       "optional": true
     },
     {
       "path": "config/world-gen.json",
       "hash": "e71b338033fc151d5a50a2533b882e7453ca5499",
       "size": 3646765,
-      "url": "https://ganjacraft.ru/files/client/config/world-gen.json",
+      "url": "https://ganj4craft.ru/files/client/config/world-gen.json",
       "optional": true
     },
     {
       "path": "config/entity_texture_features.json",
       "hash": "907d2d2c52d47b4f41ee991ba9692ad1bb667da0",
       "size": 1420,
-      "url": "https://ganjacraft.ru/files/client/config/entity_texture_features.json",
+      "url": "https://ganj4craft.ru/files/client/config/entity_texture_features.json",
       "optional": true
     },
     {
       "path": "config/modernfix-mixins.properties",
       "hash": "fc18d218d8663d6699b67a4a715537c1ec8a15d5",
       "size": 6193,
-      "url": "https://ganjacraft.ru/files/client/config/modernfix-mixins.properties",
+      "url": "https://ganj4craft.ru/files/client/config/modernfix-mixins.properties",
       "optional": true
     },
     {
       "path": "config/fancymenu/audio_element_controller_metas.json",
       "hash": "afe2de3ad1f57b0d896554fea823faa5a72dac88",
       "size": 109,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/audio_element_controller_metas.json",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/audio_element_controller_metas.json",
       "optional": true
     },
     {
       "path": "config/fancymenu/options.txt",
       "hash": "a4fc1a9ac86a23a8dc73e322d071f7ba240ad1e7",
       "size": 2114,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/options.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/options.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/user_variables.db",
       "hash": "b41f9d7688944b0d96eaa089a5a5bb74af28d258",
       "size": 23,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/user_variables.db",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/user_variables.db",
       "optional": true
     },
     {
       "path": "config/fancymenu/legacy_checklist.txt",
       "hash": "f1569161a6ad24cc61b02dece317ea16e351ff1e",
       "size": 42,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/legacy_checklist.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/legacy_checklist.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/customizablemenus.txt",
       "hash": "89f49ea0c0102a57ee4665497f18a7a1d511c11e",
       "size": 784,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/customizablemenus.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/customizablemenus.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/custom_gui_screens.txt",
       "hash": "50b4602527a4e3cfea6016ec001f3b68ace1d65c",
       "size": 51,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/custom_gui_screens.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/custom_gui_screens.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/properties.txt",
       "hash": "415e8f0b01e31e80c01ce3fceb6d90cf4b285dcc",
       "size": 151,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/properties.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/properties.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_38.jpg",
       "hash": "435bce6fed37489762635861b194f45741e9fc95",
       "size": 424877,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_38.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_38.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_31.jpg",
       "hash": "e309c1bc0d0bb60adc3000f392e1c3ebacc8e36e",
       "size": 51451,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_31.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_31.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_158.jpg",
       "hash": "196405b4c50ffd4387f7c47dee296179cc46fb9e",
       "size": 67320,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_158.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_158.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_42.jpg",
       "hash": "b6455e6a10844dde2d2ee82f054f824049243d01",
       "size": 93356,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_42.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_42.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_28.jpg",
       "hash": "93f26c6bd6b26e8b78ea43533a89977abed2d641",
       "size": 37218,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_28.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_28.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_50.jpg",
       "hash": "79ccb9591c717ec8afb8b258a89d57c0cfa099fd",
       "size": 200961,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_50.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_50.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_21.jpg",
       "hash": "7d9f8e0ab1a45b968cf5770cf8662bbe814ffe01",
       "size": 56967,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_21.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_21.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_2.jpg",
       "hash": "31d6699f3577052c5f2d69f299dec050eb187f18",
       "size": 249144,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_2.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_2.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_29.jpg",
       "hash": "5a8bdb5f2ea8e430e9fce7a3e287950bc847812c",
       "size": 188655,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_29.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_29.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_18.jpg",
       "hash": "fae1321ebe4b45fb00f4ac8e0b18fdc01716912b",
       "size": 14873,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_18.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_18.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_16.jpg",
       "hash": "23d47c259ce4bc9efd3906143a17f245d6749594",
       "size": 11350,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_16.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_16.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_57.jpg",
       "hash": "34220210e3d2e781910e29b78f60a5f529863601",
       "size": 142644,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_57.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_57.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_3.jpg",
       "hash": "da041d50066d744d9b705455c8354d69df176a89",
       "size": 37786,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_3.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_3.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_24.jpg",
       "hash": "71b3f92b6d2c46badcde8331c38583950e5bb071",
       "size": 30996,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_24.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_24.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_1.jpg",
       "hash": "bf3e25fa1fdd511df6c502993678e033f0667c41",
       "size": 32609,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_1.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_1.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_49.jpg",
       "hash": "5c057e306c78bfe85c8aba28a4c6f72e700648db",
       "size": 54697,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_49.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_49.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_7.jpg",
       "hash": "e0ed12683c80bb0a71068c804677d17449fba905",
       "size": 27296,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_7.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_7.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_20.jpg",
       "hash": "5525a50826143b9714c818db0a39c83abc611ed7",
       "size": 322057,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_20.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_20.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_48.jpg",
       "hash": "bfa62f289c570719556295b48178eb6d4fbcf18d",
       "size": 51426,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_48.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_48.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_12.jpg",
       "hash": "29bace49fb61b928223149054c1659a4667e0678",
       "size": 138707,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_12.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_12.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_43.jpg",
       "hash": "b2f2223ea3293539352217900c38432da04a60fc",
       "size": 69101,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_43.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_43.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_44.jpg",
       "hash": "2ab5da20f8a39e46cde161c766fe49226a0357d3",
       "size": 70754,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_44.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_44.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_51.jpg",
       "hash": "40b326fcf0dcd97b9b05363c1b897655a78fccf8",
       "size": 370023,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_51.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_51.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_4.jpg",
       "hash": "473e9492f5652bd5bd10f522e13651f79a603b0f",
       "size": 134824,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_4.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_4.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_11.jpg",
       "hash": "dd3ab67b48397d99ac345ec091be5650541c6b66",
       "size": 35674,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_11.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_11.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_34.jpg",
       "hash": "990f330e043d9986f86cc193727fb406953e4e18",
       "size": 358172,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_34.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_34.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_13.jpg",
       "hash": "3c94f7d01315fcd94eaae3209310830f6d986b09",
       "size": 42962,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_13.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_13.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_10.jpg",
       "hash": "e900d987467705407b93d1288b7530749bbb0053",
       "size": 31693,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_10.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_10.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_19.jpg",
       "hash": "44ded2cf11343c6f483cd0e58b5f85bfb56bbe4d",
       "size": 41417,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_19.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_19.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_15.jpg",
       "hash": "60412eb29db78f33fbe4ef0b5e61dca20c14c5e3",
       "size": 42177,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_15.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_15.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_30.jpg",
       "hash": "e3c002d9d08d96d267f28d95a2e631b46c52944b",
       "size": 75181,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_30.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_30.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_40.jpg",
       "hash": "88c8683694ce4dc053705f32e760eaa17d7a40a6",
       "size": 44808,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_40.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_40.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_9.jpg",
       "hash": "4d4f79980f85a79596a039df938c10845b132f9d",
       "size": 75331,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_9.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_9.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_46.jpg",
       "hash": "a98bcd603e50c061994768cf1f668075d82ad230",
       "size": 35046,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_46.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_46.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_32.jpg",
       "hash": "0d50a65bd2067ef4f4f167f9ce9c1198e0254d57",
       "size": 104607,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_32.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_32.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_53.jpg",
       "hash": "65da6749c2efc5db9e4a1460768596a08693dd1e",
       "size": 56308,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_53.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_53.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_39.jpg",
       "hash": "59d9411dabea71a37e3c1b8282065c09be8d473b",
       "size": 151150,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_39.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_39.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_37.jpg",
       "hash": "1c6a3a6f7bbc94698fed25b4081095669548c08f",
       "size": 572878,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_37.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_37.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_157.jpg",
       "hash": "c3c3292c18788fed93b8d984128568db5f7b995c",
       "size": 38546,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_157.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_157.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_25.jpg",
       "hash": "0ed979c15fb5d6bdd6997fe6b06be5f836496d57",
       "size": 100473,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_25.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_25.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_52.jpg",
       "hash": "7e7e89ad2437e5a69d80367766903b0690e749a6",
       "size": 101002,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_52.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_52.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_35.jpg",
       "hash": "ceb33acfabf2f4681e33022ef1f588437c438a2a",
       "size": 32545,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_35.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_35.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_14.jpg",
       "hash": "786a629bca46faabd015142da10b99c212706a9a",
       "size": 50409,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_14.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_14.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_55.jpg",
       "hash": "bc124870d7496500b66b6f2e5f7bec8469ba15f6",
       "size": 163914,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_55.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_55.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_8.jpg",
       "hash": "1440fad96047ef1b533863d3c9eeeef23dbe943d",
       "size": 56624,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_8.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_8.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_5.jpg",
       "hash": "ae9d5a00a5e7492002f1fe60095dd49df09ed7b8",
       "size": 43322,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_5.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_5.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_6.jpg",
       "hash": "1465d39f6b09c811ae63da74ec6f694fce976e48",
       "size": 28744,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_6.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_6.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_54.jpg",
       "hash": "031ec4d3e58d8b28ee990d944cb197e2ea0143dd",
       "size": 195726,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_54.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_54.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_45.jpg",
       "hash": "da0700a7fbebeb90b2faaa21a9c331ad99e0faae",
       "size": 15658,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_45.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_45.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_23.jpg",
       "hash": "af6a7fa951e9a994e2b97304bf5da63feff84415",
       "size": 58592,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_23.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_23.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_41.jpg",
       "hash": "e9227422d8bf807c7c319fb684bc34901593668b",
       "size": 15510,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_41.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_41.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_17.jpg",
       "hash": "2029dd13bc20e11b813c42aed5b1e78f3461442f",
       "size": 10071,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_17.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_17.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_47.jpg",
       "hash": "e20cf8c5edfb7716773098df2db8d93d45ee9fa8",
       "size": 49399,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_47.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_47.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_33.jpg",
       "hash": "ad6d8a3d3750771c7e72fd5293a3e9e69f39ca4b",
       "size": 48258,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_33.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_33.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_56.jpg",
       "hash": "aa691cf99a31ce17fc5af9ea64fe22c64f3a4034",
       "size": 39044,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_56.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_56.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_26.jpg",
       "hash": "808b82d9516d2dd47895ee1d240f4bdc13867ec6",
       "size": 38192,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_26.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_26.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_36.jpg",
       "hash": "63dae14c33fb08bb94c1d7cabfe1e1d35872f4f4",
       "size": 96733,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_36.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_36.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_27.jpg",
       "hash": "a601228f08d0bc64cfb5f79f8aeda81ef5a06a39",
       "size": 150311,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_27.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_27.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/slideshows/ganja/images/420_22.jpg",
       "hash": "9883180835172e216403575860305302aa6b5b8e",
       "size": 40764,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_22.jpg",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/slideshows/ganja/images/420_22.jpg",
       "optional": true
     },
     {
       "path": "config/fancymenu/ui_themes/dark.json",
       "hash": "6c4a7a9a509c3b81c62a497c4cb53a3eddf61219",
       "size": 4133,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/ui_themes/dark.json",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/ui_themes/dark.json",
       "optional": true
     },
     {
       "path": "config/fancymenu/ui_themes/light.json",
       "hash": "fb42def9e33a2792c19002a717318ec733283e8d",
       "size": 4135,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/ui_themes/light.json",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/ui_themes/light.json",
       "optional": true
     },
     {
       "path": "config/fancymenu/customization/title_screen_layout.txt",
       "hash": "b65d1e1758c7fd120880bac0d9cbe481d572d03c",
       "size": 37718,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/customization/title_screen_layout.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/customization/title_screen_layout.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/customization/pause_screen_layout.txt",
       "hash": "d78f73dc66d2aabdc94a2f52768d00358ab960db",
       "size": 34177,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/customization/pause_screen_layout.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/customization/pause_screen_layout.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/customization/drippy_loading_overlay_layout.txt",
       "hash": "bb9bff46ec906eb5e56abbfc462196da2386040d",
       "size": 9598,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/customization/drippy_loading_overlay_layout.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/customization/drippy_loading_overlay_layout.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/customization/universal_layout.txt",
       "hash": "f7e587a6a81429f8258a0e6e0623f926b4718b53",
       "size": 783,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/customization/universal_layout.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/customization/universal_layout.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/customization/join_multiplayer_screen_layout.txt",
       "hash": "56d6541e136288fd3a5b6834c01a65b2fb763627",
       "size": 11361,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/customization/join_multiplayer_screen_layout.txt",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/customization/join_multiplayer_screen_layout.txt",
       "optional": true
     },
     {
       "path": "config/fancymenu/layout_editor/widgets/element_layer_control.lewidget",
       "hash": "cd1355b5465311bc425c14f5f5389ab9d6403564",
       "size": 200,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/layout_editor/widgets/element_layer_control.lewidget",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/layout_editor/widgets/element_layer_control.lewidget",
       "optional": true
     },
     {
       "path": "config/fancymenu/assets/icons/icon32x32.png",
       "hash": "de521493e9b4ce6e5574ed0e6244db7b90270141",
       "size": 3044,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/assets/icons/icon32x32.png",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/assets/icons/icon32x32.png",
       "optional": true
     },
     {
       "path": "config/fancymenu/assets/icons/icon32x32.ico",
       "hash": "5ee3f9fd748ba99f9d73b84b3666697b7a0746dd",
       "size": 4286,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/assets/icons/icon32x32.ico",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/assets/icons/icon32x32.ico",
       "optional": true
     },
     {
       "path": "config/fancymenu/assets/icons/icon32x32.icns",
       "hash": "45a0d807182b3ab28ac43c57067941756cc76574",
       "size": 113471,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/assets/icons/icon32x32.icns",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/assets/icons/icon32x32.icns",
       "optional": true
     },
     {
       "path": "config/fancymenu/assets/icons/icon16x16.png",
       "hash": "b609f580dfcb2c7a64748cc6dc3b3bbacd3bf1a3",
       "size": 1198,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/assets/icons/icon16x16.png",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/assets/icons/icon16x16.png",
       "optional": true
     },
     {
       "path": "config/fancymenu/assets/wall/wall.png",
       "hash": "545393de9bbeba3ff27c115ed6d19070685ee692",
       "size": 655065,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/assets/wall/wall.png",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/assets/wall/wall.png",
       "optional": true
     },
     {
       "path": "config/fancymenu/assets/logo/minecraft.png",
       "hash": "8dbe8ac5fc81d283661543d00738ca206424be30",
       "size": 75943,
-      "url": "https://ganjacraft.ru/files/client/config/fancymenu/assets/logo/minecraft.png",
+      "url": "https://ganj4craft.ru/files/client/config/fancymenu/assets/logo/minecraft.png",
       "optional": true
     },
     {
       "path": "config/simple-rpc/simple-rpc.toml",
       "hash": "b8c2718ab315870c2a9139708912dee46d61905b",
       "size": 15611,
-      "url": "https://ganjacraft.ru/files/client/config/simple-rpc/simple-rpc.toml",
+      "url": "https://ganj4craft.ru/files/client/config/simple-rpc/simple-rpc.toml",
       "optional": true
     },
     {
       "path": "config/simple-rpc/server-entries.toml",
       "hash": "01eff0600b562f4d944a7f1b7a86be5625df89b6",
       "size": 150,
-      "url": "https://ganjacraft.ru/files/client/config/simple-rpc/server-entries.toml",
+      "url": "https://ganj4craft.ru/files/client/config/simple-rpc/server-entries.toml",
       "optional": true
     },
     {
       "path": "config/apotheosis/spawner.cfg",
       "hash": "1cc96ec4f94fe737b4ba8a2c71cc3e859c90215a",
       "size": 1085,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/spawner.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/spawner.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/enchantments.cfg",
       "hash": "5bfe623ae4bc8cf124e930a1d10031ef2c5e5331",
       "size": 179751,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/enchantments.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/enchantments.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/ench.cfg",
       "hash": "20df5d6c79905c6212c6012dbeab01246568ac41",
       "size": 480,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/ench.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/ench.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/garden.cfg",
       "hash": "0437333a5c14af2cf08a6ce799bf69ae965d4484",
       "size": 727,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/garden.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/garden.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/potion.cfg",
       "hash": "72ecb09a41a711c77ace2b1a4a24ce5b4a2c1945",
       "size": 894,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/potion.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/potion.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/village.cfg",
       "hash": "3c44b7afd2c0193e0567128da2565cd60eccbaa4",
       "size": 817,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/village.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/village.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/adventure.cfg",
       "hash": "1fab266e9ec25bf75121b6343216a1e4a676e987",
       "size": 7457,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/adventure.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/adventure.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/apotheosis.cfg",
       "hash": "9403c2db0310fd36f83f7deb5d66b32559c2ae15",
       "size": 1060,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/apotheosis.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/apotheosis.cfg",
       "optional": true
     },
     {
       "path": "config/apotheosis/names.cfg",
       "hash": "fe25819002cb97d4b52bc84894f85f16f1df58e9",
       "size": 107630,
-      "url": "https://ganjacraft.ru/files/client/config/apotheosis/names.cfg",
+      "url": "https://ganj4craft.ru/files/client/config/apotheosis/names.cfg",
       "optional": true
     },
     {
       "path": "resourcepacks/[Ganja Craft] RUS.zip",
       "hash": "f1951cf66821055bc1a898ac178fdc81895c54ed",
       "size": 1581634,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[Ganja Craft] RUS.zip",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[Ganja Craft] RUS.zip",
       "optional": true
     },
     {
       "path": "resourcepacks/\u00a76Immersive\u00a78_\u00a76Interfaces\u00a78.zip",
       "hash": "bafc82177445bd3fbceccffdac76cbc156fab0de",
       "size": 1195419,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/\u00a76Immersive\u00a78_\u00a76Interfaces\u00a78.zip",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/\u00a76Immersive\u00a78_\u00a76Interfaces\u00a78.zip",
       "optional": true
     },
     {
       "path": "resourcepacks/\u00a76Immersive\u00a78_\u00a76Interfaces\u00a78_\u00a76Modded\u00a78.zip",
       "hash": "93b878c4fe124ad982ed58e05b3b81e61a83dc0d",
       "size": 352755,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/\u00a76Immersive\u00a78_\u00a76Interfaces\u00a78_\u00a76Modded\u00a78.zip",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/\u00a76Immersive\u00a78_\u00a76Interfaces\u00a78_\u00a76Modded\u00a78.zip",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/pack.png",
       "hash": "5cc75d29d4c2ad918b94a4f86f2ba98c877795e8",
       "size": 872884,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/pack.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/pack.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/pack.mcmeta",
       "hash": "195170292603d13df983a7eec30a50aa1e826c0c",
       "size": 126,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/pack.mcmeta",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/pack.mcmeta",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/customloadingscreen/textures/progress_bars.png",
       "hash": "d383595980cedd97b0e08b3dd662a615e344624b",
       "size": 19710,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/customloadingscreen/textures/progress_bars.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/customloadingscreen/textures/progress_bars.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/psychedelicraft/lang/en_us.json",
       "hash": "2626503e8e4875027d56b4c2f73fbbe09c5ee653",
       "size": 34943,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/psychedelicraft/lang/en_us.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/psychedelicraft/lang/en_us.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/psychedelicraft/lang/ru_ru.json",
       "hash": "f36357e1856293828e63031df22d6aa36eb4fb20",
       "size": 43894,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/psychedelicraft/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/psychedelicraft/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/ganjacraft/lang/ru_ru.json",
       "hash": "91e088e29097e40de32dea738512a898c7ce874b",
       "size": 59,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/ganjacraft/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/ganjacraft/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/lang/ru_ru.json",
       "hash": "9ffabeedfc9c0373b98db27eab7d62d382526095",
       "size": 551,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_player.png",
       "hash": "2d6239ff0cfcf05c01b1017732cfdb94e0c1fd30",
       "size": 552,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_player.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_player.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_elytra.png",
       "hash": "78762c0d5e66e76c234012c3ca2cfd45bce00225",
       "size": 720,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_elytra.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_elytra.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_exoskeleton.png",
       "hash": "8782f1d0c71b3169c3e0a8c23ac4ce19664de2bf",
       "size": 648,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_exoskeleton.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_exoskeleton.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_helmet.png",
       "hash": "9d2fd6a77c18e3e4afdc4009a4198fd8113ec414",
       "size": 1100,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_helmet.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_helmet.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_body.png",
       "hash": "d2b9f794fb526d348640641e3359b113e23bed4a",
       "size": 686,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_body.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_body.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_gravitational_modulator.png",
       "hash": "f82bbc2baf4a0c6ff07bca0eae854ea6fef9bd00",
       "size": 610,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_gravitational_modulator.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_gravitational_modulator.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_modules.png",
       "hash": "3be31ae31deb26e251c16c108da292a2dba783ec",
       "size": 591,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_modules.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/mekanism/textures/entity/armor/mekasuit_armor_modules.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/kubejs/lang/ru_ru.json",
       "hash": "500fac1bb72b486b587ede70db5ae2a8f1fb2121",
       "size": 263,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/kubejs/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/kubejs/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/draconicevolution/lang/ru_ru.json",
       "hash": "21013f6009e64345366a67a3426ec4a762a51fe8",
       "size": 77286,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/draconicevolution/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/draconicevolution/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/lang/ru_ru.json",
       "hash": "5012d0bb497454d01bd284c6543f8116411d901c",
       "size": 22378,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/transmutation_tablet.png",
       "hash": "593e327e6418ca3dea20a0738fd14c75a8168e9d",
       "size": 218732,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/transmutation_tablet.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/transmutation_tablet.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/matter/dark.png",
       "hash": "18405131dbc0ddeb749fdcb275df8e1e481fb4a6",
       "size": 295,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/matter/dark.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/matter/dark.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/chest.png",
       "hash": "e1090f2b1e208caa24fcaafe63d621a7482e56fb",
       "size": 213,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/chest.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/chest.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/head.png",
       "hash": "427ca8d8966452c7be7d85b1fbe9e095a5f3fa8d",
       "size": 232,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/head.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/head.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/feet.png",
       "hash": "2b2ba063d7711bc8195a755a42eb88433934a0de",
       "size": 161,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/feet.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/feet.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/legs.png",
       "hash": "f220a14a95f4fcdfda28f79cf027545c26eb2ed5",
       "size": 204,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/legs.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/dm_armor/legs.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/chest.png",
       "hash": "459361305cb204e92277db6246e6ba08f01f7337",
       "size": 253,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/chest.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/chest.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/head.png",
       "hash": "6e51b86c070e334f4d3d57be74bdcd866ebe9e07",
       "size": 226,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/head.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/head.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/feet.png",
       "hash": "edbb467653a0ab516211b8a2bfb30fb6af1900ce",
       "size": 226,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/feet.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/feet.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/legs.png",
       "hash": "1929183ea826953a688bcc2325b6def5c4ce8ae6",
       "size": 221,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/legs.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/gem_armor/legs.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/chest.png",
       "hash": "0497c41ed30cd828de6a00964aa52952a8a5a18d",
       "size": 240,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/chest.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/chest.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/head.png",
       "hash": "f473496925aab08c5915676015932d2feaf44102",
       "size": 216,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/head.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/head.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/feet.png",
       "hash": "16d66fd518b23f22c6a97b0194e29a97024f38ba",
       "size": 213,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/feet.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/feet.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/legs.png",
       "hash": "33d8333dcc9be757301ff2005918dee6c2b4f3aa",
       "size": 204,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/legs.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/item/rm_armor/legs.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/bottom.png",
       "hash": "d1251787ccbc3f288018eae815cfaa6c270ebfbd",
       "size": 265,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/bottom.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/bottom.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/top.png",
       "hash": "680e96f9407f3298833a898b4b8dc71d30b36040",
       "size": 2794,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/top.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/top.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/side.png",
       "hash": "43d8b6c277795cd7f48edf137315683a9be3cf8c",
       "size": 142,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/side.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/block/transmutation_stone/side.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/dark_matter_layer_2.png",
       "hash": "de12ff61975739f2c339f4d9fc219226a44655e7",
       "size": 3209,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/dark_matter_layer_2.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/dark_matter_layer_2.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/red_matter_layer_1.png",
       "hash": "9eb726834c76f9b104ba8c20761993e4125eca4e",
       "size": 4371,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/red_matter_layer_1.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/red_matter_layer_1.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/dark_matter_layer_1.png",
       "hash": "0e476236ca1a7f712a5136bfe0669e2301b1bab2",
       "size": 4062,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/dark_matter_layer_1.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/dark_matter_layer_1.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/gem_armor_layer_2.png",
       "hash": "627a7eac5513415ae4f629a78d0b1abc1c17009c",
       "size": 3443,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/gem_armor_layer_2.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/gem_armor_layer_2.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/gem_armor_layer_1.png",
       "hash": "b90c9c6dc707ccfff8b0e280b72948f24f403541",
       "size": 5377,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/gem_armor_layer_1.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/gem_armor_layer_1.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/red_matter_layer_2.png",
       "hash": "583ade6f00118b9a41dda8527c11c37b38735c70",
       "size": 3329,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/red_matter_layer_2.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projecte/textures/models/armor/red_matter_layer_2.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/projectexpansion/lang/ru_ru.json",
       "hash": "4996c95e520f149a81673065b49a4639b2d7832c",
       "size": 332,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projectexpansion/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/projectexpansion/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/bountiful/lang/ru_ru.json",
       "hash": "14b3332266d9c53871cc028162cbd5ad03efdd4a",
       "size": 21740,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/bountiful/lang/ru_ru.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/bountiful/lang/ru_ru.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cit/galaxy_s9/s9.png",
       "hash": "820b52717e484e2d00693635e73a35f6dd6de4e5",
       "size": 204581,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cit/galaxy_s9/s9.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cit/galaxy_s9/s9.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cit/galaxy_s9/s9.properties",
       "hash": "f41206bff9e96a3b60485ac4141ce9869848de2d",
       "size": 123,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cit/galaxy_s9/s9.properties",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cit/galaxy_s9/s9.properties",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman.properties",
       "hash": "a0b8c2fa3e027f41b3a6970a2228942d65d3127e",
       "size": 86,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman.properties",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman.properties",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/ender_dragon.properties",
       "hash": "ab77c38898047e0f1879e8580fa687d182c52ba5",
       "size": 82,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/ender_dragon.properties",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/ender_dragon.properties",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin.properties",
       "hash": "e67f113d6ed17472e3d5afca420ffb7ae617e81e",
       "size": 82,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin.properties",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin.properties",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/dragon/dragon.jem",
       "hash": "82b3fee3a7e4f75db94cb9a974a92d91360f29d2",
       "size": 12590,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/dragon/dragon.jem",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/dragon/dragon.jem",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/dragon/dragon.png",
       "hash": "346786b01158631303dc375184d247acb4316ec0",
       "size": 34317,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/dragon/dragon.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/dragon/dragon.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin/zoglin.jem",
       "hash": "1c36b5909d8cbe2aa6ad6ccf4936b7814502a3f4",
       "size": 3811,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin/zoglin.jem",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin/zoglin.jem",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin/zoglin.png",
       "hash": "921a51be4abf254be764b97ffac87170756f9038",
       "size": 9913,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin/zoglin.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/zoglin/zoglin.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman/enderman.jem",
       "hash": "723d24e832936e25a0fe3c3b5d413a2e96b31db3",
       "size": 6556,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman/enderman.jem",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman/enderman.jem",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman/enderman.png",
       "hash": "057d18467a830336bf14b0b929721b98d95a8166",
       "size": 12421,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman/enderman.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/optifine/cem/enderman/enderman.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/sounds/mob/parrot/idle6.ogg",
       "hash": "e7e2efef4dbdf2b5b695dc18bce2470b4419ccbb",
       "size": 30875,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/sounds/mob/parrot/idle6.ogg",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/sounds/mob/parrot/idle6.ogg",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/texts/splashes.txt",
       "hash": "e793000a55f964ef776e2c76db1a4744bca70437",
       "size": 721,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/texts/splashes.txt",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/texts/splashes.txt",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/models/item/shield.json",
       "hash": "2ebe6f8188af47f9afa3f8e1dcaab6f80139fc13",
       "size": 1417,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/item/shield.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/item/shield.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/models/item/shield_blocking.json",
       "hash": "37a10471455787544d144495844ea328ed4c2fb5",
       "size": 974,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/item/shield_blocking.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/item/shield_blocking.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_up1.json",
       "hash": "a731c813e871035b7c993735050b560885eb73ee",
       "size": 108,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_up1.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_up1.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_side_alt1.json",
       "hash": "55680c50c0a16387eb53e606a8d2995377f63924",
       "size": 114,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_side_alt1.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_side_alt1.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_up_alt1.json",
       "hash": "299b15d65f2fa5fb996ec7b340cd95581bb9fb4a",
       "size": 112,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_up_alt1.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_up_alt1.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_side1.json",
       "hash": "b6e495940f8e0a5f326de79a43b8808d2a289fb4",
       "size": 110,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_side1.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_side1.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_floor1.json",
       "hash": "b993d947b61a3cc908dd78e8a0a54e6c0034b236",
       "size": 111,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_floor1.json",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/models/block/fire_floor1.json",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/ascii.png",
       "hash": "4543ce8502fe2a2a05983fe68b982f1cb8b8dfa2",
       "size": 4508,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/ascii.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/ascii.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/ascii_sga.png",
       "hash": "de9ffd4617a5fee6617299c53d60c167a5f7a681",
       "size": 1857,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/ascii_sga.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/ascii_sga.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/asciillager.png",
       "hash": "db6e82de2fb9db666e85592bc29bb2d08131221c",
       "size": 1993,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/asciillager.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/asciillager.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/accented.png",
       "hash": "2aa7cf78578d4c7240ae49003cbe7999b1b897eb",
       "size": 36924,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/accented.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/accented.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/nonlatin_european.png",
       "hash": "044f1de0a9cdddc641163d7b2b076e9b4e9e2333",
       "size": 28198,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/nonlatin_european.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/font/nonlatin_european.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_0.png.mcmeta",
       "hash": "9a1bb44e3105889b4d155e06c0b7e8c14f8449e8",
       "size": 356,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_0.png.mcmeta",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_0.png.mcmeta",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_1.png",
       "hash": "4c88244f3a7f53e204e2e2674b4bccdfd56968ab",
       "size": 15836,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_1.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_1.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_0.png",
       "hash": "09ea163dfc887a924a13a0be1a9b6931f3266a5e",
       "size": 12500,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_0.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_0.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_1.png.mcmeta",
       "hash": "700ec13e51f7f22e4230a25c3727513679110317",
       "size": 21,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_1.png.mcmeta",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_1.png.mcmeta",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_2.png",
       "hash": "ae5899352554fd23e53cc418523a7359ce64922d",
       "size": 13255,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_2.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_2.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_2.png.mcmeta",
       "hash": "700ec13e51f7f22e4230a25c3727513679110317",
       "size": 21,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_2.png.mcmeta",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/block/fire_2.png.mcmeta",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/options_background.png",
       "hash": "b68e77e3050a3af708e48c6385f0d803b287a87a",
       "size": 734,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/options_background.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/options_background.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/light_dirt_background.png",
       "hash": "9b605759088e70c9da2fc2859308a35f22c2bbe2",
       "size": 229,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/light_dirt_background.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/light_dirt_background.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/ganja.png",
       "hash": "70e81f2d093564231c0fd88ba7920351681e1605",
       "size": 1058671,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/ganja.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/ganja.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/ganja2.png",
       "hash": "8dbe8ac5fc81d283661543d00738ca206424be30",
       "size": 75943,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/ganja2.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/ganja2.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/minecraft.png.mcmeta",
       "hash": "809dfb6d0f7b76b31459eb734827089680a44090",
       "size": 40,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/minecraft.png.mcmeta",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/minecraft.png.mcmeta",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/mojangstudios.png",
       "hash": "0669207ff6b3119dbee6e8d093aeb87487f09e2c",
       "size": 11788,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/mojangstudios.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/mojangstudios.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/minecraft.png",
       "hash": "8dbe8ac5fc81d283661543d00738ca206424be30",
       "size": 75943,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/minecraft.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/minecraft.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_overlay.png",
       "hash": "9dd32387135eefa7ab95996d52a5ca4cec8a3b30",
       "size": 86,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_overlay.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_overlay.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_1.png",
       "hash": "21fb05405772ef927c2fc86bf3df73acf5d766ac",
       "size": 2156611,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_1.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_1.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_0.png",
       "hash": "9a0f7bbad54a7fa82f71668e27de555f126c18f1",
       "size": 2143587,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_0.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_0.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_4.png",
       "hash": "7de36297027a2b3cba6e83bbf20c35940626a667",
       "size": 2036383,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_4.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_4.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_2.png",
       "hash": "f7ae15228678e4ad9ab2c6dfaf1105c8bae0d851",
       "size": 2317577,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_2.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_2.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_3.png",
       "hash": "927df0d735c8e2ec6f366d9085c6d629be80e226",
       "size": 2390101,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_3.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_3.png",
       "optional": true
     },
     {
       "path": "resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_5.png",
       "hash": "78578c84ac6c9a4755067fc9cc164df37780109a",
       "size": 2024942,
-      "url": "https://ganjacraft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_5.png",
+      "url": "https://ganj4craft.ru/files/client/resourcepacks/[GanjaCraft] Main/assets/minecraft/textures/gui/title/background/panorama_5.png",
       "optional": true
     }
   ]

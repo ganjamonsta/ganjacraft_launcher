@@ -19,7 +19,7 @@ export async function updateServerStatus() {
 
     try {
         // Using mcsrvstat.us public API
-        const response = await fetch('https://api.mcsrvstat.us/3/ganjacraft.ru');
+        const response = await fetch('https://api.mcsrvstat.us/3/ganj4craft.ru');
         const data = await response.json();
 
         if (data.online) {

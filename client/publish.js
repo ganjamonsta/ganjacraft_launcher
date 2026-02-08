@@ -77,7 +77,7 @@ const versionJsonPath = path.join(TARGET_DIR, 'version.json');
 const encodedFile = encodeURIComponent(zipFile);
 const versionData = {
     version: version,
-    url: `https://ganjacraft.ru/api/launcher/files/${encodedFile}`,
+    url: `https://ganj4craft.ru/api/launcher/files/${encodedFile}`,
     signature: signature,
     zipSize: zipSize,
     releaseDate: new Date().toISOString(),
@@ -96,7 +96,7 @@ async function uploadFile(filePath) {
     }
     
     const fileName = path.basename(filePath);
-    const url = 'https://ganjacraft.ru/api/admin/upload/launcher';
+    const url = 'https://ganj4craft.ru/api/admin/upload/launcher';
     console.log(`☁️ Uploading ${fileName} to ${url}...`);
     
     const fileBuffer = fs.readFileSync(filePath);

@@ -3,7 +3,7 @@
 ## 1. Architecture & Project Structure
 - **Framework**: Electron application.
 - **Core Library**: `minecraft-launcher-core` (v3.12+) for downloading and launching Minecraft.
-- **Backend API**: Interacts with `https://ganjacraft.ru/api` (Python/FastAPI) for authentication and news.
+- **Backend API**: Interacts with `https://ganj4craft.ru/api` (Python/FastAPI) for authentication and news.
 - **IPC Pattern**: `preload.js` exposes a secure `window.api` using `contextBridge`.
 
 ### Key Files
@@ -22,7 +22,7 @@
 
 ### Authentication Flow
 - **Mechanism**: Telegram-based OTP (One-Time Password).
-- **Logic**: Implemented in `preload.js` via `fetch` calls to `ganjacraft.ru`.
+- **Logic**: Implemented in `preload.js` via `fetch` calls to `ganj4craft.ru`.
 - **Flow**:
   1. `requestAuth(username)`: Request OTP. **Crucial**: The backend sends the code to the user via the **Telegram Bot**.
   2. `verifyAuth(username, code)`: User enters the code from Telegram. Verify OTP, receive token.
@@ -39,8 +39,8 @@
 - **Library**: `Client` from `minecraft-launcher-core`.
 - **Customization**: Forge version and installer URL are constants in `main.js`.
 - **File Source**:
-  - Manifest: `https://ganjacraft.ru/files/manifest.json` (Served from `/var/www/ganjacraft.ru/files/manifest.json`).
-  - Game Files: `https://ganjacraft.ru/files/...` (Served from `/var/www/ganjacraft.ru/files/...`).
+  - Manifest: `https://ganj4craft.ru/files/manifest.json` (Served from `/var/www/ganj4craft.ru/files/manifest.json`).
+  - Game Files: `https://ganj4craft.ru/files/...` (Served from `/var/www/ganj4craft.ru/files/...`).
 
 ## 3. Build & Deployment
 - **Script**: `DEPLOY_ALL.bat` (Windows).

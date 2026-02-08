@@ -303,7 +303,7 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
             maxSockets: 4,
         },
         customArgs: [
-            `-javaagent:${authlibPath}=https://ganjacraft.ru/api/yggdrasil`,
+            `-javaagent:${authlibPath}=https://ganj4craft.ru/api/yggdrasil`,
             ...JVM_OPTIMIZATION_ARGS,
         ]
     };

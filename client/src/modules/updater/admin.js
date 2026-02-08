@@ -352,7 +352,7 @@ async function fetchServerScripts(rootPath, manifestUrl, sendLog = () => {}, aut
     
     try {
         // Запрашиваем админский манифест (включает server_scripts)
-        const adminManifestUrl = 'https://ganjacraft.ru/api/admin/manifest-full.json';
+        const adminManifestUrl = 'https://ganj4craft.ru/api/admin/manifest-full.json';
         const adminManifestPath = path.join(rootPath, 'manifest-admin-temp.json');
         
         sendLog('Запрос admin manifest: ' + adminManifestUrl);

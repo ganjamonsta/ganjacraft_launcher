@@ -68,7 +68,7 @@ def update_json(version):
     print(f"📝 Updating bootstrap.json...")
     data = {
         "version": version,
-        "url": "https://ganjacraft.ru/api/launcher/files/GanjaCraft.exe"
+        "url": "https://ganj4craft.ru/api/launcher/files/GanjaCraft.exe"
     }
     
     # Ensure directory exists
@@ -96,7 +96,7 @@ def upload_file(file_path):
     if not token:
         return
 
-    url = "https://ganjacraft.ru/api/admin/upload/launcher"
+    url = "https://ganj4craft.ru/api/admin/upload/launcher"
     print(f"☁️ Uploading {os.path.basename(file_path)} to {url}...")
     
     try:

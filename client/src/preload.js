@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-const API_BASE = 'https://ganjacraft.ru/api';
+const API_BASE = 'https://ganj4craft.ru/api';
 const DEFAULT_TIMEOUT = 15000;
 
 async function fetchWithTimeout(resource, options = {}) {

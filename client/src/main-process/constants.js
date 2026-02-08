@@ -9,7 +9,7 @@ const MC_VERSION = '1.20.1';
 const REQUIRED_JAVA_MAJOR = 17;
 
 // URLs
-const BASE_URL = 'https://ganjacraft.ru';
+const BASE_URL = 'https://ganj4craft.ru';
 const MIRROR_BASE = `${BASE_URL}/mirror`;
 const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;
