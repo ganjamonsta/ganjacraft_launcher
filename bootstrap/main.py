@@ -38,7 +38,7 @@ def set_file_hidden(filepath: str) -> bool:
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.20"
+BOOTSTRAP_VERSION = "1.0.22"
 BOOTSTRAP_API_URL = "https://ganj4craft.ru/api/launcher/files/bootstrap.json"
 API_URL = "https://ganj4craft.ru/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
