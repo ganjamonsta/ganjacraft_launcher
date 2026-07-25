@@ -301,6 +301,14 @@ async function init() {
     // Display version
     await displayVersion();
     
+    // Mock auth: seed localStorage before checking saved auth
+    if (window.api.isMockAuth) {
+        localStorage.setItem('auth_user', 'TestAdmin');
+        localStorage.setItem('auth_token', 'mock-token');
+        localStorage.setItem('is_admin', 'true');
+        console.log('[MOCK_AUTH] Seeded localStorage as TestAdmin (admin)');
+    }
+
     // Check saved auth
     await checkSavedAuth();
     

@@ -4,12 +4,12 @@
  */
 
 // Версии
-const FORGE_VERSION = '1.20.1-47.4.0';
-const MC_VERSION = '1.20.1';
-const REQUIRED_JAVA_MAJOR = 17;
+const FORGE_VERSION = '21.1.233';
+const MC_VERSION = '1.21.1';
+const REQUIRED_JAVA_MAJOR = 21;
 
 // URLs
-const BASE_URL = 'https://ganj4craft.ru';
+const BASE_URL = 'http://regarding-john.gl.at.ply.gg:4917';
 const MIRROR_BASE = `${BASE_URL}/mirror`;
 const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;

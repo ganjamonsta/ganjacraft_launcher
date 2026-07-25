@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import json
 import shutil
@@ -6,11 +7,17 @@ import subprocess
 import requests
 import hashlib
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
 # Paths
 BOOTSTRAP_DIR = os.path.dirname(os.path.abspath(__file__))
 MAIN_PY = os.path.join(BOOTSTRAP_DIR, "main.py")
 HASH_FILE = os.path.join(BOOTSTRAP_DIR, "last_build.hash")
-STORAGE_DIR = os.path.abspath(os.path.join(BOOTSTRAP_DIR, "../../ganjacrafter_bot/storage/launcher"))
+BOT_DIR_NAME = "ganjacrafter_bot_renew" if os.path.exists(os.path.abspath(os.path.join(BOOTSTRAP_DIR, "../../ganjacrafter_bot_renew"))) else "ganjacrafter_bot"
+STORAGE_DIR = os.path.abspath(os.path.join(BOOTSTRAP_DIR, f"../../{BOT_DIR_NAME}/storage/launcher"))
 BOOTSTRAP_JSON = os.path.join(STORAGE_DIR, "bootstrap.json")
 DIST_EXE = os.path.join(BOOTSTRAP_DIR, "dist/GanjaCraft.exe")
 DEST_EXE = os.path.join(STORAGE_DIR, "GanjaCraft.exe")
@@ -68,7 +75,7 @@ def update_json(version):
     print(f"📝 Updating bootstrap.json...")
     data = {
         "version": version,
-        "url": "https://ganj4craft.ru/api/launcher/files/GanjaCraft.exe"
+        "url": "http://regarding-john.gl.at.ply.gg:4917/api/launcher/files/GanjaCraft.exe"
     }
     
     # Ensure directory exists
@@ -80,7 +87,7 @@ def update_json(version):
     print(f"✅ Updated bootstrap.json to version {version}")
 
 def get_api_token():
-    env_path = os.path.abspath(os.path.join(BOOTSTRAP_DIR, "../../ganjacrafter_bot/.env"))
+    env_path = os.path.abspath(os.path.join(BOOTSTRAP_DIR, f"../../{BOT_DIR_NAME}/.env"))
     if not os.path.exists(env_path):
         print("⚠️ .env not found, skipping upload.")
         return None
@@ -96,7 +103,7 @@ def upload_file(file_path):
     if not token:
         return
 
-    url = "https://ganj4craft.ru/api/admin/upload/launcher"
+    url = "http://regarding-john.gl.at.ply.gg:4917/api/admin/upload/launcher"
     print(f"☁️ Uploading {os.path.basename(file_path)} to {url}...")
     
     try:
@@ -115,6 +122,12 @@ def upload_file(file_path):
 def main():
     print("--- Starting Bootstrap Auto-Build ---")
     
+    os.makedirs(STORAGE_DIR, exist_ok=True)
+    if os.path.exists(DIST_EXE) and not os.path.exists(DEST_EXE):
+        print(f"📦 Copying existing build to {DEST_EXE}...")
+        shutil.copy2(DIST_EXE, DEST_EXE)
+        update_json("1.0.19")
+        
     changed, current_hash = check_changes()
     if not changed:
         print("💤 No changes detected in main.py. Skipping build.")
@@ -139,6 +152,7 @@ def main():
     with open(HASH_FILE, 'w') as f:
         f.write(new_hash)
 
+    os.makedirs(STORAGE_DIR, exist_ok=True)
     print(f"📦 Copying to {DEST_EXE}...")
     if os.path.exists(DIST_EXE):
         shutil.copy2(DIST_EXE, DEST_EXE)

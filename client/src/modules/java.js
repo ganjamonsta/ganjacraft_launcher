@@ -3,10 +3,10 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { downloadFile } = require('./updater');
 
-const REQUIRED_JAVA_MAJOR = 17;
+const REQUIRED_JAVA_MAJOR = 21;
 
-// Adoptium JRE 17 for Windows x64
-const JAVA_URL_WIN = 'https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse';
+// Adoptium JRE 21 for Windows x64
+const JAVA_URL_WIN = 'https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse';
 
 function preferJavaw(javaCommandOrPath) {
     if (process.platform !== 'win32') return javaCommandOrPath;

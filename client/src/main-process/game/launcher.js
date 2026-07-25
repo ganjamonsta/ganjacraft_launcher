@@ -22,6 +22,7 @@ const {
     AUTHLIB_INJECTOR_URL,
     YGGDRASIL_AUTH_URL,
     MIRROR_BASE,
+    API_BASE,
     DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS,
     JVM_OPTIMIZATION_ARGS,
 } = require('../constants');
@@ -303,7 +304,7 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
             maxSockets: 4,
         },
         customArgs: [
-            `-javaagent:${authlibPath}=https://ganj4craft.ru/api/yggdrasil`,
+            `-javaagent:${authlibPath}=${API_BASE}/yggdrasil`,
             ...JVM_OPTIMIZATION_ARGS,
         ]
     };

@@ -4,8 +4,10 @@ const crypto = require('crypto');
 const os = require('os');
 const { execFileSync } = require('child_process');
 
+const BOT_DIR_NAME = fs.existsSync(path.resolve(__dirname, '../../ganjacrafter_bot_renew')) ? 'ganjacrafter_bot_renew' : 'ganjacrafter_bot';
+
 // Read API Token
-const ENV_PATH = path.join(__dirname, '../../ganjacrafter_bot/.env');
+const ENV_PATH = path.join(__dirname, `../../${BOT_DIR_NAME}/.env`);
 let apiToken = '';
 if (fs.existsSync(ENV_PATH)) {
     const envContent = fs.readFileSync(ENV_PATH, 'utf-8');
@@ -17,7 +19,7 @@ if (fs.existsSync(ENV_PATH)) {
 
 const DIST_DIR = path.join(__dirname, 'dist');
 // Target directory (Relative to repo root)
-const TARGET_DIR = path.resolve(__dirname, '../../ganjacrafter_bot/storage/launcher');
+const TARGET_DIR = path.resolve(__dirname, `../../${BOT_DIR_NAME}/storage/launcher`);
 const PACKAGE_JSON = path.join(__dirname, 'package.json');
 const PRIVATE_KEY_PATH = path.join(__dirname, 'private.pem');
 
@@ -77,7 +79,7 @@ const versionJsonPath = path.join(TARGET_DIR, 'version.json');
 const encodedFile = encodeURIComponent(zipFile);
 const versionData = {
     version: version,
-    url: `https://ganj4craft.ru/api/launcher/files/${encodedFile}`,
+    url: `http://regarding-john.gl.at.ply.gg:4917/api/launcher/files/${encodedFile}`,
     signature: signature,
     zipSize: zipSize,
     releaseDate: new Date().toISOString(),
@@ -94,16 +96,16 @@ async function uploadFile(filePath) {
         console.warn('⚠️ API Token not found. Skipping upload.');
         return;
     }
-    
+
     const fileName = path.basename(filePath);
-    const url = 'https://ganj4craft.ru/api/admin/upload/launcher';
+    const url = 'http://regarding-john.gl.at.ply.gg:4917/api/admin/upload/launcher';
     console.log(`☁️ Uploading ${fileName} to ${url}...`);
-    
+
     const fileBuffer = fs.readFileSync(filePath);
     const blob = new Blob([fileBuffer]);
     const formData = new FormData();
     formData.append('file', blob, fileName);
-    
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -112,7 +114,7 @@ async function uploadFile(filePath) {
             },
             body: formData
         });
-        
+
         if (response.ok) {
             console.log(`✅ Upload success: ${fileName}`);
         } else {

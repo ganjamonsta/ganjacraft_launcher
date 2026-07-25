@@ -1,4 +1,5 @@
 const https = require('https');
+const http = require('http');
 
 function authenticateYggdrasil(authUrl, username, token) {
     return new Promise((resolve, reject) => {
@@ -13,7 +14,9 @@ function authenticateYggdrasil(authUrl, username, token) {
             requestUser: true
         });
 
-        const req = https.request(authUrl, {
+        const httpModule = authUrl.startsWith('https') ? https : http;
+
+        const req = httpModule.request(authUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

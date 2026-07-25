@@ -9,6 +9,7 @@
 
 const fs = require('fs');
 const https = require('https');
+const http = require('http');
 const crypto = require('crypto');
 const path = require('path');
 const { getFileHash, safeUnlink, ensureDir, getTempPath } = require('./utils');
@@ -48,8 +49,8 @@ function downloadFile(url, dest, options = {}) {
             return;
         }
 
-        if (parsedUrl.protocol !== 'https:') {
-            reject(new Error(`Only https URLs are allowed: ${url}`));
+        if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+            reject(new Error(`Only http and https URLs are allowed: ${url}`));
             return;
         }
 
@@ -65,7 +66,7 @@ function downloadFile(url, dest, options = {}) {
         // Build request options
         const reqOptions = {
             hostname: parsedUrl.hostname,
-            port: parsedUrl.port || 443,
+            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
             path: parsedUrl.pathname + parsedUrl.search,
             method: 'GET',
             timeout: timeoutMs,
@@ -84,7 +85,9 @@ function downloadFile(url, dest, options = {}) {
             reject(err);
         });
 
-        const req = https.request(reqOptions, (res) => {
+        const httpModule = parsedUrl.protocol === 'https:' ? https : http;
+
+        const req = httpModule.request(reqOptions, (res) => {
             // Handle redirects
             if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
                 file.close();
