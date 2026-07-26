@@ -1,6 +1,6 @@
 {
   "name": "ganjacraft-launcher-client",
-  "version": "1.0.84",
+  "version": "1.0.96",
   "description": "Official Launcher for GanjaCraft Server",
   "main": "src/main.js",
   "scripts": {
@@ -32,7 +32,9 @@
   "author": "GanjaCraft Team",
   "license": "ISC",
   "dependencies": {
-    "minecraft-launcher-core": "^3.12.0"
+    "dotenv": "^17.4.2",
+    "minecraft-launcher-core": "^3.12.0",
+    "ssh2-sftp-client": "^12.1.1"
   },
   "devDependencies": {
     "electron": "^28.0.0",

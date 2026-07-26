@@ -9,7 +9,7 @@ const MC_VERSION = '1.21.1';
 const REQUIRED_JAVA_MAJOR = 21;
 
 // URLs
-const BASE_URL = 'http://regarding-john.gl.at.ply.gg:4917';
+const BASE_URL = 'https://gcrlauncher.share.zrok.io';
 const MIRROR_BASE = `${BASE_URL}/mirror`;
 const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;

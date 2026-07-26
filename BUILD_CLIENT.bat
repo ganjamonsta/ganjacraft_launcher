@@ -9,3 +9,6 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 echo Build and Release completed successfully.
+echo Files ready in deploy_www folder.
+explorer "%~dp0deploy_www"
+pause

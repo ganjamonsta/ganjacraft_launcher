@@ -2,7 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const MOCK_AUTH = process.env.MOCK_AUTH === '1';
 
-const API_BASE = 'http://regarding-john.gl.at.ply.gg:4917/api';
+const API_BASE = 'https://gcrlauncher.share.zrok.io/api';
 const DEFAULT_TIMEOUT = 15000;
 
 async function fetchWithTimeout(resource, options = {}) {
@@ -71,20 +71,37 @@ contextBridge.exposeInMainWorld('api', {
     isMockAuth: MOCK_AUTH,
     launchGame: (options) => ipcRenderer.invoke('launch-game', options),
     
-    // Auth API calls (unified)
-    requestAuth: MOCK_AUTH
-        ? async (username) => ({ success: true, message: '[MOCK] Code sent' })
-        : (username) => apiCall('/launcher/auth/request', { body: { username } }),
-    verifyAuth: MOCK_AUTH
-        ? async (username, code) => ({ success: true, token: 'mock-token', is_admin: true })
-        : (username, code) => apiCall('/launcher/auth/verify', { body: { username, code } }),
-    checkAuth: MOCK_AUTH
-        ? async (username, token) => ({ success: true, is_admin: true })
-        : (username, token) => apiCall('/launcher/auth/check', {
-            body: { username },
-            headers: { 'X-Auth-Token': token },
-            returnErrorAsResult: true
-        }),
+    // Auth API calls with offline fallback when backend is not running
+    requestAuth: async (username) => {
+        if (MOCK_AUTH) return { success: true, message: '[MOCK] Code sent' };
+        try {
+            return await apiCall('/launcher/auth/request', { body: { username } });
+        } catch (e) {
+            console.warn('Backend auth server unreachable, enabling offline login:', e.message);
+            return { success: true, offline: true, message: 'Офлайн режим (без кода)' };
+        }
+    },
+    verifyAuth: async (username, code) => {
+        if (MOCK_AUTH) return { success: true, token: 'mock-token', is_admin: true };
+        try {
+            return await apiCall('/launcher/auth/verify', { body: { username, code } });
+        } catch (e) {
+            console.warn('Backend auth server unreachable, fallback to offline token:', e.message);
+            return { success: true, token: 'offline-token', is_admin: false, offline: true };
+        }
+    },
+    checkAuth: async (username, token) => {
+        if (MOCK_AUTH) return { success: true, is_admin: true };
+        try {
+            return await apiCall('/launcher/auth/check', {
+                body: { username },
+                headers: { 'X-Auth-Token': token },
+                returnErrorAsResult: true
+            });
+        } catch (e) {
+            return { success: true, is_admin: false, offline: true };
+        }
+    },
     
     getNews: async () => {
         if (MOCK_AUTH) return { success: true, news: [{ id: 1, title: '[MOCK] GanjaCraft News', content: 'Локальный тестовый режим', date: new Date().toISOString() }] };

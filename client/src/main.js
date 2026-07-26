@@ -41,13 +41,13 @@ if (!gotTheLock) {
 const launcher = new Client();
 let isGameRunning = false;
 let isLaunchCancelled = false;
-const FORGE_VERSION = '1.20.1-47.4.0';
-const MC_VERSION = '1.20.1';
+const FORGE_VERSION = '21.1.233';
+const MC_VERSION = '1.21.1';
 // Use our domain as a stable download endpoint (Nginx proxies to official Forge Maven).
-const FORGE_INSTALLER_URL = `https://ganjacraft.ru/files/forge-${FORGE_VERSION}-installer.jar`;
-const MANIFEST_URL = 'https://ganjacraft.ru/files/manifest.json';
-const AUTHLIB_INJECTOR_URL = 'https://ganjacraft.ru/files/authlib-injector.jar';
-const YGGDRASIL_AUTH_URL = 'https://ganjacraft.ru/api/yggdrasil/authserver/authenticate';
+const FORGE_INSTALLER_URL = `https://gcrlauncher.share.zrok.io/files/forge-${FORGE_VERSION}-installer.jar`;
+const MANIFEST_URL = 'https://gcrlauncher.share.zrok.io/files/manifest.json';
+const AUTHLIB_INJECTOR_URL = 'https://gcrlauncher.share.zrok.io/files/authlib-injector.jar';
+const YGGDRASIL_AUTH_URL = 'https://gcrlauncher.share.zrok.io/api/yggdrasil/authserver/authenticate';
 
 // Default disabled optional client mods (fresh installs).
 // Important: use filename substrings (stable across versions) and map them to exact manifest paths.
@@ -85,18 +85,18 @@ function computeDefaultDisabledModsFromManifest(manifest) {
 
 // Repair/Recovery URLs for critical files (use existing file structure on server)
 const REPAIR_FILES = {
-    'authlib-injector.jar': 'https://ganjacraft.ru/files/authlib-injector.jar',
-    'forge-installer.jar': `https://ganjacraft.ru/files/forge-${FORGE_VERSION}-installer.jar`,
-    'modlauncher.jar': 'https://ganjacraft.ru/files/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar',
-    'securejarhandler.jar': 'https://ganjacraft.ru/files/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar',
-    'vanilla-client.jar': `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.jar`,
+    'authlib-injector.jar': 'https://gcrlauncher.share.zrok.io/files/authlib-injector.jar',
+    'forge-installer.jar': `https://gcrlauncher.share.zrok.io/files/forge-${FORGE_VERSION}-installer.jar`,
+    'modlauncher.jar': 'https://gcrlauncher.share.zrok.io/files/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar',
+    'securejarhandler.jar': 'https://gcrlauncher.share.zrok.io/files/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar',
+    'vanilla-client.jar': `https://gcrlauncher.share.zrok.io/files/versions/${MC_VERSION}/${MC_VERSION}.jar`,
 };
 
 // Reduce dependency on external networks by routing Mojang/Maven/Forge downloads via our domain.
 // Server-side: Nginx should proxy /mirror/* to upstreams.
-const MIRROR_BASE = 'https://ganjacraft.ru/mirror';
-const VANILLA_VERSION_JSON_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.json`;
-const VANILLA_VERSION_JAR_URL = `https://ganjacraft.ru/files/versions/${MC_VERSION}/${MC_VERSION}.jar`;
+const MIRROR_BASE = 'https://gcrlauncher.share.zrok.io/mirror';
+const VANILLA_VERSION_JSON_URL = `https://gcrlauncher.share.zrok.io/files/versions/${MC_VERSION}/${MC_VERSION}.json`;
+const VANILLA_VERSION_JAR_URL = `https://gcrlauncher.share.zrok.io/files/versions/${MC_VERSION}/${MC_VERSION}.jar`;
 
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -928,7 +928,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             maxSockets: 4,
         },
         customArgs: [
-            `-javaagent:${authlibPath}=https://ganjacraft.ru/api/yggdrasil`,
+            `-javaagent:${authlibPath}=https://gcrlauncher.share.zrok.io/api/yggdrasil`,
             // Optimization Flags
             '-XX:+UseG1GC',
             '-XX:+ParallelRefProcEnabled',

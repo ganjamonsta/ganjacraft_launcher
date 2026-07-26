@@ -75,7 +75,7 @@ def update_json(version):
     print(f"📝 Updating bootstrap.json...")
     data = {
         "version": version,
-        "url": "http://regarding-john.gl.at.ply.gg:4917/api/launcher/files/GanjaCraft.exe"
+        "url": "https://gcrlauncher.share.zrok.io/api/launcher/files/GanjaCraft.exe"
     }
     
     # Ensure directory exists
@@ -119,6 +119,15 @@ def upload_file(file_path):
     except Exception as e:
         print(f"❌ Upload error: {e}")
 
+def sync_to_deploy_www():
+    deploy_api_dir = os.path.abspath(os.path.join(BOOTSTRAP_DIR, "../deploy_www/api/launcher/files"))
+    os.makedirs(deploy_api_dir, exist_ok=True)
+    if os.path.exists(DIST_EXE):
+        shutil.copy2(DIST_EXE, os.path.join(deploy_api_dir, "GanjaCraft.exe"))
+    if os.path.exists(BOOTSTRAP_JSON):
+        shutil.copy2(BOOTSTRAP_JSON, os.path.join(deploy_api_dir, "bootstrap.json"))
+    print(f"📁 Bootstrap files ready in deploy_www/api/launcher/files/ for Nginx!")
+
 def main():
     print("--- Starting Bootstrap Auto-Build ---")
     
@@ -128,6 +137,8 @@ def main():
         shutil.copy2(DIST_EXE, DEST_EXE)
         update_json("1.0.19")
         
+    sync_to_deploy_www()
+
     changed, current_hash = check_changes()
     if not changed:
         print("💤 No changes detected in main.py. Skipping build.")
@@ -162,7 +173,16 @@ def main():
     
     update_json(new_version)
     
-    # Upload to server
+    # Also populate deploy_www folder for easy upload to Nginx in Pterodactyl
+    deploy_api_dir = os.path.abspath(os.path.join(BOOTSTRAP_DIR, "../deploy_www/api/launcher/files"))
+    os.makedirs(deploy_api_dir, exist_ok=True)
+    if os.path.exists(DIST_EXE):
+        shutil.copy2(DIST_EXE, os.path.join(deploy_api_dir, "GanjaCraft.exe"))
+    if os.path.exists(BOOTSTRAP_JSON):
+        shutil.copy2(BOOTSTRAP_JSON, os.path.join(deploy_api_dir, "bootstrap.json"))
+    print(f"📁 Bootstrap files ready in deploy_www/api/launcher/files/ for Nginx!")
+    
+    # Upload to server if token available
     upload_file(DEST_EXE)
     upload_file(BOOTSTRAP_JSON)
 

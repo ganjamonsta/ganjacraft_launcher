@@ -271,6 +271,11 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
  * Построить опции для MCLC
  */
 function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession) {
+    const customArgs = [...JVM_OPTIMIZATION_ARGS];
+    if (authlibPath && !authSession.isOffline) {
+        customArgs.unshift(`-javaagent:${authlibPath}=${API_BASE}/yggdrasil`);
+    }
+
     return {
         clientPackage: null,
         authorization: {
@@ -281,6 +286,9 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
             user_properties: "{}"
         },
         root: rootPath,
+        quickConnect: {
+            host: "vocalize-cove.gl.joinmc.link"
+        },
         timeout: 180_000,
         version: {
             number: MC_VERSION,
@@ -303,10 +311,7 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
             },
             maxSockets: 4,
         },
-        customArgs: [
-            `-javaagent:${authlibPath}=${API_BASE}/yggdrasil`,
-            ...JVM_OPTIMIZATION_ARGS,
-        ]
+        customArgs: customArgs
     };
 }
 
@@ -434,18 +439,42 @@ async function launchGame(event, options) {
             return { success: false, error: "Запуск отменен" };
         }
 
-        // Yggdrasil Authentication
-        sendLog('Авторизация в GanjaCraft Yggdrasil...');
+        // Authentication (Yggdrasil with Offline Fallback)
+        sendLog('Авторизация игрока...');
         let authSession;
-        try {
-            sendDebug(`Authenticating user: ${options.username}`);
-            authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token);
-            sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
-            sendDebug(`Auth success. UUID: ${authSession.uuid}, Name: ${authSession.name}`);
-        } catch (e) {
-            sendDebug(`Auth failed: ${e.stack}`);
-            isGameRunning = false;
-            return { success: false, error: "Ошибка авторизации: " + e.message };
+        const crypto = require('crypto');
+
+        function makeOfflineSession(name) {
+            const md5 = crypto.createHash('md5').update('OfflinePlayer:' + name).digest();
+            md5[6] = (md5[6] & 0x0f) | 0x30;
+            md5[8] = (md5[8] & 0x3f) | 0x80;
+            const hex = md5.toString('hex');
+            const offlineUuid = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+
+            return {
+                accessToken: crypto.randomBytes(16).toString('hex'),
+                clientToken: crypto.randomBytes(16).toString('hex'),
+                uuid: offlineUuid,
+                name: name,
+                isOffline: true
+            };
+        }
+
+        if (options && options.token) {
+            try {
+                sendDebug(`Authenticating user: ${options.username}`);
+                authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token);
+                sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
+                sendDebug(`Auth success. UUID: ${authSession.uuid}, Name: ${authSession.name}`);
+            } catch (e) {
+                sendDebug(`Yggdrasil auth unavailable (${e.message}), using offline session.`);
+                sendLog(`Сервер авторизации недоступен. Запуск в офлайн-режиме под ником ${options.username}...`);
+                authSession = makeOfflineSession(options.username || 'Player');
+            }
+        } else {
+            const playerNick = (options && options.username) ? options.username : 'Player';
+            sendLog(`Запуск в офлайн-режиме под ником ${playerNick}...`);
+            authSession = makeOfflineSession(playerNick);
         }
 
         // Build launch options

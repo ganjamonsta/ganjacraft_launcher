@@ -79,7 +79,7 @@ const versionJsonPath = path.join(TARGET_DIR, 'version.json');
 const encodedFile = encodeURIComponent(zipFile);
 const versionData = {
     version: version,
-    url: `http://regarding-john.gl.at.ply.gg:4917/api/launcher/files/${encodedFile}`,
+    url: `https://gcrlauncher.share.zrok.io/api/launcher/files/${encodedFile}`,
     signature: signature,
     zipSize: zipSize,
     releaseDate: new Date().toISOString(),
@@ -88,8 +88,38 @@ const versionData = {
 
 fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));
 
+// Also populate deploy_www folder for easy upload to Nginx in Pterodactyl
+const DEPLOY_WWW_DIR = path.resolve(__dirname, '../deploy_www');
+const DEPLOY_FILES_DIR = path.join(DEPLOY_WWW_DIR, 'files');
+const DEPLOY_API_DIR = path.join(DEPLOY_WWW_DIR, 'api/launcher/files');
+
+fs.mkdirSync(DEPLOY_FILES_DIR, { recursive: true });
+fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
+
+// Copy manifest.json
+const MANIFEST_SRC = path.join(__dirname, 'manifest.json');
+if (fs.existsSync(MANIFEST_SRC)) {
+    fs.copyFileSync(MANIFEST_SRC, path.join(DEPLOY_FILES_DIR, 'manifest.json'));
+}
+
+// Clean old zips in deploy_www
+if (fs.existsSync(DEPLOY_API_DIR)) {
+    fs.readdirSync(DEPLOY_API_DIR).forEach(f => {
+        if (f.startsWith('GanjaCraftLauncher-') && f.endsWith('.zip')) {
+            try { fs.unlinkSync(path.join(DEPLOY_API_DIR, f)); } catch {}
+        }
+    });
+}
+
+// Copy new zip & version.json
+fs.copyFileSync(sourceZip, path.join(DEPLOY_API_DIR, zipFile));
+fs.writeFileSync(path.join(DEPLOY_API_DIR, 'version.json'), JSON.stringify(versionData, null, 4));
+
 console.log('✅ Published successfully!');
-console.log(`   Updated version.json: ${JSON.stringify(versionData, null, 2)}`);
+console.log(`📁 Files ready in deploy_www/ for Nginx upload:`);
+console.log(`   - deploy_www/files/manifest.json`);
+console.log(`   - deploy_www/api/launcher/files/${zipFile}`);
+console.log(`   - deploy_www/api/launcher/files/version.json`);
 
 async function uploadFile(filePath) {
     if (!apiToken) {
