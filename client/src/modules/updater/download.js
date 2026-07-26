@@ -70,7 +70,10 @@ function downloadFile(url, dest, options = {}) {
             path: parsedUrl.pathname + parsedUrl.search,
             method: 'GET',
             timeout: timeoutMs,
-            headers: {}
+            headers: {
+                'User-Agent': 'localtunnel',
+                'Bypass-Tunnel-Reminder': 'true'
+            }
         };
 
         // Add auth header if provided

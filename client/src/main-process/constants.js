@@ -9,7 +9,7 @@ const MC_VERSION = '1.21.1';
 const REQUIRED_JAVA_MAJOR = 21;
 
 // URLs
-const BASE_URL = 'https://ganjalaunch.share.zrok.io';
+const BASE_URL = 'https://ganjalaunch.loca.lt';
 const MIRROR_BASE = `${BASE_URL}/mirror`;
 const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;

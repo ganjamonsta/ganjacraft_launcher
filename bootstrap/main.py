@@ -27,9 +27,9 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.26"
-BOOTSTRAP_API_URL = "https://gcrlauncher.share.zrok.io/api/launcher/files/bootstrap.json"
-API_URL = "https://gcrlauncher.share.zrok.io/api/launcher/files/version.json"
+BOOTSTRAP_VERSION = "1.0.29"
+BOOTSTRAP_API_URL = "https://ganjalaunch.loca.lt/api/launcher/files/bootstrap.json"
+API_URL = "https://ganjalaunch.loca.lt/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
 LAUNCHER_DIR = os.path.join(APPDATA, ".ganjacraft")
 CLIENT_DIR = os.path.join(LAUNCHER_DIR, "client")
@@ -196,6 +196,24 @@ def validate_zip_integrity(zip_path: str, expected_exe_name: str | None = None) 
         if not any(n.endswith('/' + expected_exe_name) or n == expected_exe_name for n in normalized):
             raise Exception(f"В ZIP нет {expected_exe_name} — пакет не похож на клиент")
 
+
+def _fetch_with_retry(url: str, timeout: int = 15, max_retries: int = 4, retry_delay: float = 10.0) -> bytes:
+    """Fetch URL with automatic retries to survive ZROK tunnel reconnects (~27s window)."""
+    last_error = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={
+                'User-Agent': 'localtunnel',
+                'Bypass-Tunnel-Reminder': 'true'
+            })
+            with urllib.request.urlopen(req, timeout=timeout) as response:
+                return response.read()
+        except Exception as e:
+            last_error = e
+            if attempt < max_retries:
+                time.sleep(retry_delay)
+    raise last_error
+
 class BootstrapApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -341,14 +359,12 @@ class BootstrapApp(tk.Tk):
             # 2. Check Remote Version (Client)
             self.update_status("Подключение к серверу...")
             try:
-                req = urllib.request.Request(API_URL, headers={'User-Agent': 'GanjaCraft Launcher'})
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    data = response.read()
-                    remote_data = json.loads(data)
-                    remote_version = remote_data.get("version")
-                    download_url = remote_data.get("url")
-                    signature = remote_data.get("signature")
-                    # Legacy updates: always download the full zip and extract.
+                data = _fetch_with_retry(API_URL)
+                remote_data = json.loads(data)
+                remote_version = remote_data.get("version")
+                download_url = remote_data.get("url")
+                signature = remote_data.get("signature")
+                # Legacy updates: always download the full zip and extract.
             except Exception as e:
                 print(f"Network error: {e}")
                 self.launch_existing_or_fail("Ошибка сети. Запуск оффлайн...")
@@ -381,15 +397,13 @@ class BootstrapApp(tk.Tk):
 
         self.update_status("Проверка обновлений лаунчера...")
         try:
-            req = urllib.request.Request(BOOTSTRAP_API_URL, headers={'User-Agent': 'GanjaCraft Launcher'})
-            with urllib.request.urlopen(req, timeout=5) as response:
-                data = json.loads(response.read())
-                latest_version = data.get("version")
-                download_url = data.get("url")
-                
-                if latest_version != BOOTSTRAP_VERSION:
-                    self.perform_self_update(download_url, latest_version)
-                    return True
+            data = json.loads(_fetch_with_retry(BOOTSTRAP_API_URL, timeout=10, max_retries=2, retry_delay=10.0))
+            latest_version = data.get("version")
+            download_url = data.get("url")
+
+            if latest_version != BOOTSTRAP_VERSION:
+                self.perform_self_update(download_url, latest_version)
+                return True
         except Exception as e:
             print(f"Bootstrap update check failed: {e}")
         return False
@@ -400,24 +414,41 @@ class BootstrapApp(tk.Tk):
             url = url.replace(" ", "%20")
             current_exe = sys.executable
             new_exe = current_exe + ".new"
+            max_retries = 4
+            retry_delay = 10.0
+            last_error = None
             
-            # Download new exe
-            req = urllib.request.Request(url, headers={'User-Agent': 'GanjaCraft Launcher'})
-            with urllib.request.urlopen(req, timeout=30) as response:
-                total_size = int(response.info().get('Content-Length', 0))
-                downloaded = 0
-                block_size = 8192
-                with open(new_exe, 'wb') as f:
-                    while True:
-                        buffer = response.read(block_size)
-                        if not buffer: break
-                        downloaded += len(buffer)
-                        f.write(buffer)
-                        if total_size > 0:
-                            self.update_progress(downloaded, total_size)
-                
-                if total_size > 0 and downloaded != total_size:
-                    raise Exception(f"Загрузка не завершена: {downloaded}/{total_size} байт")
+            for attempt in range(1, max_retries + 1):
+                try:
+                    # Download new exe
+                    req = urllib.request.Request(url, headers={
+                        'User-Agent': 'localtunnel',
+                        'Bypass-Tunnel-Reminder': 'true'
+                    })
+                    with urllib.request.urlopen(req, timeout=30) as response:
+                        total_size = int(response.info().get('Content-Length', 0))
+                        downloaded = 0
+                        block_size = 8192
+                        with open(new_exe, 'wb') as f:
+                            while True:
+                                buffer = response.read(block_size)
+                                if not buffer: break
+                                downloaded += len(buffer)
+                                f.write(buffer)
+                                if total_size > 0:
+                                    self.update_progress(downloaded, total_size)
+                        
+                        if total_size > 0 and downloaded != total_size:
+                            raise Exception(f"Загрузка не завершена: {downloaded}/{total_size} байт")
+                    
+                    break # Success
+                except Exception as e:
+                    last_error = e
+                    if attempt < max_retries:
+                        self.update_status(f"Ошибка загрузки загрузчика, повтор {attempt}/{max_retries}...")
+                        time.sleep(retry_delay)
+            else:
+                raise last_error
             
             # Validate the downloaded file
             with open(new_exe, 'rb') as f:
@@ -465,26 +496,43 @@ del "%~f0"
             
             zip_path = os.path.join(LAUNCHER_DIR, "update.zip")
             tmp_zip_path = zip_path + ".tmp"
+            max_retries = 4
+            retry_delay = 10.0
+            last_error = None
+            
+            for attempt in range(1, max_retries + 1):
+                try:
+                    req = urllib.request.Request(url, headers={
+                        'User-Agent': 'localtunnel',
+                        'Bypass-Tunnel-Reminder': 'true'
+                    })
+                    with urllib.request.urlopen(req, timeout=30) as response:
+                        total_size = int(response.info().get('Content-Length', 0))
+                        downloaded = 0
+                        block_size = 8192
 
-            req = urllib.request.Request(url, headers={'User-Agent': 'GanjaCraft Launcher'})
-            with urllib.request.urlopen(req, timeout=30) as response:
-                total_size = int(response.info().get('Content-Length', 0))
-                downloaded = 0
-                block_size = 8192
+                        with open(tmp_zip_path, 'wb') as f:
+                            while True:
+                                buffer = response.read(block_size)
+                                if not buffer:
+                                    break
+                                downloaded += len(buffer)
+                                f.write(buffer)
+                                if total_size > 0:
+                                    self.update_progress(downloaded, total_size)
 
-                with open(tmp_zip_path, 'wb') as f:
-                    while True:
-                        buffer = response.read(block_size)
-                        if not buffer:
-                            break
-                        downloaded += len(buffer)
-                        f.write(buffer)
-                        if total_size > 0:
-                            self.update_progress(downloaded, total_size)
-
-            # Size check if server provided it
-            if total_size > 0 and downloaded != total_size:
-                raise Exception(f"Загрузка не завершена: {downloaded}/{total_size} байт")
+                    # Size check if server provided it
+                    if total_size > 0 and downloaded != total_size:
+                        raise Exception(f"Загрузка не завершена: {downloaded}/{total_size} байт")
+                    
+                    break # Success
+                except Exception as e:
+                    last_error = e
+                    if attempt < max_retries:
+                        self.update_status(f"Ошибка загрузки, повтор {attempt}/{max_retries}...")
+                        time.sleep(retry_delay)
+            else:
+                raise last_error
 
             # Replace atomically
             try:
