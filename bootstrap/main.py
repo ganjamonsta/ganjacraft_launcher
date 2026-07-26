@@ -27,7 +27,7 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.25"
+BOOTSTRAP_VERSION = "1.0.26"
 BOOTSTRAP_API_URL = "https://gcrlauncher.share.zrok.io/api/launcher/files/bootstrap.json"
 API_URL = "https://gcrlauncher.share.zrok.io/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
