@@ -2,7 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const MOCK_AUTH = process.env.MOCK_AUTH === '1';
 
-const API_BASE = 'https://gcrlauncher.share.zrok.io/api';
+const API_BASE = 'https://ganjalaunch.share.zrok.io/api';
 const DEFAULT_TIMEOUT = 15000;
 
 async function fetchWithTimeout(resource, options = {}) {

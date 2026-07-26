@@ -10,7 +10,7 @@
 const { getFileHash, resolveUnderRoot, safeUnlink, ensureDir, getTempPath } = require('./utils');
 
 // Загрузка файлов
-const { downloadFile } = require('./download');
+const { downloadFile, downloadWithRetry } = require('./download');
 
 // Синхронизация
 const { syncFiles, isServerControlled, isUserProtected, FILE_CATEGORIES } = require('./sync');
@@ -33,6 +33,7 @@ const { syncCategory, deleteCategory, getCategoryCounts, fetchServerScripts } = 
 module.exports = {
     // Основные функции (были в оригинальном updater.js)
     downloadFile,
+    downloadWithRetry,
     getFileHash,
     syncFiles,
     syncCategory,

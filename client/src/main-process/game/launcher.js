@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { BrowserWindow } = require('electron');
 const { Client } = require('minecraft-launcher-core');
-const { downloadFile, syncFiles } = require('../../modules/updater');
+const { downloadFile, syncFiles, downloadWithRetry } = require('../../modules/updater');
 const { authenticateYggdrasil } = require('../../modules/auth');
 const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJavaw } = require('../../modules/java');
 const { loadConfig, saveConfig } = require('../../modules/config');
@@ -124,7 +124,7 @@ async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug) {
     sendLog('[SETUP] Применяю дефолтные настройки модов...');
     try {
         const manifestPath = path.join(rootPath, 'manifest.json');
-        await downloadFile(MANIFEST_URL, manifestPath, { timeoutMs: 15_000 });
+        await downloadWithRetry(MANIFEST_URL, manifestPath, { timeoutMs: 15_000 });
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
         const defaults = computeDefaultDisabledModsFromManifest(manifest);
 

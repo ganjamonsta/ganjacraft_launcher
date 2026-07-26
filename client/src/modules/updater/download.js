@@ -221,4 +221,29 @@ function downloadFile(url, dest, options = {}) {
     });
 }
 
-module.exports = { downloadFile };
+/**
+ * Скачать файл с автоматическими повторами при ошибке.
+ * Покрывает периодические разрывы ZROK туннеля (~27 сек реконнект).
+ * @param {string} url
+ * @param {string} dest
+ * @param {object} options - те же что у downloadFile
+ * @param {number} maxRetries - количество попыток (default: 4)
+ * @param {number} retryDelayMs - пауза между попытками в мс (default: 10000)
+ */
+async function downloadWithRetry(url, dest, options = {}, maxRetries = 4, retryDelayMs = 10_000) {
+    let lastError;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            await downloadFile(url, dest, options);
+            return;
+        } catch (err) {
+            lastError = err;
+            if (attempt < maxRetries) {
+                await new Promise(r => setTimeout(r, retryDelayMs));
+            }
+        }
+    }
+    throw lastError;
+}
+
+module.exports = { downloadFile, downloadWithRetry };

@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { resolveUnderRoot, getFileHash, ensureDir } = require('./utils');
-const { downloadFile } = require('./download');
+const { downloadFile, downloadWithRetry } = require('./download');
 const { cleanupAll } = require('./cleanup');
 
 // Категории файлов для защиты/обновления
@@ -63,7 +63,7 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     // 1. Скачиваем манифест
     const manifestPath = path.join(rootPath, 'manifest.json');
     try {
-        await downloadFile(manifestUrl, manifestPath, { timeoutMs: 10_000 });
+        await downloadWithRetry(manifestUrl, manifestPath, { timeoutMs: 15_000 });
     } catch (e) {
         sendLog('Ошибка загрузки манифеста: ' + e.message);
         throw e;
