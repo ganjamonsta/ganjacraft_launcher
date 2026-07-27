@@ -8,7 +8,9 @@ const path = require('path');
 const { resolveUnderRoot, getFileHash, ensureDir } = require('./utils');
 const { downloadFile, downloadWithRetry } = require('./download');
 const { resolveModrinthUrls } = require('./modrinth');
+const { resolveCurseForgeUrls } = require('./curseforge');
 const { cleanupAll } = require('./cleanup');
+const { CURSEFORGE_API_KEY } = require('../../main-process/constants');
 
 // Категории файлов для защиты/обновления
 const FILE_CATEGORIES = {
@@ -119,6 +121,28 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
             }
         } catch (mErr) {
             sendLog(`Предупреждение Modrinth CDN: ${mErr.message}`);
+        }
+    }
+
+    // 2.55. Вторичный резолвинг модов через CurseForge API
+    const unmappedCurseFiles = manifest.files.filter(f => 
+        f && typeof f.path === 'string' && f.path.endsWith('.jar') && !f.url.includes('modrinth.com')
+    );
+
+    if (unmappedCurseFiles.length > 0 && CURSEFORGE_API_KEY) {
+        sendLog(`Поиск ${unmappedCurseFiles.length} модов на CurseForge...`);
+        try {
+            const curseMap = await resolveCurseForgeUrls(unmappedCurseFiles, CURSEFORGE_API_KEY);
+            const cfCount = Object.keys(curseMap).length;
+            if (cfCount > 0) {
+                for (const file of manifest.files) {
+                    if (file && file.path && curseMap[file.path]) {
+                        file.url = curseMap[file.path];
+                    }
+                }
+            }
+        } catch (cErr) {
+            sendLog(`Предупреждение CurseForge CDN: ${cErr.message}`);
         }
     }
 

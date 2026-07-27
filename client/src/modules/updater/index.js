@@ -29,8 +29,9 @@ const {
 // Админские инструменты
 const { syncCategory, deleteCategory, getCategoryCounts, fetchServerScripts } = require('./admin');
 
-// Modrinth Resolver
+// Modrinth & CurseForge Resolvers
 const { resolveModrinthUrls } = require('./modrinth');
+const { resolveCurseForgeUrls } = require('./curseforge');
 
 // Обратная совместимость: экспортируем то же API что и раньше
 module.exports = {
@@ -38,6 +39,7 @@ module.exports = {
     downloadFile,
     downloadWithRetry,
     resolveModrinthUrls,
+    resolveCurseForgeUrls,
     getFileHash,
     syncFiles,
     syncCategory,
