@@ -162,12 +162,16 @@ export function toggleMainUIVisibility(show, config) {
         ];
     }
     
-    cachedUIElements.forEach(({ el, defaultTransform, hideTransform }, index) => {
+    cachedUIElements.forEach(({ el, defaultTransform, hideTransform, side }, index) => {
         if (el) {
             if (show) {
                 const delay = index * 50;
                 el.style.transition = `transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`;
                 el.style.transform = defaultTransform;
+                
+                if (side && appState.get('effects.snowEnabled')) {
+                    setTimeout(() => createSideBurst(side), delay + 50);
+                }
             } else {
                 const delay = index * 20;
                 el.style.transition = `transform 0.15s cubic-bezier(0.4, 0, 1, 1) ${delay}ms`;
@@ -213,6 +217,11 @@ export function openSettings(config) {
         currentTabIndex = tabButtons.indexOf(activeTabBtn);
     } else {
         currentTabIndex = 0;
+    }
+    
+    // Snow burst
+    if (appState.get('effects.snowEnabled')) {
+        createSnowBurst();
     }
     
     setTimeout(() => { settingsAnimating = false; }, 300);
@@ -401,6 +410,10 @@ export function initSettingsTabs(config) {
                 targetTab.classList.add('active');
                 targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
             }, 75);
+            
+            if (appState.get('effects.snowEnabled')) {
+                createDirectionalBurst(direction);
+            }
             
             setTimeout(() => {
                 targetTab.classList.remove('slide-in-from-right', 'slide-in-from-left');

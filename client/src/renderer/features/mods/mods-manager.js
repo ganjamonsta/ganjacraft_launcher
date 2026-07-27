@@ -10,7 +10,6 @@ let cachedManifest = null;
 let currentSubTab = 'ВСЕ';
 let searchQuery = '';
 let allGroupItems = [];
-let subtabsListenersInitialized = false;
 
 function getModStem(filePath) {
     if (!filePath || typeof filePath !== 'string') return '';
@@ -61,15 +60,11 @@ export async function loadModsList(disabledMods = [], config = {}) {
     const gridContainer = dom.get('mods-grid');
     if (!gridContainer) return;
 
-    if (allGroupItems.length === 0) {
-        gridContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>';
-    }
+    gridContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>';
 
     cachedManifest = await window.api.getManifest();
     if (!cachedManifest) {
-        if (allGroupItems.length === 0) {
-            gridContainer.innerHTML = '<div class="unified-empty"><div class="unified-empty-icon">⚠️</div><div class="unified-empty-text">Не удалось загрузить манифест модов</div></div>';
-        }
+        gridContainer.innerHTML = '<div class="unified-empty"><div class="unified-empty-icon">⚠️</div><div class="unified-empty-text">Не удалось загрузить манифест модов</div></div>';
         return;
     }
 
@@ -159,10 +154,7 @@ export async function loadModsList(disabledMods = [], config = {}) {
         }
     });
 
-    if (!subtabsListenersInitialized) {
-        setupSubtabsListeners();
-        subtabsListenersInitialized = true;
-    }
+    setupSubtabsListeners();
     renderModsGrid();
 }
 
