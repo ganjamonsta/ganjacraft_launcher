@@ -1,52 +1,40 @@
 /**
- * GanjaCraft Launcher - CurseForge CDN Resolver Module
- * Поддержка поиска и скачивания модов с CurseForge CDN (edge.forgecdn.net)
+ * GanjaCraft Launcher - CurseForge Fingerprint Resolver Module
+ * Поддержка строгого резолвинга CDN ссылок CurseForge по Murmur2 хешам (POST /v1/fingerprints)
  */
 
 const https = require('https');
 
 /**
- * Запросить CurseForge API для поиска прямых ссылок скачивания
- * @param {Array<{path: string, hash?: string, url: string}>} files 
- * @param {string} apiKey 
- * @returns {Promise<Record<string, string>>} - Карта path -> downloadUrl
+ * Сформировать прямую ссылку на CurseForge Edge CDN
  */
-async function resolveCurseForgeUrls(files, apiKey) {
-    if (!apiKey || !files || files.length === 0) return {};
-
-    const jarFiles = files.filter(f => f && typeof f.path === 'string' && f.path.endsWith('.jar'));
-    if (jarFiles.length === 0) return {};
-
-    const resultMap = {};
-
-    for (const f of jarFiles) {
-        const basename = f.path.split(/[/\\]/).pop().replace(/\.jar$/i, '');
-        const slugMatch = basename.split(/[-_]/)[0];
-        if (!slugMatch || slugMatch.length < 3) continue;
-
-        try {
-            const url = await searchCurseForgeMod(slugMatch, basename, apiKey);
-            if (url) {
-                resultMap[f.path] = url;
-            }
-        } catch (_) {}
+function getCurseForgeDownloadUrl(fileObj) {
+    if (!fileObj) return null;
+    if (fileObj.downloadUrl) return fileObj.downloadUrl;
+    if (fileObj.id && fileObj.fileName) {
+        const id1 = Math.floor(fileObj.id / 1000);
+        const id2 = fileObj.id % 1000;
+        return `https://edge.forgecdn.net/files/${id1}/${id2}/${encodeURIComponent(fileObj.fileName)}`;
     }
-
-    return resultMap;
+    return null;
 }
 
-function searchCurseForgeMod(slug, fullFilename, apiKey) {
+/**
+ * Выполнить POST HTTP-запрос к CurseForge API (Fingerprints Batch)
+ */
+function makeCurseForgePostRequest(path, data, apiKey) {
     return new Promise((resolve) => {
-        const searchPath = `/v1/mods/search?gameId=432&searchFilter=${encodeURIComponent(slug)}`;
-        
+        const payload = JSON.stringify(data);
         const req = https.request({
             hostname: 'api.curseforge.com',
             port: 443,
-            path: searchPath,
-            method: 'GET',
-            timeout: 5000,
+            path: path,
+            method: 'POST',
+            timeout: 10000,
             headers: {
                 'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload),
                 'x-api-key': apiKey
             }
         }, (res) => {
@@ -55,20 +43,8 @@ function searchCurseForgeMod(slug, fullFilename, apiKey) {
             res.on('end', () => {
                 if (res.statusCode === 200) {
                     try {
-                        const parsed = JSON.parse(body);
-                        if (parsed.data && Array.isArray(parsed.data)) {
-                            for (const mod of parsed.data) {
-                                if (mod.latestFiles && Array.isArray(mod.latestFiles)) {
-                                    for (const fileObj of mod.latestFiles) {
-                                        if (fileObj.downloadUrl && fileObj.fileName && 
-                                            fileObj.fileName.toLowerCase() === `${fullFilename.toLowerCase()}.jar`) {
-                                            resolve(fileObj.downloadUrl);
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        resolve(JSON.parse(body));
+                        return;
                     } catch (_) {}
                 }
                 resolve(null);
@@ -81,8 +57,56 @@ function searchCurseForgeMod(slug, fullFilename, apiKey) {
             resolve(null);
         });
 
+        req.write(payload);
         req.end();
     });
+}
+
+/**
+ * Резолвинг прямых ссылок скачивания строго по Murmur2 хешам (1 Batch запрос)
+ * @param {Array<{path: string, fingerprint?: number, murmur2?: number}>} files 
+ * @param {string} apiKey 
+ * @returns {Promise<Record<string, string>>} - Карта path -> downloadUrl
+ */
+async function resolveCurseForgeUrls(files, apiKey) {
+    if (!apiKey || !files || files.length === 0) return {};
+
+    const jarFiles = files.filter(f => f && typeof f.path === 'string' && f.path.endsWith('.jar'));
+    if (jarFiles.length === 0) return {};
+
+    const resultMap = {};
+    const fpToPath = {};
+    const fingerprintsList = [];
+
+    // Собираем отпечатки Murmur2 из манифеста
+    for (const f of jarFiles) {
+        const fp = f.fingerprint || f.murmur2;
+        if (fp && typeof fp === 'number') {
+            fingerprintsList.push(fp);
+            fpToPath[fp] = f.path;
+        }
+    }
+
+    if (fingerprintsList.length === 0) return {};
+
+    try {
+        const fpRes = await makeCurseForgePostRequest('/v1/fingerprints', { fingerprints: fingerprintsList }, apiKey);
+        if (fpRes && fpRes.data && fpRes.data.exactMatches && Array.isArray(fpRes.data.exactMatches)) {
+            for (const match of fpRes.data.exactMatches) {
+                if (match && match.file && match.file.id && match.file.fileName) {
+                    const targetPath = fpToPath[match.id] || fpToPath[match.file.packageFingerprint] || fpToPath[match.file.fileFingerprint];
+                    if (targetPath) {
+                        const url = getCurseForgeDownloadUrl(match.file);
+                        if (url) resultMap[targetPath] = url;
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.warn(`[CurseForge Fingerprints] Warning: ${err.message}`);
+    }
+
+    return resultMap;
 }
 
 module.exports = { resolveCurseForgeUrls };
