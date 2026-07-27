@@ -46,8 +46,8 @@ export async function loadModsList(disabledMods, config) {
     // Обрабатываем группы
     MOD_GROUPS.forEach(group => {
         const groupFiles = allFiles.filter(f => {
-            const fileName = f.path.split('/').pop();
-            return group.files.some(pattern => fileName.includes(pattern));
+            const fileName = f.path.split('/').pop().toLowerCase();
+            return group.files.some(pattern => fileName.includes(pattern.toLowerCase()));
         });
 
         if (groupFiles.length > 0) {
@@ -84,9 +84,18 @@ export async function loadModsList(disabledMods, config) {
             const isChecked = !disabledMods.includes(file.path);
             const fileName = file.path.split('/').pop();
             
+            // Форматируем понятное название из имени файла
+            let prettyName = fileName
+                .replace(/\.jar$/i, '')
+                .replace(/^client[-_]/i, '')
+                .replace(/[-_](neoforge|forge|fabric|mc|\d+\.\d+).*/i, '')
+                .replace(/[-_]\d+.*$/i, '');
+            prettyName = prettyName.charAt(0).toUpperCase() + prettyName.slice(1);
+
             categorized['Остальное'].push({
                 type: 'file',
-                name: fileName,
+                name: prettyName,
+                description: `Дополнительный мод (${fileName})`,
                 paths: [file.path],
                 checked: isChecked
             });
