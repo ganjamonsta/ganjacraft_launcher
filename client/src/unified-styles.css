@@ -1,40 +1,46 @@
 /* ========================================
    GanjaCraft Launcher - Unified Settings Styles
-   Единый дизайн для всех вкладок настроек
+   Единый дизайн для всех вкладок настроек (Dark Brushed Metal & Glass)
    ======================================== */
 
 /* ========================================
-   CSS Variables - Design Tokens
+   CSS Variables - Design Tokens (Metal & Glass Theme)
    ======================================== */
 :root {
-    /* Colors */
-    --gc-green: #4CAF50;
-    --gc-green-light: #66BB6A;
-    --gc-green-dark: #2e7d32;
+    /* Colors & Neon Accents */
+    --gc-green: #39ff14;
+    --gc-green-light: #66ff66;
+    --gc-green-dark: #00cc00;
+    --gc-green-glow: rgba(57, 255, 20, 0.4);
     --gc-orange: #ff9800;
     --gc-orange-light: #ffb74d;
+    --gc-gold: #ffd54f;
     --gc-red: #ef5350;
     --gc-red-dark: #d32f2f;
     --gc-purple: #ab47bc;
     --gc-purple-light: #b39ddb;
     
-    /* Backgrounds */
-    --gc-bg-card: rgba(30, 30, 30, 0.6);
-    --gc-bg-card-hover: rgba(40, 40, 40, 0.7);
-    --gc-bg-header: rgba(40, 40, 40, 0.5);
-    --gc-bg-content: rgba(0, 0, 0, 0.2);
-    --gc-bg-item: rgba(255, 255, 255, 0.03);
-    --gc-bg-item-hover: rgba(255, 255, 255, 0.06);
+    /* Metallic & Glass Backgrounds */
+    --gc-metal-dark: #121418;
+    --gc-metal-surface: #1a1d23;
+    --gc-bg-card: linear-gradient(135deg, rgba(32, 37, 44, 0.75) 0%, rgba(18, 20, 25, 0.88) 100%);
+    --gc-bg-card-hover: linear-gradient(135deg, rgba(40, 46, 55, 0.85) 0%, rgba(24, 27, 33, 0.92) 100%);
+    --gc-bg-header: linear-gradient(180deg, rgba(45, 52, 62, 0.8) 0%, rgba(28, 32, 39, 0.85) 100%);
+    --gc-bg-content: rgba(14, 16, 20, 0.4);
+    --gc-bg-item: rgba(255, 255, 255, 0.02);
+    --gc-bg-item-hover: rgba(255, 255, 255, 0.05);
     
-    /* Borders */
-    --gc-border: rgba(255, 255, 255, 0.06);
-    --gc-border-hover: rgba(255, 255, 255, 0.12);
-    --gc-border-active: rgba(76, 175, 80, 0.4);
+    /* Glassmorphism & Metallic Borders */
+    --gc-border: rgba(255, 255, 255, 0.12);
+    --gc-border-hover: rgba(57, 255, 20, 0.35);
+    --gc-border-active: #39ff14;
+    --gc-glass-blur: blur(16px) saturate(160%);
+    --gc-card-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 14px rgba(57, 255, 20, 0.04);
     
     /* Sizing */
-    --gc-radius-sm: 4px;
-    --gc-radius-md: 6px;
-    --gc-radius-lg: 10px;
+    --gc-radius-sm: 6px;
+    --gc-radius-md: 8px;
+    --gc-radius-lg: 12px;
     --gc-spacing-xs: 4px;
     --gc-spacing-sm: 8px;
     --gc-spacing-md: 12px;
@@ -58,7 +64,6 @@
 .unified-list-item,
 .unified-btn,
 .settings-category {
-    /* Изоляция слоя для предотвращения лишних repaints */
     contain: layout style;
 }
 
@@ -66,9 +71,7 @@
 .unified-main-content,
 .unified-sidebar-list,
 .scrollable-list {
-    /* Оптимизация скролла */
     contain: strict;
-    /* Плавный скролл на мобильных */
     -webkit-overflow-scrolling: touch;
 }
 
@@ -83,18 +86,22 @@
 /* Note: .tab-content base styles are in modal.css with padding: 18px 20px */
 
 /* ========================================
-   Unified Panel/Card Base
+   Unified Panel/Card Base (Metal & Glass)
    ======================================== */
 .unified-panel {
     background: var(--gc-bg-card);
+    backdrop-filter: var(--gc-glass-blur);
+    -webkit-backdrop-filter: var(--gc-glass-blur);
     border: 1px solid var(--gc-border);
     border-radius: var(--gc-radius-lg);
+    box-shadow: var(--gc-card-shadow);
     overflow: hidden;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .unified-panel:hover {
     border-color: var(--gc-border-hover);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 18px rgba(57, 255, 20, 0.08);
 }
 
 .unified-panel-header {
@@ -103,7 +110,7 @@
     gap: var(--gc-spacing-sm);
     padding: var(--gc-spacing-md) 14px;
     background: var(--gc-bg-header);
-    border-bottom: 1px solid var(--gc-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .unified-panel-header h4 {
@@ -318,26 +325,30 @@
     animation: subtabFadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Unified Mods Subtabs Toolbar Alignment & Heights */
+/* Unified Mods Subtabs Toolbar Alignment & Heights (Metal Glass Pill Style) */
 #mods-subtabs {
-    background: rgba(22, 24, 28, 0.85) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 8px !important;
+    background: linear-gradient(145deg, rgba(24, 28, 35, 0.85), rgba(14, 16, 20, 0.9)) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
     padding: 8px 12px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 8px !important;
+    gap: 10px !important;
     box-sizing: border-box !important;
     margin-bottom: 14px !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 6px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
 #mods-subtabs .unified-btn {
     height: 32px !important;
-    padding: 0 12px !important;
-    font-size: 11px !important;
+    padding: 0 14px !important;
+    font-size: 11.5px !important;
     font-weight: 600 !important;
-    border-radius: 6px !important;
+    letter-spacing: 0.3px !important;
+    border-radius: 18px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -345,6 +356,25 @@
     margin: 0 !important;
     line-height: 1 !important;
     white-space: nowrap !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #b0b8c4 !important;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+#mods-subtabs .unified-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+#mods-subtabs .unified-btn.active {
+    background: linear-gradient(135deg, #00e676 0%, #39ff14 100%) !important;
+    color: #041204 !important;
+    font-weight: 700 !important;
+    border: 1px solid #39ff14 !important;
+    box-shadow: 0 0 14px rgba(57, 255, 20, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+    text-shadow: none !important;
 }
 
 .search-input-wrapper {
@@ -356,24 +386,24 @@
 
 #mods-search-input {
     height: 32px !important;
-    padding: 0 30px 0 12px !important;
+    padding: 0 34px 0 14px !important;
     font-size: 11.5px !important;
-    background: rgba(14, 15, 18, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 6px !important;
+    background: rgba(12, 14, 18, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 18px !important;
     color: #ffffff !important;
     outline: none !important;
     box-sizing: border-box !important;
     margin: 0 !important;
     line-height: 30px !important;
     width: 100% !important;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
 }
 
 #mods-search-input:focus {
-    border-color: #4CAF50 !important;
-    background: rgba(24, 25, 29, 0.95) !important;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15) !important;
+    border-color: #39ff14 !important;
+    background: rgba(18, 22, 28, 0.95) !important;
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.3) !important;
 }
 
 .search-action-btn {

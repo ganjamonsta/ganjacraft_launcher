@@ -46,20 +46,24 @@
     width: 100%;
 }
 
-/* Category Card */
+/* Category Card (Metal & Glass Theme) */
 .settings-category {
-    background: var(--gc-bg-card, rgba(30, 30, 30, 0.6));
-    border: 1px solid var(--gc-border, rgba(255, 255, 255, 0.06));
-    border-radius: var(--gc-radius-lg, 10px);
+    background: linear-gradient(135deg, rgba(32, 37, 44, 0.75) 0%, rgba(18, 20, 25, 0.88) 100%);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(57, 255, 20, 0.03);
     overflow: hidden;
     transition: 
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.2s ease;
 }
 
 .settings-category:hover {
-    border-color: rgba(76, 175, 80, 0.25);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border-color: rgba(57, 255, 20, 0.35);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 16px rgba(57, 255, 20, 0.08);
 }
 
 /* Category Header */
@@ -68,23 +72,25 @@
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
-    background: var(--gc-bg-header, rgba(40, 40, 40, 0.5));
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(180deg, rgba(45, 52, 62, 0.8) 0%, rgba(28, 32, 39, 0.85) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .category-header h4 {
     margin: 0;
-    font-size: var(--gc-font-md, 12px);
-    font-weight: 600;
-    color: #e0e0e0;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f0f0f0;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .category-icon {
     width: 18px;
     height: 18px;
-    color: var(--gc-green, #4CAF50);
+    color: #39ff14;
+    filter: drop-shadow(0 0 6px rgba(57, 255, 20, 0.6));
     flex-shrink: 0;
 }
 
@@ -312,7 +318,7 @@
     color: #ffc107;
 }
 
-/* Toggle Switch */
+/* Toggle Switch (Neon Green & Metal Knob) */
 .toggle-switch {
     position: relative;
     display: inline-block;
@@ -333,9 +339,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(80, 80, 80, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(26, 30, 36, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 28px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
     transition: 
         background 0.3s ease,
         border-color 0.3s ease,
@@ -349,33 +356,33 @@
     height: 18px;
     left: 2px;
     bottom: 2px;
-    background: #ccc;
+    background: linear-gradient(180deg, #ffffff, #b0bec5);
     border-radius: 50%;
     transition: 
         transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
         background 0.3s ease,
         box-shadow 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .toggle-switch input:checked + .toggle-slider {
-    background: rgba(76, 175, 80, 0.4);
-    border-color: rgba(76, 175, 80, 0.5);
-    box-shadow: 0 0 12px rgba(76, 175, 80, 0.15);
+    background: linear-gradient(135deg, #00e676 0%, #39ff14 100%);
+    border-color: #39ff14;
+    box-shadow: 0 0 14px rgba(57, 255, 20, 0.75), inset 0 1px 2px rgba(255, 255, 255, 0.4);
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
     transform: translateX(20px);
-    background: #4CAF50;
-    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+    background: #ffffff;
+    box-shadow: 0 0 8px #ffffff, 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .toggle-switch:hover .toggle-slider {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .toggle-switch:hover .toggle-slider::before {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
 /* ========================================
