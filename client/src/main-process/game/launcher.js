@@ -287,13 +287,66 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
  * Построить опции для MCLC
  */
 function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession) {
-    const customArgs = [...JVM_OPTIMIZATION_ARGS];
+    // NeoForge required module system args (MCLC doesn't process inheritsFrom JVM args)
+    const neoforgeModuleArgs = [
+        `-Djava.net.preferIPv6Addresses=system`,
+        `-DignoreList=client-extra,${MC_VERSION}.jar`,
+        `-DlibraryDirectory=${path.join(rootPath, 'libraries')}`,
+        `-p`, [
+            path.join(rootPath, 'libraries/cpw/mods/bootstraplauncher/2.0.2/bootstraplauncher-2.0.2.jar'),
+            path.join(rootPath, 'libraries/cpw/mods/securejarhandler/3.0.8/securejarhandler-3.0.8.jar'),
+            path.join(rootPath, 'libraries/org/ow2/asm/asm-commons/9.8/asm-commons-9.8.jar'),
+            path.join(rootPath, 'libraries/org/ow2/asm/asm-util/9.8/asm-util-9.8.jar'),
+            path.join(rootPath, 'libraries/org/ow2/asm/asm-analysis/9.8/asm-analysis-9.8.jar'),
+            path.join(rootPath, 'libraries/org/ow2/asm/asm-tree/9.8/asm-tree-9.8.jar'),
+            path.join(rootPath, 'libraries/org/ow2/asm/asm/9.8/asm-9.8.jar'),
+            path.join(rootPath, 'libraries/net/neoforged/JarJarFileSystems/0.4.1/JarJarFileSystems-0.4.1.jar'),
+        ].join(';'),
+        `--add-modules`, `ALL-MODULE-PATH`,
+        `--add-opens`, `java.base/java.util.jar=cpw.mods.securejarhandler`,
+        `--add-opens`, `java.base/java.lang.invoke=cpw.mods.securejarhandler`,
+        `--add-exports`, `java.base/sun.security.util=cpw.mods.securejarhandler`,
+        `--add-exports`, `jdk.naming.dns/com.sun.jndi.dns=java.naming`,
+    ];
+
+    const customArgs = [...neoforgeModuleArgs, ...JVM_OPTIMIZATION_ARGS];
     if (authlibPath && !authSession.isOffline) {
+        customArgs.unshift(`-Dauthlibinjector.httpRequestProperties=bypass-tunnel-reminder:true;User-Agent:localtunnel`);
+        customArgs.unshift(`-Dauthlibinjector.disableSniCheck=true`);
+        customArgs.unshift(`-Dauthlibinjector.side=client`);
         customArgs.unshift(`-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`);
     }
 
     const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
     const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+
+    if (fs.existsSync(neoforgeJsonPath)) {
+        try {
+            const vJson = JSON.parse(fs.readFileSync(neoforgeJsonPath, 'utf8'));
+            if (!vJson.id.startsWith('1.21.1')) {
+                vJson.id = `1.21.1-${vJson.id}`;
+                fs.writeFileSync(neoforgeJsonPath, JSON.stringify(vJson, null, 2), 'utf8');
+            }
+        } catch (_) {}
+    }
+
+    const nativesDir = path.join(rootPath, 'natives');
+    if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true });
+
+    // Bypass MCLC 4000-file asset downloader by ensuring asset index exists
+    const assetIndexDir = path.join(rootPath, 'assets', 'indexes');
+    if (!fs.existsSync(assetIndexDir)) {
+        fs.mkdirSync(assetIndexDir, { recursive: true });
+    }
+    const customAssetIndexFile = path.join(assetIndexDir, `${neoforgeVerId}.json`);
+    const mcAssetIndexFile = path.join(assetIndexDir, `${MC_VERSION}.json`);
+    if (!fs.existsSync(customAssetIndexFile) && !fs.existsSync(mcAssetIndexFile)) {
+        try {
+            const dummyIndex = JSON.stringify({ objects: {} }, null, 2);
+            fs.writeFileSync(customAssetIndexFile, dummyIndex, 'utf8');
+            fs.writeFileSync(mcAssetIndexFile, dummyIndex, 'utf8');
+        } catch (_) {}
+    }
 
     return {
         clientPackage: null,
@@ -321,8 +374,10 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         },
         javaPath: javaPath || undefined,
         overrides: {
-            maxSockets: 4,
-            versionJson: neoforgeJsonPath
+            maxSockets: 8,
+            versionJson: neoforgeJsonPath,
+            natives: nativesDir,
+            minecraftJar: path.join(rootPath, 'versions', MC_VERSION, `${MC_VERSION}.jar`),
         },
         customArgs: customArgs
     };

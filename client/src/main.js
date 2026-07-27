@@ -15,7 +15,7 @@ const https = require('https');
 const { spawn } = require('child_process');
 const { Client } = require('minecraft-launcher-core');
 
-const { registerAllHandlers } = require('./main-process/ipc');
+const { registerDevToolsHandlers } = require('./main-process/ipc');
 
 // Modules
 const { loadConfig, saveConfig } = require('./modules/config');
@@ -47,6 +47,7 @@ const {
     NEOFORGE_VERSION,
     FORGE_VERSION,
     MC_VERSION,
+    BASE_URL,
     MANIFEST_URL,
     NEOFORGE_INSTALLER_URL,
     FORGE_INSTALLER_URL,
@@ -432,8 +433,8 @@ function createWindow() {
 
     win.loadFile('src/index.html');
 
-    // Register all IPC handlers (config, dev-tools, window, etc.)
-    try { registerAllHandlers(win); } catch (e) { console.error('Failed to register IPC handlers:', e); }
+    // Register DevTools IPC handlers
+    try { registerDevToolsHandlers(win); } catch (e) { console.error('Failed to register DevTools IPC handlers:', e); }
 
     // Hard-block maximize/fullscreen (Windows can still attempt this via drag-region double-click).
     win.on('maximize', () => {
@@ -885,7 +886,14 @@ ipcMain.handle('launch-game', async (event, options) => {
 
     if (!fs.existsSync(neoforgeJsonPath)) {
         sendLog('Первичная установка NeoForge 21.1.233 (~15-30 сек)...');
-        const finalInstaller = fs.existsSync(forgeInstallerPath) ? forgeInstallerPath : activeInstallerPath;
+        const finalInstaller = fs.existsSync(forgeInstallerPath) ? forgeInstallerPath : (fs.existsSync(activeInstallerPath) ? activeInstallerPath : null);
+        if (!finalInstaller) {
+            const errStr = `Установщик NeoForge не найден в ${rootPath}`;
+            sendLog(`[ОШИБКА] ${errStr}`);
+            sendDebug(errStr);
+            isGameRunning = false;
+            return { success: false, error: errStr };
+        }
         sendDebug(`Running NeoForge installer headless: ${finalInstaller}`);
         try {
             const { execFile } = require('child_process');
@@ -912,9 +920,46 @@ ipcMain.handle('launch-game', async (event, options) => {
             sendLog('✓ NeoForge 21.1.233 успешно установлен.');
         } catch (e) {
             console.error('NeoForge installation failed:', e);
+            const errStr = `Не удалось установить NeoForge 21.1.233:\n${e.message}`;
+            sendLog(`[ОШИБКА] ${errStr}`);
             sendDebug(`NeoForge install error: ${e.stack || e.message}`);
             isGameRunning = false;
-            return { success: false, error: `Не удалось установить NeoForge 21.1.233:\n${e.message}` };
+            return { success: false, error: errStr };
+        }
+    }
+
+    // Patch NeoForge version JSON id if needed so MCLC doesn't confuse 21.1.233 with legacy MC 1.1
+    if (fs.existsSync(neoforgeJsonPath)) {
+        try {
+            const vJson = JSON.parse(fs.readFileSync(neoforgeJsonPath, 'utf8'));
+            if (!vJson.id.startsWith('1.21.1')) {
+                vJson.id = `1.21.1-${vJson.id}`;
+                fs.writeFileSync(neoforgeJsonPath, JSON.stringify(vJson, null, 2), 'utf8');
+                sendDebug(`Patched NeoForge version JSON id to: ${vJson.id}`);
+            }
+        } catch (e) {
+            sendDebug(`Failed to patch NeoForge version JSON id: ${e.message}`);
+        }
+    }
+
+    const nativesDir = path.join(rootPath, 'natives');
+    if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true });
+
+    // Bypass MCLC 4000-file asset downloader by ensuring asset index exists
+    const assetIndexDir = path.join(rootPath, 'assets', 'indexes');
+    if (!fs.existsSync(assetIndexDir)) {
+        fs.mkdirSync(assetIndexDir, { recursive: true });
+    }
+    const customAssetIndexFile = path.join(assetIndexDir, `${neoforgeVerId}.json`);
+    const mcAssetIndexFile = path.join(assetIndexDir, `${MC_VERSION}.json`);
+    if (!fs.existsSync(customAssetIndexFile) && !fs.existsSync(mcAssetIndexFile)) {
+        try {
+            const dummyIndex = JSON.stringify({ objects: {} }, null, 2);
+            fs.writeFileSync(customAssetIndexFile, dummyIndex, 'utf8');
+            fs.writeFileSync(mcAssetIndexFile, dummyIndex, 'utf8');
+            sendDebug(`Created dummy asset index at: ${customAssetIndexFile}`);
+        } catch (e) {
+            sendDebug(`Failed to create dummy asset index: ${e.message}`);
         }
     }
 
@@ -943,9 +988,35 @@ ipcMain.handle('launch-game', async (event, options) => {
         overrides: {
             maxSockets: 8,
             versionJson: neoforgeJsonPath,
+            natives: nativesDir,
+            minecraftJar: path.join(rootPath, 'versions', MC_VERSION, `${MC_VERSION}.jar`),
         },
         customArgs: [
+            // NeoForge required: module system args (MCLC doesn't process inheritsFrom JVM args)
+            `-Djava.net.preferIPv6Addresses=system`,
+            `-DignoreList=client-extra,${MC_VERSION}.jar`,
+            `-DlibraryDirectory=${path.join(rootPath, 'libraries')}`,
+            `-p`, [
+                path.join(rootPath, 'libraries/cpw/mods/bootstraplauncher/2.0.2/bootstraplauncher-2.0.2.jar'),
+                path.join(rootPath, 'libraries/cpw/mods/securejarhandler/3.0.8/securejarhandler-3.0.8.jar'),
+                path.join(rootPath, 'libraries/org/ow2/asm/asm-commons/9.8/asm-commons-9.8.jar'),
+                path.join(rootPath, 'libraries/org/ow2/asm/asm-util/9.8/asm-util-9.8.jar'),
+                path.join(rootPath, 'libraries/org/ow2/asm/asm-analysis/9.8/asm-analysis-9.8.jar'),
+                path.join(rootPath, 'libraries/org/ow2/asm/asm-tree/9.8/asm-tree-9.8.jar'),
+                path.join(rootPath, 'libraries/org/ow2/asm/asm/9.8/asm-9.8.jar'),
+                path.join(rootPath, 'libraries/net/neoforged/JarJarFileSystems/0.4.1/JarJarFileSystems-0.4.1.jar'),
+            ].join(';'),
+            `--add-modules`, `ALL-MODULE-PATH`,
+            `--add-opens`, `java.base/java.util.jar=cpw.mods.securejarhandler`,
+            `--add-opens`, `java.base/java.lang.invoke=cpw.mods.securejarhandler`,
+            `--add-exports`, `java.base/sun.security.util=cpw.mods.securejarhandler`,
+            `--add-exports`, `jdk.naming.dns/com.sun.jndi.dns=java.naming`,
+            // authlib-injector
             `-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`,
+            `-Dauthlibinjector.side=client`,
+            `-Dauthlibinjector.disableSniCheck=true`,
+            `-Dauthlibinjector.httpRequestProperties=bypass-tunnel-reminder:true;User-Agent:localtunnel`,
+            // G1GC
             '-XX:+UseG1GC',
             '-XX:+ParallelRefProcEnabled',
             '-XX:MaxGCPauseMillis=200',
@@ -1027,12 +1098,22 @@ ipcMain.handle('launch-game', async (event, options) => {
         }
     });
     
-    // Capture MCLC debug output
-    if (config.debugMode) {
-        launcher.on('debug', (e) => sendDebug(`[MCLC] ${e}`));
-        launcher.on('data', (e) => sendDebug(`[GAME STDOUT] ${e}`));
-        launcher.on('error', (e) => sendDebug(`[GAME STDERR] ${e}`));
-    }
+    // MCLC debug - всегда пишем в файл для диагностики
+    launcher.on('debug', (e) => {
+        const ts = new Date().toISOString();
+        if (logStream && !logStream.destroyed) logStream.write(`[${ts}] [MCLC] ${e}\n`);
+        if (config.debugMode && mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
+        }
+    });
+    launcher.on('data', (e) => {
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('log-message', `[GAME] ${e}`);
+    });
+    launcher.on('error', (e) => {
+        const ts = new Date().toISOString();
+        if (logStream && !logStream.destroyed) logStream.write(`[${ts}] [MCLC ERROR] ${e}\n`);
+        sendLog(`[ОШИБКА MCLC] ${e}`);
+    });
 
     return new Promise((resolve, reject) => {
         let hasResolved = false;
