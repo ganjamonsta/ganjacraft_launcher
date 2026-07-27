@@ -929,7 +929,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             maxSockets: 4,
         },
         customArgs: [
-            `-javaagent:${authlibPath}=http://192.168.1.8:5000/api/yggdrasil`,
+            `-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`,
             // Optimization Flags
             '-XX:+UseG1GC',
             '-XX:+ParallelRefProcEnabled',

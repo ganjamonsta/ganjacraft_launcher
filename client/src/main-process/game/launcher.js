@@ -286,7 +286,7 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
 function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession) {
     const customArgs = [...JVM_OPTIMIZATION_ARGS];
     if (authlibPath && !authSession.isOffline) {
-        customArgs.unshift(`-javaagent:${authlibPath}=http://192.168.1.8:5000/api/yggdrasil`);
+        customArgs.unshift(`-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`);
     }
 
     return {
