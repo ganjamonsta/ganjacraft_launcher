@@ -177,7 +177,12 @@ export async function loadModsList(disabledMods = [], config = {}, forceReload =
 
     setupSubtabsListeners();
     renderModsGrid();
+    if (cachedManifest) {
+        renderLinksCatalog(cachedManifest);
+    }
 }
+
+let subtabTransitionTimer = null;
 
 function setupSubtabsListeners() {
     const subtabsContainer = dom.get('mods-subtabs');
@@ -197,7 +202,9 @@ function setupSubtabsListeners() {
         const prevIndex = subtabOrder.indexOf(prevSubtab);
         const newIndex = subtabOrder.indexOf(subtab);
         const direction = newIndex > prevIndex ? 'right' : 'left';
-        const animClass = direction === 'right' ? 'subtab-enter-right' : 'subtab-enter-left';
+
+        const enterAnim = direction === 'right' ? 'subtab-enter-right' : 'subtab-enter-left';
+        const exitAnim = direction === 'right' ? 'subtab-exit-left' : 'subtab-exit-right';
 
         subtabsContainer.querySelectorAll('.unified-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -205,23 +212,57 @@ function setupSubtabsListeners() {
         const gridView = dom.get('mods-grid-container');
         const catalogView = dom.get('mods-catalog-container');
 
-        if (subtab === 'КАТАЛОГ ССЫЛОК') {
-            if (gridView) gridView.classList.add('hidden');
-            if (catalogView) {
-                catalogView.classList.remove('hidden', 'subtab-enter-right', 'subtab-enter-left');
-                void catalogView.offsetWidth; // Force animation restart
-                catalogView.classList.add(animClass);
-                renderLinksCatalog(cachedManifest);
+        const outgoingView = subtab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
+        const incomingView = subtab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
+
+        if (subtabTransitionTimer) {
+            clearTimeout(subtabTransitionTimer);
+            subtabTransitionTimer = null;
+        }
+
+        // 1. Очищаем анимационные классы со всех контейнеров при быстрой смене
+        [gridView, catalogView].forEach(v => {
+            if (v) {
+                v.classList.remove(
+                    'subtab-entering', 'subtab-exiting',
+                    'subtab-enter-right', 'subtab-enter-left',
+                    'subtab-exit-right', 'subtab-exit-left'
+                );
             }
-        } else {
-            if (catalogView) catalogView.classList.add('hidden');
-            if (gridView) {
-                gridView.classList.remove('hidden', 'subtab-enter-right', 'subtab-enter-left');
-                void gridView.offsetWidth; // Force animation restart
-                gridView.classList.add(animClass);
+        });
+
+        // 2. Включаем целевую вкладку
+        if (incomingView) {
+            incomingView.classList.remove('hidden');
+            incomingView.classList.add('subtab-entering', enterAnim);
+            if (subtab === 'КАТАЛОГ ССЫЛОК') {
+                renderLinksCatalog(cachedManifest);
+            } else {
                 renderModsGrid();
             }
         }
+
+        // 3. Плавно уводим уходящую вкладку
+        if (outgoingView && !outgoingView.classList.contains('hidden')) {
+            outgoingView.classList.add('subtab-exiting', exitAnim);
+        }
+
+        // 4. Гарантированная детерминированная зачистка на основе реального текущего currentSubTab
+        subtabTransitionTimer = setTimeout(() => {
+            const activeView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
+            const inactiveView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
+
+            if (inactiveView) {
+                inactiveView.classList.add('hidden');
+                inactiveView.classList.remove('subtab-exiting', 'subtab-exit-left', 'subtab-exit-right');
+            }
+
+            if (activeView) {
+                activeView.classList.remove('hidden', 'subtab-entering', 'subtab-enter-right', 'subtab-enter-left');
+            }
+
+            subtabTransitionTimer = null;
+        }, 280);
     });
 
     const searchInput = dom.get('mods-search-input');
@@ -244,7 +285,7 @@ function setupSubtabsListeners() {
 
     function triggerSearchUpdate() {
         if (currentSubTab === 'КАТАЛОГ ССЫЛОК') {
-            renderLinksCatalog(cachedManifest);
+            renderLinksCatalog(cachedManifest, true);
         } else {
             renderModsGrid();
         }
@@ -445,6 +486,7 @@ export function renderModsGrid() {
 
 let cachedCatalogData = null;
 let lastCatalogManifest = null;
+let lastRenderedQuery = null;
 let currentRenderedIndex = 0;
 let filteredCatalogItems = [];
 const BATCH_SIZE = 25;
@@ -489,7 +531,7 @@ function appendCatalogBatch(contentContainer) {
 /**
  * Отрендерить Список всех модов с кнопками CurseForge & Modrinth (Оптимизированный неблокирующий рендеринг)
  */
-export function renderLinksCatalog(manifest) {
+export function renderLinksCatalog(manifest, forceRebuild = false) {
     const list = dom.get('catalog-list');
     if (!list) return;
 
@@ -497,6 +539,14 @@ export function renderLinksCatalog(manifest) {
         list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Список файлов пуст</div></div>';
         return;
     }
+
+    const query = searchQuery.toLowerCase();
+
+    // Если список уже отрендерен в DOM и строка поиска не менялась — повторный рендеринг не требуется
+    if (!forceRebuild && list.children.length > 0 && lastRenderedQuery === query && lastCatalogManifest === manifest) {
+        return;
+    }
+    lastRenderedQuery = query;
 
     // Кешируем распарсенный массив данных каталога, чтобы не делать тяжелую регулярку и поиск при каждом переключении
     if (!cachedCatalogData || lastCatalogManifest !== manifest) {
@@ -543,7 +593,6 @@ export function renderLinksCatalog(manifest) {
     }
 
     // Фильтрация по поисковому запросу
-    const query = searchQuery.toLowerCase();
     filteredCatalogItems = cachedCatalogData.filter(item => 
         item.cleanName.toLowerCase().includes(query) ||
         item.fileName.toLowerCase().includes(query)

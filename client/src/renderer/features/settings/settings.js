@@ -388,6 +388,8 @@ export async function saveSettings() {
 /**
  * Инициализация табов настроек
  */
+let mainTabTimer = null;
+
 export function initSettingsTabs(config) {
     const tabButtons = Array.from(document.querySelectorAll('.settings-tabs .tab-btn'));
     
@@ -395,27 +397,33 @@ export function initSettingsTabs(config) {
         btn.addEventListener('click', () => {
             const targetTabId = btn.dataset.tab;
             const targetTab = document.getElementById(`tab-${targetTabId}`);
+            const allTabs = document.querySelectorAll('.tab-content');
             const currentActiveTab = document.querySelector('.tab-content.active');
             
-            if (currentActiveTab === targetTab) return;
+            if (!targetTab || currentActiveTab === targetTab) return;
             
             const direction = index > currentTabIndex ? 'right' : 'left';
-            
+            currentTabIndex = index;
+
+            if (mainTabTimer) {
+                clearTimeout(mainTabTimer);
+                mainTabTimer = null;
+            }
+
             tabButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             const settingsBody = document.querySelector('.settings-body');
             if (settingsBody) settingsBody.classList.add('animating');
+
+            allTabs.forEach(t => {
+                t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
+            });
             
-            if (currentActiveTab) {
+            if (currentActiveTab && currentActiveTab !== targetTab) {
                 currentActiveTab.classList.add(direction === 'right' ? 'slide-out-to-left' : 'slide-out-to-right');
-                
-                setTimeout(() => {
-                    currentActiveTab.classList.remove('active', 'slide-out-to-left', 'slide-out-to-right');
-                }, 420);
             }
             
-            // Активация новой вкладки одновременно в t=0 с запуском универсального единого каскада инерции
             targetTab.classList.add('active');
             targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
             
@@ -428,16 +436,27 @@ export function initSettingsTabs(config) {
                 createDirectionalBurst(direction);
             }
             
-            setTimeout(() => {
-                targetTab.classList.remove('slide-in-from-right', 'slide-in-from-left');
+            mainTabTimer = setTimeout(() => {
+                const activeBtn = document.querySelector('.settings-tabs .tab-btn.active');
+                const activeId = activeBtn ? activeBtn.dataset.tab : null;
+                const activeTab = activeId ? document.getElementById(`tab-${activeId}`) : targetTab;
+
+                allTabs.forEach(t => {
+                    t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
+                    if (t === activeTab) {
+                        t.classList.add('active');
+                    } else {
+                        t.classList.remove('active');
+                    }
+                });
+
                 if (cascadeTarget) {
                     delete cascadeTarget.dataset.dir;
                     cascadeTarget.classList.remove('inertia-cascade');
                 }
                 if (settingsBody) settingsBody.classList.remove('animating');
-            }, 450);
-            
-            currentTabIndex = index;
+                mainTabTimer = null;
+            }, 300);
         });
     });
 }

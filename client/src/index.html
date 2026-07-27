@@ -463,20 +463,23 @@
                         </div>
                     </div>
 
-                    <!-- Mods Grid Container (Optional Mods 2-Column Category Grid) -->
-                    <div id="mods-grid-container" style="flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;">
-                        <div id="mods-grid" class="settings-categories inertia-cascade">
-                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>
+                    <!-- Subtab Views Stack Container -->
+                    <div id="mods-views-stack" style="position: relative; flex: 1; min-height: 0; height: 100%; overflow: hidden;">
+                        <!-- Mods Grid Container (Optional Mods 2-Column Category Grid) -->
+                        <div id="mods-grid-container" class="subtab-view" style="flex: 1; min-height: 0; height: 100%; overflow-y: auto; overflow-x: hidden;">
+                            <div id="mods-grid" class="settings-categories inertia-cascade">
+                                <div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Links & All Mods List View Container (Hidden by default) -->
-                    <div id="mods-catalog-container" class="hidden"
-                        style="flex: 1; min-height: 0; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
-                        <div id="catalog-list"
-                            style="flex: 1; min-height: 0; height: 100%; display: flex; flex-direction: column;"
-                            class="settings-categories">
-                            <!-- Populated by JS -->
+                        <!-- Links & All Mods List View Container (Hidden by default) -->
+                        <div id="mods-catalog-container" class="subtab-view hidden"
+                            style="flex: 1; min-height: 0; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+                            <div id="catalog-list"
+                                style="flex: 1; min-height: 0; height: 100%; display: flex; flex-direction: column;"
+                                class="settings-categories">
+                                <!-- Populated by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
