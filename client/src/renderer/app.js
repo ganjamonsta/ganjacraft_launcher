@@ -184,8 +184,9 @@ function initSettingsButton() {
                 return;
             }
             
-            // Phase 1: Smooth exit of main UI elements
+            // Phase 1: Smooth exit of main UI elements & Instant Settings Drop
             toggleMainUIVisibility(false, currentConfig);
+            openSettings(currentConfig);
             
             // Hide easter egg after animation if active
             if (isSettingsEasterEggActive()) {
@@ -193,53 +194,22 @@ function initSettingsButton() {
                     hideEasterEgg();
                 }, 300);
             }
-
-            // Phase 2: Open settings container (2D GPU slide down) after short stagger
-            setTimeout(() => {
-                openSettings(currentConfig);
-            }, 40);
             
-            // Phase 3: Defer async config load, DOM population & heavy mod list building until after transition completes
-            setTimeout(() => {
-                window.api.loadConfig().then(async (config) => {
-                    currentConfig = config;
-                    setCurrentConfig(currentConfig);
-                    
-                    // Populate fields
-                    populateSettingsFields(currentConfig);
-                    
-                    // Load mods in background
-                    await loadModsList(currentConfig.disabledMods || [], currentConfig);
-                    
-                    // Show/hide dev tab
-                    const devTab = document.querySelector('.tab-dev');
-                    if (devTab) {
-                        const isConsoleOpen = consoleOutput && !consoleOutput.classList.contains('hidden');
-                        if (isConsoleOpen) {
-                            devTab.classList.remove('hidden');
-                            loadDevCategoryCounts();
-                            
-                            const skipSyncCheckbox = document.getElementById('dev-skip-sync-checkbox');
-                            if (skipSyncCheckbox) {
-                                skipSyncCheckbox.checked = currentConfig.skipSync === true;
-                            }
-                            
-                            applyAdminClass();
-                            initDevToolsListeners();
-                        } else {
-                            devTab.classList.add('hidden');
-                            
-                            const devTabContent = document.getElementById('tab-dev');
-                            if (devTabContent?.classList.contains('active')) {
-                                document.querySelector('.tab-btn[data-tab="general"]')?.click();
-                            }
-                        }
+            // Update dev tab visibility
+            const devTab = document.querySelector('.tab-dev');
+            if (devTab) {
+                const isConsoleOpen = consoleOutput && !consoleOutput.classList.contains('hidden');
+                if (isConsoleOpen) {
+                    devTab.classList.remove('hidden');
+                    loadDevCategoryCounts();
+                } else {
+                    devTab.classList.add('hidden');
+                    const devTabContent = document.getElementById('tab-dev');
+                    if (devTabContent?.classList.contains('active')) {
+                        document.querySelector('.tab-btn[data-tab="general"]')?.click();
                     }
-                    
-                    // Capture initial state after mods load
-                    captureInitialSettingsState();
-                });
-            }, 200);
+                }
+            }
         });
     }
     
@@ -270,6 +240,24 @@ function initSettingsButton() {
     }
 }
 
+// === Loading Progress Helper ===
+function updateLoaderStatus(percent, text) {
+    const fill = dom.get('loader-progress-fill');
+    const statusText = dom.get('loader-status-text');
+    const percentText = dom.get('loader-percent-text');
+    
+    if (fill) fill.style.width = `${percent}%`;
+    if (statusText) statusText.innerText = text;
+    if (percentText) percentText.innerText = `${percent}%`;
+}
+
+function hideLoaderScreen() {
+    const loader = dom.get('launcher-loader-screen');
+    if (loader) {
+        loader.classList.add('loaded');
+    }
+}
+
 // === Display Version ===
 async function displayVersion() {
     try {
@@ -283,17 +271,20 @@ async function displayVersion() {
 
 // === Main Initialization ===
 async function init() {
-    logToConsole('[LAUNCHER] Client initialized.');
+    logToConsole('[LAUNCHER] Client initializing...');
+    updateLoaderStatus(10, 'Загрузка конфигурации...');
     
-    // Load config
+    // 1. Load config
     currentConfig = await window.api.loadConfig();
     setCurrentConfig(currentConfig);
     
-    // Init visual effects
+    updateLoaderStatus(25, 'Инициализация графических эффектов...');
+    // 2. Init visual effects
     await initAllEffects(currentConfig);
     initEasterEgg();
     
-    // Init UI handlers
+    updateLoaderStatus(45, 'Подготовка интерфейса и настроек...');
+    // 3. Init UI handlers & Pre-populate settings fields
     initWindowControls();
     initConsoleToggle();
     initSettingsButton();
@@ -306,9 +297,13 @@ async function init() {
     initModsButtons();
     setupSettingsChangeListeners();
     
+    // Предзаполнение всех полей настроек и RAM слайдера в DOM
+    populateSettingsFields(currentConfig);
+    
     // Display version
     await displayVersion();
     
+    updateLoaderStatus(65, 'Проверка авторизации...');
     // Mock auth: seed localStorage before checking saved auth
     if (window.api.isMockAuth) {
         localStorage.setItem('auth_user', 'TestAdmin');
@@ -317,16 +312,40 @@ async function init() {
         console.log('[MOCK_AUTH] Seeded localStorage as TestAdmin (admin)');
     }
 
-    // Check saved auth
+    // 4. Check saved auth
     await checkSavedAuth();
     
-    // Delay news loading
-    setTimeout(loadNews, 1500);
+    updateLoaderStatus(80, 'Загрузка манифеста модов...');
+    // 5. Предзагрузка модов в память для мгновенного открытия в настройках
+    await loadModsList(currentConfig.disabledMods || [], currentConfig);
+    captureInitialSettingsState();
+
+    updateLoaderStatus(90, 'Загрузка новостей и сервера...');
+    // 6. Load news and start status checker
+    await Promise.allSettled([
+        loadNews(),
+        new Promise(resolve => {
+            startStatusChecker();
+            setTimeout(resolve, 150);
+        })
+    ]);
     
-    // Start server status checker
-    startStatusChecker();
+    updateLoaderStatus(98, 'Прогрев графического движка...');
+    // 7. Прогрев GPU-слоев и макета настроек в фоновом режиме
+    const settingsScreen = dom.get('step-settings');
+    if (settingsScreen) {
+        settingsScreen.style.visibility = 'hidden';
+        settingsScreen.classList.remove('hidden');
+        void settingsScreen.offsetWidth; // Принудительный расчет макета Chromium
+        settingsScreen.classList.add('hidden');
+        settingsScreen.style.visibility = '';
+    }
+
+    updateLoaderStatus(100, 'Готово!');
+    logToConsole('[LAUNCHER] Initialization complete. All modules pre-loaded.');
     
-    logToConsole('[LAUNCHER] Initialization complete.');
+    // Smoothly fade out splash loading screen
+    setTimeout(hideLoaderScreen, 300);
 }
 
 // === Start Application ===

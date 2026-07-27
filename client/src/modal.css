@@ -80,54 +80,37 @@
     will-change: transform, opacity;
 }
 
-/* Lightweight 2D Fade & Slide down for cards */
-@keyframes cascade-pop-down {
-    0% {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Modal Staggered Content Animation */
-@keyframes modal-content-stagger {
-    0% {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Staggered cascading for settings category cards & dev tools cards on settings open */
+/* Vertical spring drop-in for category cards on top of background on settings open */
 .settings-screen.opening .settings-category,
-.settings-screen.opening .unified-dev-card {
-    animation: cascade-pop-down 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+.settings-screen.opening .unified-dev-card,
+.settings-screen.opening #mods-grid > * {
+    animation: inertia-enter-down 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     will-change: transform, opacity;
 }
 
 .settings-screen.opening .settings-category:nth-child(1),
-.settings-screen.opening .unified-dev-card:nth-child(1) { animation-delay: 20ms; }
+.settings-screen.opening .unified-dev-card:nth-child(1),
+.settings-screen.opening #mods-grid > *:nth-child(1) { animation-delay: 20ms; }
 
 .settings-screen.opening .settings-category:nth-child(2),
-.settings-screen.opening .unified-dev-card:nth-child(2) { animation-delay: 50ms; }
+.settings-screen.opening .unified-dev-card:nth-child(2),
+.settings-screen.opening #mods-grid > *:nth-child(2) { animation-delay: 55ms; }
 
 .settings-screen.opening .settings-category:nth-child(3),
-.settings-screen.opening .unified-dev-card:nth-child(3) { animation-delay: 80ms; }
+.settings-screen.opening .unified-dev-card:nth-child(3),
+.settings-screen.opening #mods-grid > *:nth-child(3) { animation-delay: 90ms; }
 
 .settings-screen.opening .settings-category:nth-child(4),
-.settings-screen.opening .unified-dev-card:nth-child(4) { animation-delay: 110ms; }
+.settings-screen.opening .unified-dev-card:nth-child(4),
+.settings-screen.opening #mods-grid > *:nth-child(4) { animation-delay: 125ms; }
 
 .settings-screen.opening .settings-category:nth-child(5),
-.settings-screen.opening .unified-dev-card:nth-child(5) { animation-delay: 140ms; }
+.settings-screen.opening .unified-dev-card:nth-child(5),
+.settings-screen.opening #mods-grid > *:nth-child(5) { animation-delay: 160ms; }
 
 .settings-screen.opening .settings-category:nth-child(6),
-.settings-screen.opening .unified-dev-card:nth-child(6) { animation-delay: 170ms; }
+.settings-screen.opening .unified-dev-card:nth-child(6),
+.settings-screen.opening #mods-grid > *:nth-child(6) { animation-delay: 195ms; }
 
 /* Hidden state (after closing animation) */
 .settings-screen.hidden {
@@ -310,7 +293,7 @@
 
 .settings-body {
     padding: 0;
-    overflow: visible;
+    overflow: hidden;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -319,7 +302,7 @@
 }
 
 .settings-body.animating {
-    overflow: visible; /* Разрешаем контенту выезжать за край во время анимации */
+    overflow: hidden;
 }
 
 .tab-content {
@@ -352,83 +335,85 @@
     flex-direction: column;
 }
 
-/* Horizontal Slide Animations with Bounce - Full Screen Slide */
-@keyframes slide-in-left {
+/* ===================================================
+   Gallery Photo ViewPager Slider (Continuous Side-by-Side Slide)
+   =================================================== */
+
+@keyframes gallery-slide-out-left {
     0% {
-        opacity: 0;
-        transform: translateX(-120%) scale(0.92);
-    }
-    70% {
-        opacity: 1;
-        transform: translateX(0.17%) scale(1.002);
+        transform: translateX(0);
     }
     100% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: translateX(-100%);
     }
 }
 
-@keyframes slide-in-right {
+@keyframes gallery-slide-in-right {
     0% {
-        opacity: 0;
-        transform: translateX(120%) scale(0.92);
-    }
-    70% {
-        opacity: 1;
-        transform: translateX(-0.17%) scale(1.002);
+        transform: translateX(100%);
     }
     100% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: translateX(0);
     }
 }
 
-@keyframes slide-out-left {
+@keyframes gallery-slide-out-right {
     0% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: translateX(0);
     }
     100% {
-        opacity: 0;
-        transform: translateX(-120%) scale(0.88);
+        transform: translateX(100%);
     }
 }
 
-@keyframes slide-out-right {
+@keyframes gallery-slide-in-left {
     0% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: translateX(-100%);
     }
     100% {
-        opacity: 0;
-        transform: translateX(120%) scale(0.88);
+        transform: translateX(0);
     }
-}
-
-.tab-content.slide-in-from-left {
-    animation: slide-in-left 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    z-index: 1;
-    backface-visibility: hidden;
-    -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .tab-content.slide-in-from-right {
-    animation: slide-in-right 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    z-index: 1;
-    backface-visibility: hidden;
-    -webkit-font-smoothing: subpixel-antialiased;
+    animation: gallery-slide-in-right 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 2;
+    will-change: transform;
+}
+
+.tab-content.slide-in-from-left {
+    animation: gallery-slide-in-left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 2;
+    will-change: transform;
 }
 
 .tab-content.slide-out-to-left {
-    animation: slide-out-left 0.15s cubic-bezier(0.5, 0, 0.75, 1) forwards;
-    z-index: 2;
-    backface-visibility: hidden;
+    animation: gallery-slide-out-left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 1;
+    will-change: transform;
 }
 
 .tab-content.slide-out-to-right {
-    animation: slide-out-right 0.15s cubic-bezier(0.5, 0, 0.75, 1) forwards;
-    z-index: 2;
-    backface-visibility: hidden;
+    animation: gallery-slide-out-right 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 1;
+    will-change: transform;
+}
+
+/* ===================================================
+   Unified Inertia Cascade Engine Connections (DRY)
+   =================================================== */
+
+/* Entering tab containers inherit unified inertia cascade motion */
+.tab-content.slide-in-from-right .settings-categories,
+.tab-content.slide-in-from-right .unified-dev-grid,
+.tab-content.slide-in-from-right #mods-grid {
+    animation: inertia-enter-right 0.40s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tab-content.slide-in-from-left .settings-categories,
+.tab-content.slide-in-from-left .unified-dev-grid,
+.tab-content.slide-in-from-left #mods-grid {
+    animation: inertia-enter-left 0.40s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Mods Tab Specifics */

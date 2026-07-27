@@ -7,7 +7,7 @@ import { dom } from '../../utils/dom.js';
 import { MOD_GROUPS, SUB_CATEGORIES } from './mod-groups.js';
 
 let cachedManifest = null;
-let currentSubTab = 'ВСЕ';
+let currentSubTab = 'ОПЦИОНАЛЬНЫЕ';
 let searchQuery = '';
 let allGroupItems = [];
 
@@ -56,11 +56,32 @@ function isModDisabled(filePath, disabledMods = []) {
 /**
  * Загрузить список модов
  */
-export async function loadModsList(disabledMods = [], config = {}) {
+export async function loadModsList(disabledMods = [], config = {}, forceReload = false) {
     const gridContainer = dom.get('mods-grid');
     if (!gridContainer) return;
 
-    gridContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>';
+    // Если список модов уже загружен в память — обновляем состояния и сетку без вывода спиннера
+    if (allGroupItems.length > 0 && !forceReload) {
+        allGroupItems.forEach(item => {
+            if (item.type === 'group') {
+                const group = MOD_GROUPS.find(g => g.id === item.id);
+                if (config.modsDefaultsApplied !== true && group?.defaultDisabled) {
+                    item.checked = false;
+                } else {
+                    item.checked = item.paths.every(p => !isModDisabled(p, disabledMods));
+                }
+            } else {
+                item.checked = item.paths.every(p => !isModDisabled(p, disabledMods));
+            }
+        });
+
+        renderModsGrid();
+        return;
+    }
+
+    if (allGroupItems.length === 0) {
+        gridContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>';
+    }
 
     cachedManifest = await window.api.getManifest();
     if (!cachedManifest) {
@@ -158,9 +179,6 @@ export async function loadModsList(disabledMods = [], config = {}) {
     renderModsGrid();
 }
 
-/**
- * Инициализация подвкладок
- */
 function setupSubtabsListeners() {
     const subtabsContainer = dom.get('mods-subtabs');
     if (!subtabsContainer) return;
@@ -184,18 +202,12 @@ function setupSubtabsListeners() {
             if (gridView) gridView.classList.add('hidden');
             if (catalogView) {
                 catalogView.classList.remove('hidden');
-                catalogView.classList.remove('subtab-fade-animate');
-                void catalogView.offsetWidth;
-                catalogView.classList.add('subtab-fade-animate');
                 renderLinksCatalog(cachedManifest);
             }
         } else {
             if (catalogView) catalogView.classList.add('hidden');
             if (gridView) {
                 gridView.classList.remove('hidden');
-                gridView.classList.remove('subtab-fade-animate');
-                void gridView.offsetWidth;
-                gridView.classList.add('subtab-fade-animate');
             }
             renderModsGrid();
         }
@@ -219,15 +231,19 @@ function setupSubtabsListeners() {
         }
     }
 
+    function triggerSearchUpdate() {
+        if (currentSubTab === 'КАТАЛОГ ССЫЛОК') {
+            renderLinksCatalog(cachedManifest);
+        } else {
+            renderModsGrid();
+        }
+    }
+
     if (searchInput) {
         searchInput.oninput = (e) => {
             searchQuery = e.target.value.trim().toLowerCase();
             updateSearchUI();
-            if (currentSubTab === 'КАТАЛОГ ССЫЛОК') {
-                renderLinksCatalog(cachedManifest);
-            } else {
-                renderModsGrid();
-            }
+            triggerSearchUpdate();
         };
     }
 
@@ -238,11 +254,7 @@ function setupSubtabsListeners() {
                 searchQuery = '';
                 updateSearchUI();
                 searchInput.focus();
-                if (currentSubTab === 'КАТАЛОГ ССЫЛОК') {
-                    renderLinksCatalog(cachedManifest);
-                } else {
-                    renderModsGrid();
-                }
+                triggerSearchUpdate();
             }
         };
     }
@@ -328,10 +340,8 @@ export function renderModsGrid() {
     const grid = dom.get('mods-grid');
     if (!grid) return;
 
-    // Фильтруем моды по выбранной подвкладке и строке поиска
+    // Фильтруем моды по строке поиска
     const items = allGroupItems.filter(item => {
-        const matchesSubtab = currentSubTab === 'ВСЕ' || item.subCategory.toUpperCase() === currentSubTab.toUpperCase();
-        if (!matchesSubtab) return false;
         if (!searchQuery) return true;
         return (item.name && item.name.toLowerCase().includes(searchQuery)) ||
                (item.shortName && item.shortName.toLowerCase().includes(searchQuery)) ||
@@ -340,7 +350,7 @@ export function renderModsGrid() {
     });
 
     if (items.length === 0) {
-        grid.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">В данной категории нет модов</div></div>';
+        grid.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
         return;
     }
 
@@ -359,8 +369,7 @@ export function renderModsGrid() {
         if (categoryMods.length === 0) return;
 
         const categoryCard = document.createElement('div');
-        categoryCard.className = 'settings-category settings-category-animate';
-        categoryCard.style.animationDelay = `${index * 0.05}s`;
+        categoryCard.className = 'settings-category';
 
         const iconId = getCategoryIconId(catName);
 
@@ -431,7 +440,7 @@ let filteredCatalogItems = [];
 const BATCH_SIZE = 15;
 
 /**
- * Отрендерить Каталог ссылок на моды (CurseForge & Modrinth) с ленивой подгрузкой (Lazy Loading)
+ * Отрендерить Список всех модов с кнопками CurseForge & Modrinth
  */
 export function renderLinksCatalog(manifest) {
     const list = dom.get('catalog-list');
@@ -509,7 +518,7 @@ export function renderLinksCatalog(manifest) {
     header.className = 'category-header';
     header.innerHTML = `
         <svg class="category-icon"><use href="#icon-folder-open"/></svg>
-        <h4>Каталог ссылок на моды сборки (${filteredCatalogItems.length})</h4>
+        <h4>Список всех модов сборки (${filteredCatalogItems.length})</h4>
     `;
     card.appendChild(header);
 

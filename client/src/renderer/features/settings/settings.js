@@ -12,7 +12,7 @@ import { startParallax, stopParallax } from '../../ui/effects/parallax.js';
 import { loadModsList, getDisabledMods, setAllModsState, updateModsCounter, updateCategorySidebar } from '../mods/index.js';
 import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
-import { debounce } from '../../utils/performance.js';
+import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
 
 // Стейт для отслеживания изменений
 let initialSettingsState = null;
@@ -190,6 +190,12 @@ export function openSettings(config) {
     if (settingsAnimating || !settingsScreen) return;
     settingsAnimating = true;
     
+    // Сбросить горизонтальные направления каскадов от предыдущих переключений вкладок
+    document.querySelectorAll('.inertia-cascade, [data-dir]').forEach(el => {
+        delete el.dataset.dir;
+        el.classList.remove('inertia-cascade');
+    });
+
     settingsScreen.classList.remove('hidden', 'closing');
     settingsScreen.classList.add('opening');
     
@@ -219,17 +225,15 @@ export function openSettings(config) {
         currentTabIndex = 0;
     }
     
-    // Snow burst (отложенный запуск, чтобы не создавать DOM фризы во время сдвига)
+    // Snow burst (мгновенный вызов в тайминг клика)
     if (appState.get('effects.snowEnabled')) {
-        setTimeout(() => {
-            createSnowBurst();
-        }, 180);
+        createSnowBurst();
     }
     
     setTimeout(() => {
         settingsScreen.classList.remove('opening');
         settingsAnimating = false;
-    }, 250);
+    }, 580);
 }
 
 /**
@@ -408,13 +412,17 @@ export function initSettingsTabs(config) {
                 
                 setTimeout(() => {
                     currentActiveTab.classList.remove('active', 'slide-out-to-left', 'slide-out-to-right');
-                }, 150);
+                }, 420);
             }
             
-            setTimeout(() => {
-                targetTab.classList.add('active');
-                targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
-            }, 75);
+            // Активация новой вкладки одновременно в t=0 с запуском универсального единого каскада инерции
+            targetTab.classList.add('active');
+            targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
+            
+            const cascadeTarget = targetTab.querySelector('.inertia-cascade, .settings-categories, .unified-dev-grid, #mods-grid');
+            if (cascadeTarget) {
+                triggerInertiaCascade(cascadeTarget, direction);
+            }
             
             if (appState.get('effects.snowEnabled')) {
                 createDirectionalBurst(direction);
@@ -422,8 +430,12 @@ export function initSettingsTabs(config) {
             
             setTimeout(() => {
                 targetTab.classList.remove('slide-in-from-right', 'slide-in-from-left');
+                if (cascadeTarget) {
+                    delete cascadeTarget.dataset.dir;
+                    cascadeTarget.classList.remove('inertia-cascade');
+                }
                 if (settingsBody) settingsBody.classList.remove('animating');
-            }, 355);
+            }, 450);
             
             currentTabIndex = index;
         });

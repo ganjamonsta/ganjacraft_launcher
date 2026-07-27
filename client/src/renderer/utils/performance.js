@@ -73,3 +73,18 @@ export function rafThrottle(fn) {
         }
     };
 }
+
+/**
+ * Единый метод управления инерционными каскадными анимациями элементов (DRY)
+ * @param {HTMLElement|string} target - Элемент или CSS-селектор контейнера
+ * @param {'right'|'left'|'down'|'up'} direction - Направление каскада
+ */
+export function triggerInertiaCascade(target, direction = 'down') {
+    const el = typeof target === 'string' ? document.querySelector(target) : target;
+    if (!el) return;
+    
+    el.dataset.dir = direction;
+    el.classList.remove('inertia-cascade');
+    void el.offsetWidth; // Force reflow to restart animation
+    el.classList.add('inertia-cascade');
+}
