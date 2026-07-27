@@ -573,7 +573,7 @@ export function renderLinksCatalog(manifest) {
     }
 
     // Автоматическая дозагрузка при скролле до sentinel
-    const scrollContainer = list.closest('.tab-content') || list.parentElement;
+    const scrollContainer = list;
     catalogObserver = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && currentRenderedIndex < filteredCatalogItems.length) {
             renderBatch();

@@ -13,6 +13,29 @@
     flex-direction: column;
 }
 
+/* Mods Tab Layout - Bounded container with scrollable content */
+#tab-mods {
+    padding: 14px 16px;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#mods-grid-container,
+#mods-catalog-container {
+    flex: 1;
+    min-height: 0;
+}
+
+#catalog-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 4px;
+}
+
 #tab-general .settings-categories {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
