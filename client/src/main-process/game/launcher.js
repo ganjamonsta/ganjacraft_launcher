@@ -9,7 +9,7 @@ const { BrowserWindow } = require('electron');
 const { Client } = require('minecraft-launcher-core');
 const { downloadFile, syncFiles, downloadWithRetry } = require('../../modules/updater');
 const { authenticateYggdrasil } = require('../../modules/auth');
-const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJavaw } = require('../../modules/java');
+const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJavaw, resolveJavaPath } = require('../../modules/java');
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
 const { repairCriticalFiles } = require('./repair');
@@ -154,7 +154,7 @@ async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug) {
  * Подготовить и проверить Java
  */
 async function prepareJava(config, rootPath, sendLog, sendDebug) {
-    let javaPath = config.javaPath;
+    let javaPath = config.javaPath ? resolveJavaPath(config.javaPath) : null;
     
     if (javaPath) {
         sendDebug(`Using custom Java path: ${javaPath}`);

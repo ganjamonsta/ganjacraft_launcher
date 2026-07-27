@@ -491,7 +491,7 @@ export function initPathSelectors() {
     
     if (selectJavaBtn) {
         selectJavaBtn.addEventListener('click', async () => {
-            const path = await window.api.selectPath('file');
+            const path = await window.api.selectPath('java');
             if (path) {
                 document.getElementById('setting-java').value = path;
                 updateSaveButtonVisibility();

@@ -21,7 +21,7 @@ const { registerDevToolsHandlers } = require('./main-process/ipc');
 const { loadConfig, saveConfig } = require('./modules/config');
 const { syncFiles, downloadFile, downloadWithRetry } = require('./modules/updater');
 const { authenticateYggdrasil } = require('./modules/auth');
-const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR } = require('./modules/java');
+const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, resolveJavaPath } = require('./modules/java');
 
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -475,10 +475,30 @@ function createWindow() {
     ipcMain.handle('get-app-version', () => app.getVersion());
     
     ipcMain.handle('select-path', async (event, type) => {
-        const properties = type === 'file' ? ['openFile'] : ['openDirectory'];
-        const result = await dialog.showOpenDialog(win, { properties });
+        let properties = type === 'dir' ? ['openDirectory'] : ['openFile'];
+        let title = type === 'dir' ? 'Выберите папку' : 'Выберите файл';
+        let filters = [];
+
+        if (type === 'java') {
+            title = 'Выберите javaw.exe или папку с Java';
+            filters = process.platform === 'win32' ? [
+                { name: 'Исполняемый файл Java (javaw.exe, java.exe)', extensions: ['exe'] },
+                { name: 'Все файлы (*.*)', extensions: ['*'] }
+            ] : [
+                { name: 'Исполняемый файл Java (javaw, java)', extensions: ['*'] }
+            ];
+        }
+
+        const options = { title, properties };
+        if (filters.length > 0) options.filters = filters;
+
+        const result = await dialog.showOpenDialog(win, options);
         if (!result.canceled && result.filePaths.length > 0) {
-            return result.filePaths[0];
+            let selectedPath = result.filePaths[0];
+            if (type === 'java') {
+                selectedPath = resolveJavaPath(selectedPath);
+            }
+            return selectedPath;
         }
         return null;
     });

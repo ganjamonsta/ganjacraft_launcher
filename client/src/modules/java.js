@@ -25,6 +25,90 @@ function preferJavaw(javaCommandOrPath) {
     return javaCommandOrPath;
 }
 
+/**
+ * Умный резолвер пути к Java ("Защита от дурачка")
+ * Автоматически находит javaw.exe/java.exe, даже если пользователь выберет папку, java.exe или сторонний файл в bin.
+ */
+function resolveJavaPath(inputPath) {
+    if (!inputPath || typeof inputPath !== 'string') return inputPath;
+
+    let trimmed = inputPath.trim().replace(/^["']|["']$/g, '');
+    if (!trimmed) return trimmed;
+
+    try {
+        if (!fs.existsSync(trimmed)) {
+            if (process.platform === 'win32' && !trimmed.toLowerCase().endsWith('.exe')) {
+                if (fs.existsSync(trimmed + '.exe')) {
+                    trimmed += '.exe';
+                } else if (fs.existsSync(trimmed + 'w.exe')) {
+                    trimmed += 'w.exe';
+                }
+            }
+        }
+
+        if (fs.existsSync(trimmed)) {
+            const stat = fs.statSync(trimmed);
+
+            if (stat.isDirectory()) {
+                const candidates = process.platform === 'win32'
+                    ? [
+                        path.join(trimmed, 'bin', 'javaw.exe'),
+                        path.join(trimmed, 'bin', 'java.exe'),
+                        path.join(trimmed, 'javaw.exe'),
+                        path.join(trimmed, 'java.exe'),
+                    ]
+                    : [
+                        path.join(trimmed, 'bin', 'javaw'),
+                        path.join(trimmed, 'bin', 'java'),
+                        path.join(trimmed, 'javaw'),
+                        path.join(trimmed, 'java'),
+                    ];
+
+                for (const candidate of candidates) {
+                    if (fs.existsSync(candidate) && !fs.statSync(candidate).isDirectory()) {
+                        return preferJavaw(candidate);
+                    }
+                }
+            } else {
+                const dir = path.dirname(trimmed);
+                const filename = path.basename(trimmed).toLowerCase();
+
+                if (filename === 'javaw.exe' || filename === 'javaw') {
+                    return trimmed;
+                }
+                if (filename === 'java.exe' || filename === 'java') {
+                    return preferJavaw(trimmed);
+                }
+
+                const javawInDir = process.platform === 'win32'
+                    ? path.join(dir, 'javaw.exe')
+                    : path.join(dir, 'javaw');
+                if (fs.existsSync(javawInDir)) {
+                    return javawInDir;
+                }
+
+                const javaInDir = process.platform === 'win32'
+                    ? path.join(dir, 'java.exe')
+                    : path.join(dir, 'java');
+                if (fs.existsSync(javaInDir)) {
+                    return preferJavaw(javaInDir);
+                }
+
+                const parentBinJavaw = process.platform === 'win32'
+                    ? path.join(dir, '..', 'bin', 'javaw.exe')
+                    : path.join(dir, '..', 'bin', 'javaw');
+                if (fs.existsSync(parentBinJavaw)) {
+                    return parentBinJavaw;
+                }
+            }
+        }
+    } catch (err) {
+        console.error('Error resolving Java path:', err);
+    }
+
+    return preferJavaw(trimmed);
+}
+
 function parseJavaMajor(versionOutput) {
     if (!versionOutput || typeof versionOutput !== 'string') return null;
 
@@ -233,4 +317,5 @@ module.exports = {
     getJavaVersionInfo,
     checkAndDownloadJava,
     preferJavaw,
+    resolveJavaPath,
 };
