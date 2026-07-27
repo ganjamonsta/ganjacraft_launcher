@@ -115,43 +115,44 @@ export function toggleSnow(enable) {
     appState.set('effects.snowEnabled', enable);
 }
 
+import { effectsEngine } from './effects-engine.js';
+
 /**
- * Burst effect - взрыв снега сверху (при открытии настроек)
+ * Burst effect - взрыв частиц сверху (при открытии настроек)
  */
 export function createSnowBurst() {
     const burstContainer = document.getElementById('snow-burst-container') || document.getElementById('snow-container');
     if (!burstContainer) return;
-    
+
     for (let i = 0; i < SNOW_BURST_COUNT; i++) {
         setTimeout(() => {
-            const snowflake = document.createElement('div');
-            snowflake.classList.add('snowflake', 'burst');
-            snowflake.textContent = '❄';
+            const particle = effectsEngine.createBurstElement();
             
             // Старт по ВСЕЙ ширине окна
             const startX = 5 + Math.random() * 90;
-            snowflake.style.left = startX + 'vw';
-            snowflake.style.top = '-10px';
+            particle.style.left = startX + 'vw';
+            particle.style.top = '-10px';
+            const size = (14 + Math.random() * 14);
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
             
             // Направление разлёта
             const spreadX = (Math.random() - 0.5) * 200;
             const spreadY = 120 + Math.random() * 280;
             const rotation = (Math.random() - 0.5) * 360;
             
-            snowflake.style.setProperty('--burst-x', spreadX + 'px');
-            snowflake.style.setProperty('--burst-y', spreadY + 'px');
-            snowflake.style.setProperty('--burst-rotate', rotation + 'deg');
+            particle.style.setProperty('--burst-x', spreadX + 'px');
+            particle.style.setProperty('--burst-y', spreadY + 'px');
+            particle.style.setProperty('--burst-rotate', rotation + 'deg');
             
             const duration = 0.7 + Math.random() * 1.0;
-            snowflake.style.animationDuration = duration + 's';
+            particle.style.animationDuration = duration + 's';
+            particle.style.opacity = 0.75 + Math.random() * 0.25;
             
-            snowflake.style.opacity = 0.75 + Math.random() * 0.25;
-            snowflake.style.fontSize = (14 + Math.random() * 16) + 'px';
+            burstContainer.appendChild(particle);
             
-            burstContainer.appendChild(snowflake);
-            
-            snowflake.addEventListener('animationend', () => {
-                snowflake.remove();
+            particle.addEventListener('animationend', () => {
+                particle.remove();
             });
         }, i * 5);
     }
@@ -164,12 +165,10 @@ export function createSnowBurst() {
 export function createDirectionalBurst(direction) {
     const burstContainer = document.getElementById('snow-burst-container') || document.getElementById('snow-container');
     if (!burstContainer) return;
-    
+
     for (let i = 0; i < DIRECTIONAL_BURST_COUNT; i++) {
         setTimeout(() => {
-            const snowflake = document.createElement('div');
-            snowflake.classList.add('snowflake', 'burst');
-            snowflake.textContent = '❄';
+            const particle = effectsEngine.createBurstElement();
             
             let startX, spreadX;
             const startY = 10 + Math.random() * 80;
@@ -182,26 +181,27 @@ export function createDirectionalBurst(direction) {
                 spreadX = 280 + Math.random() * 320;
             }
             
-            snowflake.style.left = startX + 'vw';
-            snowflake.style.top = startY + 'vh';
+            particle.style.left = startX + 'vw';
+            particle.style.top = startY + 'vh';
+            const size = (12 + Math.random() * 12);
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
             
             const spreadY = 40 + Math.random() * 80;
             const rotation = (Math.random() - 0.5) * 360;
             
-            snowflake.style.setProperty('--burst-x', spreadX + 'px');
-            snowflake.style.setProperty('--burst-y', spreadY + 'px');
-            snowflake.style.setProperty('--burst-rotate', rotation + 'deg');
+            particle.style.setProperty('--burst-x', spreadX + 'px');
+            particle.style.setProperty('--burst-y', spreadY + 'px');
+            particle.style.setProperty('--burst-rotate', rotation + 'deg');
             
             const duration = 0.8 + Math.random() * 0.6;
-            snowflake.style.animationDuration = duration + 's';
+            particle.style.animationDuration = duration + 's';
+            particle.style.opacity = 0.4 + Math.random() * 0.25;
             
-            snowflake.style.opacity = 0.4 + Math.random() * 0.25;
-            snowflake.style.fontSize = (12 + Math.random() * 12) + 'px';
+            burstContainer.appendChild(particle);
             
-            burstContainer.appendChild(snowflake);
-            
-            snowflake.addEventListener('animationend', () => {
-                snowflake.remove();
+            particle.addEventListener('animationend', () => {
+                particle.remove();
             });
         }, i * 4);
     }
@@ -214,21 +214,22 @@ export function createDirectionalBurst(direction) {
 export function createSideBurst(side) {
     const burstContainer = document.getElementById('snow-burst-container') || document.getElementById('snow-container');
     if (!burstContainer) return;
-    
+
     for (let i = 0; i < SIDE_BURST_COUNT; i++) {
         setTimeout(() => {
-            const snowflake = document.createElement('div');
-            snowflake.classList.add('snowflake', 'burst');
-            snowflake.textContent = '❄';
+            const particle = effectsEngine.createBurstElement();
             
             if (side === 'left') {
-                snowflake.style.left = '-10px';
+                particle.style.left = '-10px';
             } else {
-                snowflake.style.left = 'calc(100vw + 10px)';
+                particle.style.left = 'calc(100vw + 10px)';
             }
             
             const startY = 10 + Math.random() * 80;
-            snowflake.style.top = startY + 'vh';
+            particle.style.top = startY + 'vh';
+            const size = (10 + Math.random() * 12);
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
             
             const spreadX = side === 'left' 
                 ? 80 + Math.random() * 150
@@ -236,20 +237,18 @@ export function createSideBurst(side) {
             const spreadY = (Math.random() - 0.3) * 150;
             const rotation = (Math.random() - 0.5) * 360;
             
-            snowflake.style.setProperty('--burst-x', spreadX + 'px');
-            snowflake.style.setProperty('--burst-y', spreadY + 'px');
-            snowflake.style.setProperty('--burst-rotate', rotation + 'deg');
+            particle.style.setProperty('--burst-x', spreadX + 'px');
+            particle.style.setProperty('--burst-y', spreadY + 'px');
+            particle.style.setProperty('--burst-rotate', rotation + 'deg');
             
             const duration = 0.6 + Math.random() * 1.0;
-            snowflake.style.animationDuration = duration + 's';
+            particle.style.animationDuration = duration + 's';
+            particle.style.opacity = 0.6 + Math.random() * 0.4;
             
-            snowflake.style.opacity = 0.6 + Math.random() * 0.4;
-            snowflake.style.fontSize = (10 + Math.random() * 12) + 'px';
+            burstContainer.appendChild(particle);
             
-            burstContainer.appendChild(snowflake);
-            
-            snowflake.addEventListener('animationend', () => {
-                snowflake.remove();
+            particle.addEventListener('animationend', () => {
+                particle.remove();
             });
         }, i * 10);
     }

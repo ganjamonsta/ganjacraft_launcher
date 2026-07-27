@@ -22,6 +22,8 @@ class AppState {
             
             // Visual effects state
             effects: {
+                preset: 'auto',
+                density: 'medium',
                 snowEnabled: true,
                 smokeEnabled: true,
                 parallaxEnabled: true

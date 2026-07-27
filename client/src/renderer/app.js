@@ -9,14 +9,11 @@ import { dom } from './utils/dom.js';
 // === UI Imports ===
 import { customConfirm, customAlert, showError } from './ui/modals.js';
 import { 
-    toggleSnow, 
+    initAllEffects,
     createSnowBurst, 
     createDirectionalBurst, 
-    createSideBurst,
-    initSnowVisibilityHandler 
+    createSideBurst
 } from './ui/effects/index.js';
-import { startSmokeEffect, stopSmokeEffect, initSmokeMouseTracking } from './ui/effects/smoke.js';
-import { initParallax, stopParallax } from './ui/effects/parallax.js';
 import { initEasterEgg } from './ui/effects/easter-egg.js';
 
 // === Feature Imports ===
@@ -156,6 +153,21 @@ function initSettingsButton() {
     const btnSaveSettings = dom.get('save-settings');
     const settingsScreen = dom.get('step-settings');
     const consoleOutput = dom.get('console-output');
+    const titleMainTab = dom.get('title-bar-title');
+    
+    // Title bar main tab click -> switch to main launcher screen
+    if (titleMainTab) {
+        titleMainTab.addEventListener('click', () => {
+            if (isSettingsAnimating()) return;
+            if (settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {
+                tryTriggerEasterEgg();
+                toggleMainUIVisibility(true, currentConfig);
+                closeSettings();
+                const saveBtn = dom.get('save-settings');
+                if (saveBtn) saveBtn.classList.remove('visible');
+            }
+        });
+    }
     
     // Open/Toggle settings
     if (btnSettings) {
@@ -271,19 +283,8 @@ async function init() {
     setCurrentConfig(currentConfig);
     
     // Init visual effects
-    initSmokeMouseTracking();
-    initParallax();
-    initSnowVisibilityHandler();
+    await initAllEffects(currentConfig);
     initEasterEgg();
-    
-    // Apply config to effects
-    toggleSnow(currentConfig.enableSnow !== false);
-    if (currentConfig.enableSmoke !== false) {
-        startSmokeEffect();
-    }
-    if (currentConfig.enableParallax === false) {
-        stopParallax();
-    }
     
     // Init UI handlers
     initWindowControls();

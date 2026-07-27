@@ -104,11 +104,12 @@ function createLoggers(event, rootPath, config) {
     };
 
     const sendDebug = (msg) => {
-        if (config.debugMode) {
-            const timestamp = new Date().toISOString();
-            if (debugStream && !debugStream.destroyed) {
-                debugStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
-            }
+        const timestamp = new Date().toISOString();
+        if (logStream && !logStream.destroyed) {
+            logStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
+        }
+        if (debugStream && !debugStream.destroyed) {
+            debugStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
         }
     };
 
@@ -566,17 +567,13 @@ async function launchGame(event, options) {
             }
 
             launcher.on('data', (e) => {
-                sendDebug(`[GAME STDOUT] ${e}`);
-                if (mainWindow && !mainWindow.isDestroyed()) {
-                    mainWindow.webContents.send('log-message', `[GAME] ${e}`);
-                }
+                const text = String(e).trim();
+                if (text) sendLog(`[GAME] ${text}`);
             });
             
             launcher.on('error', (e) => {
-                sendDebug(`[GAME STDERR] ${e}`);
-                if (mainWindow && !mainWindow.isDestroyed()) {
-                    mainWindow.webContents.send('log-message', `[ОШИБКА ИГРЫ] ${e}`);
-                }
+                const text = String(e).trim();
+                if (text) sendLog(`[GAME ERROR] ${text}`);
             });
 
             launcher.on('progress', (e) => {

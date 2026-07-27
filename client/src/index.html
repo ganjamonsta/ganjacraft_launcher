@@ -16,7 +16,14 @@
 
     <!-- Custom Title Bar -->
     <div id="title-bar">
-        <div id="title-bar-title">GANJACRAFT LAUNCHER</div>
+        <div class="title-bar-left">
+            <button id="title-bar-title" class="tab-btn title-main-tab active" title="Главная">GANJACRAFT LAUNCHER</button>
+            <div class="settings-tabs hidden">
+                <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
+                <button class="tab-btn" data-tab="mods">МОДЫ</button>
+                <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
+            </div>
+        </div>
         <div id="window-controls">
             <button id="btn-settings" class="control-btn" title="Настройки">⚙</button>
             <button id="btn-minimize" class="control-btn" title="Свернуть">─</button>
@@ -27,6 +34,7 @@
     <!-- Main Content -->
     <div id="main-content">
         <div id="bg-overlay"></div>
+        <div id="snow-bg-container"></div>
 
         <!-- Server Status Widget -->
         <div id="server-status-widget" class="fade-in">
@@ -53,17 +61,6 @@
 
         <!-- Settings Screen (Full Screen) -->
         <div id="step-settings" class="settings-screen hidden">
-            <div class="settings-header">
-                <div class="settings-tabs">
-                    <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
-                    <button class="tab-btn" data-tab="mods">МОДЫ</button>
-                    <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
-                </div>
-                <div class="settings-header-actions">
-                    <button id="btn-close-settings" class="settings-close-btn" title="Закрыть">×</button>
-                </div>
-            </div>
-            
             <!-- Floating Save Button (Hidden by default) -->
             <button id="save-settings" class="floating-save-btn" title="Сохранить настройки">
                 <span class="save-icon">💾</span>
@@ -203,21 +200,43 @@
                                     <h4>Внешний вид</h4>
                                 </div>
                                 <div class="category-content">
-                                    <label class="setting-item setting-item-toggle">
+                                    <div class="setting-item">
                                         <div class="setting-label">
                                             <svg class="setting-icon"><use href="#icon-snow"/></svg>
                                             <div class="setting-text">
-                                                <span class="setting-title">Снежинки</span>
-                                                <span class="setting-desc">Анимация падающего снега</span>
+                                                <span class="setting-title">Тема эффектов</span>
+                                                <span class="setting-desc">Сезонные частицы и анимация</span>
                                             </div>
                                         </div>
                                         <div class="setting-control">
-                                            <span class="toggle-switch">
-                                                <input type="checkbox" id="setting-enable-snow">
-                                                <span class="toggle-slider"></span>
-                                            </span>
+                                            <select id="setting-effects-preset" class="setting-select">
+                                                <option value="auto">🔄 Авто (По сезону)</option>
+                                                <option value="snow">❄️ Зима (Снежинки)</option>
+                                                <option value="leaves">🍂 Осень (Листопад)</option>
+                                                <option value="sakura">🌸 Весна (Сакура)</option>
+                                                <option value="fireflies">✨ Лето (Светлячки)</option>
+                                                <option value="ganja">🌿 Ganja Special</option>
+                                                <option value="off">🚫 Отключено</option>
+                                            </select>
                                         </div>
-                                    </label>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <div class="setting-label">
+                                            <svg class="setting-icon"><use href="#icon-appearance"/></svg>
+                                            <div class="setting-text">
+                                                <span class="setting-title">Плотность частиц</span>
+                                                <span class="setting-desc">Количество частиц на экране</span>
+                                            </div>
+                                        </div>
+                                        <div class="setting-control">
+                                            <select id="setting-effects-density" class="setting-select">
+                                                <option value="low">Низкая</option>
+                                                <option value="medium">Средняя</option>
+                                                <option value="high">Высокая</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     
                                     <label class="setting-item setting-item-toggle">
                                         <div class="setting-label">

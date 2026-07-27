@@ -23,7 +23,9 @@ function getDefaultConfig() {
         memoryMin: '2G',
         memoryMax: '6G',
         hideOnPlay: true,
-        enableSnow: true, // Default snow effect
+        enableSnow: true, // Default snow effect (legacy compatibility)
+        effectsPreset: 'auto', // 'auto' | 'snow' | 'leaves' | 'sakura' | 'fireflies' | 'ganja' | 'off'
+        effectsDensity: 'medium', // 'low' | 'medium' | 'high'
         enableSmoke: true, // Default smoke effect
         enableParallax: true, // Default parallax background
         debugMode: false, // Default debug mode off
@@ -64,6 +66,12 @@ function normalizeLoadedConfig(config) {
     }
     if (!Object.prototype.hasOwnProperty.call(merged, 'enableParallax')) {
         merged.enableParallax = true;
+    }
+    if (!Object.prototype.hasOwnProperty.call(merged, 'effectsPreset')) {
+        merged.effectsPreset = merged.enableSnow === false ? 'off' : 'auto';
+    }
+    if (!Object.prototype.hasOwnProperty.call(merged, 'effectsDensity')) {
+        merged.effectsDensity = 'medium';
     }
 
     return merged;

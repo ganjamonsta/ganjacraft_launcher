@@ -5,7 +5,7 @@
 
 import { dom } from '../../utils/dom.js';
 import { customAlert, customConfirm } from '../../ui/modals.js';
-import { toggleSnow, createSnowBurst, createDirectionalBurst, createSideBurst } from '../../ui/effects/index.js';
+import { toggleSnow, createSnowBurst, createDirectionalBurst, createSideBurst, applyEffectsConfig } from '../../ui/effects/index.js';
 import { appState } from '../../state/app-state.js';
 import { startSmokeEffect, stopSmokeEffect } from '../../ui/effects/smoke.js';
 import { startParallax, stopParallax } from '../../ui/effects/parallax.js';
@@ -43,7 +43,8 @@ export function getCurrentSettingsState() {
         memoryMin: document.getElementById('setting-ram-min')?.value.trim().toUpperCase() || '2G',
         memoryMax: document.getElementById('setting-ram-max')?.value.trim().toUpperCase() || '6G',
         hideOnPlay: document.getElementById('setting-hide-on-play')?.checked ?? true,
-        enableSnow: document.getElementById('setting-enable-snow')?.checked ?? true,
+        effectsPreset: document.getElementById('setting-effects-preset')?.value || 'auto',
+        effectsDensity: document.getElementById('setting-effects-density')?.value || 'medium',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
         skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
@@ -109,16 +110,17 @@ export function setupSettingsChangeListeners() {
         }
     });
     
-    // Checkboxes
-    const checkboxes = [
+    // Controls (Checkboxes & Selects)
+    const formControls = [
         'setting-hide-on-play',
-        'setting-enable-snow',
+        'setting-effects-preset',
+        'setting-effects-density',
         'setting-enable-smoke',
         'setting-enable-parallax',
         'dev-skip-sync-checkbox'
     ];
     
-    checkboxes.forEach(id => {
+    formControls.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('change', updateSaveButtonVisibility, { passive: true });
@@ -191,6 +193,23 @@ export function openSettings(config) {
     settingsScreen.classList.remove('hidden', 'closing');
     settingsScreen.classList.add('opening');
     
+    // Деактивировать главную вкладку и запустить выпадение вкладок настроек
+    const titleMainTab = document.getElementById('title-bar-title');
+    if (titleMainTab) titleMainTab.classList.remove('active');
+
+    const titleBarTabs = document.querySelector('#title-bar .settings-tabs');
+    if (titleBarTabs) {
+        titleBarTabs.classList.remove('hidden', 'closing');
+        titleBarTabs.classList.add('opening');
+    }
+    
+    const btnSettings = document.getElementById('btn-settings');
+    if (btnSettings) {
+        btnSettings.classList.add('settings-active');
+        btnSettings.textContent = '✕';
+        btnSettings.title = 'Закрыть настройки';
+    }
+    
     // Reset tab index
     const tabButtons = Array.from(document.querySelectorAll('.settings-tabs .tab-btn'));
     const activeTabBtn = document.querySelector('.settings-tabs .tab-btn.active');
@@ -219,6 +238,27 @@ export function closeSettings() {
     settingsScreen.classList.remove('opening');
     settingsScreen.classList.add('closing');
     
+    // Активировать главную вкладку и спрятать вкладки настроек с анимацией
+    const titleMainTab = document.getElementById('title-bar-title');
+    if (titleMainTab) titleMainTab.classList.add('active');
+
+    const titleBarTabs = document.querySelector('#title-bar .settings-tabs');
+    if (titleBarTabs) {
+        titleBarTabs.classList.remove('opening');
+        titleBarTabs.classList.add('closing');
+        setTimeout(() => {
+            titleBarTabs.classList.remove('closing');
+            titleBarTabs.classList.add('hidden');
+        }, 250);
+    }
+    
+    const btnSettings = document.getElementById('btn-settings');
+    if (btnSettings) {
+        btnSettings.classList.remove('settings-active');
+        btnSettings.textContent = '⚙';
+        btnSettings.title = 'Настройки';
+    }
+    
     setTimeout(() => {
         settingsScreen.classList.remove('closing');
         settingsScreen.classList.add('hidden');
@@ -237,7 +277,8 @@ export function populateSettingsFields(config) {
     const ramMinInput = document.getElementById('setting-ram-min');
     const ramMaxInput = document.getElementById('setting-ram-max');
     const hideOnPlayCheckbox = document.getElementById('setting-hide-on-play');
-    const snowCheckbox = document.getElementById('setting-enable-snow');
+    const presetSelect = document.getElementById('setting-effects-preset');
+    const densitySelect = document.getElementById('setting-effects-density');
     const smokeCheckbox = document.getElementById('setting-enable-smoke');
     const parallaxCheckbox = document.getElementById('setting-enable-parallax');
     
@@ -246,7 +287,14 @@ export function populateSettingsFields(config) {
     if (ramMinInput) ramMinInput.value = config.memoryMin || '2G';
     if (ramMaxInput) ramMaxInput.value = config.memoryMax || '6G';
     if (hideOnPlayCheckbox) hideOnPlayCheckbox.checked = config.hideOnPlay !== false;
-    if (snowCheckbox) snowCheckbox.checked = config.enableSnow !== false;
+    
+    let preset = config.effectsPreset || 'auto';
+    if (config.enableSnow === false && (!config.effectsPreset || config.effectsPreset === 'snow')) {
+        preset = 'off';
+    }
+    if (presetSelect) presetSelect.value = preset;
+    if (densitySelect) densitySelect.value = config.effectsDensity || 'medium';
+    
     if (smokeCheckbox) smokeCheckbox.checked = config.enableSmoke !== false;
     if (parallaxCheckbox) parallaxCheckbox.checked = config.enableParallax !== false;
     
@@ -269,6 +317,8 @@ export async function saveSettings() {
     if (!/^\d+[MG]$/.test(memMin)) memMin = '2G';
     if (!/^\d+[MG]$/.test(memMax)) memMax = '6G';
 
+    const selectedPreset = document.getElementById('setting-effects-preset')?.value || 'auto';
+
     const newConfig = {
         ...currentConfig,
         installPath: document.getElementById('setting-path')?.value || '',
@@ -276,7 +326,9 @@ export async function saveSettings() {
         memoryMin: memMin,
         memoryMax: memMax,
         hideOnPlay: document.getElementById('setting-hide-on-play')?.checked ?? true,
-        enableSnow: document.getElementById('setting-enable-snow')?.checked ?? true,
+        effectsPreset: selectedPreset,
+        effectsDensity: document.getElementById('setting-effects-density')?.value || 'medium',
+        enableSnow: selectedPreset !== 'off',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
         skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
@@ -293,7 +345,8 @@ export async function saveSettings() {
     currentConfig = newConfig;
     
     // Apply Visual Effects
-    toggleSnow(newConfig.enableSnow);
+    applyEffectsConfig(newConfig);
+
     if (newConfig.enableSmoke) {
         startSmokeEffect();
     } else {

@@ -129,6 +129,35 @@
     color: #aaa;
 }
 
+/* Custom Select styling */
+.setting-select {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #eee;
+    padding: 6px 12px;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.setting-select:hover {
+    border-color: rgba(76, 175, 80, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.setting-select:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.setting-select option {
+    background: #1e1e1e;
+    color: #fff;
+    padding: 6px;
+}
+
 .setting-text {
     display: flex;
     flex-direction: column;
