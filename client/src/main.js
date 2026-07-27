@@ -15,6 +15,8 @@ const https = require('https');
 const { spawn } = require('child_process');
 const { Client } = require('minecraft-launcher-core');
 
+const { registerAllHandlers } = require('./main-process/ipc');
+
 // Modules
 const { loadConfig, saveConfig } = require('./modules/config');
 const { syncFiles, downloadFile } = require('./modules/updater');
@@ -457,6 +459,9 @@ function createWindow() {
     });
 
     win.loadFile('src/index.html');
+
+    // Register all IPC handlers (config, dev-tools, window, etc.)
+    try { registerAllHandlers(win); } catch (e) { console.error('Failed to register IPC handlers:', e); }
 
     // Hard-block maximize/fullscreen (Windows can still attempt this via drag-region double-click).
     win.on('maximize', () => {
