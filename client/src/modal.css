@@ -375,46 +375,167 @@
     }
 }
 
+/* ===================================================
+   Photo Gallery ViewPager Reel (Side-by-Side Swiping)
+   =================================================== */
+
+@keyframes gallery-slide-out-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+@keyframes gallery-slide-out-right {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes gallery-slide-in-right {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes gallery-slide-in-left {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
+/* Incoming tab slides into view side-by-side from right or left */
 .tab-content.slide-in-from-right {
-    animation: gallery-slide-in-right 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    display: flex !important;
+    animation: gallery-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     z-index: 2;
     will-change: transform;
 }
 
 .tab-content.slide-in-from-left {
-    animation: gallery-slide-in-left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    display: flex !important;
+    animation: gallery-slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     z-index: 2;
     will-change: transform;
 }
 
+/* Outgoing tab slides out side-by-side to left or right */
 .tab-content.slide-out-to-left {
-    animation: gallery-slide-out-left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    display: flex !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    animation: gallery-slide-out-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     z-index: 1;
     will-change: transform;
 }
 
 .tab-content.slide-out-to-right {
-    animation: gallery-slide-out-right 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    display: flex !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    animation: gallery-slide-out-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     z-index: 1;
     will-change: transform;
 }
 
-/* ===================================================
-   Unified Inertia Cascade Engine Connections (DRY)
-   =================================================== */
-
-/* Entering tab containers inherit unified inertia cascade motion */
-.tab-content.slide-in-from-right .settings-categories,
-.tab-content.slide-in-from-right .unified-dev-grid,
-.tab-content.slide-in-from-right #mods-grid {
-    animation: inertia-enter-right 0.40s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Prevent clipping of edge cards during tab slide animations */
+.settings-body {
+    overflow: hidden !important;
 }
 
-.tab-content.slide-in-from-left .settings-categories,
-.tab-content.slide-in-from-left .unified-dev-grid,
-.tab-content.slide-in-from-left #mods-grid {
-    animation: inertia-enter-left 0.40s cubic-bezier(0.16, 1, 0.3, 1) both;
+.settings-body.animating .tab-content,
+.settings-body.animating .settings-categories,
+.settings-body.animating #mods-views-stack,
+.settings-body.animating #mods-grid-container,
+.settings-body.animating #mods-grid,
+.settings-body.animating .subtab-view {
+    overflow: visible !important;
 }
+
+/* Prominent staggered card momentum lag inside sliding gallery reel */
+@keyframes gallery-card-lag-right {
+    0% {
+        transform: translateX(75px);
+        opacity: 0.3;
+    }
+    70% {
+        transform: translateX(-3px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes gallery-card-lag-left {
+    0% {
+        transform: translateX(-75px);
+        opacity: 0.3;
+    }
+    70% {
+        transform: translateX(3px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.tab-content.slide-in-from-right .settings-category,
+.tab-content.slide-in-from-right .unified-dev-card,
+.tab-content.slide-in-from-right #mods-grid > * {
+    animation: gallery-card-lag-right 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tab-content.slide-in-from-left .settings-category,
+.tab-content.slide-in-from-left .unified-dev-card,
+.tab-content.slide-in-from-left #mods-grid > * {
+    animation: gallery-card-lag-left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Wide, clearly distinct timing delays per child element */
+.tab-content.slide-in-from-right .settings-category:nth-child(1),
+.tab-content.slide-in-from-left .settings-category:nth-child(1),
+.tab-content.slide-in-from-right .unified-dev-card:nth-child(1),
+.tab-content.slide-in-from-left .unified-dev-card:nth-child(1),
+.tab-content.slide-in-from-right #mods-grid > *:nth-child(1),
+.tab-content.slide-in-from-left #mods-grid > *:nth-child(1) { animation-delay: 35ms; }
+
+.tab-content.slide-in-from-right .settings-category:nth-child(2),
+.tab-content.slide-in-from-left .settings-category:nth-child(2),
+.tab-content.slide-in-from-right .unified-dev-card:nth-child(2),
+.tab-content.slide-in-from-left .unified-dev-card:nth-child(2),
+.tab-content.slide-in-from-right #mods-grid > *:nth-child(2),
+.tab-content.slide-in-from-left #mods-grid > *:nth-child(2) { animation-delay: 95ms; }
+
+.tab-content.slide-in-from-right .settings-category:nth-child(3),
+.tab-content.slide-in-from-left .settings-category:nth-child(3),
+.tab-content.slide-in-from-right .unified-dev-card:nth-child(3),
+.tab-content.slide-in-from-left .unified-dev-card:nth-child(3),
+.tab-content.slide-in-from-right #mods-grid > *:nth-child(3),
+.tab-content.slide-in-from-left #mods-grid > *:nth-child(3) { animation-delay: 155ms; }
+
+.tab-content.slide-in-from-right .settings-category:nth-child(4),
+.tab-content.slide-in-from-left .settings-category:nth-child(4),
+.tab-content.slide-in-from-right .unified-dev-card:nth-child(4),
+.tab-content.slide-in-from-left .unified-dev-card:nth-child(4),
+.tab-content.slide-in-from-right #mods-grid > *:nth-child(4),
+.tab-content.slide-in-from-left #mods-grid > *:nth-child(4) { animation-delay: 215ms; }
+
+.tab-content.slide-in-from-right .settings-category:nth-child(5),
+.tab-content.slide-in-from-left .settings-category:nth-child(5),
+.tab-content.slide-in-from-right .unified-dev-card:nth-child(5),
+.tab-content.slide-in-from-left .unified-dev-card:nth-child(5),
+.tab-content.slide-in-from-right #mods-grid > *:nth-child(5),
+.tab-content.slide-in-from-left #mods-grid > *:nth-child(5) { animation-delay: 275ms; }
+
+.tab-content.slide-in-from-right .settings-category:nth-child(6),
+.tab-content.slide-in-from-left .settings-category:nth-child(6),
+.tab-content.slide-in-from-right .unified-dev-card:nth-child(6),
+.tab-content.slide-in-from-left .unified-dev-card:nth-child(6),
+.tab-content.slide-in-from-right #mods-grid > *:nth-child(6),
+.tab-content.slide-in-from-left #mods-grid > *:nth-child(6) { animation-delay: 335ms; }
 
 /* Mods Tab Specifics */
 #tab-mods {

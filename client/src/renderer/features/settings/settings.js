@@ -456,7 +456,7 @@ export function initSettingsTabs(config) {
                 }
                 if (settingsBody) settingsBody.classList.remove('animating');
                 mainTabTimer = null;
-            }, 300);
+            }, 550);
         });
     });
 }
