@@ -32,27 +32,13 @@
     pointer-events: none;
 }
 
-/* Drop from top with bounce/shake effect */
 @keyframes settings-drop {
     0% {
-        transform: translateY(-105%);
-        opacity: 0.8;
-    }
-    50% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    65% {
-        transform: translateY(-2%) rotate(0.3deg);
-    }
-    75% {
-        transform: translateY(0) rotate(-0.2deg);
-    }
-    85% {
-        transform: translateY(-0.5%) rotate(0.1deg);
+        transform: translateY(-100%);
+        opacity: 0;
     }
     100% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0);
         opacity: 1;
     }
 }
