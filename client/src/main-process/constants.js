@@ -26,8 +26,8 @@ const VANILLA_VERSION_JAR_URL = `https://launcher.mojang.com/v1/objects/2361ef2f
 const REPAIR_FILES = {
     'authlib-injector.jar': AUTHLIB_INJECTOR_URL,
     'forge-installer.jar': FORGE_INSTALLER_URL,
-    'modlauncher.jar': `https://repo1.maven.org/maven2/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar`,
-    'securejarhandler.jar': `https://repo1.maven.org/maven2/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar`,
+    'modlauncher.jar': `https://maven.minecraftforge.net/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar`,
+    'securejarhandler.jar': `https://maven.minecraftforge.net/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar`,
     'vanilla-client.jar': VANILLA_VERSION_JAR_URL,
 };
 
