@@ -386,29 +386,24 @@ function getCategoryIconId(catName) {
 }
 
 /**
- * Отрендерить сетку модов в стиле стандартных категорий настроек
+ * Отрендерить единую одностраничную таблицу модов (Опциональные моды + Поиск + Полный список)
  */
 export function renderModsGrid() {
     const grid = dom.get('mods-grid');
     if (!grid) return;
 
-    // Фильтруем моды по строке поиска
-    const items = allGroupItems.filter(item => {
-        if (!searchQuery) return true;
-        return (item.name && item.name.toLowerCase().includes(searchQuery)) ||
-               (item.shortName && item.shortName.toLowerCase().includes(searchQuery)) ||
-               (item.description && item.description.toLowerCase().includes(searchQuery)) ||
-               (item.paths && item.paths.some(p => p.toLowerCase().includes(searchQuery)));
+    const query = searchQuery ? searchQuery.trim().toLowerCase() : '';
+
+    // Фильтруем элементы
+    const filteredMods = allGroupItems.filter(item => {
+        if (!query) return true;
+        return (item.name && item.name.toLowerCase().includes(query)) ||
+               (item.shortName && item.shortName.toLowerCase().includes(query)) ||
+               (item.description && item.description.toLowerCase().includes(query));
     });
 
-    if (items.length === 0) {
-        grid.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
-        return;
-    }
-
-    // Группируем элементы по категориям
     const groupsMap = {};
-    items.forEach(mod => {
+    filteredMods.forEach(mod => {
         const cat = mod.subCategory || 'Остальное';
         if (!groupsMap[cat]) groupsMap[cat] = [];
         groupsMap[cat].push(mod);
@@ -416,7 +411,44 @@ export function renderModsGrid() {
 
     const fragment = document.createDocumentFragment();
 
-    Object.keys(groupsMap).forEach((catName, index) => {
+    // 1. КАРТОЧКА ПОИСКА МОДОВ (Top-Right Card, без лишних кнопок)
+    const searchCard = document.createElement('div');
+    searchCard.className = 'settings-category search-card-top';
+    searchCard.innerHTML = `
+        <div class="category-header">
+            <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <h4>ПОИСК МОДОВ</h4>
+        </div>
+        <div class="category-content" style="padding: 12px 14px;">
+            <div class="search-input-wrapper" style="width: 100%;">
+                <input type="text" id="mods-search-input" value="${searchQuery || ''}" placeholder="Поиск модов..." autocomplete="off">
+                <button type="button" id="mods-search-clear-btn" class="search-action-btn" title="Очистить">
+                    <svg class="search-icon-magnifier ${searchQuery ? 'hidden' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <svg class="search-icon-clear ${searchQuery ? '' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+        </div>
+    `;
+
+    // 2. Двухколоночный флекс-контейнер
+    const colLeft = document.createElement('div');
+    colLeft.className = 'mods-col-left';
+    colLeft.style.cssText = 'flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0;';
+
+    const colRight = document.createElement('div');
+    colRight.className = 'mods-col-right';
+    colRight.style.cssText = 'flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0;';
+
+    // Помещаем Поиск первым в правую колонку
+    colRight.appendChild(searchCard);
+
+    // Распределяем категории по колонкам:
+    // Левая:  ОПТИМИЗАЦИЯ, ГРАФИКА
+    // Правая: ПОИСК МОДОВ, ИНТЕРФЕЙС, МЕХАНИКИ
+    Object.keys(groupsMap).forEach(catName => {
         const categoryMods = groupsMap[catName];
         if (categoryMods.length === 0) return;
 
@@ -424,7 +456,6 @@ export function renderModsGrid() {
         categoryCard.className = 'settings-category';
 
         const iconId = getCategoryIconId(catName);
-
         const header = document.createElement('div');
         header.className = 'category-header';
         header.innerHTML = `
@@ -477,11 +508,93 @@ export function renderModsGrid() {
         });
 
         categoryCard.appendChild(content);
-        fragment.appendChild(categoryCard);
+
+        const upperCat = catName.toUpperCase();
+        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА') {
+            colLeft.appendChild(categoryCard);
+        } else {
+            colRight.appendChild(categoryCard);
+        }
     });
+
+    const topSection = document.createElement('div');
+    topSection.className = 'mods-top-section';
+    topSection.style.cssText = 'display: flex; gap: 14px; width: 100%; grid-column: 1 / -1;';
+    topSection.appendChild(colLeft);
+    topSection.appendChild(colRight);
+    fragment.appendChild(topSection);
+
+    // 3. НИЖНЯЯ КАРТОЧКА ПОЛНОГО СПИСКА (Full Width Span 2 Columns)
+    if (cachedManifest && cachedManifest.files) {
+        const fullListCard = document.createElement('div');
+        fullListCard.className = 'settings-category full-mods-list-card';
+        fullListCard.style.gridColumn = '1 / -1';
+        fullListCard.innerHTML = `
+            <div class="category-header">
+                <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+                </svg>
+                <h4>ВСЕ МОДЫ И ФАЙЛЫ В СБОРКЕ (ПОЛНЫЙ СПИСОК & ССЫЛКИ)</h4>
+            </div>
+            <div class="category-content catalog-items-content"></div>
+        `;
+
+        const catalogContent = fullListCard.querySelector('.category-content');
+        
+        // Делегирование ссылок CurseForge / Modrinth
+        catalogContent.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-url]');
+            if (!btn) return;
+            const url = btn.dataset.url;
+            if (url && window.api?.openUrl) {
+                window.api.openUrl(url);
+            } else if (url) {
+                window.open(url, '_blank');
+            }
+        });
+
+        renderLinksCatalogIntoContainer(cachedManifest, catalogContent, query);
+        fragment.appendChild(fullListCard);
+    }
 
     grid.innerHTML = '';
     grid.appendChild(fragment);
+
+    setupSearchCardEvents();
+}
+
+function setupSearchCardEvents() {
+    const searchInput = document.getElementById('mods-search-input');
+    const clearBtn = document.getElementById('mods-search-clear-btn');
+    const enableAllBtn = document.getElementById('btn-enable-all-mods');
+    const disableAllBtn = document.getElementById('btn-disable-all-mods');
+
+    if (searchInput) {
+        searchInput.oninput = (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            renderModsGrid();
+            const newSearchInput = document.getElementById('mods-search-input');
+            if (newSearchInput) {
+                newSearchInput.focus();
+                newSearchInput.setSelectionRange(newSearchInput.value.length, newSearchInput.value.length);
+            }
+        };
+    }
+
+    if (clearBtn) {
+        clearBtn.onclick = () => {
+            searchQuery = '';
+            renderModsGrid();
+        };
+    }
+
+    if (enableAllBtn) {
+        enableAllBtn.onclick = () => setAllModsState(true);
+    }
+
+    if (disableAllBtn) {
+        disableAllBtn.onclick = () => setAllModsState(false);
+    }
 }
 
 let cachedCatalogData = null;
@@ -520,7 +633,6 @@ function appendCatalogBatch(contentContainer) {
     currentRenderedIndex = nextIndex;
     contentContainer.appendChild(fragment);
 
-    // Подгружаем следующие элементы неблокирующим порциями в следующем кадре анимации
     if (currentRenderedIndex < filteredCatalogItems.length) {
         requestAnimationFrame(() => {
             appendCatalogBatch(contentContainer);
@@ -528,27 +640,9 @@ function appendCatalogBatch(contentContainer) {
     }
 }
 
-/**
- * Отрендерить Список всех модов с кнопками CurseForge & Modrinth (Оптимизированный неблокирующий рендеринг)
- */
-export function renderLinksCatalog(manifest, forceRebuild = false) {
-    const list = dom.get('catalog-list');
-    if (!list) return;
+function renderLinksCatalogIntoContainer(manifest, contentContainer, query = '') {
+    if (!manifest || !manifest.files || !contentContainer) return;
 
-    if (!manifest || !manifest.files) {
-        list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Список файлов пуст</div></div>';
-        return;
-    }
-
-    const query = searchQuery.toLowerCase();
-
-    // Если список уже отрендерен в DOM и строка поиска не менялась — повторный рендеринг не требуется
-    if (!forceRebuild && list.children.length > 0 && lastRenderedQuery === query && lastCatalogManifest === manifest) {
-        return;
-    }
-    lastRenderedQuery = query;
-
-    // Кешируем распарсенный массив данных каталога, чтобы не делать тяжелую регулярку и поиск при каждом переключении
     if (!cachedCatalogData || lastCatalogManifest !== manifest) {
         lastCatalogManifest = manifest;
         const jarFiles = manifest.files.filter(f => f.path.startsWith('mods/') && f.path.endsWith('.jar'));
@@ -566,10 +660,8 @@ export function renderLinksCatalog(manifest, forceRebuild = false) {
                 g.files && g.files.some(p => fileName.toLowerCase().includes(p.toLowerCase()))
             );
 
-            // Настоящий URL файла на сервере GanjaCraft (по которому качает лаунчер)
             const downloadUrl = file.url || `https://gcrlauncher1.loca.lt/files/${file.path.replace(/^\/+/, '')}`;
 
-            // Точная ссылка или поисковая ссылка для CurseForge и Modrinth
             const curseUrl = groupMatch?.curseSlug 
                 ? `https://www.curseforge.com/minecraft/mc-mods/${groupMatch.curseSlug}`
                 : `https://www.curseforge.com/minecraft/search?search=${encodeURIComponent(groupMatch ? groupMatch.name : cleanName)}`;
@@ -578,13 +670,10 @@ export function renderLinksCatalog(manifest, forceRebuild = false) {
                 ? `https://modrinth.com/mod/${groupMatch.modrinthSlug}`
                 : `https://modrinth.com/mods?q=${encodeURIComponent(groupMatch ? groupMatch.name : cleanName)}`;
 
-            const isOptional = file.optional;
-
             return {
                 fileName,
                 cleanName: groupMatch ? groupMatch.name : cleanName,
-                category: groupMatch ? groupMatch.category : (isOptional ? 'Опциональный' : 'Базовый'),
-                isOptional,
+                isOptional: !!groupMatch,
                 downloadUrl,
                 curseUrl,
                 modrinthUrl
@@ -592,53 +681,24 @@ export function renderLinksCatalog(manifest, forceRebuild = false) {
         });
     }
 
-    // Фильтрация по поисковому запросу
-    filteredCatalogItems = cachedCatalogData.filter(item => 
-        item.cleanName.toLowerCase().includes(query) ||
-        item.fileName.toLowerCase().includes(query)
-    );
+    filteredCatalogItems = cachedCatalogData.filter(item => {
+        if (!query) return true;
+        return item.cleanName.toLowerCase().includes(query) || item.fileName.toLowerCase().includes(query);
+    });
 
     if (filteredCatalogItems.length === 0) {
-        list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
+        contentContainer.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
         return;
     }
 
-    // Сброс и создание карточки контейнера
-    list.innerHTML = '';
-
-    const card = document.createElement('div');
-    card.className = 'settings-category';
-    card.style.gridColumn = '1 / -1';
-
-    const header = document.createElement('div');
-    header.className = 'category-header';
-    header.innerHTML = `
-        <svg class="category-icon"><use href="#icon-folder-open"/></svg>
-        <h4>Список всех модов сборки (${filteredCatalogItems.length})</h4>
-    `;
-    card.appendChild(header);
-
-    const content = document.createElement('div');
-    content.className = 'category-content';
-
-    // Делегирование событий клика по кнопкам (1 обработчик вместо 500)
-    content.addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-url]');
-        if (!btn) return;
-        const url = btn.dataset.url;
-        if (url && window.api?.openUrl) {
-            window.api.openUrl(url);
-        } else if (url) {
-            window.open(url, '_blank');
-        }
-    });
-
-    card.appendChild(content);
-    list.appendChild(card);
-
-    // Сбрасываем индекс и мгновенно выводим первую порцию без подлагиваний
+    contentContainer.innerHTML = '';
     currentRenderedIndex = 0;
-    appendCatalogBatch(content);
+    appendCatalogBatch(contentContainer);
+}
+
+export function renderLinksCatalog(manifest) {
+    if (manifest) cachedManifest = manifest;
+    renderModsGrid();
 }
 
 /**

@@ -483,19 +483,25 @@
     transform: scale(1.1);
 }
 
-/* Masonry column layout for category cards to eliminate empty vertical gaps */
+/* Clean 2-column Grid layout for Mods category cards */
 #mods-grid.settings-categories {
-    display: block !important;
-    column-count: 2 !important;
-    column-gap: 14px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+    align-items: start !important;
 }
 
 #mods-grid.settings-categories .settings-category {
-    break-inside: avoid !important;
-    margin-bottom: 14px !important;
-    display: inline-block !important;
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
     box-sizing: border-box !important;
+}
+
+#mods-grid.settings-categories .full-mods-list-card {
+    grid-column: 1 / -1 !important;
+    column-span: all !important;
+    width: 100% !important;
 }
 
 .unified-btn-icon svg {
