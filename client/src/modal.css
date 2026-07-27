@@ -74,11 +74,14 @@
     animation: settings-drop 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
     pointer-events: auto;
     backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 /* Visible state (after opening, not hidden, not closing) */
 .settings-screen:not(.hidden):not(.closing) {
     pointer-events: auto;
+    transform: translateY(0) translateZ(0);
+    opacity: 1;
 }
 
 /* Closing state - быстрее */
@@ -87,6 +90,59 @@
     pointer-events: none;
     backface-visibility: hidden;
 }
+
+/* Cascade animation keyframes for dropdown cards & modal elements */
+@keyframes cascade-pop-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.97);
+    }
+    60% {
+        opacity: 0.9;
+        transform: translateY(2px) scale(1.005);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Modal Staggered Content Animation */
+@keyframes modal-content-stagger {
+    0% {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Staggered cascading for settings category cards & dev tools cards on settings open */
+.settings-screen.opening .settings-category,
+.settings-screen.opening .unified-dev-card {
+    animation: cascade-pop-down 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: transform, opacity;
+}
+
+.settings-screen.opening .settings-category:nth-child(1),
+.settings-screen.opening .unified-dev-card:nth-child(1) { animation-delay: 30ms; }
+
+.settings-screen.opening .settings-category:nth-child(2),
+.settings-screen.opening .unified-dev-card:nth-child(2) { animation-delay: 75ms; }
+
+.settings-screen.opening .settings-category:nth-child(3),
+.settings-screen.opening .unified-dev-card:nth-child(3) { animation-delay: 120ms; }
+
+.settings-screen.opening .settings-category:nth-child(4),
+.settings-screen.opening .unified-dev-card:nth-child(4) { animation-delay: 165ms; }
+
+.settings-screen.opening .settings-category:nth-child(5),
+.settings-screen.opening .unified-dev-card:nth-child(5) { animation-delay: 210ms; }
+
+.settings-screen.opening .settings-category:nth-child(6),
+.settings-screen.opening .unified-dev-card:nth-child(6) { animation-delay: 255ms; }
 
 /* Hidden state (after closing animation) */
 .settings-screen.hidden {
@@ -758,6 +814,22 @@ input[type="checkbox"] {
 .custom-modal:not(.hidden) .custom-modal-content {
     transform: scale(1) translateY(0);
 }
+
+/* Staggered Content Animation inside Modal Dialogs */
+.custom-modal:not(.hidden) .custom-modal-header {
+    animation: modal-content-stagger 0.28s cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
+}
+.custom-modal:not(.hidden) .custom-modal-body {
+    animation: modal-content-stagger 0.28s cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+}
+.custom-modal:not(.hidden) .custom-modal-footer {
+    animation: modal-content-stagger 0.28s cubic-bezier(0.22, 1, 0.36, 1) 140ms both;
+}
+.custom-modal:not(.hidden) .modal-btn {
+    animation: modal-content-stagger 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.custom-modal:not(.hidden) .modal-btn:nth-child(1) { animation-delay: 170ms; }
+.custom-modal:not(.hidden) .modal-btn:nth-child(2) { animation-delay: 210ms; }
 
 .custom-modal-header {
     padding: 24px 28px;

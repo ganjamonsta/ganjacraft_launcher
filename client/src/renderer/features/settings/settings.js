@@ -224,7 +224,10 @@ export function openSettings(config) {
         createSnowBurst();
     }
     
-    setTimeout(() => { settingsAnimating = false; }, 300);
+    setTimeout(() => {
+        settingsScreen.classList.remove('opening');
+        settingsAnimating = false;
+    }, 350);
 }
 
 /**

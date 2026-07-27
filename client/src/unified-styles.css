@@ -881,6 +881,8 @@
     align-items: stretch;
     position: relative;
     overflow: hidden;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .unified-dev-card::before {
