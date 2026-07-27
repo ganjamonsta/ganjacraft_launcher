@@ -4,6 +4,16 @@ const crypto = require('crypto');
 const os = require('os');
 const { execFileSync } = require('child_process');
 
+// Load environment variables safely
+const envDeployPath = path.join(__dirname, '../.env.deploy');
+try {
+    require('dotenv').config({ path: envDeployPath });
+} catch {
+    try { require('./node_modules/dotenv').config({ path: envDeployPath }); } catch {}
+}
+
+const BASE_URL = process.env.BASE_URL || 'https://gcrlauncher1.loca.lt';
+
 const BOT_DIR_NAME = fs.existsSync(path.resolve(__dirname, '../../ganjacrafter_bot_renew')) ? 'ganjacrafter_bot_renew' : 'ganjacrafter_bot';
 
 // Read API Token
@@ -79,7 +89,7 @@ const versionJsonPath = path.join(TARGET_DIR, 'version.json');
 const encodedFile = encodeURIComponent(zipFile);
 const versionData = {
     version: version,
-    url: `https://gcrlauncher.share.zrok.io/api/launcher/files/${encodedFile}`,
+    url: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodedFile}`,
     signature: signature,
     zipSize: zipSize,
     releaseDate: new Date().toISOString(),
@@ -95,12 +105,6 @@ const DEPLOY_API_DIR = path.join(DEPLOY_WWW_DIR, 'api/launcher/files');
 
 fs.mkdirSync(DEPLOY_FILES_DIR, { recursive: true });
 fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
-
-// Copy manifest.json
-const MANIFEST_SRC = path.join(__dirname, 'manifest.json');
-if (fs.existsSync(MANIFEST_SRC)) {
-    fs.copyFileSync(MANIFEST_SRC, path.join(DEPLOY_FILES_DIR, 'manifest.json'));
-}
 
 // Clean old zips in deploy_www
 if (fs.existsSync(DEPLOY_API_DIR)) {
