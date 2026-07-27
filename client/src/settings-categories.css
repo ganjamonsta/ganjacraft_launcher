@@ -4,11 +4,43 @@
    Uses CSS variables from unified-styles.css
    ======================================== */
 
+/* General Settings Tab - Dashboard layout stretching 100% height without scrollbar */
+#tab-general {
+    padding: 14px 16px;
+    overflow-y: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#tab-general .settings-categories {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 12px;
+    height: 100%;
+    flex: 1;
+}
+
+#tab-general .settings-category {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#tab-general .category-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 2px 0;
+}
+
 /* Settings Categories Container */
 .settings-categories {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+    gap: 12px;
     padding: 0;
     max-width: 100%;
     width: 100%;
@@ -35,7 +67,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: var(--gc-spacing-md, 12px) 14px;
+    padding: 10px 14px;
     background: var(--gc-bg-header, rgba(40, 40, 40, 0.5));
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -58,7 +90,7 @@
 
 /* Category Content */
 .category-content {
-    padding: 4px 0;
+    padding: 2px 0;
 }
 
 /* Setting Item */
@@ -66,8 +98,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
-    gap: 12px;
+    padding: 8px 14px;
+    gap: 10px;
     transition: background 0.15s ease;
 }
 
@@ -97,7 +129,7 @@
 .setting-item-stacked {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 4px;
 }
 
 .setting-item-stacked .setting-control {
@@ -353,7 +385,7 @@
 .ram-setting {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 6px;
 }
 
 .ram-setting .setting-label {
@@ -371,7 +403,7 @@
 
 .ram-slider-container {
     width: 100%;
-    padding: 8px 4px;
+    padding: 2px 4px;
 }
 
 .ram-slider-wrapper {
