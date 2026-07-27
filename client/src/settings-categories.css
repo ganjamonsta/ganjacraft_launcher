@@ -80,6 +80,11 @@
     padding-right: 4px;
 }
 
+#mods-catalog-container .setting-item {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 46px;
+}
+
 /* Mod Status Badges */
 .mod-status-badge {
     font-size: 11px;
@@ -745,4 +750,49 @@
 
 .category-danger:hover::before {
     background: linear-gradient(180deg, #ef5350, transparent);
+}
+
+/* Subtab transition animations */
+.subtab-enter-right {
+    animation: subtabSlideRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.subtab-enter-left {
+    animation: subtabSlideLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes subtabSlideRight {
+    0% {
+        opacity: 0;
+        transform: translateX(28px) scale(0.98);
+        filter: blur(3px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateX(-2px) scale(1.002);
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes subtabSlideLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-28px) scale(0.98);
+        filter: blur(3px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateX(2px) scale(1.002);
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        filter: blur(0);
+    }
 }

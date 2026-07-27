@@ -188,9 +188,16 @@ function setupSubtabsListeners() {
         if (!btn) return;
 
         const subtab = btn.dataset.subtab;
-        if (!subtab) return;
+        if (!subtab || subtab === currentSubTab) return;
 
+        const prevSubtab = currentSubTab;
         currentSubTab = subtab;
+
+        const subtabOrder = ['ОПЦИОНАЛЬНЫЕ', 'КАТАЛОГ ССЫЛОК'];
+        const prevIndex = subtabOrder.indexOf(prevSubtab);
+        const newIndex = subtabOrder.indexOf(subtab);
+        const direction = newIndex > prevIndex ? 'right' : 'left';
+        const animClass = direction === 'right' ? 'subtab-enter-right' : 'subtab-enter-left';
 
         subtabsContainer.querySelectorAll('.unified-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -201,15 +208,19 @@ function setupSubtabsListeners() {
         if (subtab === 'КАТАЛОГ ССЫЛОК') {
             if (gridView) gridView.classList.add('hidden');
             if (catalogView) {
-                catalogView.classList.remove('hidden');
+                catalogView.classList.remove('hidden', 'subtab-enter-right', 'subtab-enter-left');
+                void catalogView.offsetWidth; // Force animation restart
+                catalogView.classList.add(animClass);
                 renderLinksCatalog(cachedManifest);
             }
         } else {
             if (catalogView) catalogView.classList.add('hidden');
             if (gridView) {
-                gridView.classList.remove('hidden');
+                gridView.classList.remove('hidden', 'subtab-enter-right', 'subtab-enter-left');
+                void gridView.offsetWidth; // Force animation restart
+                gridView.classList.add(animClass);
+                renderModsGrid();
             }
-            renderModsGrid();
         }
     });
 
@@ -434,13 +445,49 @@ export function renderModsGrid() {
 
 let cachedCatalogData = null;
 let lastCatalogManifest = null;
-let catalogObserver = null;
 let currentRenderedIndex = 0;
 let filteredCatalogItems = [];
-const BATCH_SIZE = 15;
+const BATCH_SIZE = 25;
+
+function appendCatalogBatch(contentContainer) {
+    if (currentRenderedIndex >= filteredCatalogItems.length) return;
+
+    const nextIndex = Math.min(currentRenderedIndex + BATCH_SIZE, filteredCatalogItems.length);
+    const fragment = document.createDocumentFragment();
+
+    for (let i = currentRenderedIndex; i < nextIndex; i++) {
+        const item = filteredCatalogItems[i];
+        const row = document.createElement('div');
+        row.className = 'setting-item';
+        row.innerHTML = `
+            <div class="setting-label">
+                <svg class="setting-icon"><use href="#icon-game"/></svg>
+                <div class="setting-text">
+                    <span class="setting-title">${item.cleanName} <span style="font-size: 11px; color: ${item.isOptional ? '#81c784' : '#64b5f6'};">(${item.isOptional ? 'Опциональный' : 'Базовый'})</span></span>
+                    <span class="setting-desc" style="font-family: monospace;">${item.fileName}</span>
+                </div>
+            </div>
+            <div class="setting-control">
+                <button type="button" class="unified-btn unified-btn-warning" data-url="${item.curseUrl}">🔥 CurseForge ↗</button>
+                <button type="button" class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}">⚡ Modrinth ↗</button>
+            </div>
+        `;
+        fragment.appendChild(row);
+    }
+
+    currentRenderedIndex = nextIndex;
+    contentContainer.appendChild(fragment);
+
+    // Подгружаем следующие элементы неблокирующим порциями в следующем кадре анимации
+    if (currentRenderedIndex < filteredCatalogItems.length) {
+        requestAnimationFrame(() => {
+            appendCatalogBatch(contentContainer);
+        });
+    }
+}
 
 /**
- * Отрендерить Список всех модов с кнопками CurseForge & Modrinth
+ * Отрендерить Список всех модов с кнопками CurseForge & Modrinth (Оптимизированный неблокирующий рендеринг)
  */
 export function renderLinksCatalog(manifest) {
     const list = dom.get('catalog-list');
@@ -524,43 +571,25 @@ export function renderLinksCatalog(manifest) {
 
     const content = document.createElement('div');
     content.className = 'category-content';
-    card.appendChild(content);
 
-    const fragment = document.createDocumentFragment();
-
-    filteredCatalogItems.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'setting-item';
-        row.innerHTML = `
-            <div class="setting-label">
-                <svg class="setting-icon"><use href="#icon-game"/></svg>
-                <div class="setting-text">
-                    <span class="setting-title">${item.cleanName} <span style="font-size: 11px; color: ${item.isOptional ? '#81c784' : '#64b5f6'};">(${item.isOptional ? 'Опциональный' : 'Базовый'})</span></span>
-                    <span class="setting-desc" style="font-family: monospace;">${item.fileName}</span>
-                </div>
-            </div>
-            <div class="setting-control">
-                <button class="unified-btn unified-btn-warning" data-url="${item.curseUrl}">🔥 CurseForge ↗</button>
-                <button class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}">⚡ Modrinth ↗</button>
-            </div>
-        `;
-
-        row.querySelectorAll('button').forEach(btn => {
-            btn.onclick = () => {
-                const url = btn.dataset.url;
-                if (url && window.api?.openUrl) {
-                    window.api.openUrl(url);
-                } else if (url) {
-                    window.open(url, '_blank');
-                }
-            };
-        });
-
-        fragment.appendChild(row);
+    // Делегирование событий клика по кнопкам (1 обработчик вместо 500)
+    content.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-url]');
+        if (!btn) return;
+        const url = btn.dataset.url;
+        if (url && window.api?.openUrl) {
+            window.api.openUrl(url);
+        } else if (url) {
+            window.open(url, '_blank');
+        }
     });
 
-    content.appendChild(fragment);
+    card.appendChild(content);
     list.appendChild(card);
+
+    // Сбрасываем индекс и мгновенно выводим первую порцию без подлагиваний
+    currentRenderedIndex = 0;
+    appendCatalogBatch(content);
 }
 
 /**
