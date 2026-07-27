@@ -19,7 +19,7 @@ const { registerAllHandlers } = require('./main-process/ipc');
 
 // Modules
 const { loadConfig, saveConfig } = require('./modules/config');
-const { syncFiles, downloadFile } = require('./modules/updater');
+const { syncFiles, downloadFile, downloadWithRetry } = require('./modules/updater');
 const { authenticateYggdrasil } = require('./modules/auth');
 const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR } = require('./modules/java');
 
@@ -242,20 +242,7 @@ async function preflightForgeLibraries(rootPath, sendLog, sendDebug) {
 function rewriteKnownUrl(url) {
     if (!url || typeof url !== 'string') return url;
 
-    const rewrites = [
-        ['https://libraries.minecraft.net/', `${MIRROR_BASE}/libraries/`],
-        ['https://resources.download.minecraft.net/', `${MIRROR_BASE}/resources/`],
-        ['https://piston-meta.mojang.com/', `${MIRROR_BASE}/piston-meta/`],
-        ['https://piston-data.mojang.com/', `${MIRROR_BASE}/piston-data/`],
-        ['https://launcher.mojang.com/', `${MIRROR_BASE}/launcher/`],
-        ['https://launchermeta.mojang.com/', `${MIRROR_BASE}/launchermeta/`],
-        ['https://files.minecraftforge.net/maven/', `${MIRROR_BASE}/forge-maven/`],
-        ['https://maven.minecraftforge.net/', `${MIRROR_BASE}/forge-maven/`],
-        ['https://files.minecraftforge.net/', `${MIRROR_BASE}/forge-files/`],
-        ['https://repo1.maven.org/maven2/', `${MIRROR_BASE}/maven-central/`],
-    ];
-
-    for (const [from, to] of rewrites) {
+    for (const [from, to] of URL_REWRITES) {
         if (url.startsWith(from)) return to + url.slice(from.length);
     }
     return url;
@@ -304,8 +291,12 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
     let versionJsonOk = false;
     if (fs.existsSync(versionJsonPath)) {
         try {
-            const parsed = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
-            if (parsed && parsed.id) versionJsonOk = true;
+            const rawText = fs.readFileSync(versionJsonPath, 'utf8');
+            const parsed = JSON.parse(rawText);
+            // If local json was modified with mirror/localtunnel URLs in the past, reject it so a clean copy is fetched
+            if (parsed && parsed.id && !rawText.includes('loca.lt') && !rawText.includes('/mirror/')) {
+                versionJsonOk = true;
+            }
         } catch {
             versionJsonOk = false;
         }
@@ -315,7 +306,7 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
         sendLog(`Скачивание версии Minecraft ${MC_VERSION} (json)...`);
         const tmpJson = `${versionJsonPath}.tmp`;
         try {
-            await downloadFile(VANILLA_VERSION_JSON_URL, tmpJson, { timeoutMs: 60_000 });
+            await downloadWithRetry(VANILLA_VERSION_JSON_URL, tmpJson, { timeoutMs: 60_000 }, 3, 2000);
             const parsed = JSON.parse(fs.readFileSync(tmpJson, 'utf8'));
             rewriteVersionJsonUrls(parsed);
             fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
@@ -346,7 +337,18 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
 
     if (needJar) {
         sendLog(`Скачивание версии Minecraft ${MC_VERSION} (jar)...`);
-        await downloadFile(VANILLA_VERSION_JAR_URL, versionJarPath, { timeoutMs: 180_000 });
+        let jarUrl = VANILLA_VERSION_JAR_URL;
+        try {
+            if (fs.existsSync(versionJsonPath)) {
+                const parsedJson = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
+                const candUrl = parsedJson.downloads?.client?.url;
+                if (candUrl && !candUrl.includes('loca.lt') && !candUrl.includes('/mirror/')) {
+                    jarUrl = candUrl;
+                }
+            }
+        } catch (_) {}
+
+        await downloadWithRetry(jarUrl, versionJarPath, { timeoutMs: 180_000 }, 3, 2000);
         if (!isZipIntact(versionJarPath)) {
             try { fs.unlinkSync(versionJarPath); } catch {}
             throw new Error(`Скачанный ${MC_VERSION}.jar поврежден (невалидный JAR/ZIP)`);
@@ -924,20 +926,10 @@ ipcMain.handle('launch-game', async (event, options) => {
         },
         javaPath: javaPath || undefined, // Use detected/downloaded java if available
         overrides: {
-            // Use our mirrored endpoints. These are mainly used by Forge wrapper and some legacy paths,
-            // but we also rewrite URLs inside the version json (see ensureVanillaVersionFiles).
-            url: {
-                meta: `${MIRROR_BASE}/launchermeta`,
-                resource: `${MIRROR_BASE}/resources`,
-                mavenForge: `${MIRROR_BASE}/forge-maven/`,
-                defaultRepoForge: `${MIRROR_BASE}/libraries/`,
-                library: `${MIRROR_BASE}/libraries/`,
-                fallbackMaven: `${MIRROR_BASE}/maven-fallback?filepath=`,
-            },
             maxSockets: 4,
         },
         customArgs: [
-            `-javaagent:${authlibPath}=https://ganjalaunch.share.zrok.io/api/yggdrasil`,
+            `-javaagent:${authlibPath}=http://192.168.1.8:5000/api/yggdrasil`,
             // Optimization Flags
             '-XX:+UseG1GC',
             '-XX:+ParallelRefProcEnabled',

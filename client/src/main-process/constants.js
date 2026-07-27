@@ -19,8 +19,8 @@ const FORGE_INSTALLER_URL = `https://maven.neoforged.net/releases/net/neoforged/
 const AUTHLIB_INJECTOR_URL = `https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar`;
 const YGGDRASIL_AUTH_URL = `${API_BASE}/yggdrasil/authserver/authenticate`;
 
-const VANILLA_VERSION_JSON_URL = `https://piston-meta.mojang.com/v1/packages/b61972b2203de80ebffc89b7cf91c496a7d53ab2/1.21.1.json`;
-const VANILLA_VERSION_JAR_URL = `https://launcher.mojang.com/v1/objects/2361ef2f0eb3ee9ef7319fa76b886d34b419dbf8/client.jar`;
+const VANILLA_VERSION_JSON_URL = `https://piston-meta.mojang.com/v1/packages/67e466e82c012158c8cda81df39aa40a7ade7276/1.21.1.json`;
+const VANILLA_VERSION_JAR_URL = `https://piston-data.mojang.com/v1/objects/30c73b1c5da787909b2f73340419fdf13b9def88/client.jar`;
 
 // Repair URLs for critical files
 const REPAIR_FILES = {

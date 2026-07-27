@@ -286,7 +286,7 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
 function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession) {
     const customArgs = [...JVM_OPTIMIZATION_ARGS];
     if (authlibPath && !authSession.isOffline) {
-        customArgs.unshift(`-javaagent:${authlibPath}=${API_BASE}/yggdrasil`);
+        customArgs.unshift(`-javaagent:${authlibPath}=http://192.168.1.8:5000/api/yggdrasil`);
     }
 
     return {
@@ -314,14 +314,6 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         },
         javaPath: javaPath || undefined,
         overrides: {
-            url: {
-                meta: `${MIRROR_BASE}/launchermeta`,
-                resource: `${MIRROR_BASE}/resources`,
-                mavenForge: `${MIRROR_BASE}/forge-maven/`,
-                defaultRepoForge: `${MIRROR_BASE}/libraries/`,
-                library: `${MIRROR_BASE}/libraries/`,
-                fallbackMaven: `${MIRROR_BASE}/maven-fallback?filepath=`,
-            },
             maxSockets: 4,
         },
         customArgs: customArgs

@@ -63,6 +63,18 @@ function downloadFile(url, dest, options = {}) {
         // Use temp file for atomic writes
         const writePath = atomicWrite ? getTempPath(dest) : dest;
 
+        // Build headers: send localtunnel bypass headers ONLY to localtunnel/zrok hosts
+        const reqHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) GanjaCraftLauncher/1.0'
+        };
+        if (parsedUrl.hostname.includes('loca.lt') || parsedUrl.hostname.includes('zrok.io')) {
+            reqHeaders['User-Agent'] = 'localtunnel';
+            reqHeaders['Bypass-Tunnel-Reminder'] = 'true';
+        }
+        if (authToken) {
+            reqHeaders['X-Auth-Token'] = authToken;
+        }
+
         // Build request options
         const reqOptions = {
             hostname: parsedUrl.hostname,
@@ -70,16 +82,8 @@ function downloadFile(url, dest, options = {}) {
             path: parsedUrl.pathname + parsedUrl.search,
             method: 'GET',
             timeout: timeoutMs,
-            headers: {
-                'User-Agent': 'localtunnel',
-                'Bypass-Tunnel-Reminder': 'true'
-            }
+            headers: reqHeaders
         };
-
-        // Add auth header if provided
-        if (authToken) {
-            reqOptions.headers['X-Auth-Token'] = authToken;
-        }
 
         const file = fs.createWriteStream(writePath);
         
