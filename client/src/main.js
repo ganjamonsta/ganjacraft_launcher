@@ -41,32 +41,23 @@ if (!gotTheLock) {
 const launcher = new Client();
 let isGameRunning = false;
 let isLaunchCancelled = false;
-const FORGE_VERSION = '21.1.233';
-const MC_VERSION = '1.21.1';
-// Use our domain as a stable download endpoint (Nginx proxies to official Forge Maven).
-const FORGE_INSTALLER_URL = `https://ganjalaunch.share.zrok.io/files/forge-${FORGE_VERSION}-installer.jar`;
-const MANIFEST_URL = 'https://ganjalaunch.share.zrok.io/files/manifest.json';
-const AUTHLIB_INJECTOR_URL = 'https://ganjalaunch.share.zrok.io/files/authlib-injector.jar';
-const YGGDRASIL_AUTH_URL = 'https://ganjalaunch.share.zrok.io/api/yggdrasil/authserver/authenticate';
+const {
+    FORGE_VERSION,
+    MC_VERSION,
+    MANIFEST_URL,
+    FORGE_INSTALLER_URL,
+    AUTHLIB_INJECTOR_URL,
+    YGGDRASIL_AUTH_URL,
+    VANILLA_VERSION_JSON_URL,
+    VANILLA_VERSION_JAR_URL,
+    REPAIR_FILES,
+    URL_REWRITES,
+    DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS,
+    JVM_OPTIMIZATION_ARGS,
+    FILES_BASE,
+    MIRROR_BASE,
+} = require('./main-process/constants');
 
-// Default disabled optional client mods (fresh installs).
-// Important: use filename substrings (stable across versions) and map them to exact manifest paths.
-const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
-    // FancyMenu stack
-    'client-fancymenu',
-    'client-konkrete',
-    'client-melody',
-
-    // Gamepad/motor assistance stack
-    'client-motorassistance',
-    'client-controllable',
-    'client-framework',
-
-    // Forgematica (schematics)
-    'client-Forgematica',
-    'client-MaFgLib',
-    'client-badpackets',
-];
 
 function computeDefaultDisabledModsFromManifest(manifest) {
     try {
@@ -83,20 +74,7 @@ function computeDefaultDisabledModsFromManifest(manifest) {
     }
 }
 
-// Repair/Recovery URLs for critical files (use existing file structure on server)
-const REPAIR_FILES = {
-    'authlib-injector.jar': 'https://ganjalaunch.share.zrok.io/files/authlib-injector.jar',
-    'forge-installer.jar': `https://ganjalaunch.share.zrok.io/files/forge-${FORGE_VERSION}-installer.jar`,
-    'modlauncher.jar': 'https://ganjalaunch.share.zrok.io/files/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar',
-    'securejarhandler.jar': 'https://ganjalaunch.share.zrok.io/files/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar',
-    'vanilla-client.jar': `https://ganjalaunch.share.zrok.io/files/versions/${MC_VERSION}/${MC_VERSION}.jar`,
-};
 
-// Reduce dependency on external networks by routing Mojang/Maven/Forge downloads via our domain.
-// Server-side: Nginx should proxy /mirror/* to upstreams.
-const MIRROR_BASE = 'https://ganjalaunch.share.zrok.io/mirror';
-const VANILLA_VERSION_JSON_URL = `https://ganjalaunch.share.zrok.io/files/versions/${MC_VERSION}/${MC_VERSION}.json`;
-const VANILLA_VERSION_JAR_URL = `https://ganjalaunch.share.zrok.io/files/versions/${MC_VERSION}/${MC_VERSION}.jar`;
 
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));

@@ -290,6 +290,53 @@ body {
     100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }
 
+/* Players Tooltip */
+.players-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    max-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.players-tooltip.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.tooltip-player {
+    font-size: 12px;
+    color: #c8e6c9;
+    white-space: nowrap;
+    font-family: 'Minecraft', monospace, sans-serif;
+}
+
+.tooltip-empty {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+#player-count {
+    cursor: default;
+    transition: color 0.2s;
+}
+
+#player-count:hover {
+    color: #81c784;
+}
+
 /* Auth Container */
 .auth-container {
     position: absolute;
