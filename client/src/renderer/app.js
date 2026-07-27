@@ -184,6 +184,7 @@ function initSettingsButton() {
                 return;
             }
             
+            // Phase 1: Smooth exit of main UI elements
             toggleMainUIVisibility(false, currentConfig);
             
             // Hide easter egg after animation if active
@@ -193,48 +194,52 @@ function initSettingsButton() {
                 }, 300);
             }
 
-            // Open settings screen immediately for 60fps instant response
-            openSettings(currentConfig);
+            // Phase 2: Open settings container (2D GPU slide down) after short stagger
+            setTimeout(() => {
+                openSettings(currentConfig);
+            }, 40);
             
-            // Asynchronously load config & populate fields in background
-            window.api.loadConfig().then(async (config) => {
-                currentConfig = config;
-                setCurrentConfig(currentConfig);
-                
-                // Populate fields
-                populateSettingsFields(currentConfig);
-                
-                // Load mods in background
-                await loadModsList(currentConfig.disabledMods || [], currentConfig);
-                
-                // Show/hide dev tab
-                const devTab = document.querySelector('.tab-dev');
-                if (devTab) {
-                    const isConsoleOpen = consoleOutput && !consoleOutput.classList.contains('hidden');
-                    if (isConsoleOpen) {
-                        devTab.classList.remove('hidden');
-                        loadDevCategoryCounts();
-                        
-                        const skipSyncCheckbox = document.getElementById('dev-skip-sync-checkbox');
-                        if (skipSyncCheckbox) {
-                            skipSyncCheckbox.checked = currentConfig.skipSync === true;
-                        }
-                        
-                        applyAdminClass();
-                        initDevToolsListeners();
-                    } else {
-                        devTab.classList.add('hidden');
-                        
-                        const devTabContent = document.getElementById('tab-dev');
-                        if (devTabContent?.classList.contains('active')) {
-                            document.querySelector('.tab-btn[data-tab="general"]')?.click();
+            // Phase 3: Defer async config load, DOM population & heavy mod list building until after transition completes
+            setTimeout(() => {
+                window.api.loadConfig().then(async (config) => {
+                    currentConfig = config;
+                    setCurrentConfig(currentConfig);
+                    
+                    // Populate fields
+                    populateSettingsFields(currentConfig);
+                    
+                    // Load mods in background
+                    await loadModsList(currentConfig.disabledMods || [], currentConfig);
+                    
+                    // Show/hide dev tab
+                    const devTab = document.querySelector('.tab-dev');
+                    if (devTab) {
+                        const isConsoleOpen = consoleOutput && !consoleOutput.classList.contains('hidden');
+                        if (isConsoleOpen) {
+                            devTab.classList.remove('hidden');
+                            loadDevCategoryCounts();
+                            
+                            const skipSyncCheckbox = document.getElementById('dev-skip-sync-checkbox');
+                            if (skipSyncCheckbox) {
+                                skipSyncCheckbox.checked = currentConfig.skipSync === true;
+                            }
+                            
+                            applyAdminClass();
+                            initDevToolsListeners();
+                        } else {
+                            devTab.classList.add('hidden');
+                            
+                            const devTabContent = document.getElementById('tab-dev');
+                            if (devTabContent?.classList.contains('active')) {
+                                document.querySelector('.tab-btn[data-tab="general"]')?.click();
+                            }
                         }
                     }
-                }
-                
-                // Capture initial state after mods load
-                captureInitialSettingsState();
-            });
+                    
+                    // Capture initial state after mods load
+                    captureInitialSettingsState();
+                });
+            }, 200);
         });
     }
     

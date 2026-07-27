@@ -219,15 +219,17 @@ export function openSettings(config) {
         currentTabIndex = 0;
     }
     
-    // Snow burst
+    // Snow burst (отложенный запуск, чтобы не создавать DOM фризы во время сдвига)
     if (appState.get('effects.snowEnabled')) {
-        createSnowBurst();
+        setTimeout(() => {
+            createSnowBurst();
+        }, 180);
     }
     
     setTimeout(() => {
         settingsScreen.classList.remove('opening');
         settingsAnimating = false;
-    }, 350);
+    }, 250);
 }
 
 /**

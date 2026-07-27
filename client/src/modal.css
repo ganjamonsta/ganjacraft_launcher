@@ -32,27 +32,14 @@
     pointer-events: none;
 }
 
-/* Drop from top with bounce/shake effect */
+/* Drop from top with smooth 2D decelerate slide */
 @keyframes settings-drop {
     0% {
-        transform: translateY(-105%);
-        opacity: 0.8;
-    }
-    50% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    65% {
-        transform: translateY(-2%) rotate(0.3deg);
-    }
-    75% {
-        transform: translateY(0) rotate(-0.2deg);
-    }
-    85% {
-        transform: translateY(-0.5%) rotate(0.1deg);
+        transform: translateY(-100%);
+        opacity: 0.9;
     }
     100% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0);
         opacity: 1;
     }
 }
@@ -64,17 +51,18 @@
         opacity: 1;
     }
     100% {
-        transform: translateY(-105%);
+        transform: translateY(-100%);
         opacity: 0.5;
     }
 }
 
-/* Opening state - быстрее */
+/* Opening state - быстрая и плавная 2D анимация */
 .settings-screen.opening {
-    animation: settings-drop 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    animation: settings-drop 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     pointer-events: auto;
     backface-visibility: hidden;
     transform: translateZ(0);
+    will-change: transform, opacity;
 }
 
 /* Visible state (after opening, not hidden, not closing) */
@@ -84,26 +72,23 @@
     opacity: 1;
 }
 
-/* Closing state - быстрее */
+/* Closing state */
 .settings-screen.closing {
-    animation: settings-slideup 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+    animation: settings-slideup 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
     pointer-events: none;
     backface-visibility: hidden;
+    will-change: transform, opacity;
 }
 
-/* Cascade animation keyframes for dropdown cards & modal elements */
+/* Lightweight 2D Fade & Slide down for cards */
 @keyframes cascade-pop-down {
     0% {
         opacity: 0;
-        transform: translateY(-16px) scale(0.97);
-    }
-    60% {
-        opacity: 0.9;
-        transform: translateY(2px) scale(1.005);
+        transform: translateY(-8px);
     }
     100% {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
@@ -111,7 +96,7 @@
 @keyframes modal-content-stagger {
     0% {
         opacity: 0;
-        transform: translateY(-12px);
+        transform: translateY(-6px);
     }
     100% {
         opacity: 1;
@@ -122,27 +107,27 @@
 /* Staggered cascading for settings category cards & dev tools cards on settings open */
 .settings-screen.opening .settings-category,
 .settings-screen.opening .unified-dev-card {
-    animation: cascade-pop-down 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: cascade-pop-down 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
     will-change: transform, opacity;
 }
 
 .settings-screen.opening .settings-category:nth-child(1),
-.settings-screen.opening .unified-dev-card:nth-child(1) { animation-delay: 30ms; }
+.settings-screen.opening .unified-dev-card:nth-child(1) { animation-delay: 20ms; }
 
 .settings-screen.opening .settings-category:nth-child(2),
-.settings-screen.opening .unified-dev-card:nth-child(2) { animation-delay: 75ms; }
+.settings-screen.opening .unified-dev-card:nth-child(2) { animation-delay: 50ms; }
 
 .settings-screen.opening .settings-category:nth-child(3),
-.settings-screen.opening .unified-dev-card:nth-child(3) { animation-delay: 120ms; }
+.settings-screen.opening .unified-dev-card:nth-child(3) { animation-delay: 80ms; }
 
 .settings-screen.opening .settings-category:nth-child(4),
-.settings-screen.opening .unified-dev-card:nth-child(4) { animation-delay: 165ms; }
+.settings-screen.opening .unified-dev-card:nth-child(4) { animation-delay: 110ms; }
 
 .settings-screen.opening .settings-category:nth-child(5),
-.settings-screen.opening .unified-dev-card:nth-child(5) { animation-delay: 210ms; }
+.settings-screen.opening .unified-dev-card:nth-child(5) { animation-delay: 140ms; }
 
 .settings-screen.opening .settings-category:nth-child(6),
-.settings-screen.opening .unified-dev-card:nth-child(6) { animation-delay: 255ms; }
+.settings-screen.opening .unified-dev-card:nth-child(6) { animation-delay: 170ms; }
 
 /* Hidden state (after closing animation) */
 .settings-screen.hidden {
