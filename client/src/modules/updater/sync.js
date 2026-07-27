@@ -160,10 +160,10 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
 
         // Скачиваем если нужно
         if (needDownload) {
-            await downloadFile(file.url, localPath, {
+            await downloadWithRetry(file.url, localPath, {
                 expectedHash: file.hash,
                 expectedSize: typeof file.size === 'number' ? file.size : null,
-            });
+            }, 4, 1500);
             downloaded++;
         }
         

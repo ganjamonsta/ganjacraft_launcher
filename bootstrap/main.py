@@ -29,7 +29,7 @@ from constants import BOOTSTRAP_JSON_URL, VERSION_JSON_URL
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.38"
+BOOTSTRAP_VERSION = "1.0.39"
 BOOTSTRAP_API_URL = BOOTSTRAP_JSON_URL
 API_URL = VERSION_JSON_URL
 APPDATA = os.getenv('APPDATA')
@@ -250,7 +250,7 @@ class BootstrapApp(tk.Tk):
         self.bind("<ButtonPress-1>", self.start_move)
         self.bind("<B1-Motion>", self.do_move)
 
-        # Top Control Bar (Minimize / Close buttons)
+        # Top Control Bar (Close button only)
         self.top_bar = tk.Frame(self, bg=BG_COLOR)
         self.top_bar.pack(fill="x", side="top", padx=8, pady=4)
         self.top_bar.bind("<ButtonPress-1>", self.start_move)
@@ -265,15 +265,6 @@ class BootstrapApp(tk.Tk):
         self.close_btn.bind("<Leave>", lambda e: self.close_btn.config(fg="#888888", bg=BG_COLOR))
         self.close_btn.bind("<Button-1>", lambda e: self.close_app())
 
-        self.min_btn = tk.Label(
-            self.top_bar, text="—", font=("Segoe UI", 10, "bold"),
-            fg="#888888", bg=BG_COLOR, cursor="hand2", width=3
-        )
-        self.min_btn.pack(side="right")
-        self.min_btn.bind("<Enter>", lambda e: self.min_btn.config(fg="#ffffff", bg="#333333"))
-        self.min_btn.bind("<Leave>", lambda e: self.min_btn.config(fg="#888888", bg=BG_COLOR))
-        self.min_btn.bind("<Button-1>", lambda e: self.minimize_window())
-
         # Main Frame
         self.main_frame = tk.Frame(self, bg=BG_COLOR)
         self.main_frame.pack(expand=True, fill="both", padx=20, pady=(0, 20))
@@ -281,34 +272,6 @@ class BootstrapApp(tk.Tk):
         # Bind drag events to frame and labels too
         self.main_frame.bind("<ButtonPress-1>", self.start_move)
         self.main_frame.bind("<B1-Motion>", self.do_move)
-
-    def _set_appwindow(self):
-        try:
-            import ctypes
-            hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
-            if hwnd == 0:
-                hwnd = self.winfo_id()
-            style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)
-            style = (style & ~0x00000080) | 0x00040000
-            ctypes.windll.user32.SetWindowLongW(hwnd, -20, style)
-            self.wm_withdraw()
-            self.after(10, self.wm_deiconify)
-        except Exception as e:
-            print(f"Taskbar hook failed: {e}")
-
-    def minimize_window(self):
-        self.overrideredirect(False)
-        self.iconify()
-        self.bind("<FocusIn>", self._on_restore)
-
-    def _on_restore(self, event=None):
-        self.overrideredirect(True)
-        self.unbind("<FocusIn>")
-        if sys.platform == 'win32':
-            self._set_appwindow()
-
-    def close_app(self):
-        os._exit(0)
 
         # Logo
         try:
@@ -326,7 +289,7 @@ class BootstrapApp(tk.Tk):
                         self.logo_img = self.logo_img.subsample(subsample_factor, subsample_factor)
 
                 self.logo_label = tk.Label(self.main_frame, image=self.logo_img, bg=BG_COLOR, bd=0)
-                self.logo_label.pack(pady=(20, 10))
+                self.logo_label.pack(pady=(10, 10))
                 self.logo_label.bind("<ButtonPress-1>", self.start_move)
                 self.logo_label.bind("<B1-Motion>", self.do_move)
         except Exception as e:
@@ -342,7 +305,7 @@ class BootstrapApp(tk.Tk):
             wraplength=360,
             justify="center",
         )
-        self.label.pack(pady=(10, 14))
+        self.label.pack(pady=(5, 10))
         self.label.bind("<ButtonPress-1>", self.start_move)
         self.label.bind("<B1-Motion>", self.do_move)
 
@@ -356,10 +319,10 @@ class BootstrapApp(tk.Tk):
                         borderwidth=0)
 
         self.progress = ttk.Progressbar(self.main_frame, style="Green.Horizontal.TProgressbar", length=320, mode='determinate')
-        self.progress.pack(pady=(8, 6))
+        self.progress.pack(pady=(6, 4))
 
         self.percent_label = tk.Label(self.main_frame, text="0%", font=("Segoe UI", 10, "bold"), fg=ACCENT_COLOR, bg=BG_COLOR)
-        self.percent_label.pack(pady=(0, 6))
+        self.percent_label.pack(pady=(0, 4))
         self.percent_label.bind("<ButtonPress-1>", self.start_move)
         self.percent_label.bind("<B1-Motion>", self.do_move)
 
@@ -372,7 +335,7 @@ class BootstrapApp(tk.Tk):
             wraplength=360,
             justify="center",
         )
-        self.status_label.pack(pady=(6, 0))
+        self.status_label.pack(pady=(4, 0))
         self.status_label.bind("<ButtonPress-1>", self.start_move)
         self.status_label.bind("<B1-Motion>", self.do_move)
 
@@ -382,6 +345,23 @@ class BootstrapApp(tk.Tk):
 
         # Start update process
         threading.Thread(target=self.run_update_process, daemon=True).start()
+
+    def _set_appwindow(self):
+        try:
+            import ctypes
+            hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+            if hwnd == 0:
+                hwnd = self.winfo_id()
+            style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)
+            style = (style & ~0x00000080) | 0x00040000
+            ctypes.windll.user32.SetWindowLongW(hwnd, -20, style)
+            self.wm_withdraw()
+            self.after(10, self.wm_deiconify)
+        except Exception as e:
+            print(f"Taskbar hook failed: {e}")
+
+    def close_app(self):
+        os._exit(0)
 
     def start_move(self, event):
         self.x_offset = event.x

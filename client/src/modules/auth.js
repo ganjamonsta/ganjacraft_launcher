@@ -1,7 +1,7 @@
 const https = require('https');
 const http = require('http');
 
-function authenticateYggdrasil(authUrl, username, token) {
+function authenticateYggdrasilOnce(authUrl, username, token) {
     return new Promise((resolve, reject) => {
         // Use Node's built-in crypto.randomUUID (available in Node 16+)
         const clientToken = require('crypto').randomUUID();
@@ -54,6 +54,21 @@ function authenticateYggdrasil(authUrl, username, token) {
         req.write(data);
         req.end();
     });
+}
+
+async function authenticateYggdrasil(authUrl, username, token, retries = 3) {
+    let lastError;
+    for (let i = 1; i <= retries; i++) {
+        try {
+            return await authenticateYggdrasilOnce(authUrl, username, token);
+        } catch (e) {
+            lastError = e;
+            if (i < retries) {
+                await new Promise(r => setTimeout(r, 1500));
+            }
+        }
+    }
+    throw lastError;
 }
 
 module.exports = { authenticateYggdrasil };
