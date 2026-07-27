@@ -7,7 +7,7 @@
  */
 
 // Утилиты
-const { getFileHash, resolveUnderRoot, safeUnlink, ensureDir, getTempPath } = require('./utils');
+const { getFileHash, resolveUnderRoot, safeUnlink, ensureDir, getTempPath, getModStem, isModDisabled } = require('./utils');
 
 // Загрузка файлов
 const { downloadFile, downloadWithRetry } = require('./download');
@@ -52,6 +52,8 @@ module.exports = {
     safeUnlink,
     ensureDir,
     getTempPath,
+    getModStem,
+    isModDisabled,
     isServerControlled,
     isUserProtected,
     FILE_CATEGORIES,

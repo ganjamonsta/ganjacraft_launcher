@@ -40,11 +40,11 @@ export function getCurrentSettingsState() {
     return {
         installPath: document.getElementById('setting-path')?.value || '',
         javaPath: document.getElementById('setting-java')?.value || '',
-        memoryMin: document.getElementById('setting-ram-min')?.value.trim().toUpperCase() || '2G',
-        memoryMax: document.getElementById('setting-ram-max')?.value.trim().toUpperCase() || '6G',
+        memoryMin: document.getElementById('setting-ram-min')?.value.trim().toUpperCase() || '1G',
+        memoryMax: document.getElementById('setting-ram-max')?.value.trim().toUpperCase() || '3G',
         hideOnPlay: document.getElementById('setting-hide-on-play')?.checked ?? true,
         effectsPreset: document.getElementById('setting-effects-preset')?.value || 'auto',
-        effectsDensity: document.getElementById('setting-effects-density')?.value || 'medium',
+        effectsDensity: document.getElementById('setting-effects-density')?.value || 'low',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
         skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
@@ -284,8 +284,8 @@ export function populateSettingsFields(config) {
     
     if (pathInput) pathInput.value = config.installPath || '';
     if (javaInput) javaInput.value = config.javaPath || '';
-    if (ramMinInput) ramMinInput.value = config.memoryMin || '2G';
-    if (ramMaxInput) ramMaxInput.value = config.memoryMax || '6G';
+    if (ramMinInput) ramMinInput.value = config.memoryMin || '1G';
+    if (ramMaxInput) ramMaxInput.value = config.memoryMax || '3G';
     if (hideOnPlayCheckbox) hideOnPlayCheckbox.checked = config.hideOnPlay !== false;
     
     let preset = config.effectsPreset || 'auto';
@@ -293,7 +293,7 @@ export function populateSettingsFields(config) {
         preset = 'off';
     }
     if (presetSelect) presetSelect.value = preset;
-    if (densitySelect) densitySelect.value = config.effectsDensity || 'medium';
+    if (densitySelect) densitySelect.value = config.effectsDensity || 'low';
     
     if (smokeCheckbox) smokeCheckbox.checked = config.enableSmoke !== false;
     if (parallaxCheckbox) parallaxCheckbox.checked = config.enableParallax !== false;
@@ -306,16 +306,16 @@ export function populateSettingsFields(config) {
  * Сохранить настройки
  */
 export async function saveSettings() {
-    let memMin = document.getElementById('setting-ram-min')?.value.trim().toUpperCase() || '2G';
-    let memMax = document.getElementById('setting-ram-max')?.value.trim().toUpperCase() || '6G';
+    let memMin = document.getElementById('setting-ram-min')?.value.trim().toUpperCase() || '1G';
+    let memMax = document.getElementById('setting-ram-max')?.value.trim().toUpperCase() || '3G';
 
     // Append 'G' if just number
     if (memMin && /^\d+$/.test(memMin)) memMin += 'G';
     if (memMax && /^\d+$/.test(memMax)) memMax += 'G';
 
     // Validate format
-    if (!/^\d+[MG]$/.test(memMin)) memMin = '2G';
-    if (!/^\d+[MG]$/.test(memMax)) memMax = '6G';
+    if (!/^\d+[MG]$/.test(memMin)) memMin = '1G';
+    if (!/^\d+[MG]$/.test(memMax)) memMax = '3G';
 
     const selectedPreset = document.getElementById('setting-effects-preset')?.value || 'auto';
 
@@ -327,7 +327,7 @@ export async function saveSettings() {
         memoryMax: memMax,
         hideOnPlay: document.getElementById('setting-hide-on-play')?.checked ?? true,
         effectsPreset: selectedPreset,
-        effectsDensity: document.getElementById('setting-effects-density')?.value || 'medium',
+        effectsDensity: document.getElementById('setting-effects-density')?.value || 'low',
         enableSnow: selectedPreset !== 'off',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,

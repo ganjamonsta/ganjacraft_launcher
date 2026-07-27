@@ -29,8 +29,8 @@ export function initRamSlider(config) {
     };
     
     // Начальные значения
-    let minVal = parseRamValue(config?.memoryMin) || 2;
-    let maxVal = parseRamValue(config?.memoryMax) || 6;
+    let minVal = parseRamValue(config?.memoryMin) || 1;
+    let maxVal = parseRamValue(config?.memoryMax) || 3;
     
     // Ограничения
     const minLimit = 1;
@@ -132,7 +132,7 @@ export function getRamSliderValues() {
     const sliderMax = document.getElementById('setting-ram-slider-max');
     
     if (!sliderMin || !sliderMax) {
-        return { min: '2G', max: '6G' };
+        return { min: '1G', max: '3G' };
     }
     
     return {
@@ -158,8 +158,8 @@ export function setRamSliderValues(memoryMin, memoryMax) {
         return match ? parseInt(match[1], 10) : null;
     };
     
-    const minVal = parseRamValue(memoryMin) || 2;
-    const maxVal = parseRamValue(memoryMax) || 6;
+    const minVal = parseRamValue(memoryMin) || 1;
+    const maxVal = parseRamValue(memoryMax) || 3;
     
     sliderMin.value = minVal;
     sliderMax.value = maxVal;

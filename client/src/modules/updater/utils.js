@@ -85,10 +85,106 @@ function getTempPath(destPath) {
     return `${destPath}.tmp-${crypto.randomUUID()}`;
 }
 
+/**
+ * Извлечь «стем» мода (имя без версий и расширения .jar)
+ * @param {string} filePath
+ * @returns {string}
+ */
+function getModStem(filePath) {
+    if (!filePath || typeof filePath !== 'string') return '';
+    const fileName = filePath.split('/').pop().split('\\').pop().toLowerCase();
+    return fileName
+        .replace(/\.jar$/i, '')
+        .replace(/[-_](v?\d+\.[\d.]+.*)$/i, '')
+        .replace(/[-_](neoforge|forge|fabric|mc\d+.*)$/i, '');
+}
+
+/**
+ * Известные шаблоны файлов для групп модов (для выявления соответствия обновлённых файлов в манифесте)
+ */
+const MOD_GROUP_FILE_PATTERNS = [
+    { id: 'sodium', files: ['client-sodium', 'client-embeddium', 'client-chloride'] },
+    { id: 'sodium_extra', files: ['client-sodium-extra'] },
+    { id: 'reeses_options', files: ['client-reeses-sodium-options'] },
+    { id: 'entity_culling', files: ['client-entityculling'] },
+    { id: 'oculus', files: ['client-oculus'] },
+    { id: 'cit_resewn', files: ['client-citreforged', 'client-athena'] },
+    { id: 'etf', files: ['client-entity_texture_features'] },
+    { id: 'emf', files: ['client-entity_model_features'] },
+    { id: 'xaero_minimap', files: ['client-xaeros-minimap'] },
+    { id: 'xaero_worldmap', files: ['client-xaeros-worldmap'] },
+    { id: 'controlling', files: ['client-controlling', 'client-searchables'] },
+    { id: 'better_advancements', files: ['client-betteradvancements'] },
+    { id: 'more_overlays', files: ['client-moreoverlays'] },
+    { id: 'lan_properties', files: ['client-lanserverproperties', 'client_lanserverproperties', 'lanserverproperties'] },
+    { id: 'discord_rpc', files: ['client-simplerpc'] },
+    { id: 'fancymenu', files: ['client-fancymenu', 'client-konkrete', 'client-melody'] },
+    { id: 'forgematica', files: ['client-forgematica', 'client-Forgematica', 'client-mafglib', 'client-badpackets'] },
+    { id: 'forgematica_printer', files: ['client-neoforgematicaprinter', 'client-NeoForgematicaPrinter'] },
+    { id: 'third_person', files: ['client-leawind_third_person'] },
+    { id: 'controllable', files: ['client-motorassistance', 'client-controllable', 'client-framework'] },
+    { id: 'epic_tweaks', files: ['client-epictweaks'] }
+];
+
+/**
+ * Проверить, является ли мод отключённым (сохраняя статус отключения при изменении версии/имени файла в манифесте)
+ * @param {string} filePath - Путь к файлу мода из манифеста
+ * @param {string[]} disabledMods - Список отключённых модов из конфига
+ * @returns {boolean}
+ */
+function isModDisabled(filePath, disabledMods = []) {
+    if (!filePath || !Array.isArray(disabledMods) || disabledMods.length === 0) {
+        return false;
+    }
+
+    const normPath = String(filePath).replace(/\\/g, '/');
+    if (disabledMods.includes(normPath)) {
+        return true;
+    }
+
+    const targetFileName = normPath.split('/').pop().toLowerCase();
+    const targetStem = getModStem(normPath);
+
+    for (const disabledEntry of disabledMods) {
+        if (!disabledEntry) continue;
+        const normDisabled = String(disabledEntry).replace(/\\/g, '/');
+        if (normDisabled === normPath) return true;
+
+        // 1. Совпадение по ID группы
+        const groupById = MOD_GROUP_FILE_PATTERNS.find(g => g.id === normDisabled);
+        if (groupById) {
+            if (groupById.files.some(p => targetFileName.includes(p.toLowerCase()))) {
+                return true;
+            }
+        }
+
+        // 2. Совпадение по паттерну группы (если в disabledMods лежит старый путь к моду)
+        const entryFileName = normDisabled.split('/').pop().toLowerCase();
+        const matchingGroup = MOD_GROUP_FILE_PATTERNS.find(g => 
+            g.files.some(p => entryFileName.includes(p.toLowerCase()))
+        );
+        if (matchingGroup) {
+            if (matchingGroup.files.some(p => targetFileName.includes(p.toLowerCase()))) {
+                return true;
+            }
+        }
+
+        // 3. Совпадение по стему имени мода
+        const entryStem = getModStem(normDisabled);
+        if (targetStem && entryStem && targetStem === entryStem) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 module.exports = {
     resolveUnderRoot,
     getFileHash,
     safeUnlink,
     ensureDir,
-    getTempPath
+    getTempPath,
+    getModStem,
+    isModDisabled
 };

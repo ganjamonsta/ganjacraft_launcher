@@ -54,6 +54,11 @@ const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
     'client-MaFgLib',
     'client-badpackets',
     'client-NeoForgematicaPrinter',
+
+    // LAN Properties
+    'client-lanserverproperties',
+    'client_lanserverproperties',
+    'lanserverproperties',
 ];
 
 // JVM optimization arguments

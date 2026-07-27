@@ -11,6 +11,48 @@ let currentSubTab = 'ВСЕ';
 let searchQuery = '';
 let allGroupItems = [];
 
+function getModStem(filePath) {
+    if (!filePath || typeof filePath !== 'string') return '';
+    const fileName = filePath.split('/').pop().split('\\').pop().toLowerCase();
+    return fileName
+        .replace(/\.jar$/i, '')
+        .replace(/[-_](v?\d+\.[\d.]+.*)$/i, '')
+        .replace(/[-_](neoforge|forge|fabric|mc\d+.*)$/i, '');
+}
+
+function isModDisabled(filePath, disabledMods = []) {
+    if (!filePath || !Array.isArray(disabledMods) || disabledMods.length === 0) return false;
+    const normPath = String(filePath).replace(/\\/g, '/');
+    if (disabledMods.includes(normPath)) return true;
+
+    const targetFileName = normPath.split('/').pop().toLowerCase();
+    const targetStem = getModStem(normPath);
+
+    for (const disabledEntry of disabledMods) {
+        if (!disabledEntry) continue;
+        const normDisabled = String(disabledEntry).replace(/\\/g, '/');
+        if (normDisabled === normPath) return true;
+
+        const groupById = MOD_GROUPS.find(g => g.id === normDisabled);
+        if (groupById && groupById.files) {
+            if (groupById.files.some(p => targetFileName.includes(p.toLowerCase()))) return true;
+        }
+
+        const entryFileName = normDisabled.split('/').pop().toLowerCase();
+        const matchingGroup = MOD_GROUPS.find(g => 
+            g.files && g.files.some(p => entryFileName.includes(p.toLowerCase()))
+        );
+        if (matchingGroup && matchingGroup.files) {
+            if (matchingGroup.files.some(p => targetFileName.includes(p.toLowerCase()))) return true;
+        }
+
+        const entryStem = getModStem(normDisabled);
+        if (targetStem && entryStem && targetStem === entryStem) return true;
+    }
+
+    return false;
+}
+
 /**
  * Загрузить список модов
  */
@@ -49,7 +91,7 @@ export async function loadModsList(disabledMods = [], config = {}) {
             if (config.modsDefaultsApplied !== true && group.defaultDisabled) {
                 isChecked = false;
             } else {
-                isChecked = groupFiles.every(f => !disabledMods.includes(f.path));
+                isChecked = groupFiles.every(f => !isModDisabled(f.path, disabledMods));
             }
 
             allGroupItems.push({
@@ -73,7 +115,7 @@ export async function loadModsList(disabledMods = [], config = {}) {
     // Обрабатываем оставшиеся единичные файлы
     const remainingFiles = allFiles.filter(f => !handledFiles.has(f.path));
     remainingFiles.forEach(file => {
-        const isChecked = !disabledMods.includes(file.path);
+        const isChecked = !isModDisabled(file.path, disabledMods);
         const fileName = file.path.split('/').pop();
 
         let prettyName = fileName

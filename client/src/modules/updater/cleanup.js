@@ -12,6 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { isModDisabled } = require('./utils');
 
 /**
  * Рекурсивная очистка директории от файлов, отсутствующих в manifest
@@ -75,7 +76,7 @@ function cleanupMods(rootPath, manifest, disabledMods = [], sendLog = () => {}) 
     // Собираем Set путей модов из манифеста (исключая отключённые)
     const manifestMods = new Set(
         manifest.files
-            .filter(f => f.path.startsWith('mods/') && !disabledMods.includes(f.path))
+            .filter(f => f.path.startsWith('mods/') && !isModDisabled(f.path, disabledMods))
             .map(f => path.normalize(f.path))
     );
 

@@ -43,7 +43,7 @@ export function applyEffectsConfig(config) {
         preset = 'off';
     }
 
-    const density = config.effectsDensity || 'medium';
+    const density = config.effectsDensity || 'low';
     const enabled = preset !== 'off';
 
     effectsEngine.configure({ preset, density, enabled });

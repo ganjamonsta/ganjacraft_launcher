@@ -203,7 +203,8 @@ export const MOD_GROUPS = [
         description: 'Настройки порта, прав и онлайн-режима при открытии локального мира.',
         curseSlug: 'lan-server-properties',
         modrinthSlug: 'lan-server-properties',
-        files: ['client-lanserverproperties', 'client_lanserverproperties']
+        files: ['client-lanserverproperties', 'client_lanserverproperties'],
+        defaultDisabled: true
     },
     {
         id: 'discord_rpc',

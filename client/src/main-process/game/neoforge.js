@@ -226,12 +226,64 @@ function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
     }
 }
 
+/**
+ * Убедиться, что валидный индекс ресурсов 1.21.1 существует и не пуст
+ * @param {string} rootPath - Корневой путь установки
+ * @param {Function} [sendLog] - Функция логирования
+ */
+async function ensureAssetIndex(rootPath, sendLog) {
+    const assetIndexDir = path.join(rootPath, 'assets', 'indexes');
+    if (!fs.existsSync(assetIndexDir)) {
+        fs.mkdirSync(assetIndexDir, { recursive: true });
+    }
+
+    const indexFiles = [
+        path.join(assetIndexDir, '17.json'),
+        path.join(assetIndexDir, `${MC_VERSION}.json`),
+        path.join(assetIndexDir, `neoforge-21.1.233.json`)
+    ];
+
+    let needDownload = false;
+    for (const f of indexFiles) {
+        if (!fs.existsSync(f)) {
+            needDownload = true;
+            break;
+        }
+        try {
+            const content = JSON.parse(fs.readFileSync(f, 'utf8'));
+            if (!content.objects || Object.keys(content.objects).length === 0) {
+                needDownload = true;
+                break;
+            }
+        } catch {
+            needDownload = true;
+            break;
+        }
+    }
+
+    if (needDownload) {
+        if (sendLog) sendLog('Загрузка индекса ресурсов Minecraft 1.21.1...');
+        const assetIndexUrl = 'https://piston-meta.mojang.com/v1/packages/d1aa1019d308e98dcd0cc6ee5da5cf19569d8c81/17.json';
+        const tmpFile = path.join(assetIndexDir, '17.json.tmp');
+        await downloadFile(assetIndexUrl, tmpFile, { timeoutMs: 30_000 });
+        const parsed = JSON.parse(fs.readFileSync(tmpFile, 'utf8'));
+        const jsonStr = JSON.stringify(parsed, null, 2);
+        
+        for (const f of indexFiles) {
+            fs.writeFileSync(f, jsonStr, 'utf8');
+        }
+        try { fs.unlinkSync(tmpFile); } catch {}
+        if (sendLog) sendLog('Индекс ресурсов Minecraft 1.21.1 готов.');
+    }
+}
+
 module.exports = {
     rewriteKnownUrl,
     rewriteVersionJsonUrls,
     ensureVanillaVersionFiles,
     preflightNeoForgeLibraries,
     ensureNeoForgeVersionJsonMerged,
+    ensureAssetIndex,
     // Alias for backward compatibility
     preflightForgeLibraries: preflightNeoForgeLibraries,
 };

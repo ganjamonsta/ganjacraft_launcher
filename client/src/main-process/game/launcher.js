@@ -13,7 +13,7 @@ const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJav
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
 const { repairCriticalFiles } = require('./repair');
-const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, preflightForgeLibraries, ensureNeoForgeVersionJsonMerged } = require('./neoforge');
+const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, preflightForgeLibraries, ensureNeoForgeVersionJsonMerged, ensureAssetIndex } = require('./neoforge');
 const { 
     NEOFORGE_VERSION,
     FORGE_VERSION,
@@ -63,7 +63,7 @@ function computeDefaultDisabledModsFromManifest(manifest) {
             .filter(f => f && f.optional && typeof f.path === 'string' && f.path.startsWith('mods/') && f.path.endsWith('.jar'))
             .filter(f => {
                 const fileName = f.path.split('/').pop();
-                return DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS.some(p => fileName.includes(p));
+                return DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS.some(p => fileName.toLowerCase().includes(p.toLowerCase()));
             })
             .map(f => f.path);
     } catch {
@@ -328,19 +328,9 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
     const nativesDir = path.join(rootPath, 'natives');
     if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true });
 
-    // Bypass MCLC 4000-file asset downloader by ensuring asset index exists
     const assetIndexDir = path.join(rootPath, 'assets', 'indexes');
     if (!fs.existsSync(assetIndexDir)) {
         fs.mkdirSync(assetIndexDir, { recursive: true });
-    }
-    const customAssetIndexFile = path.join(assetIndexDir, `${neoforgeVerId}.json`);
-    const mcAssetIndexFile = path.join(assetIndexDir, `${MC_VERSION}.json`);
-    if (!fs.existsSync(customAssetIndexFile) && !fs.existsSync(mcAssetIndexFile)) {
-        try {
-            const dummyIndex = JSON.stringify({ objects: {} }, null, 2);
-            fs.writeFileSync(customAssetIndexFile, dummyIndex, 'utf8');
-            fs.writeFileSync(mcAssetIndexFile, dummyIndex, 'utf8');
-        } catch (_) {}
     }
 
     return {
@@ -620,6 +610,9 @@ async function launchGame(event, options) {
                 sendDebug(`Failed to prefetch Yggdrasil metadata: ${e.message}`);
             }
         }
+
+        // Ensure real Minecraft 1.21.1 asset index (17.json) exists and is populated
+        await ensureAssetIndex(rootPath, sendLog);
 
         // Build launch options
         const opts = buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession, authlibPrefetched);

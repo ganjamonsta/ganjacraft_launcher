@@ -62,7 +62,7 @@ const {
     FILES_BASE,
     MIRROR_BASE,
 } = require('./main-process/constants');
-const { ensureNeoForgeVersionJsonMerged, preflightNeoForgeLibraries } = require('./main-process/game/neoforge');
+const { ensureNeoForgeVersionJsonMerged, preflightNeoForgeLibraries, ensureAssetIndex } = require('./main-process/game/neoforge');
 
 
 function computeDefaultDisabledModsFromManifest(manifest) {
@@ -72,7 +72,7 @@ function computeDefaultDisabledModsFromManifest(manifest) {
             .filter(f => f && f.optional && typeof f.path === 'string' && f.path.startsWith('mods/') && f.path.endsWith('.jar'))
             .filter(f => {
                 const fileName = f.path.split('/').pop();
-                return DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS.some(p => fileName.includes(p));
+                return DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS.some(p => fileName.toLowerCase().includes(p.toLowerCase()));
             })
             .map(f => f.path);
     } catch {
@@ -942,17 +942,8 @@ ipcMain.handle('launch-game', async (event, options) => {
         fs.mkdirSync(assetIndexDir, { recursive: true });
     }
     const customAssetIndexFile = path.join(assetIndexDir, `${neoforgeVerId}.json`);
-    const mcAssetIndexFile = path.join(assetIndexDir, `${MC_VERSION}.json`);
-    if (!fs.existsSync(customAssetIndexFile) && !fs.existsSync(mcAssetIndexFile)) {
-        try {
-            const dummyIndex = JSON.stringify({ objects: {} }, null, 2);
-            fs.writeFileSync(customAssetIndexFile, dummyIndex, 'utf8');
-            fs.writeFileSync(mcAssetIndexFile, dummyIndex, 'utf8');
-            sendDebug(`Created dummy asset index at: ${customAssetIndexFile}`);
-        } catch (e) {
-            sendDebug(`Failed to create dummy asset index: ${e.message}`);
-        }
-    }
+    // Ensure real Minecraft 1.21.1 asset index (17.json) exists and is populated
+    await ensureAssetIndex(rootPath, sendLog);
 
     // Prefetch Yggdrasil metadata via Node.js (with tunnel bypass headers)
     // authlib-injector will use this instead of making its own HTTP request

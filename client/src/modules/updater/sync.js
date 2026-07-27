@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveUnderRoot, getFileHash, ensureDir } = require('./utils');
+const { resolveUnderRoot, getFileHash, ensureDir, isModDisabled } = require('./utils');
 const { downloadFile, downloadWithRetry } = require('./download');
 const { resolveModrinthUrls } = require('./modrinth');
 const { resolveCurseForgeUrls } = require('./curseforge');
@@ -173,7 +173,7 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         }
 
         // Пропуск отключённых модов (удаляем если существуют)
-        if (file && typeof file.path === 'string' && disabledMods.includes(file.path)) {
+        if (file && typeof file.path === 'string' && isModDisabled(file.path, disabledMods)) {
             const localPath = resolveUnderRoot(rootPath, file.path);
             if (fs.existsSync(localPath)) {
                 sendLog(`Удаление отключенного мода: ${file.path}`);

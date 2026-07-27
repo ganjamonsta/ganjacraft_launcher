@@ -134,7 +134,7 @@ function registerConfigHandlers(mainWindow) {
     // Real client file integrity verification (by size & SHA1 hash)
     ipcMain.handle('verify-integrity', async () => {
         const pathModule = require('path');
-        const { getFileHash, downloadWithRetry } = require('../../modules/updater');
+        const { getFileHash, downloadWithRetry, isModDisabled } = require('../../modules/updater');
         const config = loadConfig();
         const rootPath = config.installPath;
         const disabledMods = config.disabledMods || [];
@@ -178,7 +178,7 @@ function registerConfigHandlers(mainWindow) {
         }
 
         // Filter files (skip disabled optional mods)
-        const targetFiles = manifest.files.filter(f => f.path && !disabledMods.includes(f.path));
+        const targetFiles = manifest.files.filter(f => f.path && !isModDisabled(f.path, disabledMods));
         const total = targetFiles.length;
 
         let okCount = 0;

@@ -20,12 +20,12 @@ function getDefaultConfig() {
         // General
         installPath: path.join(app.getPath('appData'), '.ganjacraft'),
         javaPath: '', // Empty = auto-detect
-        memoryMin: '2G',
-        memoryMax: '6G',
+        memoryMin: '1G',
+        memoryMax: '3G',
         hideOnPlay: true,
         enableSnow: true, // Default snow effect (legacy compatibility)
         effectsPreset: 'auto', // 'auto' | 'snow' | 'leaves' | 'sakura' | 'fireflies' | 'ganja' | 'off'
-        effectsDensity: 'medium', // 'low' | 'medium' | 'high'
+        effectsDensity: 'low', // 'low' | 'medium' | 'high'
         enableSmoke: true, // Default smoke effect
         enableParallax: true, // Default parallax background
         debugMode: false, // Default debug mode off
@@ -71,7 +71,7 @@ function normalizeLoadedConfig(config) {
         merged.effectsPreset = merged.enableSnow === false ? 'off' : 'auto';
     }
     if (!Object.prototype.hasOwnProperty.call(merged, 'effectsDensity')) {
-        merged.effectsDensity = 'medium';
+        merged.effectsDensity = 'low';
     }
 
     return merged;
