@@ -4,7 +4,8 @@
  */
 
 // Версии
-const FORGE_VERSION = '21.1.233';
+const NEOFORGE_VERSION = '21.1.233';
+const FORGE_VERSION = NEOFORGE_VERSION;
 const MC_VERSION = '1.21.1';
 const REQUIRED_JAVA_MAJOR = 21;
 
@@ -15,7 +16,8 @@ const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;
 
 const MANIFEST_URL = `${FILES_BASE}/manifest.json`;
-const FORGE_INSTALLER_URL = `https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.233/neoforge-21.1.233-installer.jar`;
+const NEOFORGE_INSTALLER_URL = `https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.233/neoforge-21.1.233-installer.jar`;
+const FORGE_INSTALLER_URL = NEOFORGE_INSTALLER_URL;
 const AUTHLIB_INJECTOR_URL = `https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar`;
 const YGGDRASIL_AUTH_URL = `${API_BASE}/yggdrasil/authserver/authenticate`;
 
@@ -27,9 +29,8 @@ const CURSEFORGE_API_KEY = process.env.CURSEFORGE_API_KEY || '$2a$10$SvuvYSQ0Huo
 // Repair URLs for critical files
 const REPAIR_FILES = {
     'authlib-injector.jar': AUTHLIB_INJECTOR_URL,
-    'forge-installer.jar': FORGE_INSTALLER_URL,
-    'modlauncher.jar': `https://maven.minecraftforge.net/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar`,
-    'securejarhandler.jar': `https://maven.minecraftforge.net/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar`,
+    'forge-installer.jar': NEOFORGE_INSTALLER_URL,
+    'neoforge-installer.jar': NEOFORGE_INSTALLER_URL,
     'vanilla-client.jar': VANILLA_VERSION_JAR_URL,
 };
 
@@ -79,6 +80,7 @@ const JVM_OPTIMIZATION_ARGS = [
 
 module.exports = {
     // Versions
+    NEOFORGE_VERSION,
     FORGE_VERSION,
     MC_VERSION,
     REQUIRED_JAVA_MAJOR,
@@ -89,6 +91,7 @@ module.exports = {
     FILES_BASE,
     API_BASE,
     MANIFEST_URL,
+    NEOFORGE_INSTALLER_URL,
     FORGE_INSTALLER_URL,
     AUTHLIB_INJECTOR_URL,
     YGGDRASIL_AUTH_URL,

@@ -44,9 +44,11 @@ const launcher = new Client();
 let isGameRunning = false;
 let isLaunchCancelled = false;
 const {
+    NEOFORGE_VERSION,
     FORGE_VERSION,
     MC_VERSION,
     MANIFEST_URL,
+    NEOFORGE_INSTALLER_URL,
     FORGE_INSTALLER_URL,
     AUTHLIB_INJECTOR_URL,
     YGGDRASIL_AUTH_URL,
@@ -78,14 +80,36 @@ function computeDefaultDisabledModsFromManifest(manifest) {
 
 
 
+function ensureLauncherProfilesJson(rootPath) {
+    const profilesPath = path.join(rootPath, 'launcher_profiles.json');
+    if (!fs.existsSync(profilesPath)) {
+        const defaultProfiles = {
+            profiles: {
+                "GanjaCraft": {
+                    name: "GanjaCraft",
+                    type: "custom",
+                    created: new Date().toISOString(),
+                    lastUsed: new Date().toISOString(),
+                    lastVersionId: MC_VERSION
+                }
+            },
+            settings: {},
+            version: 3
+        };
+        try {
+            fs.writeFileSync(profilesPath, JSON.stringify(defaultProfiles, null, 2), 'utf8');
+        } catch (e) {
+            console.error('Failed to create launcher_profiles.json:', e);
+        }
+    }
+}
+
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
     // Comprehensive repair: check all critical game files and re-download if corrupt.
-    // This prevents NoClassDefFoundError, "invalid JAR", and other integrity issues.
-    
     const criticalChecks = [
         {
             name: 'Authlib Injector',
@@ -93,19 +117,9 @@ async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
             url: REPAIR_FILES['authlib-injector.jar'],
         },
         {
-            name: 'Forge Installer',
-            path: path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`),
+            name: 'NeoForge Installer',
+            path: path.join(rootPath, `neoforge-${FORGE_VERSION}-installer.jar`),
             url: REPAIR_FILES['forge-installer.jar'],
-        },
-        {
-            name: 'ModLauncher (Forge)',
-            path: path.join(rootPath, 'libraries', 'cpw', 'mods', 'modlauncher', '10.0.9', 'modlauncher-10.0.9.jar'),
-            url: REPAIR_FILES['modlauncher.jar'],
-        },
-        {
-            name: 'SecureJarHandler (Forge)',
-            path: path.join(rootPath, 'libraries', 'cpw', 'mods', 'securejarhandler', '2.1.10', 'securejarhandler-2.1.10.jar'),
-            url: REPAIR_FILES['securejarhandler.jar'],
         },
         {
             name: `Minecraft ${MC_VERSION}`,
@@ -199,38 +213,32 @@ async function ensureWritableFilePath(filePath) {
 }
 
 async function preflightForgeLibraries(rootPath, sendLog, sendDebug) {
-    // Check critical Forge bootstrap libs for integrity. If they're corrupt/missing, delete so MCLC can re-download.
     const librariesDir = path.join(rootPath, 'libraries');
     
-    // These versions correspond to FORGE_VERSION 1.20.1-47.4.0.
+    // Check key NeoForge loader library writability if it exists
     const criticalLibs = [
-        path.join(librariesDir, 'cpw', 'mods', 'modlauncher', '10.0.9', 'modlauncher-10.0.9.jar'),
-        path.join(librariesDir, 'cpw', 'mods', 'securejarhandler', '2.1.10', 'securejarhandler-2.1.10.jar'),
+        path.join(librariesDir, 'net', 'neoforged', 'fancymodloader', 'loader', '4.0.42', 'loader-4.0.42.jar'),
     ];
 
     for (const libPath of criticalLibs) {
         const libName = path.basename(libPath);
         const libDir = path.dirname(libPath);
 
-        // If file doesn't exist, MCLC will download it.
         if (!fs.existsSync(libPath)) {
-            sendDebug(`Preflight: ${libName} does not exist, MCLC will download it.`);
+            sendDebug(`Preflight: ${libName} does not exist yet.`);
             continue;
         }
 
-        // Check if file is a valid ZIP/JAR
         const isValid = isZipIntact(libPath);
         if (!isValid) {
             sendDebug(`Preflight: ${libName} is corrupt (invalid ZIP), deleting for re-download...`);
             sendLog(`Обнаружен повреждённый файл ${libName}, удаляю для переcкачивания...`);
             try {
-                // Ensure dir exists, clear readonly, delete
                 if (!fs.existsSync(libDir)) fs.mkdirSync(libDir, { recursive: true });
                 try { fs.chmodSync(libPath, 0o666); } catch {}
                 fs.unlinkSync(libPath);
                 sendDebug(`Deleted corrupt ${libName}`);
             } catch (e) {
-                // If delete fails, we'll let MCLC try — might still work if file is readable
                 sendDebug(`Failed to delete ${libName}: ${e.message}, proceeding anyway`);
             }
         } else {
@@ -393,48 +401,10 @@ function cleanZeroByteFiles(dir) {
             if (stats.isDirectory()) {
                 cleanZeroByteFiles(filePath);
             } else if (stats.isFile()) {
-                let shouldDelete = false;
                 if (stats.size === 0) {
-                    shouldDelete = true;
-                } else if (file.endsWith('.jar') || file.endsWith('.zip')) {
-                    try {
-                        const fd = fs.openSync(filePath, 'r');
-                        
-                        // 1. Check Header (PK..)
-                        const headerBuffer = Buffer.alloc(4);
-                        fs.readSync(fd, headerBuffer, 0, 4, 0);
-                        if (headerBuffer.toString('hex') !== '504b0304') {
-                            console.log(`[CLEANUP] Invalid zip header for ${filePath}: ${headerBuffer.toString('hex')}`);
-                            shouldDelete = true;
-                        }
-
-                        // 2. Check Footer (EOCD) - Heuristic: Scan last 4KB
-                        if (!shouldDelete && stats.size > 22) {
-                            const scanSize = Math.min(stats.size, 4096);
-                            const footerBuffer = Buffer.alloc(scanSize);
-                            fs.readSync(fd, footerBuffer, 0, scanSize, stats.size - scanSize);
-                            
-                            // EOCD signature: 50 4B 05 06
-                            if (!footerBuffer.includes(Buffer.from([0x50, 0x4B, 0x05, 0x06]))) {
-                                console.log(`[CLEANUP] Missing EOCD signature (truncated?) for ${filePath}`);
-                                shouldDelete = true;
-                            }
-                        }
-                        
-                        fs.closeSync(fd);
-                    } catch (err) {
-                        console.error(`[CLEANUP] Error checking file ${filePath}:`, err);
-                        shouldDelete = true; // If we can't read it, it's probably bad
-                    }
-                }
-
-                if (shouldDelete) {
-                    console.log(`[CLEANUP] Deleting corrupted file: ${filePath}`);
-                    try {
-                        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-                    } catch (e) {
+                    console.log(`[CLEANUP] Deleting corrupted 0-byte file: ${filePath}`);
+                    try { fs.unlinkSync(filePath); } catch (e) {
                         console.error(`[CLEANUP] Failed to delete ${filePath}:`, e);
-                        throw new Error(`Не удалось удалить поврежденный файл: ${path.basename(filePath)}. Возможно, он занят другим процессом. Перезагрузите ПК.`);
                     }
                 }
             }
@@ -797,37 +767,39 @@ ipcMain.handle('launch-game', async (event, options) => {
         }
     }
 
-    // Проверяем и качаем Forge
-    const forgeInstallerPath = path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`);
-    let needForge = !fs.existsSync(forgeInstallerPath);
-    
+    // Проверяем и качаем NeoForge
+    const forgeInstallerPath = path.join(rootPath, `neoforge-${FORGE_VERSION}-installer.jar`);
+    const legacyForgeInstallerPath = path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`);
+    const activeInstallerPath = fs.existsSync(forgeInstallerPath) ? forgeInstallerPath : legacyForgeInstallerPath;
+
+    let needForge = !fs.existsSync(activeInstallerPath);
     if (!needForge) {
-        const size = fs.statSync(forgeInstallerPath).size;
-        if (size === 0 || !isZipIntact(forgeInstallerPath)) {
-            sendLog('Обнаружен поврежденный установщик Forge (битый/не ZIP). Перекачивание...');
-            try { fs.unlinkSync(forgeInstallerPath); } catch {}
+        const size = fs.statSync(activeInstallerPath).size;
+        if (size === 0 || !isZipIntact(activeInstallerPath)) {
+            sendLog('Обнаружен поврежденный установщик NeoForge. Перекачивание...');
+            try { fs.unlinkSync(activeInstallerPath); } catch {}
             needForge = true;
         }
     }
 
     if (needForge) {
-        sendLog('Скачивание установщика Forge...');
+        sendLog('Скачивание установщика NeoForge...');
         try {
-            sendDebug(`Downloading Forge from ${FORGE_INSTALLER_URL}`);
+            sendDebug(`Downloading NeoForge from ${FORGE_INSTALLER_URL}`);
             await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
             if (!isZipIntact(forgeInstallerPath)) {
                 try { fs.unlinkSync(forgeInstallerPath); } catch {}
-                throw new Error('Downloaded Forge installer is not a valid JAR/ZIP (truncated or HTML response)');
+                throw new Error('Downloaded NeoForge installer is not a valid JAR/ZIP (truncated or HTML response)');
             }
-            sendLog('Установщик Forge скачан.');
+            sendLog('Установщик NeoForge скачан.');
         } catch (e) {
-            console.error('Failed to download Forge:', e);
-            sendDebug(`Forge download failed: ${e.stack}`);
+            console.error('Failed to download NeoForge:', e);
+            sendDebug(`NeoForge download failed: ${e.stack}`);
             isGameRunning = false;
-            return { success: false, error: "Не удалось скачать Forge: " + e.message };
+            return { success: false, error: "Не удалось скачать NeoForge: " + e.message };
         }
     } else {
-        sendLog('Установщик Forge найден.');
+        sendLog('Установщик NeoForge найден.');
     }
 
     // Check and download authlib-injector
@@ -904,8 +876,50 @@ ipcMain.handle('launch-game', async (event, options) => {
         return { success: false, error: "Ошибка авторизации: " + e.message };
     }
 
+    // Ensure launcher_profiles.json exists (required by NeoForge installer)
+    ensureLauncherProfilesJson(rootPath);
+
+    // Автоматическая установка NeoForge (если version JSON отсутствует)
+    const neoforgeVerId = `neoforge-${FORGE_VERSION}`;
+    const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+
+    if (!fs.existsSync(neoforgeJsonPath)) {
+        sendLog('Первичная установка NeoForge 21.1.233 (~15-30 сек)...');
+        const finalInstaller = fs.existsSync(forgeInstallerPath) ? forgeInstallerPath : activeInstallerPath;
+        sendDebug(`Running NeoForge installer headless: ${finalInstaller}`);
+        try {
+            const { execFile } = require('child_process');
+            const javaBin = (process.platform === 'win32' && javaPath && javaPath.toLowerCase().endsWith('javaw.exe'))
+                ? javaPath.replace(/javaw\.exe$/i, 'java.exe')
+                : (javaPath || 'java');
+
+            await new Promise((resolve, reject) => {
+                const proc = execFile(javaBin, ['-jar', finalInstaller, '--installClient', rootPath], { cwd: rootPath });
+                let stderr = '';
+                let stdout = '';
+                proc.stdout?.on('data', d => { stdout += d.toString(); });
+                proc.stderr?.on('data', d => { stderr += d.toString(); });
+                proc.on('close', code => {
+                    sendDebug(`NeoForge installer exit code: ${code}`);
+                    if (code === 0 || fs.existsSync(neoforgeJsonPath)) {
+                        resolve();
+                    } else {
+                        reject(new Error(`Код завершения установщика: ${code}.\n${stderr || stdout}`));
+                    }
+                });
+                proc.on('error', err => reject(err));
+            });
+            sendLog('✓ NeoForge 21.1.233 успешно установлен.');
+        } catch (e) {
+            console.error('NeoForge installation failed:', e);
+            sendDebug(`NeoForge install error: ${e.stack || e.message}`);
+            isGameRunning = false;
+            return { success: false, error: `Не удалось установить NeoForge 21.1.233:\n${e.message}` };
+        }
+    }
+
     const opts = {
-        clientPackage: null, // null = ванильная версия, или url к zip
+        clientPackage: null,
         authorization: {
             access_token: authSession.accessToken,
             client_token: authSession.clientToken,
@@ -916,21 +930,21 @@ ipcMain.handle('launch-game', async (event, options) => {
         root: rootPath,
         timeout: 180_000,
         version: {
-            number: MC_VERSION, // Версия майнкрафта
-            type: "release"
+            number: MC_VERSION,
+            type: "release",
+            custom: neoforgeVerId
         },
-        forge: forgeInstallerPath, // Путь к инсталлеру Forge
+        forge: null,
         memory: {
             max: config.memoryMax,
             min: config.memoryMin
         },
-        javaPath: javaPath || undefined, // Use detected/downloaded java if available
+        javaPath: javaPath || undefined,
         overrides: {
             maxSockets: 4,
         },
         customArgs: [
             `-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`,
-            // Optimization Flags
             '-XX:+UseG1GC',
             '-XX:+ParallelRefProcEnabled',
             '-XX:MaxGCPauseMillis=200',
@@ -973,8 +987,7 @@ ipcMain.handle('launch-game', async (event, options) => {
         return { success: false, error: e.message };
     }
 
-    // Windows-specific preflight: make sure critical Forge libs are writable.
-    // If Defender/AV blocks write, MCLC can't download modlauncher/securejarhandler and the game crashes.
+    // Windows-specific preflight
     try {
         sendDebug('Preflight: checking Forge library writability...');
         await preflightForgeLibraries(rootPath, sendLog, sendDebug);

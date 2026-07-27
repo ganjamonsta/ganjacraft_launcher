@@ -27,19 +27,9 @@ async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
             url: REPAIR_FILES['authlib-injector.jar'],
         },
         {
-            name: 'Forge Installer',
-            path: path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`),
+            name: 'NeoForge Installer',
+            path: path.join(rootPath, `neoforge-${FORGE_VERSION}-installer.jar`),
             url: REPAIR_FILES['forge-installer.jar'],
-        },
-        {
-            name: 'ModLauncher (Forge)',
-            path: path.join(rootPath, 'libraries', 'cpw', 'mods', 'modlauncher', '10.0.9', 'modlauncher-10.0.9.jar'),
-            url: REPAIR_FILES['modlauncher.jar'],
-        },
-        {
-            name: 'SecureJarHandler (Forge)',
-            path: path.join(rootPath, 'libraries', 'cpw', 'mods', 'securejarhandler', '2.1.10', 'securejarhandler-2.1.10.jar'),
-            url: REPAIR_FILES['securejarhandler.jar'],
         },
         {
             name: `Minecraft ${MC_VERSION}`,

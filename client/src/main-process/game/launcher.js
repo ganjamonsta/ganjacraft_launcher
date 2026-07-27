@@ -13,11 +13,13 @@ const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJav
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
 const { repairCriticalFiles } = require('./repair');
-const { ensureVanillaVersionFiles, preflightForgeLibraries } = require('./forge');
+const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, preflightForgeLibraries } = require('./neoforge');
 const { 
+    NEOFORGE_VERSION,
     FORGE_VERSION,
     MC_VERSION,
     MANIFEST_URL,
+    NEOFORGE_INSTALLER_URL,
     FORGE_INSTALLER_URL,
     AUTHLIB_INJECTOR_URL,
     YGGDRASIL_AUTH_URL,
@@ -306,9 +308,10 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         timeout: 180_000,
         version: {
             number: MC_VERSION,
-            type: "release"
+            type: "release",
+            custom: `neoforge-${FORGE_VERSION}`
         },
-        forge: forgeInstallerPath,
+        forge: null,
         memory: {
             max: config.memoryMax,
             min: config.memoryMin
@@ -481,6 +484,66 @@ async function launchGame(event, options) {
             const playerNick = (options && options.username) ? options.username : 'Player';
             sendLog(`Запуск в офлайн-режиме под ником ${playerNick}...`);
             authSession = makeOfflineSession(playerNick);
+        }
+
+        // Ensure launcher_profiles.json exists (required by NeoForge installer)
+        const profilesPath = path.join(rootPath, 'launcher_profiles.json');
+        if (!fs.existsSync(profilesPath)) {
+            const defaultProfiles = {
+                profiles: {
+                    "GanjaCraft": {
+                        name: "GanjaCraft",
+                        type: "custom",
+                        created: new Date().toISOString(),
+                        lastUsed: new Date().toISOString(),
+                        lastVersionId: MC_VERSION
+                    }
+                },
+                settings: {},
+                version: 3
+            };
+            try {
+                fs.writeFileSync(profilesPath, JSON.stringify(defaultProfiles, null, 2), 'utf8');
+            } catch (e) {
+                sendDebug(`Failed to create launcher_profiles.json: ${e.message}`);
+            }
+        }
+
+        // NeoForge headless install check
+        const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
+        const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+
+        if (!fs.existsSync(neoforgeJsonPath)) {
+            sendLog('Первичная установка NeoForge 21.1.233 (~15-30 сек)...');
+            sendDebug(`Running NeoForge installer headless: ${forgeInstallerPath}`);
+            try {
+                const { execFile } = require('child_process');
+                const javaBin = (process.platform === 'win32' && javaPath && javaPath.toLowerCase().endsWith('javaw.exe'))
+                    ? javaPath.replace(/javaw\.exe$/i, 'java.exe')
+                    : (javaPath || 'java');
+
+                await new Promise((resolve, reject) => {
+                    const proc = execFile(javaBin, ['-jar', forgeInstallerPath, '--installClient', rootPath], { cwd: rootPath });
+                    let stderr = '';
+                    let stdout = '';
+                    proc.stdout?.on('data', d => { stdout += d.toString(); });
+                    proc.stderr?.on('data', d => { stderr += d.toString(); });
+                    proc.on('close', code => {
+                        sendDebug(`NeoForge installer exit code: ${code}`);
+                        if (code === 0 || fs.existsSync(neoforgeJsonPath)) {
+                            resolve();
+                        } else {
+                            reject(new Error(`Код завершения установщика: ${code}.\n${stderr || stdout}`));
+                        }
+                    });
+                    proc.on('error', err => reject(err));
+                });
+                sendLog('✓ NeoForge 21.1.233 успешно установлен.');
+            } catch (e) {
+                sendDebug(`NeoForge install error: ${e.stack || e.message}`);
+                isGameRunning = false;
+                return { success: false, error: `Не удалось установить NeoForge 21.1.233:\n${e.message}` };
+            }
         }
 
         // Build launch options
