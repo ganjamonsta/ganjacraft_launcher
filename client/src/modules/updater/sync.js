@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { resolveUnderRoot, getFileHash, ensureDir } = require('./utils');
 const { downloadFile, downloadWithRetry } = require('./download');
+const { resolveModrinthUrls } = require('./modrinth');
 const { cleanupAll } = require('./cleanup');
 
 // Категории файлов для защиты/обновления
@@ -83,6 +84,29 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     }
 
     sendLog(`Найдено ${manifest.files.length} файлов в манифесте.`);
+
+    // 2.5. Быстрый резолвинг модов через Modrinth CDN (по SHA1 хешам)
+    const jarHashes = manifest.files
+        .filter(f => f && f.hash && typeof f.path === 'string' && f.path.endsWith('.jar'))
+        .map(f => f.hash);
+
+    if (jarHashes.length > 0) {
+        sendLog('Проверка наличия модов на Modrinth CDN...');
+        try {
+            const modrinthMap = await resolveModrinthUrls(jarHashes);
+            const resolvedCount = Object.keys(modrinthMap).length;
+            if (resolvedCount > 0) {
+                sendLog(`Modrinth CDN: ${resolvedCount} из ${jarHashes.length} модов переключены на прямую загрузку с CDN!`);
+                for (const file of manifest.files) {
+                    if (file && file.hash && modrinthMap[file.hash.toLowerCase()]) {
+                        file.url = modrinthMap[file.hash.toLowerCase()];
+                    }
+                }
+            }
+        } catch (mErr) {
+            sendLog(`Предупреждение Modrinth CDN: ${mErr.message}`);
+        }
+    }
 
     // 3. Обрабатываем файлы параллельно
     const CONCURRENCY = 4;
@@ -174,6 +198,7 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     }
 
     // Запускаем параллельную обработку
+    const failedFiles = [];
     const workers = [];
     for (let i = 0; i < CONCURRENCY; i++) {
         workers.push((async () => {
@@ -183,14 +208,33 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
                     await processFile(file);
                 } catch (err) {
                     if (err.message === 'CANCELLED') throw err;
-                    sendLog(`Ошибка обработки ${file?.path || 'unknown'}: ${err.message}`);
-                    throw err;
+                    sendLog(`Предупреждение: не удалось сразу скачать ${file?.path || 'unknown'}, отложено для повтора...`);
+                    failedFiles.push(file);
                 }
             }
         })());
     }
 
     await Promise.all(workers);
+
+    // Повторный проход для файлов, упавших во время параллельного скачивания
+    if (failedFiles.length > 0) {
+        sendLog(`Повторная попытка скачивания для ${failedFiles.length} файлов...`);
+        const finalFailures = [];
+        for (const file of failedFiles) {
+            try {
+                await processFile(file);
+            } catch (err) {
+                if (err.message === 'CANCELLED') throw err;
+                sendLog(`Ошибка обработки ${file?.path || 'unknown'}: ${err.message}`);
+                finalFailures.push(file);
+            }
+        }
+        if (finalFailures.length > 0) {
+            throw new Error(`Не удалось скачать ${finalFailures.length} файлов из манифеста после повторов.`);
+        }
+    }
+
     sendLog('Все файлы проверены.');
 
     // 4. Очистка устаревших файлов

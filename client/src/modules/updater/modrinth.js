@@ -1,0 +1,89 @@
+/**
+ * GanjaCraft Launcher - Modrinth Resolver Module
+ * Позволяет автоматически резолвить CDN ссылки Modrinth по SHA1 хешам модов
+ */
+
+const https = require('https');
+
+/**
+ * Запросить Modrinth CDN URLs для списка SHA1 хешей (Batch Request)
+ * @param {string[]} hashes - Массив SHA1 хешей файлов (.jar)
+ * @returns {Promise<Record<string, string>>} - Карта sha1 -> cdn_url
+ */
+async function resolveModrinthUrls(hashes) {
+    if (!hashes || hashes.length === 0) return {};
+
+    // Modrinth API лимит 100 хешей за 1 запрос
+    const BATCH_SIZE = 100;
+    const resultMap = {};
+
+    for (let i = 0; i < hashes.length; i += BATCH_SIZE) {
+        const chunk = hashes.slice(i, i + BATCH_SIZE);
+        try {
+            const chunkMap = await resolveChunk(chunk);
+            Object.assign(resultMap, chunkMap);
+        } catch (err) {
+            console.warn(`[Modrinth] Warning: Failed to resolve batch: ${err.message}`);
+        }
+    }
+
+    return resultMap;
+}
+
+function resolveChunk(hashes) {
+    return new Promise((resolve) => {
+        const payload = JSON.stringify({
+            hashes: hashes,
+            algorithm: 'sha1'
+        });
+
+        const req = https.request({
+            hostname: 'api.modrinth.com',
+            port: 443,
+            path: '/v2/version_files',
+            method: 'POST',
+            timeout: 10_000,
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload),
+                'User-Agent': 'ganjamonsta/ganjacraft-launcher/1.0.0 (contact@ganjacraft.ru)'
+            }
+        }, (res) => {
+            let body = '';
+            res.on('data', chunk => body += chunk);
+            res.on('end', () => {
+                if (res.statusCode === 200) {
+                    try {
+                        const parsed = JSON.parse(body);
+                        const resultMap = {};
+                        for (const hash of Object.keys(parsed)) {
+                            const versionFile = parsed[hash];
+                            if (versionFile && Array.isArray(versionFile.files) && versionFile.files.length > 0) {
+                                const primaryFile = versionFile.files.find(f => f.primary) || versionFile.files[0];
+                                if (primaryFile && primaryFile.url) {
+                                    resultMap[hash.toLowerCase()] = primaryFile.url;
+                                }
+                            }
+                        }
+                        resolve(resultMap);
+                    } catch {
+                        resolve({});
+                    }
+                } else {
+                    resolve({});
+                }
+            });
+        });
+
+        req.on('error', () => resolve({}));
+        req.on('timeout', () => {
+            req.destroy();
+            resolve({});
+        });
+
+        req.write(payload);
+        req.end();
+    });
+}
+
+module.exports = { resolveModrinthUrls };
