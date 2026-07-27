@@ -541,7 +541,19 @@ function createWindow() {
     ipcMain.handle('get-manifest', async () => {
         // Fetch manifest directly to return to UI
         return new Promise((resolve) => {
-            const req = https.get(MANIFEST_URL, (res) => {
+            const parsedUrl = new URL(MANIFEST_URL);
+            const reqOptions = {
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port || 443,
+                path: parsedUrl.pathname + parsedUrl.search,
+                method: 'GET',
+                timeout: 5000,
+                headers: {
+                    'User-Agent': 'localtunnel',
+                    'Bypass-Tunnel-Reminder': 'true'
+                }
+            };
+            const req = https.request(reqOptions, (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => {
@@ -551,10 +563,11 @@ function createWindow() {
             });
             
             req.on('error', () => resolve(null));
-            req.setTimeout(5000, () => {
+            req.on('timeout', () => {
                 req.destroy();
                 resolve(null);
             });
+            req.end();
         });
     });
 

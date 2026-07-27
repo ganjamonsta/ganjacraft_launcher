@@ -72,8 +72,20 @@ function registerConfigHandlers(mainWindow) {
         
         // Пробуем загрузить свежий (неблокирующе)
         try {
+            const parsedUrl = new URL(MANIFEST_URL);
+            const reqOptions = {
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port || 443,
+                path: parsedUrl.pathname + parsedUrl.search,
+                method: 'GET',
+                timeout: 3000,
+                headers: {
+                    'User-Agent': 'localtunnel',
+                    'Bypass-Tunnel-Reminder': 'true'
+                }
+            };
             const fresh = await new Promise((resolve, reject) => {
-                const req = https.get(MANIFEST_URL, (res) => {
+                const req = https.request(reqOptions, (res) => {
                     let data = '';
                     res.on('data', chunk => data += chunk);
                     res.on('end', () => {
@@ -83,10 +95,11 @@ function registerConfigHandlers(mainWindow) {
                 });
                 
                 req.on('error', reject);
-                req.setTimeout(3000, () => {
+                req.on('timeout', () => {
                     req.destroy();
                     reject(new Error('Timeout'));
                 });
+                req.end();
             });
             
             manifestCache = fresh;

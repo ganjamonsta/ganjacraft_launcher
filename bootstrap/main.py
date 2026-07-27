@@ -208,6 +208,12 @@ def _fetch_with_retry(url: str, timeout: int = 15, max_retries: int = 4, retry_d
             })
             with urllib.request.urlopen(req, timeout=timeout) as response:
                 return response.read()
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                raise e
+            last_error = e
+            if attempt < max_retries:
+                time.sleep(retry_delay)
         except Exception as e:
             last_error = e
             if attempt < max_retries:
