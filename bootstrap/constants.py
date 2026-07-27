@@ -4,7 +4,7 @@ GanjaCraft Launcher Bootstrap Constants
 """
 
 BASE_URL = "https://gcrlauncher1.loca.lt"
-FILES_BASE = f"{BASE_URL}/files"
+FILES_BASE = f"{BASE_URL}/api/launcher/files"
 
 BOOTSTRAP_JSON_URL = f"{FILES_BASE}/bootstrap.json"
 VERSION_JSON_URL = f"{FILES_BASE}/version.json"
