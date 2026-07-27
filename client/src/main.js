@@ -941,7 +941,7 @@ ipcMain.handle('launch-game', async (event, options) => {
         },
         javaPath: javaPath || undefined,
         overrides: {
-            maxSockets: 4,
+            maxSockets: 8,
             versionJson: neoforgeJsonPath,
         },
         customArgs: [
@@ -1051,9 +1051,12 @@ ipcMain.handle('launch-game', async (event, options) => {
         // Also listen for data (stdout) just in case arguments is missed or behavior changes
         launcher.once('data', onArguments);
 
+        let lastReportedPercent = -1;
+        let lastProgressType = '';
+
         // Standard logging listeners (always active for UI)
         launcher.on('debug', (e) => {
-            // Only send to UI if debug mode is on, otherwise it's too spammy
+            sendDebug(`[MCLC] ${e}`);
             if (config.debugMode && mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
             }
@@ -1063,13 +1066,21 @@ ipcMain.handle('launch-game', async (event, options) => {
         });
         launcher.on('progress', (e) => {
             if (mainWindow && !mainWindow.isDestroyed()) {
-                // Try to get filename from event
-                const fileName = e.name || e.file || '';
-                const msg = `[PROGRESS] ${e.type} - ${e.task} (${e.total}) ${fileName ? '- ' + fileName : ''}`;
-                // Don't spam UI log with progress, just update bar
-                // mainWindow.webContents.send('log-message', msg);
-                
-                // Forward progress to renderer for the UI bar
+                const total = e.total || 1;
+                const task = e.task || 0;
+                const percent = Math.min(100, Math.round((task / total) * 100));
+
+                if (e.type !== lastProgressType || percent >= lastReportedPercent + 25) {
+                    lastProgressType = e.type;
+                    lastReportedPercent = percent;
+
+                    let label = 'ресурсов';
+                    if (e.type === 'assets') label = 'ресурсов Minecraft (звуки/текстуры)';
+                    else if (e.type.includes('classes')) label = 'библиотек ядра';
+
+                    sendLog(`[LAUNCHER] Загрузка ${label}: ${percent}% (${task}/${total})`);
+                }
+
                 mainWindow.webContents.send('progress', { task: e.task, total: e.total, type: e.type });
             }
         });
