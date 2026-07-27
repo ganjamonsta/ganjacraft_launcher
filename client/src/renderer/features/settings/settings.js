@@ -9,7 +9,7 @@ import { toggleSnow, createSnowBurst, createDirectionalBurst, createSideBurst, a
 import { appState } from '../../state/app-state.js';
 import { startSmokeEffect, stopSmokeEffect } from '../../ui/effects/smoke.js';
 import { startParallax, stopParallax } from '../../ui/effects/parallax.js';
-import { loadModsList, getDisabledMods, updateModsCounter, updateCategorySidebar } from '../mods/index.js';
+import { loadModsList, getDisabledMods, setAllModsState, updateModsCounter, updateCategorySidebar } from '../mods/index.js';
 import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
 import { debounce } from '../../utils/performance.js';
@@ -133,10 +133,10 @@ export function setupSettingsChangeListeners() {
         adminTokenInput.addEventListener('input', updateSaveButtonVisibility, { passive: true });
     }
     
-    // Mods list - event delegation
-    const modsList = document.getElementById('mods-list');
-    if (modsList) {
-        modsList.addEventListener('change', (e) => {
+    // Mods list - event delegation (grid container)
+    const modsGrid = document.getElementById('mods-grid');
+    if (modsGrid) {
+        modsGrid.addEventListener('change', (e) => {
             if (e.target.type === 'checkbox') {
                 updateSaveButtonVisibility();
                 updateModsCounter();
@@ -503,9 +503,7 @@ export function initModsButtons() {
     
     if (selectAllBtn) {
         selectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('#mods-list input[type="checkbox"]:not([disabled])').forEach(cb => {
-                cb.checked = true;
-            });
+            setAllModsState(true);
             updateModsCounter();
             updateCategorySidebar();
             updateSaveButtonVisibility();
@@ -514,9 +512,7 @@ export function initModsButtons() {
     
     if (deselectAllBtn) {
         deselectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('#mods-list input[type="checkbox"]:not([disabled])').forEach(cb => {
-                cb.checked = false;
-            });
+            setAllModsState(false);
             updateModsCounter();
             updateCategorySidebar();
             updateSaveButtonVisibility();

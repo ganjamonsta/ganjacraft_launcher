@@ -12,5 +12,6 @@ export {
     updateModsCounter,
     updateCategorySidebar,
     getDisabledMods,
+    setAllModsState,
     initModsListeners
 } from './mods-manager.js';

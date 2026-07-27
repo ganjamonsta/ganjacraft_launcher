@@ -567,6 +567,21 @@ export function getDisabledMods() {
     return disabled;
 }
 
+/**
+ * Включить или отключить все моды
+ */
+export function setAllModsState(isChecked) {
+    allGroupItems.forEach(item => {
+        item.checked = isChecked;
+    });
+    const grid = dom.get('mods-grid');
+    if (grid) {
+        grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.checked = isChecked;
+        });
+    }
+}
+
 export function updateModsCounter() {}
 export function updateCategorySidebar() {}
 export function updateSidebarStats() {}

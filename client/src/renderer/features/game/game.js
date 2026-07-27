@@ -6,7 +6,7 @@
 import { dom } from '../../utils/dom.js';
 import { logToConsole } from '../console/index.js';
 import { getCurrentUsername, getAuthToken } from '../auth/index.js';
-import { getCurrentConfig } from '../settings/index.js';
+import { getCurrentConfig, settingsChanged, saveSettings } from '../settings/index.js';
 
 /**
  * Обновить прогресс-бар игры (реалистичный эффект тления косяка)
@@ -102,7 +102,11 @@ export async function startLaunch() {
     if (cancelBtn) cancelBtn.classList.remove('hidden');
     
     if (consoleOutput) consoleOutput.innerHTML = '';
-    logToConsole('[LAUNCHER] Запуск игры...');
+    // Auto-save any pending setting or mod changes before launching
+    if (settingsChanged()) {
+        logToConsole('[SETTINGS] Сохранение изменённых настроек перед запуском...');
+        await saveSettings();
+    }
 
     // Check skip sync from config
     const config = getCurrentConfig();
