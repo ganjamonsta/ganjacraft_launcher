@@ -202,9 +202,25 @@ function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
             }
         }
 
+        // Merge vanilla game arguments (--username, --version, --accessToken, etc.) with NeoForge game arguments (--fml...)
+        const vanillaGameArgs = (vanillaJson.arguments && Array.isArray(vanillaJson.arguments.game)) ? vanillaJson.arguments.game : [];
+        const neoGameArgs = (neoJson.arguments && Array.isArray(neoJson.arguments.game)) ? neoJson.arguments.game : [];
+
+        // Add vanilla args that are not already present in neoJson.arguments.game
+        neoJson.arguments = neoJson.arguments || {};
+        const mergedGameArgs = [...vanillaGameArgs];
+        for (const arg of neoGameArgs) {
+            if (typeof arg === 'string' && !mergedGameArgs.includes(arg)) {
+                mergedGameArgs.push(arg);
+            } else if (typeof arg !== 'string') {
+                mergedGameArgs.push(arg);
+            }
+        }
+        neoJson.arguments.game = mergedGameArgs;
+
         rewriteVersionJsonUrls(neoJson);
         fs.writeFileSync(neoforgeJsonPath, JSON.stringify(neoJson, null, 2), 'utf8');
-        if (sendDebug) sendDebug(`Merged ${added} vanilla libraries into ${neoforgeVerId}.json (total: ${neoJson.libraries.length})`);
+        if (sendDebug) sendDebug(`Merged ${added} vanilla libraries into ${neoforgeVerId}.json (total: ${neoJson.libraries.length}, game args: ${neoJson.arguments.game.length})`);
     } catch (e) {
         if (sendDebug) sendDebug(`Failed to merge version JSONs: ${e.message}`);
     }

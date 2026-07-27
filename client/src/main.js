@@ -657,11 +657,12 @@ ipcMain.handle('launch-game', async (event, options) => {
     };
 
     const sendDebug = (msg) => {
-        if (config.debugMode) {
-            const timestamp = new Date().toISOString();
-            if (debugStream && !debugStream.destroyed) {
-                debugStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
-            }
+        const timestamp = new Date().toISOString();
+        if (logStream && !logStream.destroyed) {
+            logStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
+        }
+        if (config.debugMode && debugStream && !debugStream.destroyed) {
+            debugStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
         }
     };
 
@@ -966,8 +967,9 @@ ipcMain.handle('launch-game', async (event, options) => {
                 }
             });
             const metaText = await metaRes.text();
-            authlibPrefetched = Buffer.from(metaText, 'utf8').toString('base64');
-            sendDebug(`Prefetched Yggdrasil metadata (${metaText.length} chars), base64 length: ${authlibPrefetched.length}`);
+            const compactJson = JSON.stringify(JSON.parse(metaText));
+            authlibPrefetched = Buffer.from(compactJson, 'utf8').toString('base64');
+            sendDebug(`Prefetched Yggdrasil metadata (${compactJson.length} chars), base64 length: ${authlibPrefetched.length}`);
         } catch (e) {
             sendDebug(`Failed to prefetch Yggdrasil metadata: ${e.message}`);
         }
@@ -997,6 +999,7 @@ ipcMain.handle('launch-game', async (event, options) => {
         javaPath: javaPath || undefined,
         overrides: {
             maxSockets: 8,
+            minArgs: 1,
             versionJson: neoforgeJsonPath,
             natives: nativesDir,
             minecraftJar: path.join(rootPath, 'versions', MC_VERSION, `${MC_VERSION}.jar`),
@@ -1025,7 +1028,7 @@ ipcMain.handle('launch-game', async (event, options) => {
             `-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`,
             `-Dauthlibinjector.side=client`,
             `-Dauthlibinjector.disableSniCheck=true`,
-            ...(authlibPrefetched ? [`-Dauthlibinjector.prefetched=${authlibPrefetched}`] : []),
+            ...(authlibPrefetched ? [`-Dauthlibinjector.yggdrasil.prefetched=${authlibPrefetched}`] : []),
             // G1GC
             '-XX:+UseG1GC',
             '-XX:+ParallelRefProcEnabled',

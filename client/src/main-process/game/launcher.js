@@ -312,7 +312,7 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
     const customArgs = [...neoforgeModuleArgs, ...JVM_OPTIMIZATION_ARGS];
     if (authlibPath && !authSession.isOffline) {
         if (authlibPrefetched) {
-            customArgs.unshift(`-Dauthlibinjector.prefetched=${authlibPrefetched}`);
+            customArgs.unshift(`-Dauthlibinjector.yggdrasil.prefetched=${authlibPrefetched}`);
         }
         customArgs.unshift(`-Dauthlibinjector.disableSniCheck=true`);
         customArgs.unshift(`-Dauthlibinjector.side=client`);
@@ -370,6 +370,7 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         javaPath: javaPath || undefined,
         overrides: {
             maxSockets: 8,
+            minArgs: 1,
             versionJson: neoforgeJsonPath,
             natives: nativesDir,
             minecraftJar: path.join(rootPath, 'versions', MC_VERSION, `${MC_VERSION}.jar`),
@@ -612,8 +613,9 @@ async function launchGame(event, options) {
                     }
                 });
                 const metaText = await metaRes.text();
-                authlibPrefetched = Buffer.from(metaText, 'utf8').toString('base64');
-                sendDebug(`Prefetched Yggdrasil metadata (${metaText.length} chars)`);
+                const compactJson = JSON.stringify(JSON.parse(metaText));
+                authlibPrefetched = Buffer.from(compactJson, 'utf8').toString('base64');
+                sendDebug(`Prefetched Yggdrasil metadata (${compactJson.length} chars)`);
             } catch (e) {
                 sendDebug(`Failed to prefetch Yggdrasil metadata: ${e.message}`);
             }
