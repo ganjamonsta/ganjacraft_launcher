@@ -46,8 +46,8 @@ function authenticateYggdrasilOnce(authUrl, username, token) {
             });
         });
 
-        req.setTimeout(10_000, () => {
-            req.destroy(new Error('Auth request timeout'));
+        req.setTimeout(25_000, () => {
+            req.destroy(new Error('Auth request timeout (25s)'));
         });
 
         req.on('error', (e) => reject(e));
