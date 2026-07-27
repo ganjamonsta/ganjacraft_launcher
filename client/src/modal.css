@@ -339,8 +339,10 @@
 
 /* Mods Tab Specifics */
 #tab-mods {
-    padding: 0;
-    overflow: hidden;
+    padding: 16px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 #tab-mods p {

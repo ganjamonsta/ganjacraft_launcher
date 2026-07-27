@@ -220,6 +220,14 @@
     transform: translateY(0);
 }
 
+.unified-btn.active {
+    background: rgba(76, 175, 80, 0.22) !important;
+    border-color: #4CAF50 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.35) !important;
+}
+
 .unified-btn-primary {
     background: rgba(76, 175, 80, 0.12);
     border-color: rgba(76, 175, 80, 0.25);
@@ -243,6 +251,13 @@
     border-color: rgba(255, 152, 0, 0.4);
 }
 
+.unified-btn-warning.active {
+    background: rgba(255, 193, 7, 0.25) !important;
+    color: #ffd700 !important;
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.35) !important;
+}
+
 .unified-btn-danger {
     background: rgba(239, 83, 80, 0.1);
     border-color: rgba(239, 83, 80, 0.25);
@@ -263,6 +278,156 @@
     width: 28px;
     height: 28px;
     padding: 0;
+}
+
+/* ========================================
+   Sub-tab Transition Animations
+   ======================================== */
+@keyframes subtabCategoryIn {
+    0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.97);
+    }
+    70% {
+        opacity: 1;
+        transform: translateY(-1px) scale(1.002);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes subtabFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.settings-category-animate {
+    opacity: 0;
+    animation: subtabCategoryIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.subtab-fade-animate {
+    animation: subtabFadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Unified Mods Subtabs Toolbar Alignment & Heights */
+#mods-subtabs {
+    background: rgba(22, 24, 28, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+    margin-bottom: 14px !important;
+}
+
+#mods-subtabs .unified-btn {
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+.search-input-wrapper {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+#mods-search-input {
+    height: 32px !important;
+    padding: 0 30px 0 12px !important;
+    font-size: 11.5px !important;
+    background: rgba(14, 15, 18, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+    color: #ffffff !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    line-height: 30px !important;
+    width: 100% !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#mods-search-input:focus {
+    border-color: #4CAF50 !important;
+    background: rgba(24, 25, 29, 0.95) !important;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15) !important;
+}
+
+.search-action-btn {
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #7a808c !important;
+    cursor: pointer !important;
+    transition: color 0.15s ease, transform 0.15s ease !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.search-action-btn:hover {
+    color: #ffffff !important;
+}
+
+.search-action-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.search-icon-clear {
+    color: #e57373 !important;
+}
+
+.search-action-btn:hover .search-icon-clear {
+    color: #ff5252 !important;
+    transform: scale(1.1);
+}
+
+/* Masonry column layout for category cards to eliminate empty vertical gaps */
+#mods-grid.settings-categories {
+    display: block !important;
+    column-count: 2 !important;
+    column-gap: 14px !important;
+}
+
+#mods-grid.settings-categories .settings-category {
+    break-inside: avoid !important;
+    margin-bottom: 14px !important;
+    display: inline-block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .unified-btn-icon svg {
@@ -1105,3 +1270,6 @@ body.is-admin .unified-toolbar-label.admin-only {
 .scrollable-list {
     overflow-y: auto;
 }
+
+
+

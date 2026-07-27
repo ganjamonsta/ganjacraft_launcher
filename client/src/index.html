@@ -282,24 +282,44 @@
 
                     <!-- Mods Tab -->
                     <div id="tab-mods" class="tab-content">
-                        <div class="unified-layout-sidebar">
-                            <div id="mods-categories" class="unified-sidebar">
-                                <div id="mods-categories-list" class="unified-sidebar-list">
-                                    <!-- Populated by JS -->
-                                </div>
-                                <div class="unified-sidebar-footer">
-                                    <div class="mods-counter">
-                                        <span id="mods-selected-count">0</span> / <span id="mods-total-count">0</span>
-                                    </div>
-                                    <div class="unified-toolbar-group">
-                                        <button id="mods-select-all" class="unified-btn unified-btn-sm" title="Выбрать все">Все</button>
-                                        <button id="mods-deselect-all" class="unified-btn unified-btn-sm" title="Снять все">Нет</button>
-                                    </div>
-                                </div>
+                        <!-- Top Subtabs & Search Toolbar -->
+                        <div id="mods-subtabs" class="unified-toolbar">
+                            <div class="unified-toolbar-group">
+                                <button class="unified-btn active" data-subtab="ВСЕ">ВСЕ</button>
+                                <button class="unified-btn" data-subtab="ОПТИМИЗАЦИЯ">ОПТИМИЗАЦИЯ</button>
+                                <button class="unified-btn" data-subtab="ГРАФИКА">ГРАФИКА</button>
+                                <button class="unified-btn" data-subtab="ИНТЕРФЕЙС">ИНТЕРФЕЙС</button>
+                                <button class="unified-btn" data-subtab="МЕХАНИКИ">МЕХАНИКИ</button>
                             </div>
-                            <div id="mods-list" class="unified-main-content">
+                            <div class="search-input-wrapper" style="flex: 1; max-width: 280px; margin: 0 4px;">
+                                <input type="text" id="mods-search-input" placeholder="Поиск мода по названию или файлу..." autocomplete="off">
+                                <button type="button" id="mods-search-clear-btn" class="search-action-btn" title="Очистить поиск">
+                                    <svg class="search-icon-magnifier" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <svg class="search-icon-clear hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="unified-toolbar-group">
+                                <button class="unified-btn unified-btn-warning" data-subtab="КАТАЛОГ ССЫЛОК">🔗 КАТАЛОГ ССЫЛОК</button>
+                            </div>
+                        </div>
+
+                        <!-- Mods Grid Container (Native Settings Categories 2-Column Grid) -->
+                        <div id="mods-grid-container" style="flex: 1; overflow-y: auto;">
+                            <div id="mods-grid" class="settings-categories">
+                                <div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>
+                            </div>
+                        </div>
+
+                        <!-- Links Catalog View Container (Hidden by default) -->
+                        <div id="mods-catalog-container" class="hidden" style="flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+                            <div id="catalog-list" style="flex: 1; overflow-y: auto;" class="settings-categories">
                                 <!-- Populated by JS -->
-                                <div class="unified-loading"><span class="unified-spinner"></span>Загрузка манифеста...</div>
                             </div>
                         </div>
                     </div>

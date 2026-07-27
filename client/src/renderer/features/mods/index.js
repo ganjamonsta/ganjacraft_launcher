@@ -2,12 +2,13 @@
  * GanjaCraft Launcher - Mods Feature Index
  */
 
-export { MOD_GROUPS, CATEGORY_ORDER, DEFAULT_DISABLED_GROUPS } from './mod-groups.js';
+export { MOD_GROUPS, SUB_CATEGORIES, CATEGORY_ORDER, DEFAULT_DISABLED_GROUPS } from './mod-groups.js';
 
 export {
     loadModsList,
-    renderModsList,
-    scrollToCategory,
+    renderModsGrid,
+    renderLinksCatalog,
+    updateSidebarStats,
     updateModsCounter,
     updateCategorySidebar,
     getDisabledMods,

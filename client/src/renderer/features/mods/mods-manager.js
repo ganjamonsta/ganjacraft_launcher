@@ -1,48 +1,40 @@
 /**
- * GanjaCraft Launcher - Mods Manager
- * Управление опциональными модами (оптимизировано)
+ * GanjaCraft Launcher - Mods Manager (Native Launcher UI)
+ * Управление модами с использованием стандартных категорий и переключателей лаунчера
  */
 
 import { dom } from '../../utils/dom.js';
-import { MOD_GROUPS, CATEGORY_ORDER } from './mod-groups.js';
+import { MOD_GROUPS, SUB_CATEGORIES } from './mod-groups.js';
 
-// Кеш для DOM элементов
-let cachedModsList = null;
+let cachedManifest = null;
+let currentSubTab = 'ВСЕ';
+let searchQuery = '';
+let allGroupItems = [];
 
 /**
  * Загрузить список модов
- * @param {string[]} disabledMods - список отключённых путей
- * @param {Object} config - текущая конфигурация
  */
-export async function loadModsList(disabledMods, config) {
-    cachedModsList = dom.get('mods-list');
-    if (!cachedModsList) return;
-    
-    cachedModsList.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка манифеста...</div>';
-    
-    const manifest = await window.api.getManifest();
-    if (!manifest) {
-        cachedModsList.innerHTML = '<div class="unified-empty"><div class="unified-empty-icon">⚠️</div><div class="unified-empty-text">Не удалось загрузить манифест</div></div>';
+export async function loadModsList(disabledMods = [], config = {}) {
+    const gridContainer = dom.get('mods-grid');
+    if (!gridContainer) return;
+
+    gridContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>';
+
+    cachedManifest = await window.api.getManifest();
+    if (!cachedManifest) {
+        gridContainer.innerHTML = '<div class="unified-empty"><div class="unified-empty-icon">⚠️</div><div class="unified-empty-text">Не удалось загрузить манифест модов</div></div>';
         return;
     }
-    
-    // Фильтруем опциональные .jar моды
-    const allFiles = manifest.files.filter(f => 
+
+    const allFiles = cachedManifest.files.filter(f => 
         f.optional && 
         f.path.startsWith('mods/') && 
         f.path.endsWith('.jar')
     );
-    
-    if (allFiles.length === 0) {
-        cachedModsList.innerHTML = '<div class="unified-empty"><div class="unified-empty-icon">📦</div><div class="unified-empty-text">Нет доступных опциональных модов</div></div>';
-        return;
-    }
 
+    allGroupItems = [];
     const handledFiles = new Set();
 
-    // Группируем по категориям
-    const categorized = {};
-    
     // Обрабатываем группы
     MOD_GROUPS.forEach(group => {
         const groupFiles = allFiles.filter(f => {
@@ -53,7 +45,6 @@ export async function loadModsList(disabledMods, config) {
         if (groupFiles.length > 0) {
             groupFiles.forEach(f => handledFiles.add(f.path));
 
-            // Определяем checked состояние
             let isChecked;
             if (config.modsDefaultsApplied !== true && group.defaultDisabled) {
                 isChecked = false;
@@ -61,217 +52,470 @@ export async function loadModsList(disabledMods, config) {
                 isChecked = groupFiles.every(f => !disabledMods.includes(f.path));
             }
 
-            const category = group.category || 'Разное';
-            if (!categorized[category]) categorized[category] = [];
-            
-            categorized[category].push({
+            allGroupItems.push({
                 type: 'group',
                 id: group.id,
                 name: group.name,
+                shortName: group.shortName || group.name,
+                version: group.version || '1.0.0',
+                subCategory: group.subCategory || 'Оптимизация',
+                icon: group.icon || 'gear',
+                dependsOn: group.dependsOn || null,
                 description: group.description,
+                curseSlug: group.curseSlug,
+                modrinthSlug: group.modrinthSlug,
                 paths: groupFiles.map(f => f.path),
                 checked: isChecked
             });
         }
     });
 
-    // Обрабатываем оставшиеся файлы
+    // Обрабатываем оставшиеся единичные файлы
     const remainingFiles = allFiles.filter(f => !handledFiles.has(f.path));
-    if (remainingFiles.length > 0) {
-        if (!categorized['Остальное']) categorized['Остальное'] = [];
-        
-        remainingFiles.forEach(file => {
-            const isChecked = !disabledMods.includes(file.path);
-            const fileName = file.path.split('/').pop();
-            
-            // Форматируем понятное название из имени файла
-            let prettyName = fileName
-                .replace(/\.jar$/i, '')
-                .replace(/^client[-_]/i, '')
-                .replace(/[-_](neoforge|forge|fabric|mc|\d+\.\d+).*/i, '')
-                .replace(/[-_]\d+.*$/i, '');
-            prettyName = prettyName.charAt(0).toUpperCase() + prettyName.slice(1);
+    remainingFiles.forEach(file => {
+        const isChecked = !disabledMods.includes(file.path);
+        const fileName = file.path.split('/').pop();
 
-            categorized['Остальное'].push({
-                type: 'file',
-                name: prettyName,
-                description: `Дополнительный мод (${fileName})`,
-                paths: [file.path],
-                checked: isChecked
-            });
-        });
-    }
+        let prettyName = fileName
+            .replace(/\.jar$/i, '')
+            .replace(/^client[-_]/i, '')
+            .replace(/[-_](neoforge|forge|fabric|mc|\d+\.\d+).*/i, '')
+            .replace(/[-_]\d+.*$/i, '');
+        prettyName = prettyName.charAt(0).toUpperCase() + prettyName.slice(1);
 
-    renderModsList(categorized);
-    updateModsCounter();
-}
+        const slug = prettyName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-/**
- * Отрендерить список модов (оптимизировано)
- * Использует DocumentFragment для batch DOM операций
- * @param {Object} categorized 
- */
-export function renderModsList(categorized) {
-    const sidebar = dom.get('mods-categories-list');
-    const list = dom.get('mods-list');
-    
-    if (!sidebar || !list) return;
-    
-    // Используем DocumentFragment для batch рендеринга
-    const sidebarFragment = document.createDocumentFragment();
-    const listFragment = document.createDocumentFragment();
-    
-    // Рендерим сайдбар категорий
-    CATEGORY_ORDER.forEach(categoryName => {
-        const mods = categorized[categoryName];
-        if (!mods || mods.length === 0) return;
-        
-        const activeCount = mods.filter(m => m.checked).length;
-
-        const categoryItem = document.createElement('div');
-        categoryItem.className = 'unified-sidebar-item';
-        if (activeCount > 0) {
-            categoryItem.classList.add('active');
-        }
-        categoryItem.dataset.category = categoryName;
-        categoryItem.innerHTML = `
-            <div class="unified-sidebar-item-name">${categoryName}</div>
-            <div class="unified-sidebar-item-count">${activeCount} / ${mods.length}</div>
-        `;
-        
-        categoryItem.addEventListener('click', () => {
-            scrollToCategory(categoryName);
-        });
-        
-        sidebarFragment.appendChild(categoryItem);
-    });
-    
-    // Рендерим все моды по категориям
-    CATEGORY_ORDER.forEach(categoryName => {
-        const mods = categorized[categoryName];
-        if (!mods || mods.length === 0) return;
-        
-        // Заголовок категории
-        const categoryHeader = document.createElement('div');
-        categoryHeader.className = 'unified-section-header';
-        categoryHeader.dataset.category = categoryName;
-        categoryHeader.textContent = categoryName;
-        listFragment.appendChild(categoryHeader);
-        
-        // Моды
-        mods.forEach(mod => {
-            const div = document.createElement('label');
-            div.className = 'unified-list-item';
-            div.dataset.category = categoryName;
-            
-            const paths = mod.paths.join('|');
-            const desc = mod.description ? `<span class="unified-list-item-desc">${mod.description}</span>` : '';
-            
-            div.innerHTML = `
-                <input type="checkbox" data-paths="${paths}" ${mod.checked ? 'checked' : ''}>
-                <span class="unified-list-item-name">${mod.name}</span>
-                ${desc}
-            `;
-            listFragment.appendChild(div);
+        allGroupItems.push({
+            type: 'file',
+            id: slug,
+            name: prettyName,
+            shortName: prettyName,
+            version: '1.0.0',
+            subCategory: 'Механики',
+            icon: 'block',
+            dependsOn: null,
+            description: `Дополнительный мод (${fileName})`,
+            curseSlug: slug,
+            modrinthSlug: slug,
+            paths: [file.path],
+            checked: isChecked
         });
     });
-    
-    // Один раз обновляем DOM (предотвращает множественные reflows)
-    sidebar.innerHTML = '';
-    list.innerHTML = '';
-    sidebar.appendChild(sidebarFragment);
-    list.appendChild(listFragment);
-    
-    updateCategorySidebar();
-}
 
-/**
- * Прокрутить к категории
- */
-export function scrollToCategory(categoryName) {
-    const list = dom.get('mods-list');
-    const categoryHeader = list?.querySelector(`.unified-section-header[data-category="${categoryName}"]`);
-    
-    if (categoryHeader && list) {
-        const listRect = list.getBoundingClientRect();
-        const headerRect = categoryHeader.getBoundingClientRect();
-        const scrollTop = list.scrollTop;
-        
-        const targetScroll = scrollTop + (headerRect.top - listRect.top) - 10;
-        
-        list.scrollTo({
-            top: targetScroll,
-            behavior: 'smooth'
-        });
-    }
-}
-
-/**
- * Обновить счётчик модов
- */
-export function updateModsCounter() {
-    const checkboxes = document.querySelectorAll('#mods-list input[type="checkbox"]');
-    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
-    
-    const selectedEl = dom.get('mods-selected-count');
-    const totalEl = dom.get('mods-total-count');
-    
-    if (selectedEl) selectedEl.textContent = String(checked);
-    if (totalEl) totalEl.textContent = String(checkboxes.length);
-}
-
-/**
- * Обновить сайдбар категорий
- */
-export function updateCategorySidebar() {
-    CATEGORY_ORDER.forEach(categoryName => {
-        const categoryItem = document.querySelector(`.unified-sidebar-item[data-category="${categoryName}"]`);
-        if (!categoryItem) return;
-        
-        const categoryModItems = document.querySelectorAll(`.unified-list-item[data-category="${categoryName}"] input[type="checkbox"]`);
-        const activeCount = Array.from(categoryModItems).filter(cb => cb.checked).length;
-        const totalCount = categoryModItems.length;
-        
-        const countEl = categoryItem.querySelector('.unified-sidebar-item-count');
-        if (countEl) {
-            countEl.textContent = `${activeCount} / ${totalCount}`;
+    // Валидация зависимостей при старте
+    allGroupItems.forEach(item => {
+        if (item.dependsOn && item.checked) {
+            const parent = allGroupItems.find(p => p.id === item.dependsOn);
+            if (parent && !parent.checked) {
+                item.checked = false;
+            }
         }
-        
-        if (activeCount > 0) {
-            categoryItem.classList.add('active');
+    });
+
+    setupSubtabsListeners();
+    renderModsGrid();
+    renderLinksCatalog(cachedManifest);
+}
+
+/**
+ * Инициализация подвкладок
+ */
+function setupSubtabsListeners() {
+    const subtabsContainer = dom.get('mods-subtabs');
+    if (!subtabsContainer) return;
+
+    subtabsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.unified-btn');
+        if (!btn) return;
+
+        const subtab = btn.dataset.subtab;
+        if (!subtab) return;
+
+        currentSubTab = subtab;
+
+        subtabsContainer.querySelectorAll('.unified-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const gridView = dom.get('mods-grid-container');
+        const catalogView = dom.get('mods-catalog-container');
+
+        if (subtab === 'КАТАЛОГ ССЫЛОК') {
+            if (gridView) gridView.classList.add('hidden');
+            if (catalogView) {
+                catalogView.classList.remove('hidden');
+                catalogView.classList.remove('subtab-fade-animate');
+                void catalogView.offsetWidth;
+                catalogView.classList.add('subtab-fade-animate');
+                renderLinksCatalog(cachedManifest);
+            }
         } else {
-            categoryItem.classList.remove('active');
+            if (catalogView) catalogView.classList.add('hidden');
+            if (gridView) {
+                gridView.classList.remove('hidden');
+                gridView.classList.remove('subtab-fade-animate');
+                void gridView.offsetWidth;
+                gridView.classList.add('subtab-fade-animate');
+            }
+            renderModsGrid();
         }
     });
+
+    const searchInput = dom.get('mods-search-input');
+    const clearBtn = dom.get('mods-search-clear-btn');
+
+    function updateSearchUI() {
+        const val = searchInput ? searchInput.value.trim() : '';
+        if (clearBtn) {
+            const mag = clearBtn.querySelector('.search-icon-magnifier');
+            const clr = clearBtn.querySelector('.search-icon-clear');
+            if (val.length > 0) {
+                if (mag) mag.classList.add('hidden');
+                if (clr) clr.classList.remove('hidden');
+            } else {
+                if (clr) clr.classList.add('hidden');
+                if (mag) mag.classList.remove('hidden');
+            }
+        }
+    }
+
+    if (searchInput) {
+        searchInput.oninput = (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            updateSearchUI();
+            if (currentSubTab === 'КАТАЛОГ ССЫЛОК') {
+                renderLinksCatalog(cachedManifest);
+            } else {
+                renderModsGrid();
+            }
+        };
+    }
+
+    if (clearBtn) {
+        clearBtn.onclick = () => {
+            if (searchInput && searchInput.value) {
+                searchInput.value = '';
+                searchQuery = '';
+                updateSearchUI();
+                searchInput.focus();
+                if (currentSubTab === 'КАТАЛОГ ССЫЛОК') {
+                    renderLinksCatalog(cachedManifest);
+                } else {
+                    renderModsGrid();
+                }
+            }
+        };
+    }
+}
+
+/**
+ * Переключить состояние мода и применить каскадные зависимости
+ */
+export function toggleModState(modId, isChecked) {
+    const mod = allGroupItems.find(m => m.id === modId);
+    if (!mod) return;
+
+    mod.checked = isChecked;
+
+    // Синхронизируем состояние чекбокса в DOM без перерисовки всего контейнера
+    const grid = dom.get('mods-grid');
+    if (grid) {
+        const input = grid.querySelector(`input[data-id="${modId}"]`);
+        if (input && input.checked !== isChecked) {
+            input.checked = isChecked;
+        }
+    }
+
+    if (isChecked) {
+        if (mod.dependsOn) {
+            const parent = allGroupItems.find(p => p.id === mod.dependsOn);
+            if (parent && !parent.checked) {
+                toggleModState(parent.id, true);
+            }
+        }
+    } else {
+        const children = allGroupItems.filter(c => c.dependsOn === modId);
+        children.forEach(child => {
+            if (child.checked) {
+                toggleModState(child.id, false);
+            }
+        });
+    }
+}
+
+/**
+ * Индивидуальные SVG иконки для каждого мода
+ */
+function getModItemSVG(iconType) {
+    switch (iconType) {
+        case 'sodium':
+            return `<svg class="setting-icon" style="color: #4CAF50;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
+        case 'cloud':
+            return `<svg class="setting-icon" style="color: #64b5f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>`;
+        case 'eye':
+            return `<svg class="setting-icon" style="color: #ba68c8;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        case 'map':
+            return `<svg class="setting-icon" style="color: #ffb74d;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>`;
+        case 'gamepad':
+            return `<svg class="setting-icon" style="color: #81c784;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="11" r="1"/><circle cx="18" cy="13" r="1"/></svg>`;
+        case 'swords':
+            return `<svg class="setting-icon" style="color: #e57373;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/></svg>`;
+        case 'block':
+            return `<svg class="setting-icon" style="color: #4dd0e1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+        case 'gear':
+        default:
+            return `<svg class="setting-icon" style="color: #a1a8b5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`;
+    }
+}
+
+/**
+ * Иконки для категории
+ */
+function getCategoryIconId(catName) {
+    switch (catName.toUpperCase()) {
+        case 'ОПТИМИЗАЦИЯ': return '#icon-game';
+        case 'ГРАФИКА': return '#icon-appearance';
+        case 'ИНТЕРФЕЙС': return '#icon-wrench';
+        case 'МЕХАНИКИ': return '#icon-folder';
+        default: return '#icon-game';
+    }
+}
+
+/**
+ * Отрендерить сетку модов в стиле стандартных категорий настроек
+ */
+export function renderModsGrid() {
+    const grid = dom.get('mods-grid');
+    if (!grid) return;
+
+    // Фильтруем моды по выбранной подвкладке и строке поиска
+    const items = allGroupItems.filter(item => {
+        const matchesSubtab = currentSubTab === 'ВСЕ' || item.subCategory.toUpperCase() === currentSubTab.toUpperCase();
+        if (!matchesSubtab) return false;
+        if (!searchQuery) return true;
+        return (item.name && item.name.toLowerCase().includes(searchQuery)) ||
+               (item.shortName && item.shortName.toLowerCase().includes(searchQuery)) ||
+               (item.description && item.description.toLowerCase().includes(searchQuery)) ||
+               (item.paths && item.paths.some(p => p.toLowerCase().includes(searchQuery)));
+    });
+
+    if (items.length === 0) {
+        grid.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">В данной категории нет модов</div></div>';
+        return;
+    }
+
+    // Группируем элементы по категориям
+    const groupsMap = {};
+    items.forEach(mod => {
+        const cat = mod.subCategory || 'Остальное';
+        if (!groupsMap[cat]) groupsMap[cat] = [];
+        groupsMap[cat].push(mod);
+    });
+
+    const fragment = document.createDocumentFragment();
+
+    Object.keys(groupsMap).forEach((catName, index) => {
+        const categoryMods = groupsMap[catName];
+        if (categoryMods.length === 0) return;
+
+        const categoryCard = document.createElement('div');
+        categoryCard.className = 'settings-category settings-category-animate';
+        categoryCard.style.animationDelay = `${index * 0.05}s`;
+
+        const iconId = getCategoryIconId(catName);
+
+        const header = document.createElement('div');
+        header.className = 'category-header';
+        header.innerHTML = `
+            <svg class="category-icon"><use href="${iconId}"/></svg>
+            <h4>${catName}</h4>
+        `;
+        categoryCard.appendChild(header);
+
+        const content = document.createElement('div');
+        content.className = 'category-content';
+
+        categoryMods.forEach(mod => {
+            const itemLabel = document.createElement('label');
+            itemLabel.className = 'setting-item setting-item-toggle';
+            itemLabel.dataset.id = mod.id;
+
+            let depNotice = '';
+            if (mod.dependsOn) {
+                const parent = allGroupItems.find(p => p.id === mod.dependsOn);
+                if (parent) {
+                    depNotice = ` <strong style="color: #e5c158; font-size: 11px;">(Зависит от ${parent.shortName})</strong>`;
+                }
+            }
+
+            const iconSvg = getModItemSVG(mod.icon);
+            const paths = mod.paths.join('|');
+
+            itemLabel.innerHTML = `
+                <div class="setting-label">
+                    ${iconSvg}
+                    <div class="setting-text">
+                        <span class="setting-title">${mod.shortName} <span style="font-size: 11px; color: #888; font-family: monospace;">v${mod.version}</span></span>
+                        <span class="setting-desc">${mod.description}${depNotice}</span>
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <span class="toggle-switch">
+                        <input type="checkbox" data-paths="${paths}" data-id="${mod.id}" ${mod.checked ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </span>
+                </div>
+            `;
+
+            const checkbox = itemLabel.querySelector('input[type="checkbox"]');
+            checkbox.addEventListener('change', (e) => {
+                toggleModState(mod.id, e.target.checked);
+            });
+
+            content.appendChild(itemLabel);
+        });
+
+        categoryCard.appendChild(content);
+        fragment.appendChild(categoryCard);
+    });
+
+    grid.innerHTML = '';
+    grid.appendChild(fragment);
+}
+
+/**
+ * Отрендерить Каталог ссылок на моды (CurseForge & Modrinth)
+ */
+export function renderLinksCatalog(manifest) {
+    const list = dom.get('catalog-list');
+    const searchInput = dom.get('catalog-search-input');
+    if (!list) return;
+
+    if (!manifest || !manifest.files) return;
+
+    const jarFiles = manifest.files.filter(f => f.path.startsWith('mods/') && f.path.endsWith('.jar'));
+
+    const catalogData = jarFiles.map(file => {
+        const fileName = file.path.split('/').pop();
+        let cleanName = fileName
+            .replace(/\.jar$/i, '')
+            .replace(/^client[-_]/i, '')
+            .replace(/[-_](neoforge|forge|fabric|mc|\d+\.\d+).*/i, '')
+            .replace(/[-_]\d+.*$/i, '');
+        cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+
+        const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+        const groupMatch = MOD_GROUPS.find(g => 
+            g.files.some(p => fileName.toLowerCase().includes(p.toLowerCase()))
+        );
+
+        const curseSlug = groupMatch?.curseSlug || slug;
+        const modrinthSlug = groupMatch?.modrinthSlug || slug;
+        const isOptional = file.optional;
+
+        return {
+            fileName,
+            cleanName: groupMatch ? groupMatch.name : cleanName,
+            category: groupMatch ? groupMatch.category : (isOptional ? 'Опциональный' : 'Базовый'),
+            isOptional,
+            curseUrl: `https://www.curseforge.com/minecraft/mc-mods/${curseSlug}`,
+            modrinthUrl: `https://modrinth.com/mod/${modrinthSlug}`
+        };
+    });
+
+    function drawCatalogItems(filterText = searchQuery) {
+        const query = filterText.toLowerCase();
+        const filtered = catalogData.filter(item => 
+            item.cleanName.toLowerCase().includes(query) ||
+            item.fileName.toLowerCase().includes(query)
+        );
+
+        if (filtered.length === 0) {
+            list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        const card = document.createElement('div');
+        card.className = 'settings-category';
+        card.style.gridColumn = '1 / -1';
+
+        const header = document.createElement('div');
+        header.className = 'category-header';
+        header.innerHTML = `
+            <svg class="category-icon"><use href="#icon-folder-open"/></svg>
+            <h4>Каталог ссылок на моды сборки (${filtered.length})</h4>
+        `;
+        card.appendChild(header);
+
+        const content = document.createElement('div');
+        content.className = 'category-content';
+
+        filtered.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'setting-item';
+            row.innerHTML = `
+                <div class="setting-label">
+                    <svg class="setting-icon"><use href="#icon-game"/></svg>
+                    <div class="setting-text">
+                        <span class="setting-title">${item.cleanName} <span style="font-size: 11px; color: ${item.isOptional ? '#81c784' : '#64b5f6'};">(${item.isOptional ? 'Опциональный' : 'Базовый'})</span></span>
+                        <span class="setting-desc" style="font-family: monospace;">${item.fileName}</span>
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <button class="unified-btn unified-btn-warning" data-url="${item.curseUrl}">🔥 CurseForge ↗</button>
+                    <button class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}">⚡ Modrinth ↗</button>
+                </div>
+            `;
+
+            row.querySelectorAll('button').forEach(btn => {
+                btn.onclick = () => {
+                    const url = btn.dataset.url;
+                    if (url && window.api.openUrl) {
+                        window.api.openUrl(url);
+                    } else if (url) {
+                        window.open(url, '_blank');
+                    }
+                };
+            });
+
+            content.appendChild(row);
+        });
+
+        card.appendChild(content);
+        fragment.appendChild(card);
+
+        list.innerHTML = '';
+        list.appendChild(fragment);
+    }
+
+    drawCatalogItems();
 }
 
 /**
  * Получить список отключённых модов
- * @returns {string[]}
  */
 export function getDisabledMods() {
     const disabled = [];
-    document.querySelectorAll('#mods-list input[type="checkbox"]').forEach(cb => {
-        if (!cb.checked) {
-            const paths = cb.dataset.paths.split('|');
-            paths.forEach(p => disabled.push(p));
+    allGroupItems.forEach(item => {
+        if (!item.checked) {
+            item.paths.forEach(p => disabled.push(p));
         }
     });
     return disabled;
 }
 
-/**
- * Инициализация слушателей изменений модов
- * @param {Function} onChangeCallback - колбэк при изменении
- */
+export function updateModsCounter() {}
+export function updateCategorySidebar() {}
+export function updateSidebarStats() {}
+
 export function initModsListeners(onChangeCallback) {
-    const list = dom.get('mods-list');
-    if (!list) return;
-    
-    list.addEventListener('change', (e) => {
+    const grid = dom.get('mods-grid');
+    if (!grid) return;
+
+    grid.addEventListener('change', (e) => {
         if (e.target.type === 'checkbox') {
-            updateModsCounter();
-            updateCategorySidebar();
             if (onChangeCallback) onChangeCallback();
         }
     });
