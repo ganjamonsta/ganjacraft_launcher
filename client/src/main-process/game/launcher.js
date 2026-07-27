@@ -292,6 +292,9 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         customArgs.unshift(`-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`);
     }
 
+    const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
+    const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+
     return {
         clientPackage: null,
         authorization: {
@@ -309,7 +312,7 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         version: {
             number: MC_VERSION,
             type: "release",
-            custom: `neoforge-${FORGE_VERSION}`
+            custom: neoforgeVerId
         },
         forge: null,
         memory: {
@@ -319,6 +322,7 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         javaPath: javaPath || undefined,
         overrides: {
             maxSockets: 4,
+            versionJson: neoforgeJsonPath
         },
         customArgs: customArgs
     };

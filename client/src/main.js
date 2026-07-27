@@ -942,6 +942,7 @@ ipcMain.handle('launch-game', async (event, options) => {
         javaPath: javaPath || undefined,
         overrides: {
             maxSockets: 4,
+            versionJson: neoforgeJsonPath,
         },
         customArgs: [
             `-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`,
