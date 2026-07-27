@@ -607,11 +607,13 @@ button:active {
 #news-list {
     flex: 1;
     overflow-y: auto;
+    overflow-y: overlay;
 }
 
 #console-output {
     flex: 1;
     overflow-y: auto;
+    overflow-y: overlay;
     overflow-x: hidden;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -633,10 +635,10 @@ button:active {
 }
 
 #console-output::-webkit-scrollbar-track {
-    background: #0a0a0a;
+    background: transparent !important;
 }
 #console-output::-webkit-scrollbar-thumb {
-    background: #333;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
 }
 

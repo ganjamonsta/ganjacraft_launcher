@@ -10,6 +10,8 @@ if (!fs.existsSync(customUserDataPath)) {
     fs.mkdirSync(customUserDataPath, { recursive: true });
 }
 app.setPath('userData', customUserDataPath);
+// Enable overlay scrollbars in Chromium engine
+app.commandLine.appendSwitch('enable-features', 'OverlayScrollbar');
 
 const https = require('https');
 const { spawn } = require('child_process');

@@ -314,6 +314,7 @@
     height: 100%;
     padding: 16px 18px;
     overflow-y: auto; /* Enable vertical scroll */
+    overflow-y: overlay;
     overflow-x: hidden !important; /* Block horizontal scrollbars */
     pointer-events: auto; /* Ensure clicks work */
 }
@@ -746,20 +747,20 @@ input[type="checkbox"] {
     color: #ddd;
 }
 
-/* Scrollbar */
+/* Scrollbar - Overlay Layer Styling */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
     height: 0px !important; /* Hide horizontal scrollbar track completely */
 }
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.25);
+    background: transparent !important;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.4);
 }
 ::-webkit-scrollbar-corner {
     background: transparent !important;
@@ -768,6 +769,8 @@ input[type="checkbox"] {
 #mods-grid-container,
 #mods-catalog-container,
 .settings-body {
+    overflow-y: auto;
+    overflow-y: overlay !important;
     overflow-x: hidden !important;
 }
 /* ========================================

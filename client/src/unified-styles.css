@@ -657,6 +657,7 @@
 .unified-sidebar-list {
     flex: 1;
     overflow-y: auto;
+    overflow-y: overlay;
     margin-bottom: var(--gc-spacing-sm);
 }
 
@@ -715,6 +716,7 @@
 .unified-main-content {
     flex: 1;
     overflow-y: auto;
+    overflow-y: overlay;
     background: var(--gc-bg-content);
     border: 1px solid var(--gc-border);
     border-radius: var(--gc-radius-lg);
@@ -1345,6 +1347,7 @@ body.is-admin .unified-toolbar-label.admin-only {
 
 .scrollable-list {
     overflow-y: auto;
+    overflow-y: overlay;
 }
 
 /* ========================================

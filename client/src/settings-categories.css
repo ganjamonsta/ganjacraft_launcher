@@ -25,7 +25,8 @@
 #mods-grid-container {
     flex: 1;
     min-height: 0;
-    overflow-y: auto !important;
+    overflow-y: auto;
+    overflow-y: overlay !important;
     overflow-x: hidden !important;
     padding-right: 4px;
 }
@@ -74,7 +75,8 @@
 #mods-catalog-container .category-content,
 #mods-all-container .category-content {
     flex: 1;
-    overflow-y: auto !important;
+    overflow-y: auto;
+    overflow-y: overlay !important;
     overflow-x: hidden !important;
     min-height: 0;
     padding-right: 4px;
