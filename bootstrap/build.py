@@ -71,11 +71,13 @@ def build_exe():
         "main.py"
     ], cwd=BOOTSTRAP_DIR)
 
+from constants import BOOTSTRAP_EXE_URL
+
 def update_json(version):
     print(f"📝 Updating bootstrap.json...")
     data = {
         "version": version,
-        "url": "https://gcrlauncher.share.zrok.io/api/launcher/files/GanjaCraft.exe"
+        "url": BOOTSTRAP_EXE_URL
     }
     
     # Ensure directory exists

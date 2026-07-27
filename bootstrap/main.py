@@ -25,11 +25,13 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
     load_pem_public_key = None
     ed25519 = None
 
+from constants import BOOTSTRAP_JSON_URL, VERSION_JSON_URL
+
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.37"
-BOOTSTRAP_API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/bootstrap.json"
-API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/version.json"
+BOOTSTRAP_VERSION = "1.0.38"
+BOOTSTRAP_API_URL = BOOTSTRAP_JSON_URL
+API_URL = VERSION_JSON_URL
 APPDATA = os.getenv('APPDATA')
 LAUNCHER_DIR = os.path.join(APPDATA, ".ganjacraft")
 CLIENT_DIR = os.path.join(LAUNCHER_DIR, "client")
