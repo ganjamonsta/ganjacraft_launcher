@@ -367,7 +367,8 @@ export function renderModsGrid() {
         if (categoryMods.length === 0) return;
 
         const categoryCard = document.createElement('div');
-        categoryCard.className = 'settings-category';
+        categoryCard.className = 'settings-category settings-category-animate';
+        categoryCard.style.animationDelay = `${index * 0.05}s`;
 
         const iconId = getCategoryIconId(catName);
 
