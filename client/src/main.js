@@ -853,6 +853,19 @@ ipcMain.handle('launch-game', async (event, options) => {
         sendDebug('Starting syncFiles...');
         await syncFiles(rootPath, MANIFEST_URL, sendLog, onSyncProgress, config.disabledMods, () => isLaunchCancelled);
         sendDebug('syncFiles completed.');
+
+        // Copy custom client configs from client_config/ to config/ if present
+        const clientConfigPath = path.join(rootPath, 'client_config');
+        if (fs.existsSync(clientConfigPath)) {
+            sendLog('Синхронизация клиентских настроек...');
+            try {
+                fs.cpSync(clientConfigPath, path.join(rootPath, 'config'), { recursive: true, force: true });
+                sendDebug('Client configs copied from client_config/ to config/ successfully.');
+            } catch (copyErr) {
+                sendDebug(`Failed to copy client configs: ${copyErr.message}`);
+                sendLog('Предупреждение: Не удалось применить клиентские настройки.');
+            }
+        }
     } catch (e) {
         if (e.message === 'CANCELLED') {
             sendLog('Запуск отменен пользователем.');

@@ -50,6 +50,7 @@ const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
     'client-Forgematica',
     'client-MaFgLib',
     'client-badpackets',
+    'client-NeoForgematicaPrinter',
 ];
 
 // JVM optimization arguments
