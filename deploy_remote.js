@@ -47,21 +47,20 @@ async function deploy() {
 
         console.log('✅ SFTP соединение установлено.');
         
-        // Ensure remote api directory exists
-        const remoteApiDir = `${remotePath}/api/launcher/files`;
+        console.log(`📦 Загрузка сборок лаунчера в ${remotePath}...`);
+
+        // Ensure remote dir exists
         try {
-            await sftp.mkdir(remoteApiDir, true);
+            await sftp.mkdir(remotePath, true);
         } catch (_) {}
 
-        console.log(`📦 Загрузка сборок лаунчера в ${remotePath}/api/launcher/files...`);
-
-        // 2. Upload launcher build files (version.json, bootstrap.json, .exe, .zip)
+        // Upload launcher build files (version.json, bootstrap.json, .exe, .zip)
         const localApiDir = path.join(localDeployDir, 'api', 'launcher', 'files');
         if (fs.existsSync(localApiDir)) {
             const apiFiles = fs.readdirSync(localApiDir);
             for (const file of apiFiles) {
                 const localFile = path.join(localApiDir, file);
-                const remoteFile = `${remoteApiDir}/${file}`;
+                const remoteFile = `${remotePath}/${file}`;
                 console.log(`   -> Uploading ${file}`);
                 await sftp.fastPut(localFile, remoteFile);
             }

@@ -27,7 +27,7 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.32"
+BOOTSTRAP_VERSION = "1.0.35"
 BOOTSTRAP_API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/bootstrap.json"
 API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -371,6 +371,17 @@ class BootstrapApp(tk.Tk):
                 download_url = remote_data.get("url")
                 signature = remote_data.get("signature")
                 # Legacy updates: always download the full zip and extract.
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    # version.json нет на сервере — запускаем установленный клиент
+                    self.update_status("Клиент обновлён.")
+                    self.update_progress(100)
+                    time.sleep(0.3)
+                    self.launch_client()
+                    return
+                print(f"Network error: {e}")
+                self.launch_existing_or_fail("Ошибка сети. Запуск оффлайн...")
+                return
             except Exception as e:
                 print(f"Network error: {e}")
                 self.launch_existing_or_fail("Ошибка сети. Запуск оффлайн...")
