@@ -20,7 +20,9 @@ function authenticateYggdrasil(authUrl, username, token) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(data)
+                'Content-Length': Buffer.byteLength(data),
+                'User-Agent': 'localtunnel',
+                'Bypass-Tunnel-Reminder': 'true'
             }
         }, (res) => {
             let body = '';

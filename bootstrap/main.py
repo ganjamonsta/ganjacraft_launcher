@@ -27,7 +27,7 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.36"
+BOOTSTRAP_VERSION = "1.0.37"
 BOOTSTRAP_API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/bootstrap.json"
 API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -226,7 +226,7 @@ class BootstrapApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("GanjaCraft Updater")
+        self.title("GanjaCraft Launcher")
         self.geometry("420x340")
         self.configure(bg=BG_COLOR)
         self.overrideredirect(True)  # Frameless
@@ -238,19 +238,75 @@ class BootstrapApp(tk.Tk):
         y = (screen_height - 340) // 2
         self.geometry(f"420x340+{x}+{y}")
 
+        # Show window on Windows Taskbar
+        if sys.platform == 'win32':
+            self.after(10, self._set_appwindow)
+
         # Dragging functionality
         self.x_offset = 0
         self.y_offset = 0
         self.bind("<ButtonPress-1>", self.start_move)
         self.bind("<B1-Motion>", self.do_move)
 
+        # Top Control Bar (Minimize / Close buttons)
+        self.top_bar = tk.Frame(self, bg=BG_COLOR)
+        self.top_bar.pack(fill="x", side="top", padx=8, pady=4)
+        self.top_bar.bind("<ButtonPress-1>", self.start_move)
+        self.top_bar.bind("<B1-Motion>", self.do_move)
+
+        self.close_btn = tk.Label(
+            self.top_bar, text="✕", font=("Segoe UI", 10, "bold"),
+            fg="#888888", bg=BG_COLOR, cursor="hand2", width=3
+        )
+        self.close_btn.pack(side="right")
+        self.close_btn.bind("<Enter>", lambda e: self.close_btn.config(fg="#ffffff", bg="#e81123"))
+        self.close_btn.bind("<Leave>", lambda e: self.close_btn.config(fg="#888888", bg=BG_COLOR))
+        self.close_btn.bind("<Button-1>", lambda e: self.close_app())
+
+        self.min_btn = tk.Label(
+            self.top_bar, text="—", font=("Segoe UI", 10, "bold"),
+            fg="#888888", bg=BG_COLOR, cursor="hand2", width=3
+        )
+        self.min_btn.pack(side="right")
+        self.min_btn.bind("<Enter>", lambda e: self.min_btn.config(fg="#ffffff", bg="#333333"))
+        self.min_btn.bind("<Leave>", lambda e: self.min_btn.config(fg="#888888", bg=BG_COLOR))
+        self.min_btn.bind("<Button-1>", lambda e: self.minimize_window())
+
         # Main Frame
         self.main_frame = tk.Frame(self, bg=BG_COLOR)
-        self.main_frame.pack(expand=True, fill="both", padx=20, pady=20)
+        self.main_frame.pack(expand=True, fill="both", padx=20, pady=(0, 20))
         
         # Bind drag events to frame and labels too
         self.main_frame.bind("<ButtonPress-1>", self.start_move)
         self.main_frame.bind("<B1-Motion>", self.do_move)
+
+    def _set_appwindow(self):
+        try:
+            import ctypes
+            hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+            if hwnd == 0:
+                hwnd = self.winfo_id()
+            style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)
+            style = (style & ~0x00000080) | 0x00040000
+            ctypes.windll.user32.SetWindowLongW(hwnd, -20, style)
+            self.wm_withdraw()
+            self.after(10, self.wm_deiconify)
+        except Exception as e:
+            print(f"Taskbar hook failed: {e}")
+
+    def minimize_window(self):
+        self.overrideredirect(False)
+        self.iconify()
+        self.bind("<FocusIn>", self._on_restore)
+
+    def _on_restore(self, event=None):
+        self.overrideredirect(True)
+        self.unbind("<FocusIn>")
+        if sys.platform == 'win32':
+            self._set_appwindow()
+
+    def close_app(self):
+        os._exit(0)
 
         # Logo
         try:
