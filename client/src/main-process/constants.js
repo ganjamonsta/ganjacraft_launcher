@@ -15,35 +15,24 @@ const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;
 
 const MANIFEST_URL = `${FILES_BASE}/manifest.json`;
-const FORGE_INSTALLER_URL = `${FILES_BASE}/forge-${FORGE_VERSION}-installer.jar`;
-const AUTHLIB_INJECTOR_URL = `${FILES_BASE}/authlib-injector.jar`;
+const FORGE_INSTALLER_URL = `https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.233/neoforge-21.1.233-installer.jar`;
+const AUTHLIB_INJECTOR_URL = `https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar`;
 const YGGDRASIL_AUTH_URL = `${API_BASE}/yggdrasil/authserver/authenticate`;
 
-const VANILLA_VERSION_JSON_URL = `${FILES_BASE}/versions/${MC_VERSION}/${MC_VERSION}.json`;
-const VANILLA_VERSION_JAR_URL = `${FILES_BASE}/versions/${MC_VERSION}/${MC_VERSION}.jar`;
+const VANILLA_VERSION_JSON_URL = `https://piston-meta.mojang.com/v1/packages/b61972b2203de80ebffc89b7cf91c496a7d53ab2/1.21.1.json`;
+const VANILLA_VERSION_JAR_URL = `https://launcher.mojang.com/v1/objects/2361ef2f0eb3ee9ef7319fa76b886d34b419dbf8/client.jar`;
 
 // Repair URLs for critical files
 const REPAIR_FILES = {
     'authlib-injector.jar': AUTHLIB_INJECTOR_URL,
     'forge-installer.jar': FORGE_INSTALLER_URL,
-    'modlauncher.jar': `${FILES_BASE}/libraries/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar`,
-    'securejarhandler.jar': `${FILES_BASE}/libraries/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar`,
-    'vanilla-client.jar': `${FILES_BASE}/versions/${MC_VERSION}/${MC_VERSION}.jar`,
+    'modlauncher.jar': `https://repo1.maven.org/maven2/cpw/mods/modlauncher/10.0.9/modlauncher-10.0.9.jar`,
+    'securejarhandler.jar': `https://repo1.maven.org/maven2/cpw/mods/securejarhandler/2.1.10/securejarhandler-2.1.10.jar`,
+    'vanilla-client.jar': VANILLA_VERSION_JAR_URL,
 };
 
-// URL rewrites for mirroring
-const URL_REWRITES = [
-    ['https://libraries.minecraft.net/', `${MIRROR_BASE}/libraries/`],
-    ['https://resources.download.minecraft.net/', `${MIRROR_BASE}/resources/`],
-    ['https://piston-meta.mojang.com/', `${MIRROR_BASE}/piston-meta/`],
-    ['https://piston-data.mojang.com/', `${MIRROR_BASE}/piston-data/`],
-    ['https://launcher.mojang.com/', `${MIRROR_BASE}/launcher/`],
-    ['https://launchermeta.mojang.com/', `${MIRROR_BASE}/launchermeta/`],
-    ['https://files.minecraftforge.net/maven/', `${MIRROR_BASE}/forge-maven/`],
-    ['https://maven.minecraftforge.net/', `${MIRROR_BASE}/forge-maven/`],
-    ['https://files.minecraftforge.net/', `${MIRROR_BASE}/forge-files/`],
-    ['https://repo1.maven.org/maven2/', `${MIRROR_BASE}/maven-central/`],
-];
+// URL rewrites for mirroring - disabled, downloading directly from official sources
+const URL_REWRITES = [];
 
 // Default disabled optional mods (filename patterns)
 const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
