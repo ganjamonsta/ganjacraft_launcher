@@ -65,31 +65,50 @@ if (!zipFile) {
 // Copy Archive
 const sourceZip = path.join(DIST_DIR, zipFile);
 const targetZip = path.join(TARGET_DIR, zipFile);
-console.log(`📦 Copying .zip: ${zipFile}`);
+console.log(`📦 Copying full .zip: ${zipFile}`);
 fs.copyFileSync(sourceZip, targetZip);
 
-// Get Zip Size
-const zipStats = fs.statSync(targetZip);
-const zipSize = zipStats.size;
-console.log(`📊 Zip Size: ${(zipSize / 1024 / 1024).toFixed(2)} MB`);
+// Create lightweight resources-only zip for fast updates
+const updateZipName = `GanjaCraftLauncher-${version}-update.zip`;
+const targetUpdateZip = path.join(TARGET_DIR, updateZipName);
+const sourceUpdateZip = path.join(DIST_DIR, updateZipName);
 
-// Sign the archive
+console.log('⚡ Creating lightweight resources-only update zip...');
+const resourcesDir = path.join(DIST_DIR, 'win-unpacked', 'resources');
+try {
+    // We use powershell to pack resources folder into a zip
+    const psCmd = `Compress-Archive -Path "${resourcesDir}" -DestinationPath "${sourceUpdateZip}" -Force`;
+    execFileSync('powershell.exe', ['-Command', psCmd]);
+    fs.copyFileSync(sourceUpdateZip, targetUpdateZip);
+    console.log(`✅ Update zip created: ${updateZipName}`);
+} catch (e) {
+    console.error('❌ Failed to create lightweight update zip, using full zip as fallback.', e.message);
+    fs.copyFileSync(sourceZip, targetUpdateZip);
+}
+
+// Get Update Zip Size
+const updateStats = fs.statSync(targetUpdateZip);
+const zipSize = updateStats.size;
+console.log(`📊 Update Zip Size: ${(zipSize / 1024 / 1024).toFixed(2)} MB`);
+
+// Sign the update archive
 let signature = '';
 if (fs.existsSync(PRIVATE_KEY_PATH)) {
     console.log('🔐 Signing update...');
     const privateKey = fs.readFileSync(PRIVATE_KEY_PATH, 'utf-8');
-    const fileBuffer = fs.readFileSync(sourceZip);
+    const fileBuffer = fs.readFileSync(targetUpdateZip);
     signature = crypto.sign(null, fileBuffer, privateKey).toString('base64');
 } else {
     console.warn('⚠️  Private key not found. Update will NOT be signed.');
 }
 
-// Update version.json
+// Update version.json (references the lightweight zip)
 const versionJsonPath = path.join(TARGET_DIR, 'version.json');
-const encodedFile = encodeURIComponent(zipFile);
+const encodedFile = encodeURIComponent(updateZipName);
 const versionData = {
     version: version,
     url: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodedFile}`,
+    fullUrl: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
     signature: signature,
     zipSize: zipSize,
     releaseDate: new Date().toISOString(),
@@ -115,14 +134,15 @@ if (fs.existsSync(DEPLOY_API_DIR)) {
     });
 }
 
-// Copy new zip & version.json
+// Copy new zips & version.json
 fs.copyFileSync(sourceZip, path.join(DEPLOY_API_DIR, zipFile));
+fs.copyFileSync(sourceUpdateZip, path.join(DEPLOY_API_DIR, updateZipName));
 fs.writeFileSync(path.join(DEPLOY_API_DIR, 'version.json'), JSON.stringify(versionData, null, 4));
 
 console.log('✅ Published successfully!');
 console.log(`📁 Files ready in deploy_www/ for Nginx upload:`);
-console.log(`   - deploy_www/files/manifest.json`);
-console.log(`   - deploy_www/api/launcher/files/${zipFile}`);
+console.log(`   - deploy_www/api/launcher/files/${zipFile} (Full Install)`);
+console.log(`   - deploy_www/api/launcher/files/${updateZipName} (Fast Update)`);
 console.log(`   - deploy_www/api/launcher/files/version.json`);
 
 async function uploadFile(filePath) {

@@ -27,7 +27,7 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.35"
+BOOTSTRAP_VERSION = "1.0.36"
 BOOTSTRAP_API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/bootstrap.json"
 API_URL = "https://gcrlauncher1.loca.lt/api/launcher/files/version.json"
 APPDATA = os.getenv('APPDATA')
@@ -191,10 +191,12 @@ def validate_zip_integrity(zip_path: str, expected_exe_name: str | None = None) 
         raise Exception("ZIP повреждён (BadZipFile)")
 
     if expected_exe_name:
-        # Either file is at root or within subfolder
         normalized = [n.replace('\\', '/') for n in names]
-        if not any(n.endswith('/' + expected_exe_name) or n == expected_exe_name for n in normalized):
-            raise Exception(f"В ZIP нет {expected_exe_name} — пакет не похож на клиент")
+        # If it is a delta update (contains app.asar), we do not require the .exe inside the zip
+        is_delta = any('app.asar' in n for n in normalized)
+        if not is_delta:
+            if not any(n.endswith('/' + expected_exe_name) or n == expected_exe_name for n in normalized):
+                raise Exception(f"В ZIP нет {expected_exe_name} — пакет не похож на клиент")
 
 
 def _fetch_with_retry(url: str, timeout: int = 15, max_retries: int = 4, retry_delay: float = 10.0) -> bytes:
@@ -368,9 +370,17 @@ class BootstrapApp(tk.Tk):
                 data = _fetch_with_retry(API_URL)
                 remote_data = json.loads(data)
                 remote_version = remote_data.get("version")
-                download_url = remote_data.get("url")
+                
+                # Fast delta update support:
+                # If the main exe exists, we can download just the quick update zip (url).
+                # If not (first install), we must download the full installation zip (fullUrl).
+                exe_path = os.path.join(CLIENT_DIR, LAUNCHER_EXE_NAME)
+                if os.path.exists(exe_path) and "url" in remote_data:
+                    download_url = remote_data.get("url")
+                else:
+                    download_url = remote_data.get("fullUrl") or remote_data.get("url")
+                    
                 signature = remote_data.get("signature")
-                # Legacy updates: always download the full zip and extract.
             except urllib.error.HTTPError as e:
                 if e.code == 404:
                     # version.json нет на сервере — запускаем установленный клиент
