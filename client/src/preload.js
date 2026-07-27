@@ -82,8 +82,8 @@ contextBridge.exposeInMainWorld('api', {
         try {
             return await apiCall('/launcher/auth/request', { body: { username } });
         } catch (e) {
-            console.warn('Backend auth server unreachable, enabling offline login:', e.message);
-            return { success: true, offline: true, message: 'Офлайн режим (без кода)' };
+            console.error('Backend auth server unreachable:', e.message);
+            return { success: false, error: 'Сервер авторизации недоступен. Проверьте интернет-соединение.' };
         }
     },
     verifyAuth: async (username, code) => {
