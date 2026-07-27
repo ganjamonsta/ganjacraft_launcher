@@ -170,11 +170,52 @@ async function preflightNeoForgeLibraries(rootPath, sendLog, sendDebug) {
     }
 }
 
+/**
+ * Объединить библиотеки 1.21.1.json с neoforge JSON для MCLC
+ * @param {string} rootPath - Корневой путь установки
+ * @param {Function} [sendDebug] - Функция дебаг-логирования
+ */
+function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
+    const neoforgeVerId = `neoforge-21.1.233`;
+    const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+    const vanillaJsonPath = path.join(rootPath, 'versions', MC_VERSION, `${MC_VERSION}.json`);
+
+    if (!fs.existsSync(neoforgeJsonPath) || !fs.existsSync(vanillaJsonPath)) return;
+
+    try {
+        const neoJson = JSON.parse(fs.readFileSync(neoforgeJsonPath, 'utf8'));
+        const vanillaJson = JSON.parse(fs.readFileSync(vanillaJsonPath, 'utf8'));
+
+        if (!neoJson.id.startsWith(MC_VERSION)) {
+            neoJson.id = `${MC_VERSION}-${neoJson.id}`;
+        }
+
+        const existingNames = new Set((neoJson.libraries || []).map(l => l.name));
+        let added = 0;
+        if (Array.isArray(vanillaJson.libraries)) {
+            for (const lib of vanillaJson.libraries) {
+                if (!existingNames.has(lib.name)) {
+                    neoJson.libraries.push(lib);
+                    existingNames.add(lib.name);
+                    added++;
+                }
+            }
+        }
+
+        rewriteVersionJsonUrls(neoJson);
+        fs.writeFileSync(neoforgeJsonPath, JSON.stringify(neoJson, null, 2), 'utf8');
+        if (sendDebug) sendDebug(`Merged ${added} vanilla libraries into ${neoforgeVerId}.json (total: ${neoJson.libraries.length})`);
+    } catch (e) {
+        if (sendDebug) sendDebug(`Failed to merge version JSONs: ${e.message}`);
+    }
+}
+
 module.exports = {
     rewriteKnownUrl,
     rewriteVersionJsonUrls,
     ensureVanillaVersionFiles,
     preflightNeoForgeLibraries,
+    ensureNeoForgeVersionJsonMerged,
     // Alias for backward compatibility
     preflightForgeLibraries: preflightNeoForgeLibraries,
 };

@@ -13,7 +13,7 @@ const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJav
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
 const { repairCriticalFiles } = require('./repair');
-const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, preflightForgeLibraries } = require('./neoforge');
+const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, preflightForgeLibraries, ensureNeoForgeVersionJsonMerged } = require('./neoforge');
 const { 
     NEOFORGE_VERSION,
     FORGE_VERSION,
@@ -286,7 +286,7 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
 /**
  * Построить опции для MCLC
  */
-function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession) {
+function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession, authlibPrefetched) {
     // NeoForge required module system args (MCLC doesn't process inheritsFrom JVM args)
     const neoforgeModuleArgs = [
         `-Djava.net.preferIPv6Addresses=system`,
@@ -311,7 +311,9 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
 
     const customArgs = [...neoforgeModuleArgs, ...JVM_OPTIMIZATION_ARGS];
     if (authlibPath && !authSession.isOffline) {
-        customArgs.unshift(`-Dauthlibinjector.httpRequestProperties=bypass-tunnel-reminder:true;User-Agent:localtunnel`);
+        if (authlibPrefetched) {
+            customArgs.unshift(`-Dauthlibinjector.prefetched=${authlibPrefetched}`);
+        }
         customArgs.unshift(`-Dauthlibinjector.disableSniCheck=true`);
         customArgs.unshift(`-Dauthlibinjector.side=client`);
         customArgs.unshift(`-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`);
@@ -320,15 +322,8 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
     const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
     const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
 
-    if (fs.existsSync(neoforgeJsonPath)) {
-        try {
-            const vJson = JSON.parse(fs.readFileSync(neoforgeJsonPath, 'utf8'));
-            if (!vJson.id.startsWith('1.21.1')) {
-                vJson.id = `1.21.1-${vJson.id}`;
-                fs.writeFileSync(neoforgeJsonPath, JSON.stringify(vJson, null, 2), 'utf8');
-            }
-        } catch (_) {}
-    }
+    // Ensure NeoForge version JSON is merged with vanilla 1.21.1 libraries
+    ensureNeoForgeVersionJsonMerged(rootPath);
 
     const nativesDir = path.join(rootPath, 'natives');
     if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true });
@@ -605,8 +600,27 @@ async function launchGame(event, options) {
             }
         }
 
+        // Prefetch Yggdrasil metadata for authlib-injector (bypass Localtunnel reminder)
+        let authlibPrefetched = null;
+        if (authlibPath && !authSession.isOffline) {
+            try {
+                const metaRes = await fetch(`${BASE_URL}/api/yggdrasil`, {
+                    headers: {
+                        'bypass-tunnel-reminder': 'true',
+                        'User-Agent': 'localtunnel',
+                        'Accept': 'application/json'
+                    }
+                });
+                const metaText = await metaRes.text();
+                authlibPrefetched = Buffer.from(metaText, 'utf8').toString('base64');
+                sendDebug(`Prefetched Yggdrasil metadata (${metaText.length} chars)`);
+            } catch (e) {
+                sendDebug(`Failed to prefetch Yggdrasil metadata: ${e.message}`);
+            }
+        }
+
         // Build launch options
-        const opts = buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession);
+        const opts = buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession, authlibPrefetched);
 
         // Cleanup empty files before launch
         sendLog('Проверка целостности библиотек...');

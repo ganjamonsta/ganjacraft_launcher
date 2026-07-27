@@ -62,6 +62,7 @@ const {
     FILES_BASE,
     MIRROR_BASE,
 } = require('./main-process/constants');
+const { ensureNeoForgeVersionJsonMerged, preflightNeoForgeLibraries } = require('./main-process/game/neoforge');
 
 
 function computeDefaultDisabledModsFromManifest(manifest) {
@@ -928,19 +929,8 @@ ipcMain.handle('launch-game', async (event, options) => {
         }
     }
 
-    // Patch NeoForge version JSON id if needed so MCLC doesn't confuse 21.1.233 with legacy MC 1.1
-    if (fs.existsSync(neoforgeJsonPath)) {
-        try {
-            const vJson = JSON.parse(fs.readFileSync(neoforgeJsonPath, 'utf8'));
-            if (!vJson.id.startsWith('1.21.1')) {
-                vJson.id = `1.21.1-${vJson.id}`;
-                fs.writeFileSync(neoforgeJsonPath, JSON.stringify(vJson, null, 2), 'utf8');
-                sendDebug(`Patched NeoForge version JSON id to: ${vJson.id}`);
-            }
-        } catch (e) {
-            sendDebug(`Failed to patch NeoForge version JSON id: ${e.message}`);
-        }
-    }
+    // Ensure NeoForge version JSON is merged with vanilla 1.21.1 libraries so MCLC downloads LWJGL and vanilla dependencies
+    ensureNeoForgeVersionJsonMerged(rootPath, sendDebug);
 
     const nativesDir = path.join(rootPath, 'natives');
     if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true });
@@ -960,6 +950,26 @@ ipcMain.handle('launch-game', async (event, options) => {
             sendDebug(`Created dummy asset index at: ${customAssetIndexFile}`);
         } catch (e) {
             sendDebug(`Failed to create dummy asset index: ${e.message}`);
+        }
+    }
+
+    // Prefetch Yggdrasil metadata via Node.js (with tunnel bypass headers)
+    // authlib-injector will use this instead of making its own HTTP request
+    let authlibPrefetched = null;
+    if (authlibPath) {
+        try {
+            const metaRes = await fetch(`${BASE_URL}/api/yggdrasil`, {
+                headers: {
+                    'bypass-tunnel-reminder': 'true',
+                    'User-Agent': 'localtunnel',
+                    'Accept': 'application/json'
+                }
+            });
+            const metaText = await metaRes.text();
+            authlibPrefetched = Buffer.from(metaText, 'utf8').toString('base64');
+            sendDebug(`Prefetched Yggdrasil metadata (${metaText.length} chars), base64 length: ${authlibPrefetched.length}`);
+        } catch (e) {
+            sendDebug(`Failed to prefetch Yggdrasil metadata: ${e.message}`);
         }
     }
 
@@ -1011,11 +1021,11 @@ ipcMain.handle('launch-game', async (event, options) => {
             `--add-opens`, `java.base/java.lang.invoke=cpw.mods.securejarhandler`,
             `--add-exports`, `java.base/sun.security.util=cpw.mods.securejarhandler`,
             `--add-exports`, `jdk.naming.dns/com.sun.jndi.dns=java.naming`,
-            // authlib-injector
+            // authlib-injector with prefetched metadata (bypass Localtunnel reminder)
             `-javaagent:${authlibPath}=${BASE_URL}/api/yggdrasil`,
             `-Dauthlibinjector.side=client`,
             `-Dauthlibinjector.disableSniCheck=true`,
-            `-Dauthlibinjector.httpRequestProperties=bypass-tunnel-reminder:true;User-Agent:localtunnel`,
+            ...(authlibPrefetched ? [`-Dauthlibinjector.prefetched=${authlibPrefetched}`] : []),
             // G1GC
             '-XX:+UseG1GC',
             '-XX:+ParallelRefProcEnabled',
