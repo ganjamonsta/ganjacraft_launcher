@@ -566,14 +566,17 @@ async function launchGame(event, options) {
             }
 
             launcher.on('data', (e) => {
-                if (config.debugMode) sendDebug(`[GAME STDOUT] ${e}`);
+                sendDebug(`[GAME STDOUT] ${e}`);
                 if (mainWindow && !mainWindow.isDestroyed()) {
                     mainWindow.webContents.send('log-message', `[GAME] ${e}`);
                 }
             });
             
             launcher.on('error', (e) => {
-                if (config.debugMode) sendDebug(`[GAME STDERR] ${e}`);
+                sendDebug(`[GAME STDERR] ${e}`);
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('log-message', `[ОШИБКА ИГРЫ] ${e}`);
+                }
             });
 
             launcher.on('progress', (e) => {

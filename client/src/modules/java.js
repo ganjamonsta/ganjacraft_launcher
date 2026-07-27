@@ -97,19 +97,21 @@ async function checkAndDownloadJava(dataDir, sendLog) {
 
     if (fs.existsSync(javaExec)) {
         const info = await getJavaVersionInfo(preferredLocalExec);
-        if (info && info.major >= REQUIRED_JAVA_MAJOR) {
-            sendLog('Используется локальная Java: ' + preferredLocalExec);
+        if (info && info.major >= 21 && info.major <= 22) {
+            sendLog('Используется локальная Java 21: ' + preferredLocalExec);
             return preferredLocalExec;
         }
-        sendLog(`Локальная Java найдена, но версия не подходит (нужна Java ${REQUIRED_JAVA_MAJOR}+). Буду использовать другую.`);
+        sendLog(`Локальная Java найдена (Java ${info ? info.major : '?'}), но для NeoForge 1.21.1 требуется Java 21. Скачивание актуальной Java 21...`);
     }
 
-    // 2. Check for System Java
+    // 2. Check for System Java (must be Java 21 or 22 for NeoForge 1.21.1 compatibility)
     try {
         const systemJava = await checkSystemJava();
-        if (systemJava) {
-            sendLog(`Найдена системная Java (подходит): Java ${systemJava.major}+`);
+        if (systemJava && systemJava.major >= 21 && systemJava.major <= 22) {
+            sendLog(`Найдена системная Java (подходит): Java ${systemJava.major}`);
             return systemJava.command; // typically 'java'
+        } else if (systemJava && systemJava.major > 22) {
+            sendLog(`Системная Java ${systemJava.major} несовместима с NeoForge 1.21.1 (требуется Java 21). Скачивание стабильной Java 21 JRE...`);
         }
     } catch (e) {
         // Ignore error, proceed to download
