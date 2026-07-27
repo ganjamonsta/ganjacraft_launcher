@@ -9,8 +9,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveUnderRoot, getFileHash, ensureDir } = require('./utils');
 const { downloadFile } = require('./download');
+const { API_BASE } = require('../../main-process/constants');
 
 /**
  * Синхронизация конкретной категории файлов
@@ -352,7 +352,7 @@ async function fetchServerScripts(rootPath, manifestUrl, sendLog = () => {}, aut
     
     try {
         // Запрашиваем админский манифест (включает server_scripts)
-        const adminManifestUrl = 'https://ganj4craft.ru/api/admin/manifest-full.json';
+        const adminManifestUrl = `${API_BASE}/admin/manifest-full.json`;
         const adminManifestPath = path.join(rootPath, 'manifest-admin-temp.json');
         
         sendLog('Запрос admin manifest: ' + adminManifestUrl);

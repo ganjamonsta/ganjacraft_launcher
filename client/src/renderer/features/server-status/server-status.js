@@ -25,7 +25,10 @@ function buildTooltip(players) {
         tooltip.innerHTML = '<span class="tooltip-empty">Нет игроков</span>';
     } else {
         tooltip.innerHTML = players
-            .map(name => `<span class="tooltip-player">⚔ ${name}</span>`)
+            .map(p => {
+                const name = typeof p === 'string' ? p : (p?.name_clean || p?.name_raw || 'Игрок');
+                return `<span class="tooltip-player">⚔ ${name}</span>`;
+            })
             .join('');
     }
     return tooltip;
@@ -75,17 +78,51 @@ export async function updateServerStatus() {
     if (!playerCount || !indicator) return;
 
     try {
-        const response = await fetch(`https://api.mcsrvstat.us/3/${SERVER_ADDRESS}`, {
-            headers: { 'Cache-Control': 'no-cache' }
-        });
-        const data = await response.json();
+        let isOnline = false;
+        let onlineCount = 0;
+        let maxCount = 0;
+        let list = [];
 
-        if (data.online) {
-            const online = data.players?.online ?? 0;
-            const max = data.players?.max ?? 0;
-            const list = data.players?.list || [];
+        // 1. Пробуем mcstatus.io (отлично поддерживает SRV и прокси-домены joinmc.link)
+        try {
+            const resIo = await fetch(`https://api.mcstatus.io/v2/status/java/${SERVER_ADDRESS}`, {
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+            if (resIo.ok) {
+                const dataIo = await resIo.json();
+                if (dataIo.online) {
+                    isOnline = true;
+                    onlineCount = dataIo.players?.online ?? 0;
+                    maxCount = dataIo.players?.max ?? 0;
+                    list = dataIo.players?.list || [];
+                }
+            }
+        } catch (e) {
+            console.warn('mcstatus.io check failed, trying fallback:', e);
+        }
 
-            playerCount.textContent = `${online} / ${max} онлайн`;
+        // 2. Fallback на mcsrvstat.us если mcstatus.io недоступен
+        if (!isOnline) {
+            try {
+                const resSrv = await fetch(`https://api.mcsrvstat.us/3/${SERVER_ADDRESS}`, {
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+                if (resSrv.ok) {
+                    const dataSrv = await resSrv.json();
+                    if (dataSrv.online) {
+                        isOnline = true;
+                        onlineCount = dataSrv.players?.online ?? 0;
+                        maxCount = dataSrv.players?.max ?? 0;
+                        list = dataSrv.players?.list || [];
+                    }
+                }
+            } catch (e) {
+                console.warn('mcsrvstat.us check failed:', e);
+            }
+        }
+
+        if (isOnline) {
+            playerCount.textContent = `${onlineCount} / ${maxCount} онлайн`;
             playerCount.style.cursor = 'default';
 
             indicator.className = 'status-indicator online';
