@@ -10,6 +10,7 @@ let cachedManifest = null;
 let currentSubTab = 'ВСЕ';
 let searchQuery = '';
 let allGroupItems = [];
+let subtabsListenersInitialized = false;
 
 function getModStem(filePath) {
     if (!filePath || typeof filePath !== 'string') return '';
@@ -60,11 +61,15 @@ export async function loadModsList(disabledMods = [], config = {}) {
     const gridContainer = dom.get('mods-grid');
     if (!gridContainer) return;
 
-    gridContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>';
+    if (allGroupItems.length === 0) {
+        gridContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>';
+    }
 
     cachedManifest = await window.api.getManifest();
     if (!cachedManifest) {
-        gridContainer.innerHTML = '<div class="unified-empty"><div class="unified-empty-icon">⚠️</div><div class="unified-empty-text">Не удалось загрузить манифест модов</div></div>';
+        if (allGroupItems.length === 0) {
+            gridContainer.innerHTML = '<div class="unified-empty"><div class="unified-empty-icon">⚠️</div><div class="unified-empty-text">Не удалось загрузить манифест модов</div></div>';
+        }
         return;
     }
 
@@ -154,7 +159,10 @@ export async function loadModsList(disabledMods = [], config = {}) {
         }
     });
 
-    setupSubtabsListeners();
+    if (!subtabsListenersInitialized) {
+        setupSubtabsListeners();
+        subtabsListenersInitialized = true;
+    }
     renderModsGrid();
 }
 
@@ -456,14 +464,22 @@ export function renderLinksCatalog(manifest) {
                 .replace(/[-_]\d+.*$/i, '');
             cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
 
-            const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
             const groupMatch = MOD_GROUPS.find(g => 
-                g.files.some(p => fileName.toLowerCase().includes(p.toLowerCase()))
+                g.files && g.files.some(p => fileName.toLowerCase().includes(p.toLowerCase()))
             );
 
-            const curseSlug = groupMatch?.curseSlug || slug;
-            const modrinthSlug = groupMatch?.modrinthSlug || slug;
+            // Настоящий URL файла на сервере GanjaCraft (по которому качает лаунчер)
+            const downloadUrl = file.url || `https://gcrlauncher1.loca.lt/files/${file.path.replace(/^\/+/, '')}`;
+
+            // Точная ссылка или поисковая ссылка для CurseForge и Modrinth
+            const curseUrl = groupMatch?.curseSlug 
+                ? `https://www.curseforge.com/minecraft/mc-mods/${groupMatch.curseSlug}`
+                : `https://www.curseforge.com/minecraft/search?search=${encodeURIComponent(groupMatch ? groupMatch.name : cleanName)}`;
+
+            const modrinthUrl = groupMatch?.modrinthSlug 
+                ? `https://modrinth.com/mod/${groupMatch.modrinthSlug}`
+                : `https://modrinth.com/mods?q=${encodeURIComponent(groupMatch ? groupMatch.name : cleanName)}`;
+
             const isOptional = file.optional;
 
             return {
@@ -471,8 +487,9 @@ export function renderLinksCatalog(manifest) {
                 cleanName: groupMatch ? groupMatch.name : cleanName,
                 category: groupMatch ? groupMatch.category : (isOptional ? 'Опциональный' : 'Базовый'),
                 isOptional,
-                curseUrl: `https://www.curseforge.com/minecraft/mc-mods/${curseSlug}`,
-                modrinthUrl: `https://modrinth.com/mod/${modrinthSlug}`
+                downloadUrl,
+                curseUrl,
+                modrinthUrl
             };
         });
     }
@@ -485,17 +502,12 @@ export function renderLinksCatalog(manifest) {
     );
 
     if (filteredCatalogItems.length === 0) {
-        if (catalogObserver) {
-            catalogObserver.disconnect();
-            catalogObserver = null;
-        }
         list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
         return;
     }
 
     // Сброс и создание карточки контейнера
     list.innerHTML = '';
-    currentRenderedIndex = 0;
 
     const card = document.createElement('div');
     card.className = 'settings-category';
@@ -513,77 +525,41 @@ export function renderLinksCatalog(manifest) {
     content.className = 'category-content';
     card.appendChild(content);
 
-    const sentinel = document.createElement('div');
-    sentinel.className = 'catalog-sentinel';
-    sentinel.style.height = '10px';
-    sentinel.style.width = '100%';
+    const fragment = document.createDocumentFragment();
 
-    card.appendChild(sentinel);
-    list.appendChild(card);
-
-    function renderBatch() {
-        if (currentRenderedIndex >= filteredCatalogItems.length) return;
-
-        const nextIndex = Math.min(currentRenderedIndex + BATCH_SIZE, filteredCatalogItems.length);
-        const fragment = document.createDocumentFragment();
-
-        for (let i = currentRenderedIndex; i < nextIndex; i++) {
-            const item = filteredCatalogItems[i];
-            const row = document.createElement('div');
-            row.className = 'setting-item';
-            row.innerHTML = `
-                <div class="setting-label">
-                    <svg class="setting-icon"><use href="#icon-game"/></svg>
-                    <div class="setting-text">
-                        <span class="setting-title">${item.cleanName} <span style="font-size: 11px; color: ${item.isOptional ? '#81c784' : '#64b5f6'};">(${item.isOptional ? 'Опциональный' : 'Базовый'})</span></span>
-                        <span class="setting-desc" style="font-family: monospace;">${item.fileName}</span>
-                    </div>
+    filteredCatalogItems.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'setting-item';
+        row.innerHTML = `
+            <div class="setting-label">
+                <svg class="setting-icon"><use href="#icon-game"/></svg>
+                <div class="setting-text">
+                    <span class="setting-title">${item.cleanName} <span style="font-size: 11px; color: ${item.isOptional ? '#81c784' : '#64b5f6'};">(${item.isOptional ? 'Опциональный' : 'Базовый'})</span></span>
+                    <span class="setting-desc" style="font-family: monospace;">${item.fileName}</span>
                 </div>
-                <div class="setting-control">
-                    <button class="unified-btn unified-btn-warning" data-url="${item.curseUrl}">🔥 CurseForge ↗</button>
-                    <button class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}">⚡ Modrinth ↗</button>
-                </div>
-            `;
+            </div>
+            <div class="setting-control">
+                <button class="unified-btn unified-btn-warning" data-url="${item.curseUrl}">🔥 CurseForge ↗</button>
+                <button class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}">⚡ Modrinth ↗</button>
+            </div>
+        `;
 
-            row.querySelectorAll('button').forEach(btn => {
-                btn.onclick = () => {
-                    const url = btn.dataset.url;
-                    if (url && window.api?.openUrl) {
-                        window.api.openUrl(url);
-                    } else if (url) {
-                        window.open(url, '_blank');
-                    }
-                };
-            });
+        row.querySelectorAll('button').forEach(btn => {
+            btn.onclick = () => {
+                const url = btn.dataset.url;
+                if (url && window.api?.openUrl) {
+                    window.api.openUrl(url);
+                } else if (url) {
+                    window.open(url, '_blank');
+                }
+            };
+        });
 
-            fragment.appendChild(row);
-        }
-
-        content.appendChild(fragment);
-        currentRenderedIndex = nextIndex;
-    }
-
-    // Первоначальная порция (мгновенный отклик без фриза)
-    renderBatch();
-
-    // Отключаем предыдущий observer при перерисовке
-    if (catalogObserver) {
-        catalogObserver.disconnect();
-        catalogObserver = null;
-    }
-
-    // Автоматическая дозагрузка при скролле до sentinel
-    const scrollContainer = list;
-    catalogObserver = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && currentRenderedIndex < filteredCatalogItems.length) {
-            renderBatch();
-        }
-    }, {
-        root: scrollContainer,
-        rootMargin: '300px'
+        fragment.appendChild(row);
     });
 
-    catalogObserver.observe(sentinel);
+    content.appendChild(fragment);
+    list.appendChild(card);
 }
 
 /**

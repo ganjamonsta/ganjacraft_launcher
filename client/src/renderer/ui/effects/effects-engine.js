@@ -185,7 +185,7 @@ class UniversalEffectsEngine {
     render() {
         if (!this.isRunning) return;
 
-        if (this.activePreset) {
+        if (!document.hidden && this.activePreset) {
             // 1. Отрисовка заднего слоя (за полупрозрачными карточками)
             if (this.bgCtx) {
                 this.bgCtx.clearRect(0, 0, this.width, this.height);

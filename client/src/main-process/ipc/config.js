@@ -47,11 +47,37 @@ function registerConfigHandlers(mainWindow) {
         await shell.openExternal(url);
     });
     
-    // Get manifest - с кешированием чтобы не блокировать UI
-    let manifestCache = null;
-    let manifestCacheTime = 0;
-    const MANIFEST_CACHE_TTL = 30_000; // 30 секунд
-    
+    // Helper to asynchronously update remote manifest cache without blocking UI
+    function fetchRemoteManifestInBackground() {
+        try {
+            const parsedUrl = new URL(MANIFEST_URL);
+            const reqOptions = {
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port || 443,
+                path: parsedUrl.pathname + parsedUrl.search,
+                method: 'GET',
+                timeout: 3000,
+                headers: {
+                    'User-Agent': 'localtunnel',
+                    'Bypass-Tunnel-Reminder': 'true'
+                }
+            };
+            const req = https.request(reqOptions, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        manifestCache = JSON.parse(data);
+                        manifestCacheTime = Date.now();
+                    } catch {}
+                });
+            });
+            req.on('error', () => {});
+            req.on('timeout', () => req.destroy());
+            req.end();
+        } catch {}
+    }
+
     ipcMain.handle('get-manifest', async () => {
         // Возвращаем кеш если свежий
         const now = Date.now();
@@ -59,7 +85,7 @@ function registerConfigHandlers(mainWindow) {
             return manifestCache;
         }
         
-        // Читаем локальный манифест если есть (мгновенно)
+        // Читаем локальный манифест если есть (мгновенно, 0мс задержки)
         const config = loadConfig();
         const localManifestPath = require('path').join(config.installPath, 'manifest.json');
         
@@ -70,7 +96,15 @@ function registerConfigHandlers(mainWindow) {
             }
         } catch {}
         
-        // Пробуем загрузить свежий (неблокирующе)
+        if (localManifest) {
+            manifestCache = localManifest;
+            manifestCacheTime = now;
+            // Запускаем фоновое обновление для кеша
+            fetchRemoteManifestInBackground();
+            return localManifest;
+        }
+        
+        // Только если локального манифеста нет вообще — ждем загрузки свежего
         try {
             const parsedUrl = new URL(MANIFEST_URL);
             const reqOptions = {
@@ -106,12 +140,6 @@ function registerConfigHandlers(mainWindow) {
             manifestCacheTime = now;
             return fresh;
         } catch {
-            // Fallback на локальный
-            if (localManifest) {
-                manifestCache = localManifest;
-                manifestCacheTime = now;
-                return localManifest;
-            }
             return null;
         }
     });

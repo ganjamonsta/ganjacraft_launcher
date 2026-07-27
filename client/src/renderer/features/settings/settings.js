@@ -411,10 +411,6 @@ export function initSettingsTabs(config) {
                 targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
             }, 75);
             
-            if (appState.get('effects.snowEnabled')) {
-                createDirectionalBurst(direction);
-            }
-            
             setTimeout(() => {
                 targetTab.classList.remove('slide-in-from-right', 'slide-in-from-left');
                 if (settingsBody) settingsBody.classList.remove('animating');
