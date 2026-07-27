@@ -114,7 +114,6 @@ export async function loadModsList(disabledMods = [], config = {}) {
 
     setupSubtabsListeners();
     renderModsGrid();
-    renderLinksCatalog(cachedManifest);
 }
 
 /**
@@ -382,77 +381,112 @@ export function renderModsGrid() {
     grid.appendChild(fragment);
 }
 
+let cachedCatalogData = null;
+let lastCatalogManifest = null;
+let catalogObserver = null;
+let currentRenderedIndex = 0;
+let filteredCatalogItems = [];
+const BATCH_SIZE = 15;
+
 /**
- * Отрендерить Каталог ссылок на моды (CurseForge & Modrinth)
+ * Отрендерить Каталог ссылок на моды (CurseForge & Modrinth) с ленивой подгрузкой (Lazy Loading)
  */
 export function renderLinksCatalog(manifest) {
     const list = dom.get('catalog-list');
-    const searchInput = dom.get('catalog-search-input');
     if (!list) return;
 
-    if (!manifest || !manifest.files) return;
+    if (!manifest || !manifest.files) {
+        list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Список файлов пуст</div></div>';
+        return;
+    }
 
-    const jarFiles = manifest.files.filter(f => f.path.startsWith('mods/') && f.path.endsWith('.jar'));
+    // Кешируем распарсенный массив данных каталога, чтобы не делать тяжелую регулярку и поиск при каждом переключении
+    if (!cachedCatalogData || lastCatalogManifest !== manifest) {
+        lastCatalogManifest = manifest;
+        const jarFiles = manifest.files.filter(f => f.path.startsWith('mods/') && f.path.endsWith('.jar'));
 
-    const catalogData = jarFiles.map(file => {
-        const fileName = file.path.split('/').pop();
-        let cleanName = fileName
-            .replace(/\.jar$/i, '')
-            .replace(/^client[-_]/i, '')
-            .replace(/[-_](neoforge|forge|fabric|mc|\d+\.\d+).*/i, '')
-            .replace(/[-_]\d+.*$/i, '');
-        cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+        cachedCatalogData = jarFiles.map(file => {
+            const fileName = file.path.split('/').pop();
+            let cleanName = fileName
+                .replace(/\.jar$/i, '')
+                .replace(/^client[-_]/i, '')
+                .replace(/[-_](neoforge|forge|fabric|mc|\d+\.\d+).*/i, '')
+                .replace(/[-_]\d+.*$/i, '');
+            cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
 
-        const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-        const groupMatch = MOD_GROUPS.find(g => 
-            g.files.some(p => fileName.toLowerCase().includes(p.toLowerCase()))
-        );
+            const groupMatch = MOD_GROUPS.find(g => 
+                g.files.some(p => fileName.toLowerCase().includes(p.toLowerCase()))
+            );
 
-        const curseSlug = groupMatch?.curseSlug || slug;
-        const modrinthSlug = groupMatch?.modrinthSlug || slug;
-        const isOptional = file.optional;
+            const curseSlug = groupMatch?.curseSlug || slug;
+            const modrinthSlug = groupMatch?.modrinthSlug || slug;
+            const isOptional = file.optional;
 
-        return {
-            fileName,
-            cleanName: groupMatch ? groupMatch.name : cleanName,
-            category: groupMatch ? groupMatch.category : (isOptional ? 'Опциональный' : 'Базовый'),
-            isOptional,
-            curseUrl: `https://www.curseforge.com/minecraft/mc-mods/${curseSlug}`,
-            modrinthUrl: `https://modrinth.com/mod/${modrinthSlug}`
-        };
-    });
+            return {
+                fileName,
+                cleanName: groupMatch ? groupMatch.name : cleanName,
+                category: groupMatch ? groupMatch.category : (isOptional ? 'Опциональный' : 'Базовый'),
+                isOptional,
+                curseUrl: `https://www.curseforge.com/minecraft/mc-mods/${curseSlug}`,
+                modrinthUrl: `https://modrinth.com/mod/${modrinthSlug}`
+            };
+        });
+    }
 
-    function drawCatalogItems(filterText = searchQuery) {
-        const query = filterText.toLowerCase();
-        const filtered = catalogData.filter(item => 
-            item.cleanName.toLowerCase().includes(query) ||
-            item.fileName.toLowerCase().includes(query)
-        );
+    // Фильтрация по поисковому запросу
+    const query = searchQuery.toLowerCase();
+    filteredCatalogItems = cachedCatalogData.filter(item => 
+        item.cleanName.toLowerCase().includes(query) ||
+        item.fileName.toLowerCase().includes(query)
+    );
 
-        if (filtered.length === 0) {
-            list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
-            return;
+    if (filteredCatalogItems.length === 0) {
+        if (catalogObserver) {
+            catalogObserver.disconnect();
+            catalogObserver = null;
         }
+        list.innerHTML = '<div class="unified-empty"><div class="unified-empty-text">Моды не найдены</div></div>';
+        return;
+    }
 
+    // Сброс и создание карточки контейнера
+    list.innerHTML = '';
+    currentRenderedIndex = 0;
+
+    const card = document.createElement('div');
+    card.className = 'settings-category';
+    card.style.gridColumn = '1 / -1';
+
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `
+        <svg class="category-icon"><use href="#icon-folder-open"/></svg>
+        <h4>Каталог ссылок на моды сборки (${filteredCatalogItems.length})</h4>
+    `;
+    card.appendChild(header);
+
+    const content = document.createElement('div');
+    content.className = 'category-content';
+    card.appendChild(content);
+
+    const sentinel = document.createElement('div');
+    sentinel.className = 'catalog-sentinel';
+    sentinel.style.height = '10px';
+    sentinel.style.width = '100%';
+
+    card.appendChild(sentinel);
+    list.appendChild(card);
+
+    function renderBatch() {
+        if (currentRenderedIndex >= filteredCatalogItems.length) return;
+
+        const nextIndex = Math.min(currentRenderedIndex + BATCH_SIZE, filteredCatalogItems.length);
         const fragment = document.createDocumentFragment();
 
-        const card = document.createElement('div');
-        card.className = 'settings-category';
-        card.style.gridColumn = '1 / -1';
-
-        const header = document.createElement('div');
-        header.className = 'category-header';
-        header.innerHTML = `
-            <svg class="category-icon"><use href="#icon-folder-open"/></svg>
-            <h4>Каталог ссылок на моды сборки (${filtered.length})</h4>
-        `;
-        card.appendChild(header);
-
-        const content = document.createElement('div');
-        content.className = 'category-content';
-
-        filtered.forEach(item => {
+        for (let i = currentRenderedIndex; i < nextIndex; i++) {
+            const item = filteredCatalogItems[i];
             const row = document.createElement('div');
             row.className = 'setting-item';
             row.innerHTML = `
@@ -472,7 +506,7 @@ export function renderLinksCatalog(manifest) {
             row.querySelectorAll('button').forEach(btn => {
                 btn.onclick = () => {
                     const url = btn.dataset.url;
-                    if (url && window.api.openUrl) {
+                    if (url && window.api?.openUrl) {
                         window.api.openUrl(url);
                     } else if (url) {
                         window.open(url, '_blank');
@@ -480,17 +514,34 @@ export function renderLinksCatalog(manifest) {
                 };
             });
 
-            content.appendChild(row);
-        });
+            fragment.appendChild(row);
+        }
 
-        card.appendChild(content);
-        fragment.appendChild(card);
-
-        list.innerHTML = '';
-        list.appendChild(fragment);
+        content.appendChild(fragment);
+        currentRenderedIndex = nextIndex;
     }
 
-    drawCatalogItems();
+    // Первоначальная порция (мгновенный отклик без фриза)
+    renderBatch();
+
+    // Отключаем предыдущий observer при перерисовке
+    if (catalogObserver) {
+        catalogObserver.disconnect();
+        catalogObserver = null;
+    }
+
+    // Автоматическая дозагрузка при скролле до sentinel
+    const scrollContainer = list.closest('.tab-content') || list.parentElement;
+    catalogObserver = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && currentRenderedIndex < filteredCatalogItems.length) {
+            renderBatch();
+        }
+    }, {
+        root: scrollContainer,
+        rootMargin: '300px'
+    });
+
+    catalogObserver.observe(sentinel);
 }
 
 /**
