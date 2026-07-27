@@ -186,7 +186,15 @@ export function initProgressHandlers() {
         window.api.onProgress((e) => {
             const percent = (e.task / e.total) * 100;
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, percent);
-            if (statusDiv) statusDiv.innerText = `Загрузка ресурсов: ${Math.round(percent)}%`;
+            if (statusDiv) {
+                if (e.currentFile) {
+                    const filename = e.currentFile.split(/[/\\]/).pop();
+                    const tag = e.sourceName ? `[${e.sourceName}] ` : '';
+                    statusDiv.innerText = `${tag}${filename} (${Math.round(percent)}%)`;
+                } else {
+                    statusDiv.innerText = `Загрузка ресурсов: ${Math.round(percent)}%`;
+                }
+            }
         });
     }
 

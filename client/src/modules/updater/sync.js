@@ -49,6 +49,21 @@ function isUserProtected(filePath) {
     return false;
 }
 
+function formatBytes(bytes) {
+    if (!bytes || typeof bytes !== 'number' || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function getSourceInfo(url) {
+    if (!url) return { name: 'Сервер', icon: '📦' };
+    if (url.includes('modrinth.com')) return { name: 'Modrinth CDN', icon: '⚡' };
+    if (url.includes('forgecdn.net') || url.includes('curseforge.com')) return { name: 'CurseForge CDN', icon: '🔥' };
+    return { name: 'Сервер GanjaCraft', icon: '📦' };
+}
+
 /**
  * Синхронизация файлов с манифестом сервера
  * @param {string} rootPath - Путь к папке игры
@@ -91,12 +106,11 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         .map(f => f.hash);
 
     if (jarHashes.length > 0) {
-        sendLog('Проверка наличия модов на Modrinth CDN...');
+        sendLog('Поиск модов на Modrinth CDN...');
         try {
             const modrinthMap = await resolveModrinthUrls(jarHashes);
             const resolvedCount = Object.keys(modrinthMap).length;
             if (resolvedCount > 0) {
-                sendLog(`Modrinth CDN: ${resolvedCount} из ${jarHashes.length} модов переключены на прямую загрузку с CDN!`);
                 for (const file of manifest.files) {
                     if (file && file.hash && modrinthMap[file.hash.toLowerCase()]) {
                         file.url = modrinthMap[file.hash.toLowerCase()];
@@ -107,6 +121,19 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
             sendLog(`Предупреждение Modrinth CDN: ${mErr.message}`);
         }
     }
+
+    // 2.6. Подсчет статистики источников
+    let modrinthCount = 0;
+    let curseCount = 0;
+    let serverCount = 0;
+    for (const f of manifest.files) {
+        const src = getSourceInfo(f.url);
+        if (src.name.includes('Modrinth')) modrinthCount++;
+        else if (src.name.includes('CurseForge')) curseCount++;
+        else serverCount++;
+    }
+
+    sendLog(`📊 Источники модов: ⚡ Modrinth CDN (${modrinthCount}) | 🔥 CurseForge (${curseCount}) | 📦 Сервер (${serverCount})`);
 
     // 3. Обрабатываем файлы параллельно
     const CONCURRENCY = 4;
@@ -184,6 +211,9 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
 
         // Скачиваем если нужно
         if (needDownload) {
+            const src = getSourceInfo(file.url);
+            const sizeStr = formatBytes(file.size);
+            sendLog(`[${processed + 1}/${totalFiles}] ${src.icon} [${src.name}] Скачивание ${file.path} (${sizeStr})...`);
             await downloadWithRetry(file.url, localPath, {
                 expectedHash: file.hash,
                 expectedSize: typeof file.size === 'number' ? file.size : null,
@@ -192,8 +222,16 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         }
         
         processed++;
+        const src = getSourceInfo(file.url);
         if (onProgress) {
-            onProgress({ task: processed, total: totalFiles, type: 'mods' });
+            onProgress({
+                task: processed,
+                total: totalFiles,
+                type: 'mods',
+                currentFile: file.path,
+                sourceName: src.name,
+                sizeFormatted: formatBytes(file.size)
+            });
         }
     }
 
