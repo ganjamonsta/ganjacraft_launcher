@@ -8,7 +8,7 @@ const path = require('path');
 const { downloadFile } = require('../../modules/updater');
 const { isZipIntact } = require('./integrity');
 const { 
-    FORGE_VERSION, 
+    NEOFORGE_VERSION, 
     MC_VERSION, 
     REPAIR_FILES 
 } = require('../constants');
@@ -28,8 +28,8 @@ async function repairCriticalFiles(rootPath, sendLog, sendDebug) {
         },
         {
             name: 'NeoForge Installer',
-            path: path.join(rootPath, `neoforge-${FORGE_VERSION}-installer.jar`),
-            url: REPAIR_FILES['forge-installer.jar'],
+            path: path.join(rootPath, `neoforge-${NEOFORGE_VERSION}-installer.jar`),
+            url: REPAIR_FILES['neoforge-installer.jar'],
         },
         {
             name: `Minecraft ${MC_VERSION}`,

@@ -117,7 +117,8 @@ export function setupSettingsChangeListeners() {
         'setting-effects-density',
         'setting-enable-smoke',
         'setting-enable-parallax',
-        'dev-skip-sync-checkbox'
+        'dev-skip-sync-checkbox',
+        'setting-debug'
     ];
     
     formControls.forEach(id => {
@@ -127,11 +128,7 @@ export function setupSettingsChangeListeners() {
         }
     });
     
-    // Admin token input
-    const adminTokenInput = document.getElementById('admin-api-token-input');
-    if (adminTokenInput) {
-        adminTokenInput.addEventListener('input', updateSaveButtonVisibility, { passive: true });
-    }
+
     
     // Mods list - event delegation (grid container)
     const modsGrid = document.getElementById('mods-grid');
@@ -302,6 +299,7 @@ export function populateSettingsFields(config) {
     const densitySelect = document.getElementById('setting-effects-density');
     const smokeCheckbox = document.getElementById('setting-enable-smoke');
     const parallaxCheckbox = document.getElementById('setting-enable-parallax');
+    const debugCheckbox = document.getElementById('setting-debug');
     
     if (pathInput) pathInput.value = config.installPath || '';
     if (javaInput) javaInput.value = config.javaPath || '';
@@ -318,6 +316,7 @@ export function populateSettingsFields(config) {
     
     if (smokeCheckbox) smokeCheckbox.checked = config.enableSmoke !== false;
     if (parallaxCheckbox) parallaxCheckbox.checked = config.enableParallax !== false;
+    if (debugCheckbox) debugCheckbox.checked = config.debugMode === true;
     
     // Инициализация RAM slider (новый UI)
     initRamSlider(config);
@@ -352,6 +351,7 @@ export async function saveSettings() {
         enableSnow: selectedPreset !== 'off',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
+        debugMode: document.getElementById('setting-debug')?.checked || false,
         skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
         disabledMods: getDisabledMods(),
         modsDefaultsApplied: true,
@@ -406,14 +406,25 @@ export function initSettingsTabs(config) {
     const tabButtons = Array.from(document.querySelectorAll('.settings-tabs .tab-btn'));
     
     tabButtons.forEach((btn, index) => {
+        if (btn.dataset.tabsBound) return;
+        btn.dataset.tabsBound = 'true';
+
         btn.addEventListener('click', () => {
             const targetTabId = btn.dataset.tab;
             const targetTab = document.getElementById(`tab-${targetTabId}`);
-            const allTabs = document.querySelectorAll('.tab-content');
-            const currentActiveTab = document.querySelector('.tab-content.active');
             
-            if (!targetTab || currentActiveTab === targetTab) return;
+            // Если вкладка уже активна — пропуск
+            if (btn.classList.contains('active')) return;
+
+            // Если идет анимация переключения настроек — пропуск
+            const settingsBody = document.querySelector('.settings-body');
+            if (settingsBody && settingsBody.classList.contains('animating')) return;
+
+            if (!targetTab) return;
             
+            const allTabs = Array.from(document.querySelectorAll('.tab-content'));
+            const currentActiveTab = allTabs.find(t => t.classList.contains('active') && t !== targetTab);
+
             const direction = index > currentTabIndex ? 'right' : 'left';
             currentTabIndex = index;
 
@@ -425,14 +436,14 @@ export function initSettingsTabs(config) {
             tabButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
-            const settingsBody = document.querySelector('.settings-body');
             if (settingsBody) settingsBody.classList.add('animating');
 
             allTabs.forEach(t => {
                 t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
             });
             
-            if (currentActiveTab && currentActiveTab !== targetTab) {
+            if (currentActiveTab) {
+                currentActiveTab.classList.remove('active');
                 currentActiveTab.classList.add(direction === 'right' ? 'slide-out-to-left' : 'slide-out-to-right');
             }
             
@@ -486,7 +497,8 @@ export function initPathSelectors() {
     const selectJavaBtn = document.getElementById('btn-select-java');
     const resetJavaBtn = document.getElementById('btn-reset-java');
     
-    if (selectPathBtn) {
+    if (selectPathBtn && !selectPathBtn.dataset.bound) {
+        selectPathBtn.dataset.bound = 'true';
         selectPathBtn.addEventListener('click', async () => {
             const path = await window.api.selectPath('dir');
             if (path) {
@@ -496,7 +508,8 @@ export function initPathSelectors() {
         });
     }
     
-    if (openPathBtn) {
+    if (openPathBtn && !openPathBtn.dataset.bound) {
+        openPathBtn.dataset.bound = 'true';
         openPathBtn.addEventListener('click', async () => {
             const path = document.getElementById('setting-path')?.value;
             if (path) {
@@ -505,7 +518,8 @@ export function initPathSelectors() {
         });
     }
     
-    if (selectJavaBtn) {
+    if (selectJavaBtn && !selectJavaBtn.dataset.bound) {
+        selectJavaBtn.dataset.bound = 'true';
         selectJavaBtn.addEventListener('click', async () => {
             const path = await window.api.selectPath('java');
             if (path) {
@@ -515,7 +529,8 @@ export function initPathSelectors() {
         });
     }
     
-    if (resetJavaBtn) {
+    if (resetJavaBtn && !resetJavaBtn.dataset.bound) {
+        resetJavaBtn.dataset.bound = 'true';
         resetJavaBtn.addEventListener('click', () => {
             document.getElementById('setting-java').value = '';
             updateSaveButtonVisibility();
@@ -528,7 +543,8 @@ export function initPathSelectors() {
  */
 export function initReinstallButton() {
     const reinstallBtn = document.getElementById('btn-reinstall');
-    if (reinstallBtn) {
+    if (reinstallBtn && !reinstallBtn.dataset.bound) {
+        reinstallBtn.dataset.bound = 'true';
         reinstallBtn.addEventListener('click', async () => {
             const confirmed = await customConfirm(
                 'Это удалит все моды и настройки игры. Продолжить?',
@@ -550,7 +566,8 @@ export function initModsButtons() {
     const selectAllBtn = document.getElementById('mods-select-all');
     const deselectAllBtn = document.getElementById('mods-deselect-all');
     
-    if (selectAllBtn) {
+    if (selectAllBtn && !selectAllBtn.dataset.bound) {
+        selectAllBtn.dataset.bound = 'true';
         selectAllBtn.addEventListener('click', () => {
             setAllModsState(true);
             updateModsCounter();
@@ -559,7 +576,8 @@ export function initModsButtons() {
         });
     }
     
-    if (deselectAllBtn) {
+    if (deselectAllBtn && !deselectAllBtn.dataset.bound) {
+        deselectAllBtn.dataset.bound = 'true';
         deselectAllBtn.addEventListener('click', () => {
             setAllModsState(false);
             updateModsCounter();

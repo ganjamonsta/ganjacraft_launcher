@@ -13,18 +13,15 @@ const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJav
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
 const { repairCriticalFiles } = require('./repair');
-const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, preflightForgeLibraries, ensureNeoForgeVersionJsonMerged, ensureAssetIndex } = require('./neoforge');
+const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, ensureNeoForgeVersionJsonMerged, ensureAssetIndex } = require('./neoforge');
 const { 
     NEOFORGE_VERSION,
-    FORGE_VERSION,
     MC_VERSION,
     MANIFEST_URL,
     NEOFORGE_INSTALLER_URL,
-    FORGE_INSTALLER_URL,
     AUTHLIB_INJECTOR_URL,
     YGGDRASIL_AUTH_URL,
     BASE_URL,
-    MIRROR_BASE,
     API_BASE,
     DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS,
     JVM_OPTIMIZATION_ARGS,
@@ -202,7 +199,7 @@ async function prepareJava(config, rootPath, sendLog, sendDebug) {
  * Подготовить Forge installer
  */
 async function prepareForge(rootPath, sendLog, sendDebug) {
-    const forgeInstallerPath = path.join(rootPath, `forge-${FORGE_VERSION}-installer.jar`);
+    const forgeInstallerPath = path.join(rootPath, `neoforge-${NEOFORGE_VERSION}-installer.jar`);
     let needForge = !fs.existsSync(forgeInstallerPath);
     
     if (!needForge) {
@@ -216,8 +213,8 @@ async function prepareForge(rootPath, sendLog, sendDebug) {
 
     if (needForge) {
         sendLog('Скачивание установщика Forge...');
-        sendDebug(`Downloading Forge from ${FORGE_INSTALLER_URL}`);
-        await downloadFile(FORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
+        sendDebug(`Downloading Forge from ${NEOFORGE_INSTALLER_URL}`);
+        await downloadFile(NEOFORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
         if (!(await isZipIntact(forgeInstallerPath))) {
             try { fs.unlinkSync(forgeInstallerPath); } catch {}
             throw new Error('Downloaded Forge installer is not a valid JAR/ZIP (truncated or HTML response)');
@@ -642,7 +639,7 @@ async function launchGame(event, options) {
         // Windows-specific preflight
         try {
             sendDebug('Preflight: checking Forge library writability...');
-            await preflightForgeLibraries(rootPath, sendLog, sendDebug);
+            await preflightNeoForgeLibraries(rootPath, sendLog, sendDebug);
             sendDebug('Preflight: Forge library writability OK.');
         } catch (e) {
             sendDebug(`Preflight failed: ${e.stack || e.message}`);

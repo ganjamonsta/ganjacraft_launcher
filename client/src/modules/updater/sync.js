@@ -126,10 +126,10 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
 
     // 2.55. Вторичный резолвинг модов через CurseForge API
     const unmappedCurseFiles = manifest.files.filter(f => 
-        f && typeof f.path === 'string' && f.path.endsWith('.jar') && !f.url.includes('modrinth.com')
+        f && typeof f.path === 'string' && f.path.endsWith('.jar') && (!f.url || !f.url.includes('modrinth.com'))
     );
 
-    if (unmappedCurseFiles.length > 0 && CURSEFORGE_API_KEY) {
+    if (CURSEFORGE_API_KEY && unmappedCurseFiles.length > 0) {
         sendLog(`Поиск ${unmappedCurseFiles.length} модов на CurseForge...`);
         try {
             const curseMap = await resolveCurseForgeUrls(unmappedCurseFiles, CURSEFORGE_API_KEY);

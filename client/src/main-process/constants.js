@@ -5,7 +5,6 @@
 
 // Версии
 const NEOFORGE_VERSION = '21.1.233';
-const FORGE_VERSION = NEOFORGE_VERSION;
 const MC_VERSION = '1.21.1';
 const REQUIRED_JAVA_MAJOR = 21;
 
@@ -16,20 +15,18 @@ const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;
 
 const MANIFEST_URL = `${FILES_BASE}/manifest.json`;
-const NEOFORGE_INSTALLER_URL = `https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.233/neoforge-21.1.233-installer.jar`;
-const FORGE_INSTALLER_URL = NEOFORGE_INSTALLER_URL;
+const NEOFORGE_INSTALLER_URL = `https://maven.neoforged.net/releases/net/neoforged/neoforge/${NEOFORGE_VERSION}/neoforge-${NEOFORGE_VERSION}-installer.jar`;
 const AUTHLIB_INJECTOR_URL = `https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar`;
 const YGGDRASIL_AUTH_URL = `${API_BASE}/yggdrasil/authserver/authenticate`;
 
 const VANILLA_VERSION_JSON_URL = `https://piston-meta.mojang.com/v1/packages/67e466e82c012158c8cda81df39aa40a7ade7276/1.21.1.json`;
 const VANILLA_VERSION_JAR_URL = `https://piston-data.mojang.com/v1/objects/30c73b1c5da787909b2f73340419fdf13b9def88/client.jar`;
 
-const CURSEFORGE_API_KEY = process.env.CURSEFORGE_API_KEY || '$2a$10$SvuvYSQ0HuoMAbraQXxiROGRsS19yCee98NlQiNfdHbzEKrOTAUx6';
+const CURSEFORGE_API_KEY = process.env.CURSEFORGE_API_KEY || null;
 
 // Repair URLs for critical files
 const REPAIR_FILES = {
     'authlib-injector.jar': AUTHLIB_INJECTOR_URL,
-    'forge-installer.jar': NEOFORGE_INSTALLER_URL,
     'neoforge-installer.jar': NEOFORGE_INSTALLER_URL,
     'vanilla-client.jar': VANILLA_VERSION_JAR_URL,
 };
@@ -86,18 +83,14 @@ const JVM_OPTIMIZATION_ARGS = [
 module.exports = {
     // Versions
     NEOFORGE_VERSION,
-    FORGE_VERSION,
     MC_VERSION,
     REQUIRED_JAVA_MAJOR,
     
     // URLs
     BASE_URL,
-    MIRROR_BASE,
-    FILES_BASE,
     API_BASE,
     MANIFEST_URL,
     NEOFORGE_INSTALLER_URL,
-    FORGE_INSTALLER_URL,
     AUTHLIB_INJECTOR_URL,
     YGGDRASIL_AUTH_URL,
     VANILLA_VERSION_JSON_URL,

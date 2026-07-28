@@ -186,7 +186,8 @@ let subtabTransitionTimer = null;
 
 function setupSubtabsListeners() {
     const subtabsContainer = dom.get('mods-subtabs');
-    if (!subtabsContainer) return;
+    if (!subtabsContainer || subtabsContainer.dataset.bound) return;
+    subtabsContainer.dataset.bound = 'true';
 
     subtabsContainer.addEventListener('click', (e) => {
         const btn = e.target.closest('.unified-btn');

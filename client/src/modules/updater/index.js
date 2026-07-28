@@ -29,17 +29,13 @@ const {
 // Админские инструменты
 const { syncCategory, deleteCategory, getCategoryCounts, fetchServerScripts } = require('./admin');
 
-// Modrinth & CurseForge Resolvers
-const { resolveModrinthUrls } = require('./modrinth');
-const { resolveCurseForgeUrls } = require('./curseforge');
+
 
 // Обратная совместимость: экспортируем то же API что и раньше
 module.exports = {
     // Основные функции (были в оригинальном updater.js)
     downloadFile,
     downloadWithRetry,
-    resolveModrinthUrls,
-    resolveCurseForgeUrls,
     getFileHash,
     syncFiles,
     syncCategory,

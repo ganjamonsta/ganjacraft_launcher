@@ -9,69 +9,12 @@ const { downloadFile } = require('../../modules/updater');
 const { isZipIntact, ensureWritableFilePath } = require('./integrity');
 const { 
     MC_VERSION,
+    NEOFORGE_VERSION,
     VANILLA_VERSION_JSON_URL,
     VANILLA_VERSION_JAR_URL,
-    URL_REWRITES,
 } = require('../constants');
 
-/**
- * Переписать URL через наш mirror
- * @param {string} url - Оригинальный URL
- * @returns {string} - Переписанный URL
- */
-function rewriteKnownUrl(url) {
-    if (!url || typeof url !== 'string') return url;
 
-    for (const [from, to] of URL_REWRITES) {
-        if (url.startsWith(from)) {
-            return to + url.slice(from.length);
-        }
-    }
-    return url;
-}
-
-/**
- * Переписать URLs в version JSON
- * @param {Object} versionJson - JSON версии Minecraft
- * @returns {Object} - Модифицированный JSON
- */
-function rewriteVersionJsonUrls(versionJson) {
-    if (!versionJson || typeof versionJson !== 'object') return versionJson;
-
-    // Top-level downloads
-    if (versionJson.downloads) {
-        if (versionJson.downloads.client?.url) {
-            versionJson.downloads.client.url = rewriteKnownUrl(versionJson.downloads.client.url);
-        }
-        if (versionJson.downloads.server?.url) {
-            versionJson.downloads.server.url = rewriteKnownUrl(versionJson.downloads.server.url);
-        }
-    }
-
-    // Asset index
-    if (versionJson.assetIndex?.url) {
-        versionJson.assetIndex.url = rewriteKnownUrl(versionJson.assetIndex.url);
-    }
-
-    // Libraries
-    if (Array.isArray(versionJson.libraries)) {
-        for (const lib of versionJson.libraries) {
-            if (lib?.downloads?.artifact?.url) {
-                lib.downloads.artifact.url = rewriteKnownUrl(lib.downloads.artifact.url);
-            }
-            if (lib?.downloads?.classifiers) {
-                for (const key of Object.keys(lib.downloads.classifiers)) {
-                    const item = lib.downloads.classifiers[key];
-                    if (item?.url) {
-                        item.url = rewriteKnownUrl(item.url);
-                    }
-                }
-            }
-        }
-    }
-
-    return versionJson;
-}
 
 /**
  * Убедиться, что vanilla version files существуют
@@ -104,7 +47,6 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
         try {
             await downloadFile(VANILLA_VERSION_JSON_URL, tmpJson, { timeoutMs: 60_000 });
             const parsed = JSON.parse(fs.readFileSync(tmpJson, 'utf8'));
-            rewriteVersionJsonUrls(parsed);
             fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
             try { fs.unlinkSync(tmpJson); } catch {}
             sendLog(`Версия ${MC_VERSION} (json) готова.`);
@@ -116,7 +58,6 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
         // Rewrite in-place to ensure new mirror rules apply after updates
         try {
             const parsed = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
-            rewriteVersionJsonUrls(parsed);
             fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
         } catch {
             // Ignore; will be handled on next run.
@@ -176,7 +117,7 @@ async function preflightNeoForgeLibraries(rootPath, sendLog, sendDebug) {
  * @param {Function} [sendDebug] - Функция дебаг-логирования
  */
 function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
-    const neoforgeVerId = `neoforge-21.1.233`;
+    const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
     const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
     const vanillaJsonPath = path.join(rootPath, 'versions', MC_VERSION, `${MC_VERSION}.json`);
 
@@ -240,7 +181,7 @@ async function ensureAssetIndex(rootPath, sendLog) {
     const indexFiles = [
         path.join(assetIndexDir, '17.json'),
         path.join(assetIndexDir, `${MC_VERSION}.json`),
-        path.join(assetIndexDir, `neoforge-21.1.233.json`)
+        path.join(assetIndexDir, `neoforge-${NEOFORGE_VERSION}.json`)
     ];
 
     let needDownload = false;
@@ -278,12 +219,8 @@ async function ensureAssetIndex(rootPath, sendLog) {
 }
 
 module.exports = {
-    rewriteKnownUrl,
-    rewriteVersionJsonUrls,
     ensureVanillaVersionFiles,
     preflightNeoForgeLibraries,
     ensureNeoForgeVersionJsonMerged,
     ensureAssetIndex,
-    // Alias for backward compatibility
-    preflightForgeLibraries: preflightNeoForgeLibraries,
 };
