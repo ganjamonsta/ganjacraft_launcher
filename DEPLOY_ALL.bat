@@ -17,11 +17,12 @@ echo.
 echo --- 2/3 Сборка Клиента (Electron + ZIP обновление) ---
 cd client
 call node build-release.js
+set BUILD_ERR=%errorlevel%
 cd ..
-if %errorlevel% neq 0 (
+if %BUILD_ERR% neq 0 (
     echo [ОШИБКА] Ошибка при сборке Клиента!
     pause
-    exit /b %errorlevel%
+    exit /b %BUILD_ERR%
 )
 
 echo.
