@@ -1,0 +1,291 @@
+/* ==========================================================================
+   GanjaCraft Launcher — Configs Tab Styles
+   Использует общие --gc-* переменные из styles.css
+   ========================================================================== */
+
+/* Разрешаем выделение текста в читаемых элементах правой панели */
+.cfg-detail-title,
+.cfg-detail-folder,
+.cfg-group-title,
+.cfg-field-title,
+.cfg-field-comment,
+.cfg-placeholder {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+}
+
+/* ========================================
+   Master-Detail Layout
+   ======================================== */
+.cfg-master-detail {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+}
+
+/* ========================================
+   Left Panel (Master — список файлов)
+   ======================================== */
+.cfg-panel-left {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: var(--gc-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.cfg-search-wrapper {
+    padding: var(--gc-spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Reuse mods search input style */
+.cfg-search-wrapper #configs-search-input {
+    height: 32px;
+    padding: 0 34px 0 14px;
+    font-size: 11.5px;
+    background: rgba(12, 14, 18, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    color: #ffffff;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cfg-search-wrapper #configs-search-input:focus {
+    border-color: var(--gc-green);
+    background: rgba(18, 22, 28, 0.95);
+    box-shadow: 0 0 12px var(--gc-green-glow);
+}
+
+.cfg-file-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--gc-spacing-sm) 0;
+}
+
+.cfg-empty-hint {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: var(--gc-font-lg);
+}
+
+/* ========================================
+   File Item (строка в левом списке)
+   ======================================== */
+.cfg-file-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    margin: 0 var(--gc-spacing-sm) 4px var(--gc-spacing-sm);
+    border-radius: var(--gc-radius-md);
+    border-left: 2px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    color: #b0b8c4;
+    user-select: none;
+}
+
+.cfg-file-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #dde4ef;
+}
+
+.cfg-file-item.active {
+    background: rgba(57, 255, 20, 0.12);
+    color: var(--gc-green);
+    border-left-color: var(--gc-green);
+    padding-left: 14px;
+}
+
+.cfg-file-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+}
+
+.cfg-file-item:hover .cfg-file-icon,
+.cfg-file-item.active .cfg-file-icon {
+    opacity: 1;
+}
+
+.cfg-file-name-wrap {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.cfg-file-folder {
+    font-size: var(--gc-font-lg);
+    font-weight: 400;
+    color: #555;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+}
+
+.cfg-file-item:hover .cfg-file-folder {
+    color: #888;
+}
+
+.cfg-file-item.active .cfg-file-folder {
+    color: rgba(57, 255, 20, 0.55);
+}
+
+.cfg-file-name {
+    font-size: var(--gc-font-lg);
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.cfg-file-item.active .cfg-file-name {
+    font-weight: 600;
+}
+
+/* ========================================
+   Right Panel (Detail — содержимое файла)
+   ======================================== */
+.cfg-panel-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: var(--gc-spacing-sm);
+}
+
+.cfg-detail-header {
+    padding: var(--gc-spacing-sm) 4px 24px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+.cfg-detail-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+/* Папка в заголовке — серая, имя файла — белое */
+.cfg-detail-folder {
+    font-weight: 400;
+    color: #555;
+    font-size: 16px;
+}
+
+.cfg-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #666;
+    font-size: 15px;
+}
+
+/* ========================================
+   Group Title (заголовок раздела внутри файла)
+   ======================================== */
+.cfg-group-title {
+    margin: 24px 0 16px 0;
+    padding-bottom: var(--gc-spacing-sm);
+    font-size: var(--gc-font-lg);
+    font-weight: 600;
+    color: var(--gc-green);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(57, 255, 20, 0.2);
+}
+
+/* ========================================
+   Config Field (один параметр)
+   ======================================== */
+.cfg-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    padding: 0 var(--gc-spacing-sm);
+}
+
+.cfg-field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cfg-field-label-wrap {
+    flex: 1;
+}
+
+.cfg-field-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #e2e8f0;
+}
+
+.cfg-field-comment {
+    white-space: pre-wrap;
+    font-size: var(--gc-font-lg);
+    line-height: 1.5;
+    color: #8b929a;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+/* ========================================
+   Config Input (числовой / текстовый)
+   ======================================== */
+.cfg-input {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: var(--gc-radius-md);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    margin: 0;
+}
+
+.cfg-input:focus {
+    border-color: var(--gc-green);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 2px var(--gc-green-glow);
+}
+
+.cfg-input.error {
+    border-color: var(--gc-red);
+}
+
+.cfg-input.saved {
+    border-color: var(--gc-green);
+    transition: border-color 0.1s ease;
+}
+
+.cfg-toggle-wrap {
+    flex-shrink: 0;
+    margin-top: 2px;
+}

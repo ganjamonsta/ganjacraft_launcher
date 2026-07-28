@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>GanjaCraft Launcher</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="configs.css">
+
+</head>
+
+<body>
+    <!-- Snow Container -->
+    <div id="snow-container"></div>
+    <!-- Burst Snow Container (above forms) -->
+    <div id="snow-burst-container"></div>
+
+    <!-- Initial Launcher Loading Splash Screen -->
+    <div id="launcher-loader-screen" class="launcher-loader-screen">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <span class="loader-logo-text">GANJACRAFT</span>
+                <span class="loader-logo-sub">LAUNCHER</span>
+            </div>
+            <div class="loader-status-container">
+                <span id="loader-status-text" class="loader-status-text">Инициализация лаунчера...</span>
+                <span id="loader-percent-text" class="loader-percent-text">0%</span>
+            </div>
+            <div class="loader-bar-track">
+                <div id="loader-progress-fill" class="loader-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Title Bar -->
+    <div id="title-bar">
+        <div class="title-bar-left">
+            <button id="title-bar-title" class="tab-btn title-main-tab active" title="Главная">GANJACRAFT
+                LAUNCHER</button>
+            <div class="settings-tabs hidden">
+                <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
+                <button class="tab-btn" data-tab="mods">МОДЫ</button>
+                <button class="tab-btn" data-tab="configs">КОНФИГИ</button>
+                <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
+            </div>
+        </div>
+        <div id="window-controls">
+            <button id="btn-settings" class="control-btn" title="Настройки">⚙</button>
+            <button id="btn-minimize" class="control-btn" title="Свернуть">─</button>
+            <button id="btn-close" class="control-btn" title="Закрыть">✕</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <div id="bg-overlay"></div>
+        <div id="snow-bg-container"></div>
+
+        <!-- Server Status Widget -->
+        <div id="server-status-widget" class="fade-in">
+            <div class="status-indicator"></div>
+            <div class="status-text">
+                <span id="player-count">Загрузка...</span>
+            </div>
+        </div>
+
+        <!-- News Section / Console Panel -->
+        <div id="news-section" class="fade-in">
+            <div class="panel-header">
+                <h3 id="panel-title">Новости</h3>
+                <div id="console-toggle-btn" title="Переключить консоль"></div>
+            </div>
+            <div id="news-list">
+                <div class="loading">Загрузка новостей...</div>
+            </div>
+            <div id="console-output" class="hidden">
+                <div style="color: #666; font-style: italic;">Ожидание логов игры...</div>
+            </div>
+        </div>
+
+        <!-- Settings Screen (Full Screen) -->
+        <div id="step-settings" class="settings-screen hidden">
+            <!-- Floating Save Button (Hidden by default) -->
+            <button id="save-settings" class="floating-save-btn" title="Сохранить настройки">
+                <span class="save-icon">💾</span>
+                <span class="save-text">Сохранить</span>
+            </button>
+            <div class="settings-body">
+
+                <!-- General Tab -->
+                <div id="tab-general" class="tab-content active">
+                    <!-- SVG Icons Sprite (hidden) -->
+                    <div style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg">
+                            <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                            </symbol>
+                            <symbol id="icon-java" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z" />
+                                <line x1="6" y1="2" x2="6" y2="4" />
+                                <line x1="10" y1="2" x2="10" y2="4" />
+                                <line x1="14" y1="2" x2="14" y2="4" />
+                            </symbol>
+                            <symbol id="icon-memory" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="4" width="16" height="16" rx="2" />
+                                <rect x="9" y="9" width="6" height="6" />
+                                <path d="M9 1v3" />
+                                <path d="M15 1v3" />
+                                <path d="M9 20v3" />
+                                <path d="M15 20v3" />
+                                <path d="M20 9h3" />
+                                <path d="M20 14h3" />
+                                <path d="M1 9h3" />
+                                <path d="M1 14h3" />
+                            </symbol>
+                            <symbol id="icon-appearance" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="13.5" cy="6.5" r="2" />
+                                <circle cx="17.5" cy="10.5" r="2" />
+                                <circle cx="8.5" cy="7.5" r="2" />
+                                <circle cx="6.5" cy="12.5" r="2" />
+                                <path
+                                    d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z" />
+                            </symbol>
+                            <symbol id="icon-snow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="2" x2="12" y2="22" />
+                                <path d="m19 5-7 7-7-7" />
+                                <path d="m5 19 7-7 7 7" />
+                                <line x1="2" y1="12" x2="22" y2="12" />
+                            </symbol>
+                            <symbol id="icon-smoke" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
+                            </symbol>
+                            <symbol id="icon-parallax" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                                <polyline points="2 17 12 22 22 17" />
+                                <polyline points="2 12 12 17 22 12" />
+                            </symbol>
+                            <symbol id="icon-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </symbol>
+                            <symbol id="icon-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                            </symbol>
+                            <symbol id="icon-folder-open" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 19a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4l2 2h9a2 2 0 0 1 2 2v1" />
+                                <path d="M5 19h14a2 2 0 0 0 2-2l1-9H4l1 9a2 2 0 0 0 2 2z" />
+                            </symbol>
+                            <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </symbol>
+                            <symbol id="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                            </symbol>
+                            <symbol id="icon-game" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="6" y1="12" x2="10" y2="12" />
+                                <line x1="8" y1="10" x2="8" y2="14" />
+                                <line x1="15" y1="13" x2="15.01" y2="13" />
+                                <line x1="18" y1="11" x2="18.01" y2="11" />
+                                <rect x="2" y="6" width="20" height="12" rx="2" />
+                            </symbol>
+                            <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                            </symbol>
+                        </svg>
+                    </div>
+
+                    <div class="settings-categories inertia-cascade">
+                        <!-- Category: Paths -->
+                        <div class="settings-category">
+                            <div class="category-header">
+                                <svg class="category-icon">
+                                    <use href="#icon-folder" />
+                                </svg>
+                                <h4>Пути</h4>
+                            </div>
+                            <div class="category-content">
+                                <div class="setting-item setting-item-stacked">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-game" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Папка установки</span>
+                                            <span class="setting-desc">Где хранятся файлы игры</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control path-control">
+                                        <input type="text" id="setting-path" readonly placeholder="Выберите папку...">
+                                        <button id="btn-select-path" class="icon-btn" title="Выбрать папку">
+                                            <svg class="btn-icon">
+                                                <use href="#icon-search" />
+                                            </svg>
+                                        </button>
+                                        <button id="btn-open-path" class="icon-btn" title="Открыть папку">
+                                            <svg class="btn-icon">
+                                                <use href="#icon-folder-open" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item setting-item-stacked">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-java" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Путь к Java</span>
+                                            <span class="setting-desc">Оставьте пустым для авто-определения</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control path-control">
+                                        <input type="text" id="setting-java" placeholder="Авто-определение">
+                                        <button id="btn-select-java" class="icon-btn" title="Выбрать файл">
+                                            <svg class="btn-icon">
+                                                <use href="#icon-search" />
+                                            </svg>
+                                        </button>
+                                        <button id="btn-reset-java" class="icon-btn reset" title="Сбросить (Авто)">
+                                            <svg class="btn-icon">
+                                                <use href="#icon-reset" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category: Performance -->
+                        <div class="settings-category">
+                            <div class="category-header">
+                                <svg class="category-icon">
+                                    <use href="#icon-memory" />
+                                </svg>
+                                <h4>Производительность</h4>
+                            </div>
+                            <div class="category-content">
+                                <div class="setting-item ram-setting">
+                                    <div class="setting-label">
+                                        <div class="setting-text">
+                                            <span class="setting-title">Оперативная память (RAM)</span>
+                                            <span class="setting-desc">Минимум: <strong id="ram-min-display">2</strong>
+                                                GB — Максимум: <strong id="ram-max-display">6</strong> GB</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control ram-control">
+                                        <div class="ram-slider-container">
+                                            <div class="ram-slider-wrapper">
+                                                <div class="ram-track">
+                                                    <div class="ram-range" id="ram-range"></div>
+                                                </div>
+                                                <input type="range" id="setting-ram-slider-min"
+                                                    class="ram-slider ram-slider-min" min="1" max="16" value="1"
+                                                    step="1">
+                                                <input type="range" id="setting-ram-slider-max"
+                                                    class="ram-slider ram-slider-max" min="1" max="16" value="3"
+                                                    step="1">
+                                            </div>
+                                            <div class="ram-labels">
+                                                <span>1 GB</span>
+                                                <span>4 GB</span>
+                                                <span>8 GB</span>
+                                                <span>12 GB</span>
+                                                <span>16 GB</span>
+                                            </div>
+                                        </div>
+                                        <!-- Hidden inputs for compatibility -->
+                                        <input type="hidden" id="setting-ram-min" value="1G">
+                                        <input type="hidden" id="setting-ram-max" value="3G">
+                                    </div>
+                                </div>
+
+                                <label class="setting-item setting-item-toggle">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-hide" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Скрывать лаунчер</span>
+                                            <span class="setting-desc">Свернуть в трей при запуске игры</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="setting-hide-on-play">
+                                            <span class="toggle-slider"></span>
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Category: Appearance -->
+                        <div class="settings-category">
+                            <div class="category-header">
+                                <svg class="category-icon">
+                                    <use href="#icon-appearance" />
+                                </svg>
+                                <h4>Внешний вид</h4>
+                            </div>
+                            <div class="category-content">
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-snow" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Тема эффектов</span>
+                                            <span class="setting-desc">Сезонные частицы и анимация</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="setting-effects-preset" class="setting-select">
+                                            <option value="auto">🔄 Авто (По сезону)</option>
+                                            <option value="snow">❄️ Зима (Снежинки)</option>
+                                            <option value="leaves">🍂 Осень (Листопад)</option>
+                                            <option value="sakura">🌸 Весна (Сакура)</option>
+                                            <option value="fireflies">✨ Лето (Светлячки)</option>
+                                            <option value="ganja">🌿 Ganja Special</option>
+                                            <option value="off">🚫 Отключено</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-appearance" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Плотность частиц</span>
+                                            <span class="setting-desc">Количество частиц на экране</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="setting-effects-density" class="setting-select">
+                                            <option value="low">Низкая</option>
+                                            <option value="medium">Средняя</option>
+                                            <option value="high">Высокая</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <label class="setting-item setting-item-toggle">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-smoke" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Эффект дыма</span>
+                                            <span class="setting-desc">Дым следует за курсором</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="setting-enable-smoke">
+                                            <span class="toggle-slider"></span>
+                                        </span>
+                                    </div>
+                                </label>
+
+                                <label class="setting-item setting-item-toggle">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-parallax" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Параллакс-эффект</span>
+                                            <span class="setting-desc">Живой фон реагирует на движение мыши</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="setting-enable-parallax">
+                                            <span class="toggle-slider"></span>
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Category: Danger Zone -->
+                        <div class="settings-category category-danger">
+                            <div class="category-header">
+                                <svg class="category-icon">
+                                    <use href="#icon-danger" />
+                                </svg>
+                                <h4>Восстановление</h4>
+                            </div>
+                            <div class="category-content">
+                                <div class="setting-item danger-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-wrench" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Переустановка клиента</span>
+                                            <span class="setting-desc">Перекачать все моды и конфиги</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <button id="btn-reinstall" class="danger-btn">
+                                            <svg class="btn-icon">
+                                                <use href="#icon-reset" />
+                                            </svg>
+                                            Переустановить
+                                        </button>
+                                    </div>
+                                </div>
+                                <label class="setting-item setting-item-toggle">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-search" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Режим отладки</span>
+                                            <span class="setting-desc">Подробные логи (требует перезапуска лаунчера)</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="setting-debug">
+                                            <span class="toggle-slider"></span>
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mods Tab -->
+                <!-- Mods Tab (Unified Single Page) -->
+                <div id="tab-mods" class="tab-content">
+                    <div id="mods-grid-container">
+                        <div id="mods-grid" class="settings-categories inertia-cascade">
+                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configs Tab -->
+                <div id="tab-configs" class="tab-content">
+                    <div id="configs-grid-container">
+                        <div id="configs-grid" class="settings-categories inertia-cascade">
+                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка конфигураций...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dev Tab (Debug Mode) -->
+                <div id="tab-dev" class="tab-content">
+                    <!-- Top Controls Bar -->
+                    <div class="unified-toolbar">
+                        <label class="unified-toolbar-label admin-only">
+                            <input type="checkbox" id="dev-skip-sync-checkbox">
+                            <span>Skip Sync</span>
+                        </label>
+                        <div class="dev-global-stats">
+                            <span class="dev-stat" id="dev-total-files" title="Всего файлов">-- файлов</span>
+                            <span class="dev-stat" id="dev-total-size" title="Общий размер">-- MB</span>
+                        </div>
+                        <div class="unified-toolbar-group">
+                            <button class="unified-btn unified-btn-primary" id="dev-sync-all"
+                                title="Синхронизировать всё">Sync All</button>
+                            <button class="unified-btn unified-btn-warning" id="dev-force-all"
+                                title="Принудительно перекачать всё">Force All</button>
+                        </div>
+                    </div>
+
+                    <!-- Categories 3-column Grid -->
+                    <div class="unified-grid unified-grid-3">
+                        <!-- Mods -->
+                        <div class="unified-dev-card" data-card="mods">
+                            <div class="unified-dev-card-info">
+                                <div class="unified-dev-card-header">
+                                    <span class="dev-sync-indicator" id="dev-indicator-mods"
+                                        title="Статус синхронизации"></span>
+                                    <span class="unified-dev-card-title">Mods</span>
+                                    <span class="unified-badge" id="dev-mods-count">0</span>
+                                </div>
+                                <div class="dev-card-stats">
+                                    <span class="dev-stat-item" id="dev-mods-size">-- MB</span>
+                                    <span class="dev-stat-item dev-stat-pending" id="dev-mods-pending"></span>
+                                </div>
+                                <div class="dev-progress-container">
+                                    <div class="dev-progress-bar" id="dev-progress-mods"></div>
+                                </div>
+                                <div class="unified-status" id="dev-status-mods"></div>
+                            </div>
+                            <div class="unified-dev-card-actions">
+                                <button class="unified-btn unified-btn-sm" data-category="mods"
+                                    data-action="sync">Sync</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-warning" data-category="mods"
+                                    data-action="force">Force</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-danger" data-category="mods"
+                                    data-action="delete">Del</button>
+                                <button class="unified-btn unified-btn-sm hidden" data-category="mods"
+                                    data-cancel>X</button>
+                            </div>
+                        </div>
+
+                        <!-- Config -->
+                        <div class="unified-dev-card admin-only" data-card="config">
+                            <div class="unified-dev-card-info">
+                                <div class="unified-dev-card-header">
+                                    <span class="dev-sync-indicator" id="dev-indicator-config"></span>
+                                    <span class="unified-dev-card-title">Config</span>
+                                    <span class="unified-badge" id="dev-config-count">0</span>
+                                </div>
+                                <div class="dev-card-stats">
+                                    <span class="dev-stat-item" id="dev-config-size">-- MB</span>
+                                    <span class="dev-stat-item dev-stat-pending" id="dev-config-pending"></span>
+                                </div>
+                                <div class="dev-progress-container">
+                                    <div class="dev-progress-bar" id="dev-progress-config"></div>
+                                </div>
+                                <div class="unified-status" id="dev-status-config"></div>
+                            </div>
+                            <div class="unified-dev-card-actions">
+                                <button class="unified-btn unified-btn-sm" data-category="config"
+                                    data-action="sync">Sync</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-warning" data-category="config"
+                                    data-action="force">Force</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-danger" data-category="config"
+                                    data-action="delete">Del</button>
+                                <button class="unified-btn unified-btn-sm hidden" data-category="config"
+                                    data-cancel>X</button>
+                            </div>
+                        </div>
+
+                        <!-- Resourcepacks -->
+                        <div class="unified-dev-card" data-card="resourcepacks">
+                            <div class="unified-dev-card-info">
+                                <div class="unified-dev-card-header">
+                                    <span class="dev-sync-indicator" id="dev-indicator-resourcepacks"></span>
+                                    <span class="unified-dev-card-title">Resources</span>
+                                    <span class="unified-badge" id="dev-resourcepacks-count">0</span>
+                                </div>
+                                <div class="dev-card-stats">
+                                    <span class="dev-stat-item" id="dev-resourcepacks-size">-- MB</span>
+                                    <span class="dev-stat-item dev-stat-pending" id="dev-resourcepacks-pending"></span>
+                                </div>
+                                <div class="dev-progress-container">
+                                    <div class="dev-progress-bar" id="dev-progress-resourcepacks"></div>
+                                </div>
+                                <div class="unified-status" id="dev-status-resourcepacks"></div>
+                            </div>
+                            <div class="unified-dev-card-actions">
+                                <button class="unified-btn unified-btn-sm" data-category="resourcepacks"
+                                    data-action="sync">Sync</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-warning"
+                                    data-category="resourcepacks" data-action="force">Force</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-danger"
+                                    data-category="resourcepacks" data-action="delete">Del</button>
+                                <button class="unified-btn unified-btn-sm hidden" data-category="resourcepacks"
+                                    data-cancel>X</button>
+                            </div>
+                        </div>
+
+                        <!-- Thingpacks -->
+                        <div class="unified-dev-card" data-card="thingpacks">
+                            <div class="unified-dev-card-info">
+                                <div class="unified-dev-card-header">
+                                    <span class="dev-sync-indicator" id="dev-indicator-thingpacks"></span>
+                                    <span class="unified-dev-card-title">Thingpacks</span>
+                                    <span class="unified-badge" id="dev-thingpacks-count">0</span>
+                                </div>
+                                <div class="dev-card-stats">
+                                    <span class="dev-stat-item" id="dev-thingpacks-size">-- MB</span>
+                                    <span class="dev-stat-item dev-stat-pending" id="dev-thingpacks-pending"></span>
+                                </div>
+                                <div class="dev-progress-container">
+                                    <div class="dev-progress-bar" id="dev-progress-thingpacks"></div>
+                                </div>
+                                <div class="unified-status" id="dev-status-thingpacks"></div>
+                            </div>
+                            <div class="unified-dev-card-actions">
+                                <button class="unified-btn unified-btn-sm" data-category="thingpacks"
+                                    data-action="sync">Sync</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-warning"
+                                    data-category="thingpacks" data-action="force">Force</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-danger" data-category="thingpacks"
+                                    data-action="delete">Del</button>
+                                <button class="unified-btn unified-btn-sm hidden" data-category="thingpacks"
+                                    data-cancel>X</button>
+                            </div>
+                        </div>
+
+                        <!-- KubeJS (2 columns) -->
+                        <div class="unified-dev-card unified-dev-card-wide admin-only" data-card="kubejs">
+                            <div class="unified-dev-card-info">
+                                <div class="unified-dev-card-header">
+                                    <span class="dev-sync-indicator" id="dev-indicator-kubejs"></span>
+                                    <span class="unified-dev-card-title">KubeJS Scripts</span>
+                                    <span class="unified-badge unified-badge-orange" id="dev-kubejs-count">0</span>
+                                </div>
+                                <div class="dev-card-stats">
+                                    <span class="dev-stat-item" id="dev-kubejs-size">-- MB</span>
+                                    <span class="dev-stat-item dev-stat-pending" id="dev-kubejs-pending"></span>
+                                </div>
+                                <div class="unified-toolbar-group dev-kjs-checkboxes">
+                                    <label class="unified-toolbar-label"><input type="checkbox" id="dev-kjs-client"
+                                            checked><span>client</span></label>
+                                    <label class="unified-toolbar-label"><input type="checkbox" id="dev-kjs-startup"
+                                            checked><span>startup</span></label>
+                                    <label class="unified-toolbar-label"><input type="checkbox" id="dev-kjs-server"
+                                            checked><span>server</span></label>
+                                    <label class="unified-toolbar-label"><input type="checkbox"
+                                            id="dev-kjs-assets"><span>assets</span></label>
+                                </div>
+                                <div class="dev-progress-container">
+                                    <div class="dev-progress-bar" id="dev-progress-kubejs"></div>
+                                </div>
+                                <div class="unified-status" id="dev-status-kubejs"></div>
+                                <div class="unified-status" id="dev-status-server-scripts"></div>
+                            </div>
+                            <div class="unified-dev-card-actions">
+                                <button class="unified-btn unified-btn-sm" data-category="kubejs"
+                                    data-action="sync">Sync</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-warning" data-category="kubejs"
+                                    data-action="force">Force</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-danger" data-category="kubejs"
+                                    data-action="delete">Del</button>
+                                <button class="unified-btn unified-btn-sm unified-btn-primary"
+                                    id="dev-fetch-server-scripts" title="Скачать server_scripts">Fetch</button>
+                                <button class="unified-btn unified-btn-sm hidden" data-category="kubejs"
+                                    data-cancel>X</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-container fade-in">
+        <h2>GanjaCraft</h2>
+
+        <!-- Step 0: Loading -->
+        <div id="step-loading" style="color: #888; font-size: 14px; margin-bottom: 20px;">
+            Проверка сессии...
+        </div>
+
+        <!-- Step 1: Login -->
+        <div id="step-login" class="hidden">
+            <input type="text" id="username" placeholder="Имя пользователя" spellcheck="false">
+            <div id="login-error" class="error-msg hidden"></div>
+            <button id="login-btn">Далее</button>
+        </div>
+
+        <!-- Step 2: Code Verification -->
+        <div id="step-code" class="hidden">
+            <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Код отправлен в Telegram</p>
+            <input type="text" id="auth-code" placeholder="Введите код" spellcheck="false">
+            <div id="code-error" class="error-msg hidden"></div>
+            <button id="verify-btn">Подтвердить</button>
+            <div style="margin-top: 10px;">
+                <button id="switch-to-pass-btn" style="background: transparent; border: none; color: #888; text-decoration: underline; font-size: 11px; cursor: pointer;">Войти по паролю</button>
+            </div>
+        </div>
+
+        <!-- Step 2.5: Password Login -->
+        <div id="step-password" class="hidden">
+            <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Вход по паролю</p>
+            <input type="password" id="auth-password" placeholder="Введите пароль" spellcheck="false">
+            <div id="password-error" class="error-msg hidden"></div>
+            <button id="pass-login-btn">Войти</button>
+            <div style="margin-top: 10px;">
+                <button id="switch-to-code-btn" style="background: transparent; border: none; color: #888; text-decoration: underline; font-size: 11px; cursor: pointer;">Ввести код из Telegram</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Ready to Play -->
+        <div id="step-play" class="hidden">
+            <div id="welcome-msg" style="margin-bottom: 15px; color: #eee; font-size: 14px;">С возвращением!</div>
+
+            <button id="play-btn"
+                style="background: #4CAF50; font-size: 18px; padding: 12px 40px; font-weight: bold; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">ИГРАТЬ</button>
+            <div style="margin-top: 15px;">
+                <button id="logout-btn"
+                    style="background: transparent; border: 1px solid #444; color: #888; font-size: 11px; padding: 5px 10px;">Выйти</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Progress -->
+        <div id="step-progress" class="hidden">
+            <div id="status">Инициализация...</div>
+
+            <!-- Joint Progress Bar (Game Launch) -->
+            <div class="joint-wrapper" style="margin-top: 20px;">
+                <div id="game-joint-progress" class="joint-progress-container">
+                    <img src="assets/images/loading/progress_bar.png" class="joint-img" alt="Loading...">
+                </div>
+                <div id="game-joint-burn" class="joint-burn-effect">
+                    <div class="joint-burn"></div>
+                    <div class="joint-smoke"></div>
+                </div>
+                <img id="game-joint-end" src="assets/images/loading/progress_bar_end.png" class="joint-end-img hidden">
+            </div>
+
+            <div id="progress-controls" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button id="retry-btn" class="hidden"
+                    style="background: #f1c40f; color: #111; font-size: 12px; padding: 8px; font-weight: bold;">Повторить</button>
+                <button id="cancel-btn" style="background: #d32f2f; font-size: 12px; padding: 8px;">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-version"></div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal" class="custom-modal hidden">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 id="confirm-title">Подтверждение</h3>
+            </div>
+            <div class="custom-modal-body">
+                <p id="confirm-message"></p>
+            </div>
+            <div class="custom-modal-footer">
+                <button id="confirm-cancel" class="modal-btn modal-btn-secondary">Отмена</button>
+                <button id="confirm-ok" class="modal-btn modal-btn-danger">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <!-- Bundled renderer (built from src/renderer/app.js via esbuild) -->
+    <script src="renderer.bundle.js"></script>
+</body>
+
+</html>
