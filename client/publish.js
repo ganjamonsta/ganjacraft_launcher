@@ -60,7 +60,7 @@ const version = pkg.version;
 
 // Find Archive
 const files = fs.readdirSync(DIST_DIR);
-const zipFile = files.find(f => f.endsWith('.zip') && !f.includes('blockmap'));
+const zipFile = files.find(f => f.endsWith('.zip') && !f.includes('blockmap') && !f.includes('-update')) || files.find(f => f.endsWith('.zip') && !f.includes('blockmap'));
 
 if (!zipFile) {
     console.error('❌ Zip archive not found in dist/. Run "npm run build" first.');
@@ -180,15 +180,17 @@ let githubUpdateDownloadUrl = null;
                         method: 'DELETE',
                         headers: ghHeaders
                     });
+                    assetsList = assetsList.filter(a => a.id !== existingAsset.id);
                 }
             }
 
+            const contentType = fileName.endsWith('.json') ? 'application/json' : (fileName.endsWith('.exe') ? 'application/octet-stream' : 'application/zip');
             const finalUploadUrl = `${uploadUrl}?name=${encodeURIComponent(fileName)}`;
             const uploadRes = await fetch(finalUploadUrl, {
                 method: 'POST',
                 headers: {
                     ...ghHeaders,
-                    'Content-Type': 'application/zip',
+                    'Content-Type': contentType,
                     'Content-Length': fileData.length
                 },
                 body: fileData
@@ -202,7 +204,7 @@ let githubUpdateDownloadUrl = null;
             return `https://github.com/${GITHUB_REPO}/releases/download/${version}/${encodeURIComponent(fileName)}`;
         };
 
-        // 2. Upload Assets
+        // 2. Fetch asset list for deletion check
         let assetsList = null;
         const getAssetsRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/${releaseId}/assets`, { headers: ghHeaders });
         if (getAssetsRes.ok) {
@@ -212,22 +214,40 @@ let githubUpdateDownloadUrl = null;
         githubDownloadUrl = await uploadAsset(targetZip, zipFile);
         githubUpdateDownloadUrl = await uploadAsset(targetUpdateZip, updateZipName);
         
-        // 3. Upload GanjaCraft.exe
+        // 3. Prepare and upload bootstrap.json & GanjaCraft.exe
         const exeFile = 'GanjaCraft.exe';
         const exePath = path.join(DEPLOY_API_DIR, exeFile);
         if (fs.existsSync(exePath)) {
             const githubExeUrl = await uploadAsset(exePath, exeFile);
             
-            // Update bootstrap.json to point to GitHub
             const bootstrapJsonPath = path.join(DEPLOY_API_DIR, 'bootstrap.json');
             if (fs.existsSync(bootstrapJsonPath)) {
                 const bootstrapData = JSON.parse(fs.readFileSync(bootstrapJsonPath, 'utf-8'));
                 bootstrapData.url = githubExeUrl;
                 fs.writeFileSync(bootstrapJsonPath, JSON.stringify(bootstrapData, null, 4));
                 fs.copyFileSync(bootstrapJsonPath, path.join(TARGET_DIR, 'bootstrap.json'));
-                console.log(`✅ Updated bootstrap.json to use GitHub URL`);
+                await uploadAsset(bootstrapJsonPath, 'bootstrap.json');
+                console.log(`✅ Updated & uploaded bootstrap.json to GitHub URL`);
             }
         }
+
+        // 4. Create and upload version.json
+        const versionJsonPath = path.join(TARGET_DIR, 'version.json');
+        const versionData = {
+            version: version,
+            url: githubUpdateDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(updateZipName)}`,
+            fullUrl: githubDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
+            signature: signature,
+            fullSignature: fullSignature,
+            zipSize: zipSize,
+            releaseDate: new Date().toISOString(),
+            type: "zip"
+        };
+        fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));
+        fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
+        fs.writeFileSync(path.join(DEPLOY_API_DIR, 'version.json'), JSON.stringify(versionData, null, 4));
+        await uploadAsset(versionJsonPath, 'version.json');
+        console.log(`✅ Updated & uploaded version.json to GitHub URL`);
 
     } catch (e) {
         console.error('❌ GitHub Upload Error:', e.message);
@@ -235,21 +255,21 @@ let githubUpdateDownloadUrl = null;
     }
 }
 
-// Update version.json (references the zips)
+// Fallback version.json writing if GitHub token wasn't provided
 const versionJsonPath = path.join(TARGET_DIR, 'version.json');
-const encodedFile = encodeURIComponent(updateZipName);
-const versionData = {
-    version: version,
-    url: githubUpdateDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodedFile}`,
-    fullUrl: githubDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
-    signature: signature,
-    fullSignature: fullSignature,
-    zipSize: zipSize,
-    releaseDate: new Date().toISOString(),
-    type: "zip"
-};
-
-fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));
+if (!fs.existsSync(versionJsonPath)) {
+    const versionData = {
+        version: version,
+        url: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(updateZipName)}`,
+        fullUrl: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
+        signature: signature,
+        fullSignature: fullSignature,
+        zipSize: zipSize,
+        releaseDate: new Date().toISOString(),
+        type: "zip"
+    };
+    fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));
+}
 
 fs.mkdirSync(DEPLOY_FILES_DIR, { recursive: true });
 fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
@@ -265,14 +285,12 @@ if (fs.existsSync(DEPLOY_API_DIR)) {
 
 // Copy new zips & version.json
 if (!githubDownloadUrl) {
-    // Only copy full zip to deploy_www if GitHub upload failed or wasn't used
     fs.copyFileSync(sourceZip, path.join(DEPLOY_API_DIR, zipFile));
 } else {
     console.log(`ℹ️ Skipping copy of ${zipFile} to deploy_www because it's hosted on GitHub.`);
 }
 
 fs.copyFileSync(sourceUpdateZip, path.join(DEPLOY_API_DIR, updateZipName));
-fs.writeFileSync(path.join(DEPLOY_API_DIR, 'version.json'), JSON.stringify(versionData, null, 4));
 
 console.log('✅ Published successfully!');
 console.log(`📁 Files ready in deploy_www/ for Nginx upload:`);
@@ -280,6 +298,5 @@ console.log(`   - deploy_www/api/launcher/files/${zipFile} (Full Install)`);
 console.log(`   - deploy_www/api/launcher/files/${updateZipName} (Fast Update)`);
 console.log(`   - deploy_www/api/launcher/files/version.json`);
 
-// Old backend upload method is removed, replaced by GitHub and SFTP
 })();
 

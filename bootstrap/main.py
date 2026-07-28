@@ -25,13 +25,13 @@ except Exception:  # cryptography will be bundled in the compiled bootstrap
     load_pem_public_key = None
     ed25519 = None
 
-from constants import BOOTSTRAP_JSON_URL, VERSION_JSON_URL
+from constants import BOOTSTRAP_JSON_URLS, VERSION_JSON_URLS, BOOTSTRAP_JSON_URL, VERSION_JSON_URL
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.44"
-BOOTSTRAP_API_URL = BOOTSTRAP_JSON_URL
-API_URL = VERSION_JSON_URL
+BOOTSTRAP_VERSION = "1.0.46"
+BOOTSTRAP_API_URL = BOOTSTRAP_JSON_URLS
+API_URL = VERSION_JSON_URLS
 APPDATA = os.getenv('APPDATA')
 LAUNCHER_DIR = os.path.join(APPDATA, ".ganjacraft")
 CLIENT_DIR = os.path.join(LAUNCHER_DIR, "client")
@@ -201,28 +201,38 @@ def validate_zip_integrity(zip_path: str, expected_exe_name: str | None = None) 
                 raise Exception(f"В ZIP нет {expected_exe_name} — пакет не похож на клиент")
 
 
-def _fetch_with_retry(url: str, timeout: int = 15, max_retries: int = 4, retry_delay: float = 10.0) -> bytes:
-    """Fetch URL with automatic retries to survive ZROK tunnel reconnects (~27s window)."""
+def _fetch_with_retry(urls: str | list[str], timeout: int = 10, max_retries: int = 2, retry_delay: float = 2.0) -> bytes:
+    """Fetch URL with automatic retries and multi-URL fallback."""
+    if isinstance(urls, str):
+        urls_list = [urls]
+    else:
+        urls_list = list(urls)
+    
     last_error = None
-    for attempt in range(1, max_retries + 1):
-        try:
-            req = urllib.request.Request(url, headers={
-                'User-Agent': 'localtunnel',
-                'Bypass-Tunnel-Reminder': 'true'
-            })
-            with urllib.request.urlopen(req, timeout=timeout) as response:
-                return response.read()
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
-                raise e
-            last_error = e
-            if attempt < max_retries:
-                time.sleep(retry_delay)
-        except Exception as e:
-            last_error = e
-            if attempt < max_retries:
-                time.sleep(retry_delay)
-    raise last_error
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) GanjaCraft-Bootstrap/1.0',
+        'Bypass-Tunnel-Reminder': 'true'
+    }
+    
+    for current_url in urls_list:
+        for attempt in range(1, max_retries + 1):
+            try:
+                req = urllib.request.Request(current_url, headers=headers)
+                with urllib.request.urlopen(req, timeout=timeout) as response:
+                    return response.read()
+            except urllib.error.HTTPError as e:
+                last_error = e
+                if e.code == 404:
+                    break  # Try next candidate URL immediately on 404
+                if attempt < max_retries:
+                    time.sleep(retry_delay)
+            except Exception as e:
+                last_error = e
+                if attempt < max_retries:
+                    time.sleep(retry_delay)
+    if last_error:
+        raise last_error
+    raise Exception("Не удалось выполнить сетевой запрос: нет доступных URL")
 
 class BootstrapApp(tk.Tk):
     def __init__(self):
@@ -468,14 +478,18 @@ class BootstrapApp(tk.Tk):
 
         self.update_status("Проверка обновлений лаунчера...")
         try:
-            data = json.loads(_fetch_with_retry(BOOTSTRAP_API_URL, timeout=10, max_retries=2, retry_delay=10.0))
+            raw_data = _fetch_with_retry(BOOTSTRAP_API_URL, timeout=10, max_retries=2, retry_delay=2.0)
+            data = json.loads(raw_data)
+            latest_version = data.get("version")
+            download_url = data.get("url") or "https://github.com/ganjamonsta/ganjacraft_launcher/releases/latest/download/GanjaCraft.exe"
+
             def parse_ver(v_str):
                 try:
                     return tuple(map(int, (v_str or "0.0.0").split(".")))
                 except Exception:
                     return (0, 0, 0)
 
-            if parse_ver(latest_version) > parse_ver(BOOTSTRAP_VERSION):
+            if latest_version and parse_ver(latest_version) > parse_ver(BOOTSTRAP_VERSION):
                 self.perform_self_update(download_url, latest_version)
                 return True
         except Exception as e:
