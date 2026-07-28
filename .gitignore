@@ -19,3 +19,7 @@ bootstrap/dist/
 bootstrap/*.spec
 bootstrap/build.log
 bootstrap/last_build.hash
+
+# Client build artifacts
+client/last_build.hash
+client/build_debug.log
