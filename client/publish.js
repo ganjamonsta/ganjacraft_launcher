@@ -91,15 +91,20 @@ const updateStats = fs.statSync(targetUpdateZip);
 const zipSize = updateStats.size;
 console.log(`📊 Update Zip Size: ${(zipSize / 1024 / 1024).toFixed(2)} MB`);
 
-// Sign the update archive
+// Sign the archives
 let signature = '';
+let fullSignature = '';
 if (fs.existsSync(PRIVATE_KEY_PATH)) {
-    console.log('🔐 Signing update...');
+    console.log('🔐 Signing updates...');
     const privateKey = fs.readFileSync(PRIVATE_KEY_PATH, 'utf-8');
-    const fileBuffer = fs.readFileSync(targetUpdateZip);
-    signature = crypto.sign(null, fileBuffer, privateKey).toString('base64');
+    
+    const updateBuffer = fs.readFileSync(targetUpdateZip);
+    signature = crypto.sign(null, updateBuffer, privateKey).toString('base64');
+    
+    const fullBuffer = fs.readFileSync(targetZip);
+    fullSignature = crypto.sign(null, fullBuffer, privateKey).toString('base64');
 } else {
-    console.warn('⚠️  Private key not found. Update will NOT be signed.');
+    console.warn('⚠️  Private key not found. Updates will NOT be signed.');
 }
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
@@ -206,6 +211,7 @@ const versionData = {
     url: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodedFile}`,
     fullUrl: githubDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
     signature: signature,
+    fullSignature: fullSignature,
     zipSize: zipSize,
     releaseDate: new Date().toISOString(),
     type: "zip"

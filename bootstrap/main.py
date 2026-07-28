@@ -413,12 +413,18 @@ class BootstrapApp(tk.Tk):
                 # If the main exe exists, we can download just the quick update zip (url).
                 # If not (first install), we must download the full installation zip (fullUrl).
                 exe_path = os.path.join(CLIENT_DIR, LAUNCHER_EXE_NAME)
+                is_full_download = False
                 if os.path.exists(exe_path) and "url" in remote_data:
                     download_url = remote_data.get("url")
                 else:
                     download_url = remote_data.get("fullUrl") or remote_data.get("url")
+                    if remote_data.get("fullUrl") and download_url == remote_data.get("fullUrl"):
+                        is_full_download = True
                     
-                signature = remote_data.get("signature")
+                if is_full_download and "fullSignature" in remote_data:
+                    signature = remote_data.get("fullSignature")
+                else:
+                    signature = remote_data.get("signature")
             except urllib.error.HTTPError as e:
                 if e.code == 404:
                     # version.json нет на сервере — запускаем установленный клиент
