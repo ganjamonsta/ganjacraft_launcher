@@ -33,6 +33,11 @@ const TARGET_DIR = path.resolve(__dirname, `../../${BOT_DIR_NAME}/storage/launch
 const PACKAGE_JSON = path.join(__dirname, 'package.json');
 const PRIVATE_KEY_PATH = path.join(__dirname, 'private.pem');
 
+// Deploy directories
+const DEPLOY_WWW_DIR = path.resolve(__dirname, '../deploy_www');
+const DEPLOY_FILES_DIR = path.join(DEPLOY_WWW_DIR, 'files');
+const DEPLOY_API_DIR = path.join(DEPLOY_WWW_DIR, 'api/launcher/files');
+
 // Ensure target dir exists
 if (!fs.existsSync(TARGET_DIR)) {
     fs.mkdirSync(TARGET_DIR, { recursive: true });
@@ -206,6 +211,23 @@ let githubUpdateDownloadUrl = null;
 
         githubDownloadUrl = await uploadAsset(targetZip, zipFile);
         githubUpdateDownloadUrl = await uploadAsset(targetUpdateZip, updateZipName);
+        
+        // 3. Upload GanjaCraft.exe
+        const exeFile = 'GanjaCraft.exe';
+        const exePath = path.join(DEPLOY_API_DIR, exeFile);
+        if (fs.existsSync(exePath)) {
+            const githubExeUrl = await uploadAsset(exePath, exeFile);
+            
+            // Update bootstrap.json to point to GitHub
+            const bootstrapJsonPath = path.join(DEPLOY_API_DIR, 'bootstrap.json');
+            if (fs.existsSync(bootstrapJsonPath)) {
+                const bootstrapData = JSON.parse(fs.readFileSync(bootstrapJsonPath, 'utf-8'));
+                bootstrapData.url = githubExeUrl;
+                fs.writeFileSync(bootstrapJsonPath, JSON.stringify(bootstrapData, null, 4));
+                fs.copyFileSync(bootstrapJsonPath, path.join(TARGET_DIR, 'bootstrap.json'));
+                console.log(`✅ Updated bootstrap.json to use GitHub URL`);
+            }
+        }
 
     } catch (e) {
         console.error('❌ GitHub Upload Error:', e.message);
@@ -228,11 +250,6 @@ const versionData = {
 };
 
 fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));
-
-// Also populate deploy_www folder for easy upload to Nginx in Pterodactyl
-const DEPLOY_WWW_DIR = path.resolve(__dirname, '../deploy_www');
-const DEPLOY_FILES_DIR = path.join(DEPLOY_WWW_DIR, 'files');
-const DEPLOY_API_DIR = path.join(DEPLOY_WWW_DIR, 'api/launcher/files');
 
 fs.mkdirSync(DEPLOY_FILES_DIR, { recursive: true });
 fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
