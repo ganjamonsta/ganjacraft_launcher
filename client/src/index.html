@@ -38,6 +38,7 @@
             <div class="settings-tabs hidden">
                 <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
                 <button class="tab-btn" data-tab="mods">МОДЫ</button>
+                <button class="tab-btn" data-tab="config">⚙ КОНФИГУРАЦИЯ</button>
                 <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
             </div>
         </div>
@@ -438,7 +439,6 @@
                     <div id="mods-subtabs" class="unified-toolbar" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                         <div class="unified-toolbar-group" style="display: flex; gap: 6px;">
                             <button class="unified-btn active" data-subtab="ОПЦИОНАЛЬНЫЕ">ОПЦИОНАЛЬНЫЕ МОДЫ</button>
-                            <button class="unified-btn" data-subtab="КОНФИГУРАЦИЯ">⚙ КОНФИГУРАЦИЯ</button>
                             <button class="unified-btn" data-subtab="КАТАЛОГ ССЫЛОК">КАТАЛОГ ССЫЛОК</button>
                         </div>
                     </div>
@@ -450,10 +450,13 @@
                             </div>
                         </div>
 
-                        <div id="mods-config-container" class="hidden" style="position: absolute; inset: 0; overflow-y: auto; overflow-y: overlay;"></div>
-
                         <div id="mods-catalog-container" class="hidden" style="position: absolute; inset: 0; overflow-y: auto; overflow-y: overlay;"></div>
                     </div>
+                </div>
+
+                <!-- Config Tab -->
+                <div id="tab-config" class="tab-content" style="display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+                    <div id="main-config-container" style="width: 100%; height: 100%;"></div>
                 </div>
 
                 <!-- Dev Tab (Debug Mode) -->

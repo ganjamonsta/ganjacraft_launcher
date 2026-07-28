@@ -199,7 +199,7 @@ function setupSubtabsListeners() {
         const prevSubtab = currentSubTab;
         currentSubTab = subtab;
 
-        const subtabOrder = ['ОПЦИОНАЛЬНЫЕ', 'КОНФИГУРАЦИЯ', 'КАТАЛОГ ССЫЛОК'];
+        const subtabOrder = ['ОПЦИОНАЛЬНЫЕ', 'КАТАЛОГ ССЫЛОК'];
         const prevIndex = subtabOrder.indexOf(prevSubtab);
         const newIndex = subtabOrder.indexOf(subtab);
         const direction = newIndex > prevIndex ? 'right' : 'left';
@@ -211,17 +211,10 @@ function setupSubtabsListeners() {
         btn.classList.add('active');
 
         const gridView = dom.get('mods-grid-container');
-        const configView = dom.get('mods-config-container');
         const catalogView = dom.get('mods-catalog-container');
 
-        const viewsMap = {
-            'ОПЦИОНАЛЬНЫЕ': gridView,
-            'КОНФИГУРАЦИЯ': configView,
-            'КАТАЛОГ ССЫЛОК': catalogView
-        };
-
-        const outgoingView = viewsMap[prevSubtab];
-        const incomingView = viewsMap[subtab];
+        const outgoingView = subtab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
+        const incomingView = subtab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
 
         if (subtabTransitionTimer) {
             clearTimeout(subtabTransitionTimer);
@@ -229,7 +222,7 @@ function setupSubtabsListeners() {
         }
 
         // 1. Очищаем анимационные классы со всех контейнеров при быстрой смене
-        Object.values(viewsMap).forEach(v => {
+        [gridView, catalogView].forEach(v => {
             if (v) {
                 v.classList.remove(
                     'subtab-entering', 'subtab-exiting',
@@ -245,30 +238,30 @@ function setupSubtabsListeners() {
             incomingView.classList.add('subtab-entering', enterAnim);
             if (subtab === 'КАТАЛОГ ССЫЛОК') {
                 renderLinksCatalog(cachedManifest);
-            } else if (subtab === 'КОНФИГУРАЦИЯ') {
-                renderModConfigEditor(configView);
             } else {
                 renderModsGrid();
             }
         }
 
         // 3. Плавно уводим уходящую вкладку
-        if (outgoingView && outgoingView !== incomingView && !outgoingView.classList.contains('hidden')) {
+        if (outgoingView && !outgoingView.classList.contains('hidden')) {
             outgoingView.classList.add('subtab-exiting', exitAnim);
         }
 
         // 4. Зачистка
         subtabTransitionTimer = setTimeout(() => {
-            Object.keys(viewsMap).forEach(tabKey => {
-                const view = viewsMap[tabKey];
-                if (!view) return;
-                if (tabKey === currentSubTab) {
-                    view.classList.remove('hidden', 'subtab-entering', 'subtab-enter-right', 'subtab-enter-left');
-                } else {
-                    view.classList.add('hidden');
-                    view.classList.remove('subtab-exiting', 'subtab-exit-left', 'subtab-exit-right');
-                }
-            });
+            const activeView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
+            const inactiveView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
+
+            if (inactiveView) {
+                inactiveView.classList.add('hidden');
+                inactiveView.classList.remove('subtab-exiting', 'subtab-exit-left', 'subtab-exit-right');
+            }
+
+            if (activeView) {
+                activeView.classList.remove('hidden', 'subtab-entering', 'subtab-enter-right', 'subtab-enter-left');
+            }
+
             subtabTransitionTimer = null;
         }, 280);
     });

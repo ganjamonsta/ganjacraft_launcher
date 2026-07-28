@@ -10,6 +10,7 @@ import { appState } from '../../state/app-state.js';
 import { startSmokeEffect, stopSmokeEffect } from '../../ui/effects/smoke.js';
 import { startParallax, stopParallax } from '../../ui/effects/parallax.js';
 import { loadModsList, getDisabledMods, setAllModsState, updateModsCounter, updateCategorySidebar } from '../mods/index.js';
+import { renderModConfigEditor } from '../mods/mod-config-editor.js';
 import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
 import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
@@ -439,6 +440,10 @@ export function initSettingsTabs(config) {
             targetTab.classList.add('active');
             targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
             
+            if (targetTabId === 'config') {
+                renderModConfigEditor(document.getElementById('main-config-container'));
+            }
+
             const cascadeTarget = targetTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid, .inertia-cascade');
             if (cascadeTarget) {
                 triggerInertiaCascade(cascadeTarget, direction, true);
