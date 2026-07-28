@@ -29,7 +29,7 @@ from constants import BOOTSTRAP_JSON_URL, VERSION_JSON_URL
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.42"
+BOOTSTRAP_VERSION = "1.0.44"
 BOOTSTRAP_API_URL = BOOTSTRAP_JSON_URL
 API_URL = VERSION_JSON_URL
 APPDATA = os.getenv('APPDATA')
@@ -469,10 +469,13 @@ class BootstrapApp(tk.Tk):
         self.update_status("Проверка обновлений лаунчера...")
         try:
             data = json.loads(_fetch_with_retry(BOOTSTRAP_API_URL, timeout=10, max_retries=2, retry_delay=10.0))
-            latest_version = data.get("version")
-            download_url = data.get("url")
+            def parse_ver(v_str):
+                try:
+                    return tuple(map(int, (v_str or "0.0.0").split(".")))
+                except Exception:
+                    return (0, 0, 0)
 
-            if latest_version != BOOTSTRAP_VERSION:
+            if parse_ver(latest_version) > parse_ver(BOOTSTRAP_VERSION):
                 self.perform_self_update(download_url, latest_version)
                 return True
         except Exception as e:
