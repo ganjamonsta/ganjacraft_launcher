@@ -1,7 +1,7 @@
 /**
  * GanjaCraft Launcher - Preset Mod Configs & Interactive Editor Component
  * Каждый файл конфигурации — отдельная независимая карточка в сетке.
- * Поисковая строка зафиксирована вверху, ввод происходит без потери фокуса.
+ * Автоматически отфильтровываются пустые конфиги без параметров и служебные файлы (fingerprint, cache и т.д.).
  */
 
 import { dom } from '../../utils/dom.js';
@@ -40,6 +40,8 @@ const DEFAULT_PRESET_CONFIGS = [
         downloadUrl: 'https://gcrlauncher1.loca.lt/files/config/forgematica.json'
     }
 ];
+
+const IGNORED_CONFIG_PATTERNS = /fingerprint|cache|lock|state|history|version|internal|\.bak$/i;
 
 function getModTitleFromPath(filePath) {
     if (!filePath) return 'Мод';
@@ -88,6 +90,33 @@ export async function renderModConfigEditor(container) {
     await loadAndRenderPresetCards(container);
 }
 
+/**
+ * Фильтрация карточек: скрываем файлы без параметров и служебные (fingerprint/cache)
+ */
+async function filterEditableCards(cardsList) {
+    const validCards = [];
+
+    for (const card of cardsList) {
+        const fileName = card.filePath.split('/').pop().split('\\').pop();
+        if (IGNORED_CONFIG_PATTERNS.test(fileName)) {
+            continue;
+        }
+
+        try {
+            const res = await window.api.readModConfig(card.filePath);
+            if (res && res.success && res.data && Array.isArray(res.data.items) && res.data.items.length > 0) {
+                validCards.push(card);
+            }
+        } catch (e) {
+            if (card.downloadUrl) {
+                validCards.push(card);
+            }
+        }
+    }
+
+    return validCards;
+}
+
 async function loadAndRenderPresetCards(container) {
     const grid = container.querySelector('#preset-configs-grid');
     if (!grid) return;
@@ -115,7 +144,6 @@ async function loadAndRenderPresetCards(container) {
 
         const cardsMap = new Map();
 
-        // 1. Пресеты манифеста
         if (manifestConfigs.length > 0) {
             manifestConfigs.forEach(m => {
                 const relPath = (m.file_path || m.filePath || '').replace(/^config\//, '');
@@ -132,7 +160,6 @@ async function loadAndRenderPresetCards(container) {
             });
         }
 
-        // 2. Все локальные файлы
         localFiles.forEach(file => {
             const key = file.relativePath.toLowerCase();
             if (!cardsMap.has(key)) {
@@ -150,7 +177,8 @@ async function loadAndRenderPresetCards(container) {
             DEFAULT_PRESET_CONFIGS.forEach(p => cardsMap.set(p.filePath.toLowerCase(), p));
         }
 
-        cachedConfigCards = Array.from(cardsMap.values());
+        const rawCards = Array.from(cardsMap.values());
+        cachedConfigCards = await filterEditableCards(rawCards);
         renderCardsGrid(grid);
     } catch (e) {
         console.error('Error loading mod configs:', e);
