@@ -108,7 +108,8 @@ const GITHUB_REPO = process.env.GITHUB_REPO || 'ganjamonsta/ganjacraft_launcher'
 // Upload to GitHub if token is provided
 let githubDownloadUrl = null;
 
-if (GITHUB_TOKEN) {
+(async () => {
+    if (GITHUB_TOKEN) {
     console.log(`\n🐙 GITHUB_TOKEN found! Preparing to upload full launcher to GitHub Releases (${GITHUB_REPO})...`);
     try {
         const ghHeaders = {
