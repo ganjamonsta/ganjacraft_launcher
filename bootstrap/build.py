@@ -22,12 +22,14 @@ BOOTSTRAP_JSON = os.path.join(STORAGE_DIR, "bootstrap.json")
 DIST_EXE = os.path.join(BOOTSTRAP_DIR, "dist/GanjaCraft.exe")
 DEST_EXE = os.path.join(STORAGE_DIR, "GanjaCraft.exe")
 
+CONSTANTS_PY = os.path.join(BOOTSTRAP_DIR, "constants.py")
+
 def get_file_hash(filepath):
     with open(filepath, 'rb') as f:
         return hashlib.md5(f.read()).hexdigest()
 
 def check_changes():
-    current_hash = get_file_hash(MAIN_PY)
+    current_hash = get_file_hash(MAIN_PY) + get_file_hash(CONSTANTS_PY)
     last_hash = ""
     if os.path.exists(HASH_FILE):
         with open(HASH_FILE, 'r') as f:
