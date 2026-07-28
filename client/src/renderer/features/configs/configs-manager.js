@@ -445,4 +445,22 @@ function handleConfigChange(filePath, key, type, inputElement) {
 
     inputElement.classList.remove('error');
 
-    const configItem = allConf
+    const configItem = allConfigs.find(c => c.filePath === filePath && c.key === key);
+    if (!configItem) return;
+
+    const hash = `${filePath}|${key}`;
+
+    // Если значение вернулось к исходному — удаляем из pending
+    if (newValue === configItem.value) {
+        pendingConfigChanges.delete(hash);
+        inputElement.dataset.changed = 'false';
+        inputElement.classList.remove('changed');
+    } else {
+        pendingConfigChanges.set(hash, newValue);
+        inputElement.dataset.changed = 'true';
+        inputElement.classList.add('changed');
+    }
+
+    // Вызываем проверку глобальной кнопки Сохранить
+    updateSaveButtonVisibility();
+}
