@@ -10,3 +10,11 @@ client/public.pem
 client/src/renderer.bundle.js
 client/src/renderer.bundle.js.map
 deploy_www/
+
+# Bootstrap build artifacts
+bootstrap/__pycache__/
+bootstrap/build/
+bootstrap/dist/
+bootstrap/*.spec
+bootstrap/build.log
+bootstrap/last_build.hash

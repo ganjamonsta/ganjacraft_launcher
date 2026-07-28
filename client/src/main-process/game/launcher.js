@@ -248,12 +248,85 @@ async function prepareAuthlib(rootPath, sendLog, sendDebug) {
 }
 
 /**
+ * Обязательные ресурспаки, которые всегда должны быть включены.
+ * Игрок не может их убрать — лаунчер восстанавливает их при каждом запуске.
+ */
+const REQUIRED_RESOURCE_PACKS = [
+    '[GanjaCraft] Main.zip'
+];
+
+/**
+ * Гарантировать наличие обязательных ресурспаков в options.txt
+ * Добавляет паки в начало списка (перед vanilla/mod_resources), не трогая пользовательские.
+ */
+function ensureRequiredResourcePacks(rootPath, sendLog, sendDebug) {
+    const optionsPath = path.join(rootPath, 'options.txt');
+
+    try {
+        let content = '';
+        if (fs.existsSync(optionsPath)) {
+            content = fs.readFileSync(optionsPath, 'utf-8');
+        }
+
+        // Parse the resourcePacks line
+        const rpLineRegex = /^resourcePacks:(\[.*?\])\r?$/m;
+        const match = content.match(rpLineRegex);
+
+        let currentPacks = [];
+        if (match) {
+            try {
+                currentPacks = JSON.parse(match[1]);
+            } catch {
+                currentPacks = [];
+            }
+        }
+
+        // Add required packs if missing, placing them before 'vanilla' and 'mod_resources'
+        let changed = false;
+        for (const required of REQUIRED_RESOURCE_PACKS) {
+            if (!currentPacks.includes(required)) {
+                // Insert before 'vanilla' or 'mod_resources' if present, else at start
+                const insertIdx = currentPacks.findIndex(p => p === 'vanilla' || p === 'mod_resources');
+                if (insertIdx >= 0) {
+                    currentPacks.splice(insertIdx, 0, required);
+                } else {
+                    currentPacks.unshift(required);
+                }
+                changed = true;
+                sendDebug(`Required resource pack added to options.txt: ${required}`);
+            }
+        }
+
+        if (changed || !match) {
+            const newRpLine = `resourcePacks:${JSON.stringify(currentPacks)}`;
+            if (match) {
+                // Replace existing line
+                content = content.replace(rpLineRegex, newRpLine);
+            } else {
+                // Append the line at end of file
+                content = content.trimEnd() + '\n' + newRpLine + '\n';
+            }
+            fs.writeFileSync(optionsPath, content, 'utf-8');
+            sendLog(`[SETUP] Ресурспаки обновлены в options.txt: ${JSON.stringify(currentPacks)}`);
+        } else {
+            sendDebug('Required resource packs already present in options.txt.');
+        }
+    } catch (e) {
+        sendDebug(`ensureRequiredResourcePacks error: ${e.message}`);
+        sendLog('Предупреждение: не удалось обновить options.txt с обязательными ресурспаками.');
+    }
+}
+
+/**
  * Синхронизация модов
  */
 async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
     if (devMode) {
         sendLog('[DEV MODE] Пропуск синхронизации файлов...');
         sendDebug('Dev mode enabled - skipping syncFiles');
+
+        // Even in dev mode, ensure required resource packs are set
+        ensureRequiredResourcePacks(rootPath, sendLog, sendDebug);
         return;
     }
     
@@ -279,6 +352,9 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
             sendLog('Предупреждение: Не удалось применить клиентские настройки.');
         }
     }
+
+    // Ensure required resource packs are always active in options.txt
+    ensureRequiredResourcePacks(rootPath, sendLog, sendDebug);
 }
 
 /**
