@@ -296,7 +296,7 @@
    ======================================== */
 @keyframes subtabCategoryIn {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateY(14px) scale(0.97);
     }
     70% {
@@ -311,7 +311,7 @@
 
 @keyframes subtabFadeIn {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateY(10px);
     }
     100% {
@@ -1459,7 +1459,7 @@ body.is-admin .unified-toolbar-label.admin-only {
 
 @keyframes inertia-enter-right {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateX(100px);
     }
     75% {
@@ -1474,7 +1474,7 @@ body.is-admin .unified-toolbar-label.admin-only {
 
 @keyframes inertia-enter-left {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateX(-100px);
     }
     75% {
@@ -1489,7 +1489,7 @@ body.is-admin .unified-toolbar-label.admin-only {
 
 @keyframes inertia-enter-down {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateY(-80px);
     }
     75% {
@@ -1504,7 +1504,7 @@ body.is-admin .unified-toolbar-label.admin-only {
 
 @keyframes inertia-enter-up {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateY(80px);
     }
     75% {
@@ -2431,7 +2431,7 @@ button:active {
 @keyframes settings-drop {
     0% {
         transform: translateY(-100%);
-        opacity: 0.9;
+        opacity: 1;
     }
     100% {
         transform: translateY(0);
@@ -2657,7 +2657,7 @@ button:active {
 @keyframes tabs-drop {
     0% {
         transform: translateY(-105%);
-        opacity: 0;
+        opacity: 1;
     }
     50% {
         transform: translateY(0);
@@ -3250,7 +3250,7 @@ input[type="checkbox"] {
 @keyframes save-btn-slide-in {
     0% {
         transform: translateX(120px);
-        opacity: 0;
+        opacity: 1;
     }
     100% {
         transform: translateX(0);
@@ -4267,7 +4267,7 @@ input[type="password"]:focus {
 
 @keyframes subtabSlideInRight {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateX(36px);
     }
     100% {
@@ -4289,7 +4289,7 @@ input[type="password"]:focus {
 
 @keyframes subtabSlideInLeft {
     0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateX(-36px);
     }
     100% {
