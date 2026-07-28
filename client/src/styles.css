@@ -387,8 +387,7 @@
 }
 
 /* Catalog button style (Right end pill button) */
-#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"],
-#mods-subtabs [data-subtab="КОНФИГУРАЦИЯ"] {
+#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"] {
     height: 32px !important;
     padding: 0 14px !important;
     font-size: 11.5px !important;
@@ -403,16 +402,14 @@
     transform: none !important;
 }
 
-#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"]:hover,
-#mods-subtabs [data-subtab="КОНФИГУРАЦИЯ"]:hover {
+#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"]:hover {
     background: rgba(255, 255, 255, 0.1) !important;
     color: #ffffff !important;
     border-color: rgba(255, 255, 255, 0.25) !important;
     transform: none !important;
 }
 
-#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"].active,
-#mods-subtabs [data-subtab="КОНФИГУРАЦИЯ"].active {
+#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"].active {
     background: rgba(57, 255, 20, 0.1) !important;
     color: #39ff14 !important;
     font-weight: 500 !important; /* NOT bold */

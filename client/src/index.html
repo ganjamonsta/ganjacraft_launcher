@@ -38,7 +38,6 @@
             <div class="settings-tabs hidden">
                 <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
                 <button class="tab-btn" data-tab="mods">МОДЫ</button>
-                <button class="tab-btn" data-tab="config">⚙ КОНФИГУРАЦИЯ</button>
                 <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
             </div>
         </div>
@@ -435,28 +434,13 @@
                 </div>
 
                 <!-- Mods Tab -->
-                <div id="tab-mods" class="tab-content" style="display: flex; flex-direction: column; height: 100%;">
-                    <div id="mods-subtabs" class="unified-toolbar" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-                        <div class="unified-toolbar-group" style="display: flex; gap: 6px;">
-                            <button class="unified-btn active" data-subtab="ОПЦИОНАЛЬНЫЕ">ОПЦИОНАЛЬНЫЕ МОДЫ</button>
-                            <button class="unified-btn" data-subtab="КАТАЛОГ ССЫЛОК">КАТАЛОГ ССЫЛОК</button>
+                <!-- Mods Tab (Unified Single Page) -->
+                <div id="tab-mods" class="tab-content">
+                    <div id="mods-grid-container" style="flex: 1; min-height: 0; height: 100%; overflow-y: auto; overflow-y: overlay;">
+                        <div id="mods-grid" class="settings-categories inertia-cascade">
+                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>
                         </div>
                     </div>
-
-                    <div id="mods-views-stack" style="flex: 1; min-height: 0; position: relative;">
-                        <div id="mods-grid-container" style="position: absolute; inset: 0; overflow-y: auto; overflow-y: overlay;">
-                            <div id="mods-grid" class="settings-categories inertia-cascade">
-                                <div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>
-                            </div>
-                        </div>
-
-                        <div id="mods-catalog-container" class="hidden" style="position: absolute; inset: 0; overflow-y: auto; overflow-y: overlay;"></div>
-                    </div>
-                </div>
-
-                <!-- Config Tab -->
-                <div id="tab-config" class="tab-content" style="display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
-                    <div id="main-config-container" style="width: 100%; height: 100%;"></div>
                 </div>
 
                 <!-- Dev Tab (Debug Mode) -->
