@@ -2,8 +2,13 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const MOCK_AUTH = process.env.MOCK_AUTH === '1';
 
-const API_BASE = 'https://gcrlauncher1.loca.lt/api';
-const DEFAULT_TIMEOUT = 15000;
+const API_BASES = [
+    'http://192.168.1.8:5000/api',
+    'https://gcrlauncher1.loca.lt/api',
+    'http://ganj4craft.ru/api'
+];
+const API_BASE = API_BASES[0];
+const DEFAULT_TIMEOUT = 5000;
 
 async function fetchWithTimeout(resource, options = {}) {
     const { timeout = 5000 } = options;
@@ -41,33 +46,44 @@ async function readJsonOrThrow(response) {
     }
 }
 
-// Unified API call helper to reduce duplication
+// Unified API call helper to reduce duplication with candidate fallbacks
 async function apiCall(endpoint, { method = 'POST', body = null, headers = {}, returnErrorAsResult = false } = {}) {
-    try {
-        const response = await fetchWithTimeout(`${API_BASE}${endpoint}`, {
-            method,
-            headers: { 'Content-Type': 'application/json', ...headers },
-            body: body ? JSON.stringify(body) : undefined,
-            timeout: DEFAULT_TIMEOUT
-        });
-        
-        if (!response.ok) {
-            if (returnErrorAsResult) {
-                return { success: false, message: `API Error: ${response.status}` };
+    let lastError = null;
+    for (const base of API_BASES) {
+        try {
+            const response = await fetchWithTimeout(`${base}${endpoint}`, {
+                method,
+                headers: { 'Content-Type': 'application/json', ...headers },
+                body: body ? JSON.stringify(body) : undefined,
+                timeout: DEFAULT_TIMEOUT
+            });
+            
+            if (response.ok) {
+                return await readJsonOrThrow(response);
             }
+            
             const text = await response.text();
-            throw new Error(`API Error: ${response.status} - ${text}`);
+            let data = null;
+            try { data = JSON.parse(text); } catch {}
+            
+            if (data && (data.message || data.error || data.detail)) {
+                const msg = data.message || data.error || (Array.isArray(data.detail) ? data.detail[0]?.msg : String(data.detail));
+                if (returnErrorAsResult) return { success: false, message: msg };
+                throw new Error(msg);
+            }
+            lastError = new Error(`API Error: ${response.status} - ${text}`);
+        } catch (e) {
+            if (e && e.message && !e.message.includes('fetch') && !e.message.includes('network') && !e.name.includes('Abort')) {
+                if (returnErrorAsResult) return { success: false, message: e.message };
+                throw e;
+            }
+            lastError = e;
         }
-        return readJsonOrThrow(response);
-    } catch (e) {
-        if (e && e.name === 'AbortError') {
-            const msg = 'Таймаут сети (сервер не ответил вовремя)';
-            if (returnErrorAsResult) return { success: false, message: msg };
-            throw new Error(msg);
-        }
-        if (returnErrorAsResult) return { success: false, message: e?.message || String(e) };
-        throw new Error(e?.message || String(e));
     }
+    if (returnErrorAsResult) {
+        return { success: false, message: lastError?.message || 'Ошибка сети' };
+    }
+    throw lastError || new Error('Ошибка сети: сервер авторизации недоступен');
 }
 
 if (MOCK_AUTH) console.log('[MOCK_AUTH] Mock auth mode enabled');
@@ -119,12 +135,13 @@ contextBridge.exposeInMainWorld('api', {
     
     getNews: async () => {
         if (MOCK_AUTH) return { success: true, news: [{ id: 1, title: '[MOCK] GanjaCraft News', content: 'Локальный тестовый режим', date: new Date().toISOString() }] };
-        try {
-            const response = await fetchWithTimeout(`${API_BASE}/news?limit=5`);
-            return response.json();
-        } catch (e) {
-            return { success: false, error: e.message, news: [] };
+        for (const base of API_BASES) {
+            try {
+                const response = await fetchWithTimeout(`${base}/news?limit=5`, { timeout: 3000 });
+                if (response.ok) return await response.json();
+            } catch (e) {}
         }
+        return { success: false, news: [] };
     },
     onLog: (callback) => ipcRenderer.on('log-message', (event, text) => callback(text)),
     onProgress: (callback) => ipcRenderer.on('progress', (event, e) => callback(e)),

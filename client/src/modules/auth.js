@@ -56,15 +56,25 @@ function authenticateYggdrasilOnce(authUrl, username, token) {
     });
 }
 
-async function authenticateYggdrasil(authUrl, username, token, retries = 3) {
+async function authenticateYggdrasil(authUrl, username, token, retries = 2) {
+    const urls = [
+        authUrl,
+        'http://192.168.1.8:5000/api/yggdrasil/authserver/authenticate',
+        'https://gcrlauncher1.loca.lt/api/yggdrasil/authserver/authenticate'
+    ];
+    // Deduplicate candidate URLs
+    const candidateUrls = Array.from(new Set(urls.filter(Boolean)));
+
     let lastError;
-    for (let i = 1; i <= retries; i++) {
-        try {
-            return await authenticateYggdrasilOnce(authUrl, username, token);
-        } catch (e) {
-            lastError = e;
-            if (i < retries) {
-                await new Promise(r => setTimeout(r, 1500));
+    for (const url of candidateUrls) {
+        for (let i = 1; i <= retries; i++) {
+            try {
+                return await authenticateYggdrasilOnce(url, username, token);
+            } catch (e) {
+                lastError = e;
+                if (i < retries) {
+                    await new Promise(r => setTimeout(r, 1000));
+                }
             }
         }
     }
