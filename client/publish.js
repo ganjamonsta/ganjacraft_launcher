@@ -112,6 +112,7 @@ const GITHUB_REPO = process.env.GITHUB_REPO || 'ganjamonsta/ganjacraft_launcher'
 
 // Upload to GitHub if token is provided
 let githubDownloadUrl = null;
+let githubUpdateDownloadUrl = null;
 
 (async () => {
     if (GITHUB_TOKEN) {
@@ -161,54 +162,63 @@ let githubDownloadUrl = null;
             throw new Error(`Failed to check release: ${await checkRes.text()}`);
         }
 
-        // 2. Upload Asset
-        console.log(`   -> Uploading ${zipFile} to GitHub... (This might take a minute depending on size)`);
-        const fileData = fs.readFileSync(targetZip);
-        
-        // Ensure asset doesn't exist already to avoid upload errors
+        // Helper to upload an asset
+        const uploadAsset = async (filePath, fileName) => {
+            console.log(`   -> Uploading ${fileName} to GitHub...`);
+            const fileData = fs.readFileSync(filePath);
+            
+            if (assetsList) {
+                const existingAsset = assetsList.find(a => a.name === fileName);
+                if (existingAsset) {
+                    console.log(`   -> Asset ${fileName} already exists. Deleting it first...`);
+                    await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/assets/${existingAsset.id}`, {
+                        method: 'DELETE',
+                        headers: ghHeaders
+                    });
+                }
+            }
+
+            const finalUploadUrl = `${uploadUrl}?name=${encodeURIComponent(fileName)}`;
+            const uploadRes = await fetch(finalUploadUrl, {
+                method: 'POST',
+                headers: {
+                    ...ghHeaders,
+                    'Content-Type': 'application/zip',
+                    'Content-Length': fileData.length
+                },
+                body: fileData
+            });
+
+            if (!uploadRes.ok) {
+                throw new Error(`Failed to upload asset ${fileName}: ${await uploadRes.text()}`);
+            }
+
+            console.log(`✅ Successfully uploaded ${fileName} to GitHub Releases!`);
+            return `https://github.com/${GITHUB_REPO}/releases/download/${version}/${encodeURIComponent(fileName)}`;
+        };
+
+        // 2. Upload Assets
+        let assetsList = null;
         const getAssetsRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/${releaseId}/assets`, { headers: ghHeaders });
         if (getAssetsRes.ok) {
-            const assets = await getAssetsRes.json();
-            const existingAsset = assets.find(a => a.name === zipFile);
-            if (existingAsset) {
-                console.log(`   -> Asset ${zipFile} already exists. Deleting it first...`);
-                await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/assets/${existingAsset.id}`, {
-                    method: 'DELETE',
-                    headers: ghHeaders
-                });
-            }
+            assetsList = await getAssetsRes.json();
         }
 
-        const finalUploadUrl = `${uploadUrl}?name=${encodeURIComponent(zipFile)}`;
-        const uploadRes = await fetch(finalUploadUrl, {
-            method: 'POST',
-            headers: {
-                ...ghHeaders,
-                'Content-Type': 'application/zip',
-                'Content-Length': fileData.length
-            },
-            body: fileData
-        });
-
-        if (!uploadRes.ok) {
-            throw new Error(`Failed to upload asset: ${await uploadRes.text()}`);
-        }
-
-        console.log(`✅ Successfully uploaded ${zipFile} to GitHub Releases!`);
-        githubDownloadUrl = `https://github.com/${GITHUB_REPO}/releases/download/${version}/${encodeURIComponent(zipFile)}`;
+        githubDownloadUrl = await uploadAsset(targetZip, zipFile);
+        githubUpdateDownloadUrl = await uploadAsset(targetUpdateZip, updateZipName);
 
     } catch (e) {
         console.error('❌ GitHub Upload Error:', e.message);
-        console.warn('⚠️ Falling back to SFTP for full zip...');
+        console.warn('⚠️ Falling back to SFTP for zips...');
     }
 }
 
-// Update version.json (references the lightweight zip)
+// Update version.json (references the zips)
 const versionJsonPath = path.join(TARGET_DIR, 'version.json');
 const encodedFile = encodeURIComponent(updateZipName);
 const versionData = {
     version: version,
-    url: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodedFile}`,
+    url: githubUpdateDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodedFile}`,
     fullUrl: githubDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
     signature: signature,
     fullSignature: fullSignature,
