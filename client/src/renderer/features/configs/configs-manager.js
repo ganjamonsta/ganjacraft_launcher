@@ -367,10 +367,10 @@ function buildDetailPanel(container, groupsMap) {
                             ${commentHtml}
                         </div>
                         <div class="cfg-toggle-wrap">
-                            <span class="toggle-switch">
+                            <label class="toggle-switch">
                                 <input type="checkbox" data-type="boolean" ${config.value ? 'checked' : ''}>
                                 <span class="toggle-slider"></span>
-                            </span>
+                            </label>
                         </div>
                     </div>
                 `;
