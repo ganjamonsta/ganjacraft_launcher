@@ -30,7 +30,8 @@ import {
 
 import {
     loadConfigsList,
-    savePendingConfigs
+    savePendingConfigs,
+    cancelPendingConfigs
 } from './features/configs/configs-manager.js';
 
 import {
@@ -168,6 +169,7 @@ function initSettingsButton() {
                 tryTriggerEasterEgg();
                 toggleMainUIVisibility(true, currentConfig);
                 closeSettings();
+                cancelPendingConfigs();
                 const saveBtn = dom.get('save-settings');
                 if (saveBtn) saveBtn.classList.remove('visible');
             }
@@ -184,6 +186,7 @@ function initSettingsButton() {
                 tryTriggerEasterEgg();
                 toggleMainUIVisibility(true, currentConfig);
                 closeSettings();
+                cancelPendingConfigs();
                 const saveBtn = dom.get('save-settings');
                 if (saveBtn) saveBtn.classList.remove('visible');
                 return;
@@ -226,6 +229,7 @@ function initSettingsButton() {
             tryTriggerEasterEgg();
             toggleMainUIVisibility(true, currentConfig);
             closeSettings();
+            cancelPendingConfigs();
             
             const saveBtn = dom.get('save-settings');
             if (saveBtn) saveBtn.classList.remove('visible');
