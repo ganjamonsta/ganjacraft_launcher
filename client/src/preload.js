@@ -138,6 +138,11 @@ contextBridge.exposeInMainWorld('api', {
     selectPath: (type) => ipcRenderer.invoke('select-path', type), // type: 'dir' or 'file'
     openFolder: (path) => ipcRenderer.invoke('open-folder', path),
     openUrl: (url) => ipcRenderer.invoke('open-url', url),
+
+    // Mod Config Editor
+    listModConfigs: () => ipcRenderer.invoke('list-mod-configs'),
+    readModConfig: (path) => ipcRenderer.invoke('read-mod-config', path),
+    saveModConfig: (path, content) => ipcRenderer.invoke('save-mod-config', path, content),
     
     // Advanced
     reinstallClient: () => ipcRenderer.invoke('reinstall-client'),

@@ -194,11 +194,23 @@ export function openSettings(config) {
     document.querySelectorAll('.inertia-cascade, [data-dir]').forEach(el => {
         delete el.dataset.dir;
         el.classList.remove('inertia-cascade');
+        Array.from(el.children).forEach(child => {
+            child.style.animation = '';
+        });
     });
 
     settingsScreen.classList.remove('hidden', 'closing');
     settingsScreen.classList.add('opening');
     
+    // Эффектная инерционная анимация для карточек активной вкладки
+    const activeTab = document.querySelector('.tab-content.active') || document.querySelector('#tab-general');
+    if (activeTab) {
+        const cascadeTarget = activeTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid');
+        if (cascadeTarget) {
+            triggerInertiaCascade(cascadeTarget, 'down', true);
+        }
+    }
+
     // Деактивировать главную вкладку и запустить выпадение вкладок настроек
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.remove('active');
@@ -427,11 +439,11 @@ export function initSettingsTabs(config) {
             targetTab.classList.add('active');
             targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
             
-            const cascadeTarget = targetTab.querySelector('.inertia-cascade, .settings-categories, .unified-dev-grid, #mods-grid');
+            const cascadeTarget = targetTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid, .inertia-cascade');
             if (cascadeTarget) {
-                triggerInertiaCascade(cascadeTarget, direction);
+                triggerInertiaCascade(cascadeTarget, direction, true);
             }
-            
+
             if (appState.get('effects.snowEnabled')) {
                 createDirectionalBurst(direction);
             }
@@ -453,7 +465,11 @@ export function initSettingsTabs(config) {
                 if (cascadeTarget) {
                     delete cascadeTarget.dataset.dir;
                     cascadeTarget.classList.remove('inertia-cascade');
+                    Array.from(cascadeTarget.children).forEach(child => {
+                        child.style.animation = '';
+                    });
                 }
+
                 if (settingsBody) settingsBody.classList.remove('animating');
                 mainTabTimer = null;
             }, 550);

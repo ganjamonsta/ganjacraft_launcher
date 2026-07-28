@@ -5,6 +5,7 @@
 
 import { dom } from '../../utils/dom.js';
 import { MOD_GROUPS, SUB_CATEGORIES } from './mod-groups.js';
+import { renderModConfigEditor } from './mod-config-editor.js';
 
 let cachedManifest = null;
 let currentSubTab = 'ОПЦИОНАЛЬНЫЕ';
@@ -198,7 +199,7 @@ function setupSubtabsListeners() {
         const prevSubtab = currentSubTab;
         currentSubTab = subtab;
 
-        const subtabOrder = ['ОПЦИОНАЛЬНЫЕ', 'КАТАЛОГ ССЫЛОК'];
+        const subtabOrder = ['ОПЦИОНАЛЬНЫЕ', 'КОНФИГУРАЦИЯ', 'КАТАЛОГ ССЫЛОК'];
         const prevIndex = subtabOrder.indexOf(prevSubtab);
         const newIndex = subtabOrder.indexOf(subtab);
         const direction = newIndex > prevIndex ? 'right' : 'left';
@@ -210,10 +211,17 @@ function setupSubtabsListeners() {
         btn.classList.add('active');
 
         const gridView = dom.get('mods-grid-container');
+        const configView = dom.get('mods-config-container');
         const catalogView = dom.get('mods-catalog-container');
 
-        const outgoingView = subtab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
-        const incomingView = subtab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
+        const viewsMap = {
+            'ОПЦИОНАЛЬНЫЕ': gridView,
+            'КОНФИГУРАЦИЯ': configView,
+            'КАТАЛОГ ССЫЛОК': catalogView
+        };
+
+        const outgoingView = viewsMap[prevSubtab];
+        const incomingView = viewsMap[subtab];
 
         if (subtabTransitionTimer) {
             clearTimeout(subtabTransitionTimer);
@@ -221,7 +229,7 @@ function setupSubtabsListeners() {
         }
 
         // 1. Очищаем анимационные классы со всех контейнеров при быстрой смене
-        [gridView, catalogView].forEach(v => {
+        Object.values(viewsMap).forEach(v => {
             if (v) {
                 v.classList.remove(
                     'subtab-entering', 'subtab-exiting',
@@ -237,30 +245,30 @@ function setupSubtabsListeners() {
             incomingView.classList.add('subtab-entering', enterAnim);
             if (subtab === 'КАТАЛОГ ССЫЛОК') {
                 renderLinksCatalog(cachedManifest);
+            } else if (subtab === 'КОНФИГУРАЦИЯ') {
+                renderModConfigEditor(configView);
             } else {
                 renderModsGrid();
             }
         }
 
         // 3. Плавно уводим уходящую вкладку
-        if (outgoingView && !outgoingView.classList.contains('hidden')) {
+        if (outgoingView && outgoingView !== incomingView && !outgoingView.classList.contains('hidden')) {
             outgoingView.classList.add('subtab-exiting', exitAnim);
         }
 
-        // 4. Гарантированная детерминированная зачистка на основе реального текущего currentSubTab
+        // 4. Зачистка
         subtabTransitionTimer = setTimeout(() => {
-            const activeView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
-            const inactiveView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
-
-            if (inactiveView) {
-                inactiveView.classList.add('hidden');
-                inactiveView.classList.remove('subtab-exiting', 'subtab-exit-left', 'subtab-exit-right');
-            }
-
-            if (activeView) {
-                activeView.classList.remove('hidden', 'subtab-entering', 'subtab-enter-right', 'subtab-enter-left');
-            }
-
+            Object.keys(viewsMap).forEach(tabKey => {
+                const view = viewsMap[tabKey];
+                if (!view) return;
+                if (tabKey === currentSubTab) {
+                    view.classList.remove('hidden', 'subtab-entering', 'subtab-enter-right', 'subtab-enter-left');
+                } else {
+                    view.classList.add('hidden');
+                    view.classList.remove('subtab-exiting', 'subtab-exit-left', 'subtab-exit-right');
+                }
+            });
             subtabTransitionTimer = null;
         }, 280);
     });
@@ -524,38 +532,7 @@ export function renderModsGrid() {
     topSection.appendChild(colRight);
     fragment.appendChild(topSection);
 
-    // 3. НИЖНЯЯ КАРТОЧКА ПОЛНОГО СПИСКА (Full Width Span 2 Columns)
-    if (cachedManifest && cachedManifest.files) {
-        const fullListCard = document.createElement('div');
-        fullListCard.className = 'settings-category full-mods-list-card';
-        fullListCard.style.gridColumn = '1 / -1';
-        fullListCard.innerHTML = `
-            <div class="category-header">
-                <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
-                </svg>
-                <h4>ВСЕ МОДЫ И ФАЙЛЫ В СБОРКЕ (ПОЛНЫЙ СПИСОК & ССЫЛКИ)</h4>
-            </div>
-            <div class="category-content catalog-items-content"></div>
-        `;
 
-        const catalogContent = fullListCard.querySelector('.category-content');
-        
-        // Делегирование ссылок CurseForge / Modrinth
-        catalogContent.addEventListener('click', (e) => {
-            const btn = e.target.closest('button[data-url]');
-            if (!btn) return;
-            const url = btn.dataset.url;
-            if (url && window.api?.openUrl) {
-                window.api.openUrl(url);
-            } else if (url) {
-                window.open(url, '_blank');
-            }
-        });
-
-        renderLinksCatalogIntoContainer(cachedManifest, catalogContent, query);
-        fragment.appendChild(fullListCard);
-    }
 
     grid.innerHTML = '';
     grid.appendChild(fragment);

@@ -78,13 +78,36 @@ export function rafThrottle(fn) {
  * Единый метод управления инерционными каскадными анимациями элементов (DRY)
  * @param {HTMLElement|string} target - Элемент или CSS-селектор контейнера
  * @param {'right'|'left'|'down'|'up'} direction - Направление каскада
+ * @param {boolean} randomize - Индивидуальная случайная задержка и инерция каждой карточки
  */
-export function triggerInertiaCascade(target, direction = 'down') {
+export function triggerInertiaCascade(target, direction = 'down', randomize = true) {
     const el = typeof target === 'string' ? document.querySelector(target) : target;
     if (!el) return;
     
     el.dataset.dir = direction;
     el.classList.remove('inertia-cascade');
-    void el.offsetWidth; // Force reflow to restart animation
+    void el.offsetWidth; // Force reflow
     el.classList.add('inertia-cascade');
+
+    const children = Array.from(el.children);
+    if (!children.length) return;
+
+    const directions = ['right', 'left', 'down', 'up'];
+
+    children.forEach((child, index) => {
+        child.style.animation = 'none';
+        void child.offsetWidth;
+
+        if (randomize) {
+            const randDir = Math.random() < 0.75 ? direction : directions[Math.floor(Math.random() * directions.length)];
+            const animName = `inertia-enter-${randDir}`;
+            const delayMs = Math.round(index * 35 + Math.random() * 40);
+            const durationMs = Math.round(320 + Math.random() * 90);
+
+            child.style.animation = `${animName} ${durationMs}ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delayMs}ms both`;
+            child.style.opacity = '1';
+        } else {
+            child.style.animation = '';
+        }
+    });
 }
