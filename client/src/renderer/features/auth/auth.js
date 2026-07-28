@@ -207,17 +207,84 @@ function showPlayScreen() {
 }
 
 /**
+ * Проверить пароль (Step 2.5)
+ * @param {string} password 
+ */
+export async function loginWithPassword(password) {
+    if (!password.trim()) {
+        showError('password-error', 'Введите пароль');
+        return { success: false };
+    }
+    
+    try {
+        const result = await window.api.passwordAuth(currentUsername, password);
+        if (result.success) {
+            localStorage.setItem('auth_user', currentUsername);
+            if (result.token) {
+                localStorage.setItem('auth_token', result.token);
+            }
+            if (result.is_admin) {
+                localStorage.setItem('is_admin', 'true');
+            } else {
+                localStorage.removeItem('is_admin');
+            }
+            
+            appState.update('auth', {
+                isLoggedIn: true,
+                username: currentUsername,
+                token: result.token,
+                isAdmin: !!result.is_admin
+            });
+            
+            applyAdminClass();
+            return { success: true };
+        } else {
+            showError('password-error', result.message || result.error || 'Неверный пароль');
+            return { success: false, error: result.message || result.error };
+        }
+    } catch (e) {
+        const message = e?.message || String(e);
+        showError('password-error', message || 'Ошибка сети');
+        return { success: false, error: message };
+    }
+}
+
+/**
  * Инициализация обработчиков аутентификации
  */
 export function initAuthHandlers() {
     const loginBtn = dom.get('login-btn');
     const verifyBtn = dom.get('verify-btn');
+    const passLoginBtn = dom.get('pass-login-btn');
     const logoutBtn = dom.get('logout-btn');
     const usernameInput = dom.get('username');
     const codeInput = dom.get('auth-code');
+    const passwordInput = dom.get('auth-password');
     const stepLogin = dom.get('step-login');
     const stepCode = dom.get('step-code');
+    const stepPassword = dom.get('step-password');
+    const switchToPassBtn = dom.get('switch-to-pass-btn');
+    const switchToCodeBtn = dom.get('switch-to-code-btn');
     
+    // Switch buttons
+    if (switchToPassBtn && stepCode && stepPassword) {
+        switchToPassBtn.addEventListener('click', () => {
+            stepCode.classList.add('hidden');
+            stepPassword.classList.remove('hidden');
+            stepPassword.classList.add('fade-in');
+            passwordInput?.focus();
+        });
+    }
+    
+    if (switchToCodeBtn && stepCode && stepPassword) {
+        switchToCodeBtn.addEventListener('click', () => {
+            stepPassword.classList.add('hidden');
+            stepCode.classList.remove('hidden');
+            stepCode.classList.add('fade-in');
+            codeInput?.focus();
+        });
+    }
+
     // Login button
     if (loginBtn && usernameInput) {
         loginBtn.addEventListener('click', async () => {
@@ -233,6 +300,12 @@ export function initAuthHandlers() {
                     stepCode.classList.remove('hidden');
                     stepCode.classList.add('fade-in');
                     codeInput?.focus();
+                } else {
+                    // Fast fallback: if requesting code failed (bot down), show password step automatically
+                    stepLogin.classList.add('hidden');
+                    stepPassword.classList.remove('hidden');
+                    stepPassword.classList.add('fade-in');
+                    passwordInput?.focus();
                 }
             } finally {
                 loginBtn.disabled = false;
@@ -280,6 +353,37 @@ export function initAuthHandlers() {
         });
     }
     
+    // Password Login button
+    if (passLoginBtn && passwordInput) {
+        passLoginBtn.addEventListener('click', async () => {
+            const password = passwordInput.value.trim();
+            if (!password) return;
+            
+            passLoginBtn.disabled = true;
+            passLoginBtn.innerText = 'Вход...';
+            
+            try {
+                const result = await loginWithPassword(password);
+                if (result.success) {
+                    stepPassword.classList.add('hidden');
+                    showPlayScreen();
+                }
+            } finally {
+                if (!appState.get('auth.isLoggedIn')) {
+                    passLoginBtn.disabled = false;
+                    passLoginBtn.innerText = 'Войти';
+                }
+            }
+        });
+        
+        // Enter key support
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                passLoginBtn.click();
+            }
+        });
+    }
+
     // Logout button
     if (logoutBtn) {
         logoutBtn.addEventListener('click', logout);

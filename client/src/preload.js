@@ -95,6 +95,15 @@ contextBridge.exposeInMainWorld('api', {
             return { success: true, token: 'offline-token', is_admin: false, offline: true };
         }
     },
+    passwordAuth: async (username, password) => {
+        if (MOCK_AUTH) return { success: true, token: 'mock-token', is_admin: true };
+        try {
+            return await apiCall('/launcher/auth/password', { body: { username, password } });
+        } catch (e) {
+            console.warn('Backend auth server unreachable:', e.message);
+            return { success: false, error: e.message || 'Ошибка подключения к серверу' };
+        }
+    },
     checkAuth: async (username, token) => {
         if (MOCK_AUTH) return { success: true, is_admin: true };
         try {

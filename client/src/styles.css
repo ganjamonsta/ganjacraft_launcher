@@ -2707,10 +2707,8 @@ button:active {
     left: 0;
     width: 100%;
     height: 100%;
-    padding: 16px 18px;
-    overflow-y: auto; /* Enable vertical scroll */
-    overflow-y: overlay;
-    overflow-x: hidden !important; /* Block horizontal scrollbars */
+    padding: 14px 16px;
+    overflow: hidden !important; /* Single scroll container inside tab */
     pointer-events: auto; /* Ensure clicks work */
 }
 
@@ -3161,12 +3159,15 @@ input[type="checkbox"] {
     background: transparent !important;
 }
 
-#mods-grid-container,
-#mods-catalog-container,
-.settings-body {
+#mods-grid-container {
     overflow-y: auto;
     overflow-y: overlay !important;
     overflow-x: hidden !important;
+}
+
+#mods-catalog-container,
+.settings-body {
+    overflow: hidden !important;
 }
 /* ========================================
    Floating Save Button (Settings)
@@ -3499,10 +3500,14 @@ input[type="checkbox"] {
 #mods-all-container .category-content {
     flex: 1;
     overflow-y: auto;
-    overflow-y: overlay !important;
-    overflow-x: hidden !important;
+    overflow-y: overlay;
+    overflow-x: hidden;
     min-height: 0;
     padding-right: 4px;
+}
+
+#mods-grid .category-content {
+    overflow: visible !important;
 }
 
 #mods-catalog-container .setting-item {
@@ -3538,6 +3543,52 @@ input[type="checkbox"] {
     background: rgba(229, 115, 115, 0.15);
     color: #e57373;
     border: 1px solid rgba(229, 115, 115, 0.3);
+}
+
+#step-loading,
+#step-login,
+#step-code,
+#step-password,
+#step-play,
+#step-progress {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+h2 {
+    margin-top: 0;
+    color: #4CAF50;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px 12px; /* Reduced padding */
+    margin: 8px 0;
+    background: #222; /* Slightly darker */
+    border: 1px solid #333; /* Darker border */
+    border-radius: 4px; /* Less rounded */
+    color: #eee;
+    font-size: 13px; /* Slightly smaller font */
+    outline: none;
+    transition: 
+        border-color 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        background 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        box-shadow 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -webkit-app-region: no-drag;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #4CAF50;
+    background: #2a2a2a;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
 #tab-general .settings-categories {

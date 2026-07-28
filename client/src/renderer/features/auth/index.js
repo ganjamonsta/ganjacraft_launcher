@@ -6,6 +6,7 @@ export {
     checkSavedAuth,
     requestAuthCode,
     verifyAuthCode,
+    loginWithPassword,
     logout,
     getCurrentUsername,
     getAuthToken,
