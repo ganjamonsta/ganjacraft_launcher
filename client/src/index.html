@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>GanjaCraft Launcher</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="configs.css">
+
 </head>
 
 <body>
@@ -38,6 +40,7 @@
             <div class="settings-tabs hidden">
                 <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
                 <button class="tab-btn" data-tab="mods">МОДЫ</button>
+                <button class="tab-btn" data-tab="configs">КОНФИГИ</button>
                 <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
             </div>
         </div>
@@ -453,9 +456,18 @@
                 <!-- Mods Tab -->
                 <!-- Mods Tab (Unified Single Page) -->
                 <div id="tab-mods" class="tab-content">
-                    <div id="mods-grid-container" style="flex: 1; min-height: 0; height: 100%; overflow-y: auto; overflow-y: overlay;">
+                    <div id="mods-grid-container">
                         <div id="mods-grid" class="settings-categories inertia-cascade">
                             <div class="unified-loading"><span class="unified-spinner"></span>Загрузка модов...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configs Tab -->
+                <div id="tab-configs" class="tab-content">
+                    <div id="configs-grid-container">
+                        <div id="configs-grid" class="settings-categories inertia-cascade">
+                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка конфигураций...</div>
                         </div>
                     </div>
                 </div>

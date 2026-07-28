@@ -324,168 +324,169 @@
 
 /* Unified Mods Subtabs Toolbar (Single Continuous Metal Glass Capsule Bar) */
 #mods-subtabs {
-    background: linear-gradient(180deg, rgba(38, 44, 54, 0.75) 0%, rgba(20, 24, 30, 0.88) 100%) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    border-radius: 22px !important;
-    padding: 5px 8px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 8px !important;
-    box-sizing: border-box !important;
-    margin-bottom: 14px !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+    background: linear-gradient(180deg, rgba(38, 44, 54, 0.75) 0%, rgba(20, 24, 30, 0.88) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 22px;
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 #mods-subtabs .unified-toolbar-group {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 /* Subtab items: plain text, no box background or border, no move on hover */
 #mods-subtabs .unified-toolbar-group .unified-btn {
-    height: 32px !important;
-    padding: 0 14px !important;
-    font-size: 13px !important;
-    font-weight: 500 !important; /* Normal font weight, NOT bold */
-    letter-spacing: 0.2px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    color: #a5b0c0 !important;
-    text-transform: none !important;
-    transition: color 0.2s ease, text-shadow 0.2s ease !important;
-    cursor: pointer !important;
-    outline: none !important;
-    margin: 0 !important;
-    transform: none !important; /* No move on hover */
+    height: 32px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 500; /* Normal font weight, NOT bold */
+    letter-spacing: 0.2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #a5b0c0;
+    text-transform: none;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    cursor: pointer;
+    outline: none;
+    margin: 0;
+    transform: none;
 }
 
 #mods-subtabs .unified-toolbar-group .unified-btn:hover {
-    color: #ffffff !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    transform: none !important; /* No move on hover */
+    color: #ffffff;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transform: none;
 }
 
-/* Active tab: NO background, ONLY text glows neon green, NORMAL font weight */
+/* Active tab: NO background, ONLY text glows neon green */
 #mods-subtabs .unified-toolbar-group .unified-btn.active {
-    background: transparent !important;
-    color: #39ff14 !important;
-    font-weight: 500 !important; /* NOT bold */
-    border: none !important;
-    box-shadow: none !important;
-    text-shadow: 0 0 10px rgba(57, 255, 20, 0.85), 0 0 20px rgba(57, 255, 20, 0.5) !important;
-    transform: none !important;
+    background: transparent;
+    color: #39ff14;
+    font-weight: 500;
+    border: none;
+    box-shadow: none;
+    text-shadow: 0 0 10px rgba(57, 255, 20, 0.85), 0 0 20px rgba(57, 255, 20, 0.5);
+    transform: none;
 }
 
 /* Catalog button style (Right end pill button) */
 #mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"] {
-    height: 32px !important;
-    padding: 0 14px !important;
-    font-size: 11.5px !important;
-    font-weight: 500 !important; /* NOT bold */
-    letter-spacing: 0.5px !important;
-    border-radius: 16px !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    color: #d0d8e4 !important;
-    text-transform: uppercase !important;
-    transition: all 0.2s ease !important;
-    transform: none !important;
+    height: 32px;
+    padding: 0 14px;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #d0d8e4;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    transform: none;
 }
 
 #mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"]:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
-    transform: none !important;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: none;
 }
 
 #mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"].active {
-    background: rgba(57, 255, 20, 0.1) !important;
-    color: #39ff14 !important;
-    font-weight: 500 !important; /* NOT bold */
-    border: 1px solid #39ff14 !important;
-    box-shadow: 0 0 12px rgba(57, 255, 20, 0.4) !important;
-    text-shadow: 0 0 8px rgba(57, 255, 20, 0.6) !important;
-    transform: none !important;
+    background: rgba(57, 255, 20, 0.1);
+    color: #39ff14;
+    font-weight: 500;
+    border: 1px solid #39ff14;
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+    transform: none;
 }
 
 .search-input-wrapper {
-    position: relative !important;
-    display: flex !important;
-    align-items: center !important;
-    width: 100% !important;
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 #mods-search-input {
-    height: 32px !important;
-    padding: 0 34px 0 14px !important;
-    font-size: 11.5px !important;
-    background: rgba(12, 14, 18, 0.85) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 18px !important;
-    color: #ffffff !important;
-    outline: none !important;
-    box-sizing: border-box !important;
-    margin: 0 !important;
-    line-height: 30px !important;
-    width: 100% !important;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+    height: 32px;
+    padding: 0 34px 0 14px;
+    font-size: 11.5px;
+    background: rgba(12, 14, 18, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    color: #ffffff;
+    outline: none;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 30px;
+    width: 100%;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 #mods-search-input:focus {
-    border-color: #39ff14 !important;
-    background: rgba(18, 22, 28, 0.95) !important;
-    box-shadow: 0 0 12px rgba(57, 255, 20, 0.3) !important;
+    border-color: #39ff14;
+    background: rgba(18, 22, 28, 0.95);
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
 }
 
 .search-action-btn {
-    position: absolute !important;
-    right: 8px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 18px !important;
-    height: 18px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: #7a808c !important;
-    cursor: pointer !important;
-    transition: color 0.15s ease, transform 0.15s ease !important;
-    outline: none !important;
-    box-shadow: none !important;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a808c;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+    outline: none;
+    box-shadow: none;
 }
 
 .search-action-btn:hover {
-    color: #ffffff !important;
+    color: #ffffff;
 }
 
 .search-action-btn svg {
-    width: 14px !important;
-    height: 14px !important;
+    width: 14px;
+    height: 14px;
 }
 
 .search-icon-clear {
-    color: #e57373 !important;
+    color: #e57373;
 }
 
 .search-action-btn:hover .search-icon-clear {
-    color: #ff5252 !important;
+    color: #ff5252;
     transform: scale(1.1);
 }
+
 
 /* Clean 2-column Grid layout for Mods category cards */
 #mods-grid.settings-categories {
@@ -493,6 +494,7 @@
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 14px !important;
     align-items: start !important;
+    padding-right: 16px !important;
 }
 
 #mods-grid.settings-categories .settings-category {
@@ -2545,58 +2547,12 @@ button:active {
     background: rgba(229, 115, 115, 0.15);
 }
 
-/* Legacy selectors for JS compatibility */
-.settings-save-btn {
-    background: none;
-    border: none;
-    color: #4CAF50;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0;
-    width: 36px;
-    height: 36px;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-}
-
-.settings-save-btn:hover {
-    background: rgba(76, 175, 80, 0.15);
-    color: #6fcf73;
-}
-
-.settings-close-btn {
-    background: none;
-    border: none;
-    color: #666;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0;
-    width: 36px;
-    height: 36px;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: 
-        color 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        background 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.settings-close-btn:hover {
-    color: #e57373;
-    background: rgba(229, 115, 115, 0.15);
-    transform: scale(1.1);
-}
-
-.settings-close-btn:active {
-    transform: scale(0.95);
-}
+/* Legacy aliases — перенаправляем на .settings-header-btn */
+.settings-save-btn { background: none; border: none; color: #4CAF50; font-size: 18px; cursor: pointer; padding: 0; width: 36px; height: 36px; margin: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: all 0.15s ease; }
+.settings-save-btn:hover { background: rgba(76, 175, 80, 0.15); color: #6fcf73; }
+.settings-close-btn { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 0; width: 36px; height: 36px; margin: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease; }
+.settings-close-btn:hover { color: #e57373; background: rgba(229, 115, 115, 0.15); transform: scale(1.1); }
+.settings-close-btn:active { transform: scale(0.95); }
 
 .settings-tabs {
     display: flex;
@@ -2739,29 +2695,7 @@ button:active {
     }
 }
 
-/* ===================================================
-   Photo Gallery ViewPager Reel (Side-by-Side Swiping)
-   =================================================== */
 
-@keyframes gallery-slide-out-left {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-}
-
-@keyframes gallery-slide-out-right {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(100%); }
-}
-
-@keyframes gallery-slide-in-right {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(0); }
-}
-
-@keyframes gallery-slide-in-left {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(0); }
-}
 
 /* Incoming tab slides into view side-by-side from right or left */
 .tab-content.slide-in-from-right {
@@ -2809,27 +2743,30 @@ button:active {
 .settings-body.animating .tab-content,
 .settings-body.animating .settings-categories,
 .settings-body.animating #mods-views-stack,
-.settings-body.animating #mods-grid-container,
 .settings-body.animating #mods-grid,
 .settings-body.animating .subtab-view {
     overflow: visible !important;
 }
 
-
-
-/* Mods Tab Specifics */
-#tab-mods {
-    padding: 16px 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
+/* Overlay scrollbar — never switches overflow, no reflow, no layout jerk */
+#mods-grid-container {
+    overflow-y: overlay !important;
+    overflow-x: hidden !important;
 }
 
-#tab-mods p {
-    padding: 15px 20px;
-    margin: 0;
-    flex-shrink: 0;
+/* Hide scrollbar thumb visually during animation (no reflow — only opacity) */
+.settings-body.animating #mods-grid-container::-webkit-scrollbar-thumb {
+    opacity: 0 !important;
+    transition: none !important;
 }
+#mods-grid-container::-webkit-scrollbar-thumb {
+    transition: opacity 0.25s ease 0.1s;
+    opacity: 1;
+}
+
+
+
+
 
 /* Tabs (in Title Bar) */
 .settings-tabs .tab-btn {
@@ -2937,10 +2874,7 @@ input[type="checkbox"] {
     justify-content: space-between;
 }
 
-/* Danger Zone (Legacy - hidden, use .category-danger instead) */
-.danger-zone {
-    display: none;
-}
+/* .danger-zone — deprecated, use .category-danger */
 
 .danger-info {
     display: flex;
@@ -3045,11 +2979,7 @@ input[type="checkbox"] {
     background: transparent !important;
 }
 
-#mods-grid-container {
-    overflow-y: auto;
-    overflow-y: overlay !important;
-    overflow-x: hidden !important;
-}
+
 
 #mods-catalog-container,
 .settings-body {
@@ -3324,21 +3254,25 @@ input[type="checkbox"] {
 }
 
 /* Mods Tab Layout - Bounded container with scrollable content */
-#tab-mods {
-    padding: 14px 16px;
+#tab-mods,
+#tab-configs {
+    padding: 14px 0 0 16px;
     height: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
-#mods-grid-container {
+#mods-grid-container,
+#configs-grid-container {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overflow-y: overlay !important;
     overflow-x: hidden !important;
-    padding-right: 4px;
+    padding-right: 0;
+    margin-right: 0;
+    padding-bottom: 14px;
 }
 
 #mods-catalog-container,
@@ -3431,51 +3365,6 @@ input[type="checkbox"] {
     border: 1px solid rgba(229, 115, 115, 0.3);
 }
 
-#step-loading,
-#step-login,
-#step-code,
-#step-password,
-#step-play,
-#step-progress {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-h2 {
-    margin-top: 0;
-    color: #4CAF50;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 20px;
-}
-
-/* Inputs */
-input[type="text"],
-input[type="password"] {
-    width: 100%;
-    padding: 10px 12px; /* Reduced padding */
-    margin: 8px 0;
-    background: #222; /* Slightly darker */
-    border: 1px solid #333; /* Darker border */
-    border-radius: 4px; /* Less rounded */
-    color: #eee;
-    font-size: 13px; /* Slightly smaller font */
-    outline: none;
-    transition: 
-        border-color 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        background 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        box-shadow 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    -webkit-app-region: no-drag;
-}
-
-input[type="text"]:focus,
-input[type="password"]:focus {
-    border-color: #4CAF50;
-    background: #2a2a2a;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
-}
 
 #tab-general .settings-categories {
     display: grid;

@@ -5,7 +5,7 @@
 
 import { dom } from '../../utils/dom.js';
 import { customAlert, customConfirm } from '../../ui/modals.js';
-import { toggleSnow, createSnowBurst, createDirectionalBurst, createSideBurst, applyEffectsConfig } from '../../ui/effects/index.js';
+import { toggleSnow, createSnowBurst, createDirectionalBurst, createSideBurst, applyEffectsConfig, effectsEngine } from '../../ui/effects/index.js';
 import { appState } from '../../state/app-state.js';
 import { startSmokeEffect, stopSmokeEffect } from '../../ui/effects/smoke.js';
 import { startParallax, stopParallax } from '../../ui/effects/parallax.js';
@@ -52,6 +52,8 @@ export function getCurrentSettingsState() {
     };
 }
 
+import { hasUnsavedConfigs } from '../configs/configs-manager.js';
+
 /**
  * Проверить изменились ли настройки
  */
@@ -67,7 +69,7 @@ export const updateSaveButtonVisibility = debounce(() => {
     const saveBtn = dom.get('save-settings');
     if (!saveBtn) return;
     
-    hasUnsavedChanges = settingsChanged();
+    hasUnsavedChanges = settingsChanged() || hasUnsavedConfigs();
     
     if (hasUnsavedChanges) {
         saveBtn.classList.add('visible');
@@ -457,6 +459,12 @@ export function initSettingsTabs(config) {
 
             if (appState.get('effects.snowEnabled')) {
                 createDirectionalBurst(direction);
+                // Если перешли на Конфиги или Настройки, отключаем партиклы
+                if (targetTabId === 'configs' || targetTabId === 'dev') {
+                    effectsEngine.stop();
+                } else {
+                    effectsEngine.start();
+                }
             }
             
             mainTabTimer = setTimeout(() => {

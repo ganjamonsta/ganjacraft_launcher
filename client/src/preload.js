@@ -134,6 +134,8 @@ contextBridge.exposeInMainWorld('api', {
     // Settings & Config
     loadConfig: () => ipcRenderer.invoke('load-config'),
     saveConfig: (config) => ipcRenderer.invoke('save-config', config),
+    getGameConfigs: () => ipcRenderer.invoke('get-game-configs'),
+    saveGameConfig: (filePath, key, value) => ipcRenderer.invoke('save-game-config', filePath, key, value),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     selectPath: (type) => ipcRenderer.invoke('select-path', type), // type: 'dir' or 'file'
     openFolder: (path) => ipcRenderer.invoke('open-folder', path),

@@ -9,6 +9,7 @@ const https = require('https');
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { resolveJavaPath } = require('../../modules/java');
 const { MANIFEST_URL } = require('../constants');
+const ConfigParser = require('../config-parser');
 
 /**
  * Зарегистрировать обработчики конфигурации
@@ -20,6 +21,23 @@ function registerConfigHandlers(mainWindow) {
     
     // Save config
     ipcMain.handle('save-config', (event, config) => saveConfig(config));
+    
+    // Get game configs
+    ipcMain.handle('get-game-configs', async () => {
+        const config = loadConfig();
+        const configDir = require('path').join(config.installPath, 'config');
+        const files = await ConfigParser.scanConfigsDir(configDir);
+        
+        const promises = files.map(file => ConfigParser.parseFile(file));
+        const results = await Promise.all(promises);
+        
+        return results.flat();
+    });
+
+    // Save game config value
+    ipcMain.handle('save-game-config', async (event, filePath, key, value) => {
+        return await ConfigParser.saveConfigValue(filePath, key, value);
+    });
     
     // Get app version
     ipcMain.handle('get-app-version', () => app.getVersion());

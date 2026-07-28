@@ -29,6 +29,11 @@ import {
 } from './features/mods/index.js';
 
 import {
+    loadConfigsList,
+    savePendingConfigs
+} from './features/configs/configs-manager.js';
+
+import {
     setupSettingsChangeListeners,
     toggleMainUIVisibility,
     openSettings,
@@ -230,8 +235,10 @@ function initSettingsButton() {
     // Save settings
     if (btnSaveSettings) {
         btnSaveSettings.addEventListener('click', async () => {
-            const success = await saveSettings();
-            if (success) {
+            const settingsSuccess = await saveSettings();
+            const configsSuccess = await savePendingConfigs();
+            
+            if (settingsSuccess && configsSuccess) {
                 currentConfig = getCurrentConfig();
                 toggleMainUIVisibility(true, currentConfig);
                 closeSettings();
@@ -318,6 +325,10 @@ async function init() {
     updateLoaderStatus(80, 'Загрузка манифеста модов...');
     // 5. Предзагрузка модов в память для мгновенного открытия в настройках
     await loadModsList(currentConfig.disabledMods || [], currentConfig);
+    
+    // Предзагрузка конфигураций
+    await loadConfigsList();
+
     captureInitialSettingsState();
 
     updateLoaderStatus(90, 'Загрузка новостей и сервера...');
