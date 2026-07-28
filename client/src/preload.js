@@ -139,10 +139,14 @@ contextBridge.exposeInMainWorld('api', {
     openFolder: (path) => ipcRenderer.invoke('open-folder', path),
     openUrl: (url) => ipcRenderer.invoke('open-url', url),
 
-    // Mod Config Editor
+    // Mod Config Editor & Preset Manager
     listModConfigs: () => ipcRenderer.invoke('list-mod-configs'),
     readModConfig: (path) => ipcRenderer.invoke('read-mod-config', path),
     saveModConfig: (path, content) => ipcRenderer.invoke('save-mod-config', path, content),
+    updateModConfigValues: (path, items) => ipcRenderer.invoke('update-mod-config-values', path, items),
+    deleteModConfig: (path) => ipcRenderer.invoke('delete-mod-config', path),
+    checkConfigExists: (path) => ipcRenderer.invoke('check-config-exists', path),
+    downloadPresetConfig: (url, path) => ipcRenderer.invoke('download-preset-config', url, path),
     
     // Advanced
     reinstallClient: () => ipcRenderer.invoke('reinstall-client'),

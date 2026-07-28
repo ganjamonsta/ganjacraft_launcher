@@ -1,332 +1,463 @@
 /**
- * GanjaCraft Launcher - Mod Config Editor Component
- * Визуальный редактор конфигураций модов
+ * GanjaCraft Launcher - Preset Mod Configs & Interactive Editor Component
+ * Каждый файл конфигурации — отдельная независимая карточка в сетке.
+ * Поисковая строка зафиксирована вверху, ввод происходит без потери фокуса.
  */
 
-let currentSelectedFile = null;
-let currentConfigData = null;
-let originalRawContent = '';
+import { dom } from '../../utils/dom.js';
 
-/**
- * Отрендерить панель редактора конфигов модов
- */
+let cachedConfigCards = [];
+let searchQuery = '';
+let activeExpandedCardId = null;
+
+const DEFAULT_PRESET_CONFIGS = [
+    {
+        id: 'sodium_extra_options',
+        name: 'Sodium Extra Options',
+        description: 'sodium-extra-options.json',
+        filePath: 'sodium-extra-options.json',
+        downloadUrl: 'https://gcrlauncher1.loca.lt/files/config/sodium-options.json'
+    },
+    {
+        id: 'reeses_options',
+        name: 'Reese\'s Options',
+        description: 'reeses-options.json',
+        filePath: 'reeses-options.json',
+        downloadUrl: 'https://gcrlauncher1.loca.lt/files/config/reeses-options.json'
+    },
+    {
+        id: 'etf_textures',
+        name: 'Entity Texture Features',
+        description: 'entity_texture_features.json',
+        filePath: 'entity_texture_features.json',
+        downloadUrl: 'https://gcrlauncher1.loca.lt/files/config/entity_texture_features.json'
+    },
+    {
+        id: 'forgematica',
+        name: 'Forgematica & Printer',
+        description: 'forgematica.json',
+        filePath: 'forgematica.json',
+        downloadUrl: 'https://gcrlauncher1.loca.lt/files/config/forgematica.json'
+    }
+];
+
+function getModTitleFromPath(filePath) {
+    if (!filePath) return 'Мод';
+    const fileName = filePath.split('/').pop().split('\\').pop();
+    let cleanName = fileName.replace(/\.(json|toml|properties|cfg|json5|snbt|txt|conf)$/i, '');
+    
+    let suffix = '';
+    if (/[-_]client$/i.test(cleanName)) suffix = ' (Client)';
+    else if (/[-_]server$/i.test(cleanName)) suffix = ' (Server)';
+    else if (/[-_]common$/i.test(cleanName)) suffix = ' (Common)';
+
+    cleanName = cleanName
+        .replace(/[-_](client|server|common)$/i, '')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+    return (cleanName.trim() || 'Мод') + suffix;
+}
+
 export async function renderModConfigEditor(container) {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="mod-config-editor-wrapper" style="display: flex; flex-direction: column; gap: 14px; width: 100%; height: 100%;">
-            <!-- Верхняя панель управления конфигом -->
-            <div class="unified-toolbar" style="display: flex; gap: 10px; align-items: center; background: rgba(25, 30, 38, 0.85); padding: 10px 14px; border-radius: var(--gc-radius-md); border: 1px solid var(--gc-border);">
-                <div style="display: flex; flex: 1; gap: 10px; align-items: center;">
-                    <label style="font-size: 12px; font-weight: 600; color: #888; white-space: nowrap;">Файл конфига:</label>
-                    <select id="config-file-select" class="setting-select" style="flex: 1; max-width: 320px;">
-                        <option value="">Загрузка списка конфигов...</option>
-                    </select>
-                    <div class="search-input-wrapper" style="width: 220px;">
-                        <input type="text" id="config-search-input" placeholder="Поиск параметра..." autocomplete="off">
+        <div class="preset-configs-wrapper" style="display: flex; flex-direction: column; gap: 14px; width: 100%; height: 100%;">
+            <!-- Зафиксированная поисковая панель -->
+            <div class="settings-category" style="margin-bottom: 0; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="category-content" style="padding: 10px 12px;">
+                    <div class="search-input-wrapper" style="width: 100%;">
+                        <input type="text" id="preset-search-input" value="${escapeHtml(searchQuery)}" placeholder="Поиск среди всех конфигов (название мода, имя файла)..." autocomplete="off">
+                        <button type="button" id="preset-search-clear-btn" class="search-action-btn" title="Очистить">
+                            <svg class="search-icon-magnifier ${searchQuery ? 'hidden' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <svg class="search-icon-clear ${searchQuery ? '' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
                     </div>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" class="unified-btn" id="btn-refresh-mod-configs" title="Обновить список">🔄 Обновить</button>
-                    <button type="button" class="unified-btn unified-btn-primary" id="btn-save-mod-config" title="Сохранить изменения" disabled>💾 Сохранить</button>
                 </div>
             </div>
 
-            <!-- Область отображения редактора -->
-            <div id="mod-config-body" style="flex: 1; overflow-y: auto; overflow-y: overlay; padding-right: 4px;">
+            <!-- Сетка карточек -->
+            <div id="preset-configs-grid" class="settings-categories inertia-cascade" style="flex: 1; overflow-y: auto;">
                 <div class="unified-loading"><span class="unified-spinner"></span>Загрузка конфигураций...</div>
             </div>
         </div>
     `;
 
-    setupEvents(container);
-    await loadConfigFilesList(container);
+    setupSearchEvents(container);
+    await loadAndRenderPresetCards(container);
 }
 
-/**
- * Загрузить список конфигурационных файлов
- */
-async function loadConfigFilesList(container) {
-    const select = container.querySelector('#config-file-select');
-    const body = container.querySelector('#mod-config-body');
-    if (!select || !body) return;
+async function loadAndRenderPresetCards(container) {
+    const grid = container.querySelector('#preset-configs-grid');
+    if (!grid) return;
 
     try {
-        const res = await window.api.listModConfigs();
-        if (!res.success || !res.files || res.files.length === 0) {
-            select.innerHTML = '<option value="">Конфигурационные файлы не найдены</option>';
-            body.innerHTML = `
-                <div class="settings-category" style="text-align: center; padding: 30px 20px;">
-                    <h4>Папка config пуста или клиенты еще не запускались</h4>
-                    <p style="font-size: 13px; color: #888; margin-top: 8px;">Запустите игру один раз, чтобы моды создали свои конфигурационные файлы.</p>
-                </div>
-            `;
-            return;
+        let manifestConfigs = [];
+        try {
+            const manifestRes = await window.api.getManifest();
+            if (manifestRes && Array.isArray(manifestRes.configs) && manifestRes.configs.length > 0) {
+                manifestConfigs = manifestRes.configs;
+            }
+        } catch (e) {
+            console.warn('[CONFIGS] Manifest fetch failed:', e.message);
         }
 
-        select.innerHTML = res.files.map(f => `
-            <option value="${f.relativePath}">${f.name} (${f.extension.toUpperCase()})</option>
-        `).join('');
+        let localFiles = [];
+        try {
+            const localRes = await window.api.listModConfigs();
+            if (localRes && localRes.success && Array.isArray(localRes.files)) {
+                localFiles = localRes.files;
+            }
+        } catch (e) {
+            console.warn('[CONFIGS] Local scan failed:', e.message);
+        }
 
-        // Выбираем первый файл по умолчанию или предыдущий выделенный
-        const defaultFile = currentSelectedFile && res.files.some(f => f.relativePath === currentSelectedFile)
-            ? currentSelectedFile
-            : res.files[0].relativePath;
+        const cardsMap = new Map();
 
-        select.value = defaultFile;
-        await loadAndRenderFile(container, defaultFile);
-    } catch (e) {
-        console.error('Error loading mod config files:', e);
-        body.innerHTML = `<div class="settings-category" style="color: #ff5252;">Ошибка загрузки списка: ${e.message}</div>`;
-    }
-}
+        // 1. Пресеты манифеста
+        if (manifestConfigs.length > 0) {
+            manifestConfigs.forEach(m => {
+                const relPath = (m.file_path || m.filePath || '').replace(/^config\//, '');
+                if (relPath) {
+                    const fileName = relPath.split('/').pop().split('\\').pop();
+                    cardsMap.set(relPath.toLowerCase(), {
+                        id: relPath.replace(/[^a-zA-Z0-9_-]/g, '_'),
+                        name: m.name || getModTitleFromPath(relPath),
+                        description: fileName,
+                        filePath: relPath,
+                        downloadUrl: m.download_url || m.downloadUrl
+                    });
+                }
+            });
+        }
 
-/**
- * Настроить обработчики событий
- */
-function setupEvents(container) {
-    const select = container.querySelector('#config-file-select');
-    const searchInput = container.querySelector('#config-search-input');
-    const refreshBtn = container.querySelector('#btn-refresh-mod-configs');
-    const saveBtn = container.querySelector('#btn-save-mod-config');
-
-    if (select) {
-        select.addEventListener('change', async (e) => {
-            if (e.target.value) {
-                await loadAndRenderFile(container, e.target.value);
+        // 2. Все локальные файлы
+        localFiles.forEach(file => {
+            const key = file.relativePath.toLowerCase();
+            if (!cardsMap.has(key)) {
+                cardsMap.set(key, {
+                    id: file.relativePath.replace(/[^a-zA-Z0-9_-]/g, '_'),
+                    name: getModTitleFromPath(file.relativePath),
+                    description: file.name,
+                    filePath: file.relativePath,
+                    downloadUrl: `https://gcrlauncher1.loca.lt/files/config/${file.relativePath}`
+                });
             }
         });
-    }
 
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            filterConfigItems(container, e.target.value.trim().toLowerCase());
-        });
-    }
-
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', async () => {
-            await loadConfigFilesList(container);
-        });
-    }
-
-    if (saveBtn) {
-        saveBtn.addEventListener('click', async () => {
-            await saveCurrentConfig(container);
-        });
-    }
-}
-
-/**
- * Прочитать и отрендерить файл
- */
-async function loadAndRenderFile(container, relativePath) {
-    currentSelectedFile = relativePath;
-    const body = container.querySelector('#mod-config-body');
-    const saveBtn = container.querySelector('#btn-save-mod-config');
-    if (!body) return;
-
-    body.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Чтение файла...</div>';
-    if (saveBtn) saveBtn.disabled = true;
-
-    try {
-        const res = await window.api.readModConfig(relativePath);
-        if (!res.success) {
-            body.innerHTML = `<div class="settings-category" style="color: #ff5252;">Ошибка чтения файла: ${res.error}</div>`;
-            return;
+        if (cardsMap.size === 0) {
+            DEFAULT_PRESET_CONFIGS.forEach(p => cardsMap.set(p.filePath.toLowerCase(), p));
         }
 
-        currentConfigData = res.data;
-        originalRawContent = res.data.rawContent;
-
-        if (res.data.items && res.data.items.length > 0) {
-            renderFormMode(body, res.data);
-        } else {
-            renderRawTextMode(body, res.data.rawContent);
-        }
-
-        if (saveBtn) saveBtn.disabled = false;
+        cachedConfigCards = Array.from(cardsMap.values());
+        renderCardsGrid(grid);
     } catch (e) {
-        console.error('Error reading config file:', e);
-        body.innerHTML = `<div class="settings-category" style="color: #ff5252;">Ошибка: ${e.message}</div>`;
+        console.error('Error loading mod configs:', e);
+        grid.innerHTML = `<div class="settings-category" style="color: #ff5252;">Ошибка загрузки конфигураций: ${e.message}</div>`;
     }
 }
 
-/**
- * Отображение визиуальной интерактивной формы
- */
-function renderFormMode(bodyContainer, data) {
-    // Группировка по категориям
-    const categoriesMap = {};
-    data.items.forEach(item => {
-        const cat = item.category || 'Общие';
-        if (!categoriesMap[cat]) categoriesMap[cat] = [];
-        categoriesMap[cat].push(item);
+function renderCardsGrid(grid) {
+    const query = searchQuery.toLowerCase().trim();
+    const filtered = cachedConfigCards.filter(c => {
+        if (!query) return true;
+        const nameMatch = c.name && c.name.toLowerCase().includes(query);
+        const descMatch = c.description && c.description.toLowerCase().includes(query);
+        const fileMatch = c.filePath && c.filePath.toLowerCase().includes(query);
+        return nameMatch || descMatch || fileMatch;
     });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div class="settings-category" style="text-align: center; padding: 24px; color: #888;">
+                <h4>Конфигурации не найдены${query ? ` по запросу "${escapeHtml(searchQuery)}"` : ''}</h4>
+            </div>
+        `;
+        return;
+    }
 
     const fragment = document.createDocumentFragment();
 
-    Object.keys(categoriesMap).forEach(catName => {
-        const categoryCard = document.createElement('div');
-        categoryCard.className = 'settings-category config-category-group';
-        categoryCard.dataset.category = catName;
+    const colLeft = document.createElement('div');
+    colLeft.className = 'mods-col-left';
+    colLeft.style.cssText = 'flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0;';
 
-        const header = document.createElement('div');
-        header.className = 'category-header';
-        header.innerHTML = `
-            <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <h4>${catName}</h4>
-        `;
-        categoryCard.appendChild(header);
+    const colRight = document.createElement('div');
+    colRight.className = 'mods-col-right';
+    colRight.style.cssText = 'flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0;';
 
-        const content = document.createElement('div');
-        content.className = 'category-content';
+    filtered.forEach((cardItem, index) => {
+        const itemCard = document.createElement('div');
+        itemCard.className = `settings-category config-mod-card ${activeExpandedCardId === cardItem.id ? 'active-expanded' : ''}`;
+        itemCard.style.cssText = `margin-bottom: 0; transition: all 0.2s ease; cursor: pointer; border: 1px solid ${activeExpandedCardId === cardItem.id ? '#39ff14' : 'rgba(255,255,255,0.08)'};`;
+        itemCard.dataset.cardId = cardItem.id;
 
-        categoriesMap[catName].forEach(item => {
-            const itemRow = document.createElement('div');
-            itemRow.className = 'setting-item config-param-item';
-            itemRow.dataset.key = item.key.toLowerCase();
-            itemRow.dataset.desc = (item.description || '').toLowerCase();
+        const isExpanded = activeExpandedCardId === cardItem.id;
 
-            let controlHtml = '';
-            if (item.type === 'boolean') {
-                controlHtml = `
-                    <span class="toggle-switch">
-                        <input type="checkbox" data-item-key="${item.key}" ${item.value ? 'checked' : ''}>
-                        <span class="toggle-slider"></span>
-                    </span>
-                `;
-            } else if (item.type === 'number') {
-                controlHtml = `
-                    <input type="number" class="unified-input" data-item-key="${item.key}" value="${item.value}" style="width: 110px; font-family: monospace;">
-                `;
-            } else {
-                controlHtml = `
-                    <input type="text" class="unified-input" data-item-key="${item.key}" value="${escapeHtml(String(item.value))}" style="width: 220px; font-family: monospace;">
-                `;
-            }
-
-            const descHtml = item.description ? `<span class="setting-desc" style="color: #9aa0a6;">${escapeHtml(item.description)}</span>` : '';
-
-            itemRow.innerHTML = `
-                <div class="setting-label" style="flex: 1; padding-right: 12px;">
-                    <div class="setting-text">
-                        <span class="setting-title" style="font-family: monospace; color: #4caf50; font-weight: 600;">${escapeHtml(item.key)}</span>
-                        ${descHtml}
+        itemCard.innerHTML = `
+            <div class="setting-item card-header-clickable" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; gap: 10px; min-width: 0; border-bottom: ${isExpanded ? '1px solid rgba(255,255,255,0.08)' : 'none'};">
+                <div class="setting-label" style="flex: 1; min-width: 0; display: flex; gap: 10px; align-items: center;">
+                    <svg class="setting-icon" style="flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                    <div class="setting-text" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                        <span class="setting-title" style="font-size: 13px; font-weight: 600; line-height: 1.2; word-break: break-word;">${escapeHtml(cardItem.name)}</span>
+                        <span class="setting-desc" style="font-size: 11px; color: #888; line-height: 1.3; font-family: monospace; word-break: break-all;">${escapeHtml(cardItem.description)}</span>
                     </div>
                 </div>
-                <div class="setting-control">
-                    ${controlHtml}
+
+                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                    <span class="expand-indicator" style="font-size: 11px; color: ${isExpanded ? '#39ff14' : '#888'}; font-weight: bold; padding: 2px 6px;">
+                        ${isExpanded ? '▲' : '▼'}
+                    </span>
                 </div>
-            `;
-
-            content.appendChild(itemRow);
-        });
-
-        categoryCard.appendChild(content);
-        fragment.appendChild(categoryCard);
-    });
-
-    bodyContainer.innerHTML = '';
-    bodyContainer.appendChild(fragment);
-}
-
-/**
- * Резервное отображение в виде полнофункционального текстового редактора
- */
-function renderRawTextMode(bodyContainer, rawContent) {
-    bodyContainer.innerHTML = `
-        <div class="settings-category" style="display: flex; flex-direction: column; gap: 10px;">
-            <div class="category-header">
-                <h4>Редактор исходного текста конфигурации</h4>
             </div>
-            <textarea id="config-raw-textarea" class="unified-input" style="width: 100%; height: 420px; font-family: consolas, monospace; font-size: 13px; line-height: 1.5; background: rgba(12, 14, 18, 0.95); color: #e0e0e0; resize: vertical; padding: 12px; border: 1px solid var(--gc-border);">${escapeHtml(rawContent)}</textarea>
-        </div>
-    `;
-}
+            <div class="inline-editor-drawer ${isExpanded ? '' : 'hidden'}" style="padding: 12px; background: rgba(12, 14, 18, 0.6); border-radius: 0 0 var(--gc-radius-md) var(--gc-radius-md);">
+                <div class="drawer-content-placeholder">
+                    ${isExpanded ? '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка параметров...</div>' : ''}
+                </div>
+            </div>
+        `;
 
-/**
- * Фильтрация параметров по поисковому запросу
- */
-function filterConfigItems(container, query) {
-    const items = container.querySelectorAll('.config-param-item');
-    items.forEach(item => {
-        const key = item.dataset.key || '';
-        const desc = item.dataset.desc || '';
-        if (!query || key.includes(query) || desc.includes(query)) {
-            item.style.display = 'flex';
+        const clickableHeader = itemCard.querySelector('.card-header-clickable');
+
+        const toggleExpand = async (e) => {
+            if (e.target.closest('.inline-editor-drawer')) return;
+
+            if (activeExpandedCardId === cardItem.id) {
+                activeExpandedCardId = null;
+            } else {
+                activeExpandedCardId = cardItem.id;
+            }
+            renderCardsGrid(grid);
+            if (activeExpandedCardId === cardItem.id) {
+                const updatedCard = grid.querySelector(`[data-card-id="${cardItem.id}"]`);
+                if (updatedCard) {
+                    const drawer = updatedCard.querySelector('.drawer-content-placeholder');
+                    await loadAndRenderSingleFileParamsEditor(cardItem, drawer);
+                }
+            }
+        };
+
+        clickableHeader.addEventListener('click', toggleExpand);
+
+        if (index % 2 === 0) {
+            colLeft.appendChild(itemCard);
         } else {
-            item.style.display = 'none';
+            colRight.appendChild(itemCard);
         }
     });
+
+    const topSection = document.createElement('div');
+    topSection.className = 'mods-top-section';
+    topSection.style.cssText = 'display: flex; gap: 14px; width: 100%; grid-column: 1 / -1;';
+    topSection.appendChild(colLeft);
+    topSection.appendChild(colRight);
+
+    fragment.appendChild(topSection);
+
+    grid.innerHTML = '';
+    grid.appendChild(fragment);
 }
 
 /**
- * Сохранить текущую конфигурацию
+ * Редактирование конкретного файла конфигурации
  */
-async function saveCurrentConfig(container) {
-    if (!currentSelectedFile) return;
+async function loadAndRenderSingleFileParamsEditor(cardItem, drawerContainer) {
+    if (!drawerContainer) return;
 
-    const saveBtn = container.querySelector('#btn-save-mod-config');
-    if (saveBtn) saveBtn.disabled = true;
+    drawerContainer.innerHTML = '<div class="unified-loading"><span class="unified-spinner"></span>Загрузка параметров...</div>';
 
     try {
-        let newContent = '';
-        const rawTextarea = container.querySelector('#config-raw-textarea');
+        const res = await window.api.readModConfig(cardItem.filePath);
+        if (!res.success) {
+            drawerContainer.innerHTML = `<div style="color: #ff5252; font-size: 11px;">Не удалось прочитать файл (${escapeHtml(cardItem.filePath)}): ${escapeHtml(res.error)}. Запустите игру для создания файла.</div>`;
+            return;
+        }
 
-        if (rawTextarea) {
-            newContent = rawTextarea.value;
-        } else if (currentConfigData && currentConfigData.items) {
-            // Собираем измененные значения с полей формы и обновляем исходные строки
-            const lines = originalRawContent.split(/\r?\n/);
+        const data = res.data;
 
-            currentConfigData.items.forEach(item => {
-                const input = container.querySelector(`[data-item-key="${item.key}"]`);
-                if (!input) return;
+        const categoriesMap = {};
+        data.items.forEach(item => {
+            const cat = item.category || 'Общие';
+            if (!categoriesMap[cat]) categoriesMap[cat] = [];
+            categoriesMap[cat].push(item);
+        });
 
-                let val;
-                if (item.type === 'boolean') {
-                    val = input.checked;
-                } else if (item.type === 'number') {
-                    val = Number(input.value);
-                } else {
-                    val = input.value;
-                }
+        let paramsFormHtml = '';
+        Object.keys(categoriesMap).forEach(catName => {
+            paramsFormHtml += `
+                <div class="param-category-block" style="margin-bottom: 12px; background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="font-size: 11px; font-weight: 700; color: #39ff14; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+                        📌 ${escapeHtml(catName)}
+                    </div>
+                    <div class="param-items-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        ${categoriesMap[catName].map(item => {
+                            let control = '';
+                            if (item.type === 'boolean') {
+                                control = `
+                                    <span class="toggle-switch" style="transform: scale(0.85);">
+                                        <input type="checkbox" data-line-number="${item.lineNumber}" data-param-type="boolean" ${item.value ? 'checked' : ''}>
+                                        <span class="toggle-slider"></span>
+                                    </span>
+                                `;
+                            } else if (item.type === 'number') {
+                                control = `
+                                    <input type="number" class="unified-input param-input" data-line-number="${item.lineNumber}" data-param-type="number" value="${item.value}" style="width: 90px; height: 26px; padding: 2px 6px; font-size: 11px; font-family: monospace;">
+                                `;
+                            } else {
+                                control = `
+                                    <input type="text" class="unified-input param-input" data-line-number="${item.lineNumber}" data-param-type="string" value="${escapeHtml(String(item.value))}" style="width: 140px; height: 26px; padding: 2px 6px; font-size: 11px; font-family: monospace;">
+                                `;
+                            }
 
-                // Заменяем значение в соответствующей строке
-                if (item.lineNumber && item.lineNumber <= lines.length) {
-                    const idx = item.lineNumber - 1;
-                    const line = lines[idx];
+                            const descText = item.description ? `<span style="font-size: 10px; color: #888; line-height: 1.2;">${escapeHtml(item.description)}</span>` : '';
 
-                    if (item.type === 'boolean') {
-                        lines[idx] = line.replace(/:\s*(true|false)/i, `: ${val}`).replace(/=\s*(true|false)/i, `= ${val}`);
-                    } else if (item.type === 'number') {
-                        lines[idx] = line.replace(/:\s*(-?\d+\.?\d*)/, `: ${val}`).replace(/=\s*(-?\d+\.?\d*)/, `= ${val}`);
+                            return `
+                                <div class="param-row" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.04);">
+                                    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                                        <span style="font-family: monospace; font-size: 11px; font-weight: 600; color: #d0d8e4; word-break: break-all;">${escapeHtml(item.key)}</span>
+                                        ${descText}
+                                    </div>
+                                    <div style="flex-shrink: 0;">
+                                        ${control}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        drawerContainer.innerHTML = `
+            <div class="editor-inner-wrapper" style="display: flex; flex-direction: column; gap: 8px;" onclick="event.stopPropagation();">
+                <div class="params-container" style="max-height: 300px; overflow-y: auto; overflow-y: overlay; padding-right: 4px;">
+                    ${paramsFormHtml || '<div style="color: #888; font-size: 11px;">Нет параметров</div>'}
+                </div>
+                <div class="editor-action-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
+                    <button type="button" class="unified-btn unified-btn-danger btn-reset-file" style="padding: 3px 8px; font-size: 10.5px; height: 26px;">
+                        🗑 Сбросить файл
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="save-status-msg" style="font-size: 10.5px; color: #39ff14; display: none;">✓ Сохранено</span>
+                        <button type="button" class="unified-btn unified-btn-primary btn-save-params" style="padding: 3px 12px; font-size: 11px; height: 26px;">
+                            💾 Сохранить изменения
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const saveBtn = drawerContainer.querySelector('.btn-save-params');
+        const resetFileBtn = drawerContainer.querySelector('.btn-reset-file');
+        const statusMsg = drawerContainer.querySelector('.save-status-msg');
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                saveBtn.disabled = true;
+                try {
+                    const updatedItems = [];
+                    data.items.forEach(item => {
+                        const boolInput = drawerContainer.querySelector(`input[data-line-number="${item.lineNumber}"][data-param-type="boolean"]`);
+                        const numInput = drawerContainer.querySelector(`input[data-line-number="${item.lineNumber}"][data-param-type="number"]`);
+                        const strInput = drawerContainer.querySelector(`input[data-line-number="${item.lineNumber}"][data-param-type="string"]`);
+
+                        let val = item.value;
+                        if (boolInput) {
+                            val = boolInput.checked;
+                        } else if (numInput) {
+                            val = Number(numInput.value);
+                        } else if (strInput) {
+                            val = strInput.value;
+                        }
+
+                        updatedItems.push({
+                            ...item,
+                            value: val
+                        });
+                    });
+
+                    const updateRes = await window.api.updateModConfigValues(cardItem.filePath, updatedItems);
+                    if (updateRes.success) {
+                        if (statusMsg) {
+                            statusMsg.style.display = 'inline';
+                            setTimeout(() => { statusMsg.style.display = 'none'; }, 2500);
+                        }
                     } else {
-                        lines[idx] = line.replace(/(["']).*?\1/, `"${val}"`).replace(/:\s*.*$/, `: "${val}"`).replace(/=\s*.*$/, `= "${val}"`);
+                        alert('Ошибка сохранения: ' + updateRes.error);
                     }
+                } catch (err) {
+                    console.error('Error saving updated parameters:', err);
+                    alert('Ошибка записи параметров: ' + err.message);
+                } finally {
+                    saveBtn.disabled = false;
                 }
             });
-
-            newContent = lines.join('\n');
         }
 
-        const res = await window.api.saveModConfig(currentSelectedFile, newContent);
-        if (res.success) {
-            alert('Конфигурация успешно сохранена!');
-            originalRawContent = newContent;
-        } else {
-            alert('Ошибка сохранения: ' + res.error);
+        if (resetFileBtn) {
+            resetFileBtn.addEventListener('click', async () => {
+                if (confirm(`Сбросить файл ${cardItem.filePath.split('/').pop()} к стандартным настройкам?`)) {
+                    await window.api.deleteModConfig(cardItem.filePath);
+                    if (cardItem.downloadUrl) {
+                        try {
+                            await window.api.downloadPresetConfig(cardItem.downloadUrl, cardItem.filePath);
+                        } catch (e) {
+                            console.warn('Download fallback skipped:', e.message);
+                        }
+                    }
+                    await loadAndRenderSingleFileParamsEditor(cardItem, drawerContainer);
+                }
+            });
         }
     } catch (e) {
-        console.error('Error saving mod config:', e);
-        alert('Ошибка при сохранении: ' + e.message);
-    } finally {
-        if (saveBtn) saveBtn.disabled = false;
+        console.error('Error rendering params editor:', e);
+        drawerContainer.innerHTML = `<div style="color: #ff5252; font-size: 11px;">Ошибка инициализации редактора: ${escapeHtml(e.message)}</div>`;
+    }
+}
+
+function setupSearchEvents(container) {
+    const input = container.querySelector('#preset-search-input');
+    const clearBtn = container.querySelector('#preset-search-clear-btn');
+    const grid = container.querySelector('#preset-configs-grid');
+
+    if (input) {
+        input.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            const magIcon = clearBtn ? clearBtn.querySelector('.search-icon-magnifier') : null;
+            const clearIcon = clearBtn ? clearBtn.querySelector('.search-icon-clear') : null;
+            if (magIcon && clearIcon) {
+                if (searchQuery) {
+                    magIcon.classList.add('hidden');
+                    clearIcon.classList.remove('hidden');
+                } else {
+                    magIcon.classList.remove('hidden');
+                    clearIcon.classList.add('hidden');
+                }
+            }
+            if (grid) renderCardsGrid(grid);
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (input) {
+                input.value = '';
+                searchQuery = '';
+                const magIcon = clearBtn.querySelector('.search-icon-magnifier');
+                const clearIcon = clearBtn.querySelector('.search-icon-clear');
+                if (magIcon && clearIcon) {
+                    magIcon.classList.remove('hidden');
+                    clearIcon.classList.add('hidden');
+                }
+                if (grid) renderCardsGrid(grid);
+            }
+        });
     }
 }
 
 function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
     return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')

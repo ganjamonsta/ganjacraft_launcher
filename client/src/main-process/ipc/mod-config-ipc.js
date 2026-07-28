@@ -197,6 +197,77 @@ function saveModConfigFile(relativePath, newContent) {
     return { success: true };
 }
 
+const { downloadWithRetry } = require('../../modules/updater');
+
+/**
+ * Удалить файл конфигурации мода (сброс к дефолту)
+ */
+function deleteModConfigFile(relativePath) {
+    const fullPath = resolveSafeConfigPath(relativePath);
+    if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+    }
+    return { success: true };
+}
+
+/**
+ * Проверить существование файла конфига
+ */
+function checkConfigExists(relativePath) {
+    const fullPath = resolveSafeConfigPath(relativePath);
+    return { exists: fs.existsSync(fullPath) };
+}
+
+/**
+ * Скачать кастомный пресет конфига по URL
+ */
+async function downloadPresetConfigFile(url, relativePath) {
+    const fullPath = resolveSafeConfigPath(relativePath);
+    const parentDir = path.dirname(fullPath);
+    if (!fs.existsSync(parentDir)) {
+        fs.mkdirSync(parentDir, { recursive: true });
+    }
+    await downloadWithRetry(url, fullPath, { timeoutMs: 15000 });
+    return { success: true };
+}
+
+/**
+ * Эффективный апдейтер значений элементов в конфигурационном файле
+ * с сохранением всей оригинальной структуры, отступов и комментариев.
+ */
+function updateModConfigValues(relativePath, updatedItems) {
+    const fullPath = resolveSafeConfigPath(relativePath);
+    if (!fs.existsSync(fullPath)) {
+        throw new Error('Файл не найден: ' + relativePath);
+    }
+
+    let content = fs.readFileSync(fullPath, 'utf8');
+    const lines = content.split(/\r?\n/);
+
+    for (const item of updatedItems) {
+        if (item.lineNumber && item.lineNumber <= lines.length) {
+            const idx = item.lineNumber - 1;
+            const line = lines[idx];
+
+            if (item.type === 'boolean') {
+                lines[idx] = line.replace(/:\s*(true|false)/i, `: ${item.value}`)
+                                 .replace(/=\s*(true|false)/i, `= ${item.value}`);
+            } else if (item.type === 'number') {
+                lines[idx] = line.replace(/:\s*(-?\d+\.?\d*)/, `: ${item.value}`)
+                                 .replace(/=\s*(-?\d+\.?\d*)/, `= ${item.value}`);
+            } else if (item.type === 'string') {
+                lines[idx] = line.replace(/(["']).*?\1/, `"${item.value}"`)
+                                 .replace(/:\s*.*$/, `: "${item.value}"`)
+                                 .replace(/=\s*.*$/, `= "${item.value}"`);
+            }
+        }
+    }
+
+    const newContent = lines.join('\n');
+    fs.writeFileSync(fullPath, newContent, 'utf8');
+    return { success: true };
+}
+
 /**
  * Регистрация IPC обработчиков для конфигов модов
  */
@@ -224,11 +295,47 @@ function registerModConfigHandlers() {
             return { success: false, error: e.message };
         }
     });
+
+    ipcMain.handle('update-mod-config-values', (event, relativePath, updatedItems) => {
+        try {
+            return updateModConfigValues(relativePath, updatedItems);
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    });
+
+    ipcMain.handle('delete-mod-config', (event, relativePath) => {
+        try {
+            return deleteModConfigFile(relativePath);
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    });
+
+    ipcMain.handle('check-config-exists', (event, relativePath) => {
+        try {
+            return checkConfigExists(relativePath);
+        } catch (e) {
+            return { exists: false, error: e.message };
+        }
+    });
+
+    ipcMain.handle('download-preset-config', async (event, url, relativePath) => {
+        try {
+            return await downloadPresetConfigFile(url, relativePath);
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    });
 }
 
 module.exports = {
     registerModConfigHandlers,
     listModConfigFiles,
     readModConfigFile,
-    saveModConfigFile
+    saveModConfigFile,
+    updateModConfigValues,
+    deleteModConfigFile,
+    checkConfigExists,
+    downloadPresetConfigFile
 };
