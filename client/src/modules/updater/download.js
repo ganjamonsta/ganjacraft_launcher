@@ -250,6 +250,28 @@ async function downloadWithRetry(url, dest, options = {}, maxRetries = 4, retryD
             }
         }
     }
+
+    // Automatic mirror fallback if official repository failed
+    try {
+        const { rewriteUrl } = require('../../main-process/constants');
+        const mirrorUrl = rewriteUrl(url);
+        if (mirrorUrl && mirrorUrl !== url) {
+            for (let attempt = 1; attempt <= Math.min(maxRetries, 2); attempt++) {
+                try {
+                    await downloadFile(mirrorUrl, dest, options);
+                    return;
+                } catch (err) {
+                    lastError = err;
+                    if (attempt < 2) {
+                        await new Promise(r => setTimeout(r, retryDelayMs));
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        // Ignore mirror fallback error and throw lastError from primary attempt
+    }
+
     throw lastError;
 }
 

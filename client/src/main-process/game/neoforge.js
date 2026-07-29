@@ -12,6 +12,8 @@ const {
     NEOFORGE_VERSION,
     VANILLA_VERSION_JSON_URL,
     VANILLA_VERSION_JAR_URL,
+    URL_REWRITES,
+    rewriteUrl,
 } = require('../constants');
 
 
@@ -47,6 +49,7 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
         try {
             await downloadFile(VANILLA_VERSION_JSON_URL, tmpJson, { timeoutMs: 60_000 });
             const parsed = JSON.parse(fs.readFileSync(tmpJson, 'utf8'));
+            rewriteVersionJsonUrls(parsed);
             fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
             try { fs.unlinkSync(tmpJson); } catch {}
             sendLog(`Версия ${MC_VERSION} (json) готова.`);
@@ -58,6 +61,7 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
         // Rewrite in-place to ensure new mirror rules apply after updates
         try {
             const parsed = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
+            rewriteVersionJsonUrls(parsed);
             fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
         } catch {
             // Ignore; will be handled on next run.
@@ -107,6 +111,51 @@ async function preflightNeoForgeLibraries(rootPath, sendLog, sendDebug) {
             sendDebug(`Preflight: ${path.basename(libPath)} is writable.`);
         } catch (e) {
             sendDebug(`Preflight: ${path.basename(libPath)} write check failed: ${e.message}`);
+        }
+    }
+}
+
+/**
+ * Перезаписать URL в version JSON на зеркало согласно правилам URL_REWRITES
+ * @param {object} json - Version JSON объект
+ */
+function rewriteVersionJsonUrls(json) {
+    if (!json || !Array.isArray(URL_REWRITES) || URL_REWRITES.length === 0) return;
+
+    // Rewrite libraries
+    if (Array.isArray(json.libraries)) {
+        for (const lib of json.libraries) {
+            if (lib.url && typeof lib.url === 'string') {
+                lib.url = rewriteUrl(lib.url);
+            }
+            if (lib.downloads) {
+                if (lib.downloads.artifact && lib.downloads.artifact.url) {
+                    lib.downloads.artifact.url = rewriteUrl(lib.downloads.artifact.url);
+                }
+                if (lib.downloads.classifiers) {
+                    for (const key of Object.keys(lib.downloads.classifiers)) {
+                        const clf = lib.downloads.classifiers[key];
+                        if (clf && clf.url) {
+                            clf.url = rewriteUrl(clf.url);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Rewrite assetIndex
+    if (json.assetIndex && json.assetIndex.url) {
+        json.assetIndex.url = rewriteUrl(json.assetIndex.url);
+    }
+
+    // Rewrite client/server downloads
+    if (json.downloads) {
+        for (const key of Object.keys(json.downloads)) {
+            const dl = json.downloads[key];
+            if (dl && dl.url) {
+                dl.url = rewriteUrl(dl.url);
+            }
         }
     }
 }
@@ -223,4 +272,5 @@ module.exports = {
     preflightNeoForgeLibraries,
     ensureNeoForgeVersionJsonMerged,
     ensureAssetIndex,
+    rewriteVersionJsonUrls,
 };

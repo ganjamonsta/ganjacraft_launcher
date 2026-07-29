@@ -35,8 +35,33 @@ const REPAIR_FILES = {
     'vanilla-client.jar': VANILLA_VERSION_JAR_URL,
 };
 
-// URL rewrites for mirroring - disabled, downloading directly from official sources
-const URL_REWRITES = [];
+// URL rewrites for mirroring - fallback/mirror rules mapping official repos to external VPS mirror (https://ganj4craft.ru/mirror)
+const URL_REWRITES = [
+    { from: 'https://libraries.minecraft.net/', to: `${MIRROR_BASE}/libraries/` },
+    { from: 'https://maven.neoforged.net/releases/', to: `${MIRROR_BASE}/maven/` },
+    { from: 'https://maven.minecraftforge.net/', to: `${MIRROR_BASE}/maven/` },
+    { from: 'https://piston-meta.mojang.com/', to: `${MIRROR_BASE}/piston-meta/` },
+    { from: 'https://piston-data.mojang.com/', to: `${MIRROR_BASE}/piston-data/` },
+    { from: 'https://resources.download.minecraft.net/', to: `${MIRROR_BASE}/assets/` },
+    { from: 'https://github.com/', to: `${MIRROR_BASE}/github/` },
+    { from: 'https://raw.githubusercontent.com/', to: `${MIRROR_BASE}/github-raw/` },
+];
+
+/**
+ * Заменить официальный URL на зеркало согласно правилам URL_REWRITES
+ * @param {string} url - Исходный URL
+ * @returns {string} - URL зеркала или исходный URL, если правило не найдено
+ */
+function rewriteUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    for (const rule of URL_REWRITES) {
+        if (url.startsWith(rule.from)) {
+            return rule.to + url.slice(rule.from.length);
+        }
+    }
+    return url;
+}
+
 
 // Default disabled optional mods (filename patterns)
 const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
@@ -104,6 +129,7 @@ module.exports = {
     // Configs
     REPAIR_FILES,
     URL_REWRITES,
+    rewriteUrl,
     DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS,
     JVM_OPTIMIZATION_ARGS,
 };
