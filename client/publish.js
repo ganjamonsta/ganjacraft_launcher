@@ -28,8 +28,6 @@ if (fs.existsSync(ENV_PATH)) {
 }
 
 const DIST_DIR = path.join(__dirname, 'dist');
-// Target directory (Relative to repo root)
-const TARGET_DIR = path.resolve(__dirname, `../../${BOT_DIR_NAME}/storage/launcher`);
 const PACKAGE_JSON = path.join(__dirname, 'package.json');
 const PRIVATE_KEY_PATH = path.join(__dirname, 'private.pem');
 
@@ -38,21 +36,12 @@ const DEPLOY_WWW_DIR = path.resolve(__dirname, '../deploy_www');
 const DEPLOY_FILES_DIR = path.join(DEPLOY_WWW_DIR, 'files');
 const DEPLOY_API_DIR = path.join(DEPLOY_WWW_DIR, 'api/launcher/files');
 
-// Ensure target dir exists
-if (!fs.existsSync(TARGET_DIR)) {
-    fs.mkdirSync(TARGET_DIR, { recursive: true });
+// Ensure deploy dirs exist
+if (!fs.existsSync(DEPLOY_API_DIR)) {
+    fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
 }
 
-// Clean up old versions in target dir
-console.log('🧹 Cleaning up old versions on server...');
-const targetFiles = fs.readdirSync(TARGET_DIR);
-targetFiles.forEach(file => {
-    // Delete old launcher archives (GanjaCraftLauncher-*.zip)
-    if (file.startsWith('GanjaCraftLauncher-') && file.endsWith('.zip')) {
-        console.log(`   Deleting old file: ${file}`);
-        fs.unlinkSync(path.join(TARGET_DIR, file));
-    }
-});
+
 
 // Get Version
 const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf-8'));
@@ -67,32 +56,25 @@ if (!zipFile) {
     process.exit(1);
 }
 
-// Copy Archive
 const sourceZip = path.join(DIST_DIR, zipFile);
-const targetZip = path.join(TARGET_DIR, zipFile);
-console.log(`📦 Copying full .zip: ${zipFile}`);
-fs.copyFileSync(sourceZip, targetZip);
+console.log(`📦 Found full .zip: ${zipFile}`);
 
-// Create lightweight resources-only zip for fast updates
 const updateZipName = `GanjaCraftLauncher-${version}-update.zip`;
-const targetUpdateZip = path.join(TARGET_DIR, updateZipName);
 const sourceUpdateZip = path.join(DIST_DIR, updateZipName);
 
 console.log('⚡ Creating lightweight resources-only update zip...');
 const resourcesDir = path.join(DIST_DIR, 'win-unpacked', 'resources');
 try {
-    // We use powershell to pack resources folder into a zip
     const psCmd = `Compress-Archive -Path "${resourcesDir}" -DestinationPath "${sourceUpdateZip}" -Force`;
     execFileSync('powershell.exe', ['-Command', psCmd]);
-    fs.copyFileSync(sourceUpdateZip, targetUpdateZip);
     console.log(`✅ Update zip created: ${updateZipName}`);
 } catch (e) {
     console.error('❌ Failed to create lightweight update zip, using full zip as fallback.', e.message);
-    fs.copyFileSync(sourceZip, targetUpdateZip);
+    fs.copyFileSync(sourceZip, sourceUpdateZip);
 }
 
 // Get Update Zip Size
-const updateStats = fs.statSync(targetUpdateZip);
+const updateStats = fs.statSync(sourceUpdateZip);
 const zipSize = updateStats.size;
 console.log(`📊 Update Zip Size: ${(zipSize / 1024 / 1024).toFixed(2)} MB`);
 
@@ -103,10 +85,10 @@ if (fs.existsSync(PRIVATE_KEY_PATH)) {
     console.log('🔐 Signing updates...');
     const privateKey = fs.readFileSync(PRIVATE_KEY_PATH, 'utf-8');
     
-    const updateBuffer = fs.readFileSync(targetUpdateZip);
+    const updateBuffer = fs.readFileSync(sourceUpdateZip);
     signature = crypto.sign(null, updateBuffer, privateKey).toString('base64');
     
-    const fullBuffer = fs.readFileSync(targetZip);
+    const fullBuffer = fs.readFileSync(sourceZip);
     fullSignature = crypto.sign(null, fullBuffer, privateKey).toString('base64');
 } else {
     console.warn('⚠️  Private key not found. Updates will NOT be signed.');
@@ -211,8 +193,8 @@ let githubUpdateDownloadUrl = null;
             assetsList = await getAssetsRes.json();
         }
 
-        githubDownloadUrl = await uploadAsset(targetZip, zipFile);
-        githubUpdateDownloadUrl = await uploadAsset(targetUpdateZip, updateZipName);
+        githubDownloadUrl = await uploadAsset(sourceZip, zipFile);
+        githubUpdateDownloadUrl = await uploadAsset(sourceUpdateZip, updateZipName);
         
         // 3. Prepare and upload bootstrap.json & GanjaCraft.exe
         const exeFile = 'GanjaCraft.exe';
@@ -225,18 +207,16 @@ let githubUpdateDownloadUrl = null;
                 const bootstrapData = JSON.parse(fs.readFileSync(bootstrapJsonPath, 'utf-8'));
                 bootstrapData.url = githubExeUrl;
                 fs.writeFileSync(bootstrapJsonPath, JSON.stringify(bootstrapData, null, 4));
-                fs.copyFileSync(bootstrapJsonPath, path.join(TARGET_DIR, 'bootstrap.json'));
                 await uploadAsset(bootstrapJsonPath, 'bootstrap.json');
                 console.log(`✅ Updated & uploaded bootstrap.json to GitHub URL`);
             }
         }
 
-        // 4. Create and upload version.json
-        const versionJsonPath = path.join(TARGET_DIR, 'version.json');
+        const versionJsonPath = path.join(DEPLOY_API_DIR, 'version.json');
         const versionData = {
             version: version,
-            url: githubUpdateDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(updateZipName)}`,
-            fullUrl: githubDownloadUrl || `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
+            url: githubUpdateDownloadUrl,
+            fullUrl: githubDownloadUrl,
             signature: signature,
             fullSignature: fullSignature,
             zipSize: zipSize,
@@ -244,8 +224,6 @@ let githubUpdateDownloadUrl = null;
             type: "zip"
         };
         fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));
-        fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
-        fs.writeFileSync(path.join(DEPLOY_API_DIR, 'version.json'), JSON.stringify(versionData, null, 4));
         await uploadAsset(versionJsonPath, 'version.json');
         console.log(`✅ Updated & uploaded version.json to GitHub URL`);
 
@@ -256,12 +234,12 @@ let githubUpdateDownloadUrl = null;
 }
 
 // Fallback version.json writing if GitHub token wasn't provided
-const versionJsonPath = path.join(TARGET_DIR, 'version.json');
+const versionJsonPath = path.join(DEPLOY_API_DIR, 'version.json');
 if (!fs.existsSync(versionJsonPath)) {
     const versionData = {
         version: version,
-        url: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(updateZipName)}`,
-        fullUrl: `${BASE_URL.replace(/\/$/, '')}/api/launcher/files/${encodeURIComponent(zipFile)}`,
+        url: githubUpdateDownloadUrl || `https://github.com/ganjamonsta/ganjacraft_launcher/releases/download/${version}/${encodeURIComponent(updateZipName)}`,
+        fullUrl: githubDownloadUrl || `https://github.com/ganjamonsta/ganjacraft_launcher/releases/download/${version}/${encodeURIComponent(zipFile)}`,
         signature: signature,
         fullSignature: fullSignature,
         zipSize: zipSize,
@@ -270,9 +248,6 @@ if (!fs.existsSync(versionJsonPath)) {
     };
     fs.writeFileSync(versionJsonPath, JSON.stringify(versionData, null, 4));
 }
-
-fs.mkdirSync(DEPLOY_FILES_DIR, { recursive: true });
-fs.mkdirSync(DEPLOY_API_DIR, { recursive: true });
 
 // Clean old zips in deploy_www
 if (fs.existsSync(DEPLOY_API_DIR)) {

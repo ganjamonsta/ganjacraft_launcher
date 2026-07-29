@@ -4,16 +4,13 @@ GanjaCraft Launcher Bootstrap Constants
 """
 
 GITHUB_RELEASE_BASE = "https://github.com/ganjamonsta/ganjacraft_launcher/releases/latest/download"
-FALLBACK_BASE_URL = "https://gcrlauncher1.loca.lt/api/launcher/files"
 
 BOOTSTRAP_JSON_URLS = [
-    f"{GITHUB_RELEASE_BASE}/bootstrap.json",
-    f"{FALLBACK_BASE_URL}/bootstrap.json"
+    f"{GITHUB_RELEASE_BASE}/bootstrap.json"
 ]
 
 VERSION_JSON_URLS = [
-    f"{GITHUB_RELEASE_BASE}/version.json",
-    f"{FALLBACK_BASE_URL}/version.json"
+    f"{GITHUB_RELEASE_BASE}/version.json"
 ]
 
 BOOTSTRAP_JSON_URL = BOOTSTRAP_JSON_URLS[0]
