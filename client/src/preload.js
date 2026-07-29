@@ -3,9 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const MOCK_AUTH = process.env.MOCK_AUTH === '1';
 
 const API_BASES = [
-    'http://192.168.1.8:5000/api',
-    'https://gcrlauncher1.loca.lt/api',
-    'http://ganj4craft.ru/api'
+    'https://ganj4craft.ru/api'
 ];
 const API_BASE = API_BASES[0];
 const DEFAULT_TIMEOUT = 5000;
