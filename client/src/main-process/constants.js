@@ -35,8 +35,8 @@ const REPAIR_FILES = {
     'vanilla-client.jar': VANILLA_VERSION_JAR_URL,
 };
 
-// URL rewrites for mirroring - fallback/mirror rules mapping official repos to external VPS mirror (https://ganj4craft.ru/mirror)
-const URL_REWRITES = [
+// URL fallbacks for mirroring - if official repos fail, try VPS mirror (https://ganj4craft.ru/mirror)
+const MIRROR_FALLBACKS = [
     { from: 'https://libraries.minecraft.net/', to: `${MIRROR_BASE}/libraries/` },
     { from: 'https://maven.neoforged.net/releases/', to: `${MIRROR_BASE}/maven/` },
     { from: 'https://maven.minecraftforge.net/', to: `${MIRROR_BASE}/maven/` },
@@ -48,18 +48,18 @@ const URL_REWRITES = [
 ];
 
 /**
- * Заменить официальный URL на зеркало согласно правилам URL_REWRITES
+ * Получить резервный URL зеркала (fallback)
  * @param {string} url - Исходный URL
- * @returns {string} - URL зеркала или исходный URL, если правило не найдено
+ * @returns {string|null} - URL зеркала или null, если правило не найдено
  */
-function rewriteUrl(url) {
-    if (!url || typeof url !== 'string') return url;
-    for (const rule of URL_REWRITES) {
+function getMirrorFallbackUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+    for (const rule of MIRROR_FALLBACKS) {
         if (url.startsWith(rule.from)) {
             return rule.to + url.slice(rule.from.length);
         }
     }
-    return url;
+    return null;
 }
 
 
@@ -128,8 +128,8 @@ module.exports = {
 
     // Configs
     REPAIR_FILES,
-    URL_REWRITES,
-    rewriteUrl,
+    MIRROR_FALLBACKS,
+    getMirrorFallbackUrl,
     DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS,
     JVM_OPTIMIZATION_ARGS,
 };

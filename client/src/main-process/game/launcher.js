@@ -32,6 +32,27 @@ const launcher = new Client();
 let isGameRunning = false;
 let isLaunchCancelled = false;
 
+// Monkey-patch MCLC Handler to support fallback to VPS mirror on download failure
+const MCLCHandler = require('minecraft-launcher-core/components/handler');
+const originalDownloadAsync = MCLCHandler.prototype.downloadAsync;
+const { getMirrorFallbackUrl } = require('../constants');
+
+MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry, type) {
+    const fallbackUrl = getMirrorFallbackUrl(url);
+    
+    // Try original URL first
+    const result = await originalDownloadAsync.call(this, url, directory, name, retry, type);
+    
+    // MCLC resolves with `false` on 404, or `undefined` on error
+    if (!result && fallbackUrl) {
+        this.client.emit('debug', `[MCLC]: Original URL failed (${url}). Falling back to mirror: ${fallbackUrl}`);
+        // Try fallback URL, without passing fallback logic further down
+        return await originalDownloadAsync.call(this, fallbackUrl, directory, name, retry, type);
+    }
+    
+    return result;
+};
+
 /**
  * Проверить, запущена ли игра
  */
@@ -396,9 +417,6 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
     const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
     const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
 
-    // Ensure NeoForge version JSON is merged with vanilla 1.21.1 libraries
-    ensureNeoForgeVersionJsonMerged(rootPath);
-
     const nativesDir = path.join(rootPath, 'natives');
     if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true });
 
@@ -664,6 +682,9 @@ async function launchGame(event, options) {
                 return { success: false, error: `Не удалось установить NeoForge 21.1.233:\n${e.message}` };
             }
         }
+
+        // Ensure NeoForge version JSON is merged with vanilla 1.21.1 libraries BEFORE passing it to MCLC
+        ensureNeoForgeVersionJsonMerged(rootPath, sendDebug);
 
         // Prefetch Yggdrasil metadata for authlib-injector (bypass Localtunnel reminder)
         let authlibPrefetched = null;
