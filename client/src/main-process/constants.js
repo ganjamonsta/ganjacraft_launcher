@@ -35,7 +35,7 @@ const REPAIR_FILES = {
     'vanilla-client.jar': VANILLA_VERSION_JAR_URL,
 };
 
-// URL fallbacks for mirroring - if official repos fail, try VPS mirror (https://ganj4craft.ru/mirror)
+// URL fallbacks for mirroring - if official repos fail, try VPS mirror (https://launcher.ganj4craft.ru/mirror)
 const MIRROR_FALLBACKS = [
     { from: 'https://libraries.minecraft.net/', to: `${MIRROR_BASE}/libraries/` },
     { from: 'https://maven.neoforged.net/releases/', to: `${MIRROR_BASE}/maven/` },
