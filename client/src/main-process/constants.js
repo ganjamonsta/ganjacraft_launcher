@@ -10,10 +10,10 @@ const REQUIRED_JAVA_MAJOR = 21;
 
 // URLs
 const API_BASES = [
-    'https://ganj4craft.ru/api',
-    'http://192.168.1.8:5000/api'
+    'https://launcher.ganj4craft.ru/api',
 ];
-const BASE_URL = 'https://ganj4craft.ru';
+const BASE_URL = 'https://launcher.ganj4craft.ru';
+
 const MIRROR_BASE = `${BASE_URL}/mirror`;
 const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;
