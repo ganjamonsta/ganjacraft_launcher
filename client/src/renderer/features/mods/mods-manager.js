@@ -542,7 +542,7 @@ export function renderModsGrid() {
 
         const catalogContent = fullListCard.querySelector('.category-content');
         
-        // Делегирование ссылок CurseForge / Modrinth
+        // Делегирование ссылок Modrinth
         catalogContent.addEventListener('click', (e) => {
             const btn = e.target.closest('button[data-url]');
             if (!btn) return;
@@ -624,7 +624,6 @@ function appendCatalogBatch(contentContainer) {
                 </div>
             </div>
             <div class="setting-control">
-                <button type="button" class="unified-btn unified-btn-warning" data-url="${item.curseUrl}">🔥 CurseForge ↗</button>
                 <button type="button" class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}">⚡ Modrinth ↗</button>
             </div>
         `;
@@ -663,10 +662,6 @@ function renderLinksCatalogIntoContainer(manifest, contentContainer, query = '')
 
             const downloadUrl = file.url || `https://gcrlauncher1.loca.lt/files/${file.path.replace(/^\/+/, '')}`;
 
-            const curseUrl = groupMatch?.curseSlug 
-                ? `https://www.curseforge.com/minecraft/mc-mods/${groupMatch.curseSlug}`
-                : `https://www.curseforge.com/minecraft/search?search=${encodeURIComponent(groupMatch ? groupMatch.name : cleanName)}`;
-
             const modrinthUrl = groupMatch?.modrinthSlug 
                 ? `https://modrinth.com/mod/${groupMatch.modrinthSlug}`
                 : `https://modrinth.com/mods?q=${encodeURIComponent(groupMatch ? groupMatch.name : cleanName)}`;
@@ -676,7 +671,6 @@ function renderLinksCatalogIntoContainer(manifest, contentContainer, query = '')
                 cleanName: groupMatch ? groupMatch.name : cleanName,
                 isOptional: !!groupMatch,
                 downloadUrl,
-                curseUrl,
                 modrinthUrl
             };
         });

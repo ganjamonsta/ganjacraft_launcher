@@ -26,7 +26,7 @@ const YGGDRASIL_AUTH_URL = `${API_BASE}/yggdrasil/authserver/authenticate`;
 const VANILLA_VERSION_JSON_URL = `https://piston-meta.mojang.com/v1/packages/67e466e82c012158c8cda81df39aa40a7ade7276/1.21.1.json`;
 const VANILLA_VERSION_JAR_URL = `https://piston-data.mojang.com/v1/objects/30c73b1c5da787909b2f73340419fdf13b9def88/client.jar`;
 
-const CURSEFORGE_API_KEY = `$2a$10$SvuvYSQ0HuoMAbraQXxiROGRsS19yCee98NlQiNfdHbzEKrOTAUx6`;
+
 
 // Repair URLs for critical files
 const REPAIR_FILES = {
@@ -124,7 +124,7 @@ module.exports = {
     YGGDRASIL_AUTH_URL,
     VANILLA_VERSION_JSON_URL,
     VANILLA_VERSION_JAR_URL,
-    CURSEFORGE_API_KEY,
+
 
     // Configs
     REPAIR_FILES,
