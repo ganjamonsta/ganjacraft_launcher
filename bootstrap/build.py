@@ -139,22 +139,17 @@ def main():
     if os.path.exists(DIST_EXE) and not os.path.exists(DEST_EXE):
         print(f"📦 Copying existing build to {DEST_EXE}...")
         shutil.copy2(DIST_EXE, DEST_EXE)
-        update_json("1.0.19")
         
     sync_to_deploy_www()
 
     changed, current_hash = check_changes()
     if not changed:
-        print("💤 No changes detected in main.py. Skipping build.")
+        print("💤 No changes detected in main.py / constants.py. Skipping build.")
         return
 
     new_version = bump_version()
     if not new_version:
         return
-    
-    # Update hash after bump (because bump changes the file!)
-    # Actually, bump changes the file, so the hash WILL change.
-    # We should save the hash of the file AFTER bump, so next time we compare against that.
     
     try:
         build_exe()
@@ -162,8 +157,8 @@ def main():
         print("❌ Build failed!")
         return
     
-    # Save new hash
-    new_hash = get_file_hash(MAIN_PY)
+    # Save new hash (computed AFTER bump_version modified main.py)
+    new_hash = get_file_hash(MAIN_PY) + get_file_hash(CONSTANTS_PY)
     with open(HASH_FILE, 'w') as f:
         f.write(new_hash)
 

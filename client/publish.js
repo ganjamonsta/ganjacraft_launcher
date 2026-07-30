@@ -196,21 +196,7 @@ let githubUpdateDownloadUrl = null;
         githubDownloadUrl = await uploadAsset(sourceZip, zipFile);
         githubUpdateDownloadUrl = await uploadAsset(sourceUpdateZip, updateZipName);
         
-        // 3. Prepare and upload bootstrap.json & GanjaCraft.exe
-        const exeFile = 'GanjaCraft.exe';
-        const exePath = path.join(DEPLOY_API_DIR, exeFile);
-        if (fs.existsSync(exePath)) {
-            const githubExeUrl = await uploadAsset(exePath, exeFile);
-            
-            const bootstrapJsonPath = path.join(DEPLOY_API_DIR, 'bootstrap.json');
-            if (fs.existsSync(bootstrapJsonPath)) {
-                const bootstrapData = JSON.parse(fs.readFileSync(bootstrapJsonPath, 'utf-8'));
-                bootstrapData.url = githubExeUrl;
-                fs.writeFileSync(bootstrapJsonPath, JSON.stringify(bootstrapData, null, 4));
-                await uploadAsset(bootstrapJsonPath, 'bootstrap.json');
-                console.log(`✅ Updated & uploaded bootstrap.json to GitHub URL`);
-            }
-        }
+        // Client release only uploads client zips and version.json (bootstrap.json is managed separately)
 
         const versionJsonPath = path.join(DEPLOY_API_DIR, 'version.json');
         const versionData = {

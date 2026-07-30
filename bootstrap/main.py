@@ -29,7 +29,7 @@ from constants import BOOTSTRAP_JSON_URLS, VERSION_JSON_URLS, BOOTSTRAP_JSON_URL
 
 # Build trigger
 # Configuration
-BOOTSTRAP_VERSION = "1.0.51"
+BOOTSTRAP_VERSION = "1.0.53"
 BOOTSTRAP_API_URL = BOOTSTRAP_JSON_URLS
 API_URL = VERSION_JSON_URLS
 APPDATA = os.getenv('APPDATA')
@@ -547,27 +547,27 @@ class BootstrapApp(tk.Tk):
                 if f.tell() < 1024 * 1024: # Less than 1MB
                     raise Exception("Неверный исполняемый файл (Слишком маленький)")
 
-            # Create batch script to replace exe and restart
-            batch_file = "update_bootstrap.bat"
-            exe_dir = os.path.dirname(current_exe)
-            exe_name = os.path.basename(current_exe)
+            # Create batch script to replace exe and automatically restart
+            batch_file = os.path.join(os.path.dirname(current_exe), "update_bootstrap.bat")
             
-            with open(batch_file, "w") as f:
-                f.write(f"""
-@echo off
+            with open(batch_file, "w", encoding="cp1251", errors="ignore") as f:
+                f.write(f"""@echo off
 :wait_loop
 timeout /t 1 /nobreak > NUL
 del "{current_exe}" 2>NUL
 if exist "{current_exe}" goto wait_loop
 
 move "{new_exe}" "{current_exe}"
+start "" "{current_exe}"
 del "%~f0"
 """)
             
-            self.update_status("Обновление завершено.")
-            messagebox.showinfo("Обновление", "Загрузчик успешно обновлен.\nПожалуйста, запустите его заново.")
+            self.update_status("Перезапуск загрузчика...")
+            time.sleep(0.3)
             
-            subprocess.Popen(batch_file, shell=True)
+            # Launch batch hidden in background and exit immediately
+            creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+            subprocess.Popen(["cmd.exe", "/c", batch_file], creationflags=creationflags)
             os._exit(0)
             
         except Exception as e:

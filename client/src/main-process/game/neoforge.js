@@ -151,8 +151,26 @@ function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
             }
         }
 
-        // Note: We DO NOT merge vanilla game arguments because MCLC automatically provides 
-        // --username, --gameDir, --version, etc. Merging them causes DuplicateArgument crashes.
+        // Merge vanilla game arguments with NeoForge game arguments if missing
+        const vanillaGameArgs = (vanillaJson.arguments && Array.isArray(vanillaJson.arguments.game)) ? vanillaJson.arguments.game : [];
+        neoJson.arguments = neoJson.arguments || {};
+        const neoGameArgs = Array.isArray(neoJson.arguments.game) ? neoJson.arguments.game : [];
+
+        const mergedGameArgs = [...neoGameArgs];
+        for (const arg of vanillaGameArgs) {
+            if (typeof arg === 'string') {
+                if (!mergedGameArgs.includes(arg)) {
+                    mergedGameArgs.push(arg);
+                }
+            } else if (typeof arg === 'object' && arg !== null) {
+                const argStr = JSON.stringify(arg);
+                const isDup = mergedGameArgs.some(a => typeof a === 'object' && a !== null && JSON.stringify(a) === argStr);
+                if (!isDup) {
+                    mergedGameArgs.push(arg);
+                }
+            }
+        }
+        neoJson.arguments.game = mergedGameArgs;
 
         // Merge vanilla JVM arguments with NeoForge JVM arguments (crucial for -cp ${classpath})
         const vanillaJvmArgs = (vanillaJson.arguments && Array.isArray(vanillaJson.arguments.jvm)) ? vanillaJson.arguments.jvm : [];
@@ -170,7 +188,7 @@ function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
         neoJson.arguments.jvm = mergedJvmArgs;
 
         fs.writeFileSync(neoforgeJsonPath, JSON.stringify(neoJson, null, 2), 'utf8');
-        if (sendDebug) sendDebug(`Merged ${added} vanilla libraries into ${neoforgeVerId}.json (total: ${neoJson.libraries.length}, game args untouched)`);
+        if (sendDebug) sendDebug(`Merged ${added} vanilla libraries into ${neoforgeVerId}.json (total: ${neoJson.libraries.length}, game args: ${mergedGameArgs.length})`);
     } catch (e) {
         if (sendDebug) sendDebug(`Failed to merge version JSONs: ${e.message}`);
     }
