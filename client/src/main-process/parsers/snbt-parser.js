@@ -8,6 +8,7 @@ class SnbtParser {
         
         let settings = [];
         let currentComment = [];
+        let categoryStack = [];
 
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i].trim();
@@ -23,11 +24,33 @@ class SnbtParser {
                 continue;
             }
 
+            if (line === '{') {
+                continue;
+            }
+            if (line.startsWith('}')) {
+                categoryStack.pop();
+                currentComment = [];
+                continue;
+            }
+
             const snbtMatch = line.match(/^([a-zA-Z0-9_]+)\s*:\s*(.*)$/);
             if (snbtMatch) {
                 const key = snbtMatch[1];
-                const value = snbtMatch[2].replace(/,$/, '').trim();
+                let value = snbtMatch[2].replace(/,$/, '').trim();
                 
+                if (value === '{') {
+                    const categoryName = key.charAt(0).toUpperCase() + key.slice(1);
+                    categoryStack.push(categoryName);
+                    currentComment = [];
+                    continue;
+                }
+                
+                if (value === '[') {
+                    // Skip array starts so they aren't parsed as simple string settings
+                    currentComment = [];
+                    continue;
+                }
+
                 let type = 'string';
                 let parsedValue = value;
 
@@ -42,10 +65,12 @@ class SnbtParser {
                     parsedValue = value.slice(1, -1);
                 }
 
+                const category = categoryStack.length > 0 ? categoryStack[categoryStack.length - 1] : 'Общие';
+
                 settings.push({
                     key, value: parsedValue, rawValue: value, type,
                     comment: currentComment.join('\n'),
-                    category: 'Общие',
+                    category: category,
                     filePath, fileName: path.basename(filePath)
                 });
                 currentComment = [];
