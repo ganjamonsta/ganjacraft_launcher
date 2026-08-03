@@ -79,13 +79,13 @@ export async function requestAuthCode(username) {
             appState.set('auth.username', username);
             return { success: true };
         } else {
-            showError('login-error', result.message || 'Ошибка сервера');
-            return { success: false, error: result.message };
+            showError('login-error', result.message || result.error || 'Ошибка сервера');
+            return { success: false, error: result.message || result.error, status: result.status };
         }
     } catch (e) {
         showError('login-error', e.message);
         console.error('[AUTH] Request code failed:', e);
-        return { success: false, error: e.message };
+        return { success: false, error: e.message, status: 0 };
     }
 }
 
@@ -124,13 +124,13 @@ export async function verifyAuthCode(code) {
             return { success: true };
         } else {
             showError('code-error', result.error || 'Неверный код');
-            return { success: false, error: result.error };
+            return { success: false, error: result.error, status: result.status };
         }
     } catch (e) {
         const message = e?.message || String(e);
         showError('code-error', message || 'Ошибка сети');
         console.error('[AUTH] Verify failed:', e);
-        return { success: false, error: message };
+        return { success: false, error: message, status: 0 };
     }
 }
 
@@ -240,12 +240,12 @@ export async function loginWithPassword(password) {
             return { success: true };
         } else {
             showError('password-error', result.message || result.error || 'Неверный пароль');
-            return { success: false, error: result.message || result.error };
+            return { success: false, error: result.message || result.error, status: result.status };
         }
     } catch (e) {
         const message = e?.message || String(e);
         showError('password-error', message || 'Ошибка сети');
-        return { success: false, error: message };
+        return { success: false, error: message, status: 0 };
     }
 }
 
@@ -301,13 +301,12 @@ export function initAuthHandlers() {
                     stepCode.classList.add('fade-in');
                     codeInput?.focus();
                 } else {
-                    const errorMsg = String(result.error || '').toLowerCase();
-                    // Do not fallback if the user doesn't exist or is not approved
-                    if (errorMsg.includes('не найден') || errorMsg.includes('не одобрена')) {
+                    // Do not fallback if the user doesn't exist (404) or is not approved (403)
+                    if (result.status === 404 || result.status === 403) {
                         return;
                     }
                     
-                    // Fast fallback: if requesting code failed (e.g. no TG linked or bot down), show password step automatically
+                    // Fast fallback: if requesting code failed (e.g. 409 no TG linked, 500 bot down, 0 network error), show password step automatically
                     stepLogin.classList.add('hidden');
                     stepPassword.classList.remove('hidden');
                     stepPassword.classList.add('fade-in');

@@ -66,22 +66,28 @@ async function apiCall(endpoint, { method = 'POST', body = null, headers = {}, r
             
             if (data && (data.message || data.error || data.detail)) {
                 const msg = data.message || data.error || (Array.isArray(data.detail) ? data.detail[0]?.msg : String(data.detail));
-                if (returnErrorAsResult) return { success: false, message: msg };
-                throw new Error(msg);
+                if (returnErrorAsResult) return { success: false, message: msg, status: response.status };
+                const err = new Error(msg);
+                err.status = response.status;
+                throw err;
             }
             lastError = new Error(`API Error: ${response.status} - ${text}`);
+            lastError.status = response.status;
         } catch (e) {
             if (e && e.message && !e.message.includes('fetch') && !e.message.includes('network') && !e.name.includes('Abort')) {
-                if (returnErrorAsResult) return { success: false, message: e.message };
+                if (returnErrorAsResult) return { success: false, message: e.message, status: e.status || 0 };
                 throw e;
             }
             lastError = e;
+            lastError.status = 0;
         }
     }
     if (returnErrorAsResult) {
-        return { success: false, message: lastError?.message || 'Ошибка сети' };
+        return { success: false, message: lastError?.message || 'Ошибка сети', status: lastError?.status || 0 };
     }
-    throw lastError || new Error('Ошибка сети: сервер авторизации недоступен');
+    const err = lastError || new Error('Ошибка сети: сервер авторизации недоступен');
+    err.status = err.status || 0;
+    throw err;
 }
 
 if (MOCK_AUTH) console.log('[MOCK_AUTH] Mock auth mode enabled');
@@ -94,16 +100,26 @@ contextBridge.exposeInMainWorld('api', {
     requestAuth: async (username) => {
         if (MOCK_AUTH) return { success: true, message: '[MOCK] Code sent' };
         try {
-            return await apiCall('/launcher/auth/request', { body: { username } });
+            const res = await apiCall('/launcher/auth/request', { body: { username }, returnErrorAsResult: true });
+            if (!res.success) return { success: false, error: res.message, status: res.status };
+            return res;
         } catch (e) {
-            console.error('Backend auth server unreachable:', e.message);
-            return { success: false, error: 'Сервер авторизации недоступен. Проверьте интернет-соединение.' };
+            return { success: false, error: 'Сервер авторизации недоступен. Проверьте интернет-соединение.', status: 0 };
         }
     },
     verifyAuth: async (username, code) => {
         if (MOCK_AUTH) return { success: true, token: 'mock-token', is_admin: true };
         try {
-            return await apiCall('/launcher/auth/verify', { body: { username, code } });
+            const res = await apiCall('/launcher/auth/verify', { body: { username, code }, returnErrorAsResult: true });
+            if (!res.success) {
+                // If it's a network error (status 0), fallback to offline
+                if (res.status === 0) {
+                    console.warn('Backend auth server unreachable, fallback to offline token:', res.message);
+                    return { success: true, token: 'offline-token', is_admin: false, offline: true };
+                }
+                return { success: false, error: res.message, status: res.status };
+            }
+            return res;
         } catch (e) {
             console.warn('Backend auth server unreachable, fallback to offline token:', e.message);
             return { success: true, token: 'offline-token', is_admin: false, offline: true };
@@ -112,20 +128,25 @@ contextBridge.exposeInMainWorld('api', {
     passwordAuth: async (username, password) => {
         if (MOCK_AUTH) return { success: true, token: 'mock-token', is_admin: true };
         try {
-            return await apiCall('/launcher/auth/password', { body: { username, password } });
+            const res = await apiCall('/launcher/auth/password', { body: { username, password }, returnErrorAsResult: true });
+            if (!res.success) return { success: false, error: res.message, status: res.status };
+            return res;
         } catch (e) {
-            console.warn('Backend auth server unreachable:', e.message);
-            return { success: false, error: e.message || 'Ошибка подключения к серверу' };
+            return { success: false, error: e.message || 'Ошибка подключения к серверу', status: 0 };
         }
     },
     checkAuth: async (username, token) => {
         if (MOCK_AUTH) return { success: true, is_admin: true };
         try {
-            return await apiCall('/launcher/auth/check', {
+            const res = await apiCall('/launcher/auth/check', {
                 body: { username },
                 headers: { 'X-Auth-Token': token },
                 returnErrorAsResult: true
             });
+            if (!res.success && res.status === 0) {
+                return { success: true, is_admin: false, offline: true };
+            }
+            return res;
         } catch (e) {
             return { success: true, is_admin: false, offline: true };
         }
