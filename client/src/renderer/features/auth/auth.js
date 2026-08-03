@@ -301,7 +301,13 @@ export function initAuthHandlers() {
                     stepCode.classList.add('fade-in');
                     codeInput?.focus();
                 } else {
-                    // Fast fallback: if requesting code failed (bot down), show password step automatically
+                    const errorMsg = String(result.error || '').toLowerCase();
+                    // Do not fallback if the user doesn't exist or is not approved
+                    if (errorMsg.includes('не найден') || errorMsg.includes('не одобрена')) {
+                        return;
+                    }
+                    
+                    // Fast fallback: if requesting code failed (e.g. no TG linked or bot down), show password step automatically
                     stepLogin.classList.add('hidden');
                     stepPassword.classList.remove('hidden');
                     stepPassword.classList.add('fade-in');
