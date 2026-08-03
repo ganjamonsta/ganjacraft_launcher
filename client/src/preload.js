@@ -66,9 +66,10 @@ async function apiCall(endpoint, { method = 'POST', body = null, headers = {}, r
             
             if (data && (data.message || data.error || data.detail)) {
                 const msg = data.message || data.error || (Array.isArray(data.detail) ? data.detail[0]?.msg : String(data.detail));
-                if (returnErrorAsResult) return { success: false, message: msg, status: response.status };
+                if (returnErrorAsResult) return { success: false, message: msg, status: response.status, has_password: data.has_password };
                 const err = new Error(msg);
                 err.status = response.status;
+                err.has_password = data.has_password;
                 throw err;
             }
             lastError = new Error(`API Error: ${response.status} - ${text}`);
@@ -98,10 +99,10 @@ contextBridge.exposeInMainWorld('api', {
     
     // Auth API calls with offline fallback when backend is not running
     requestAuth: async (username) => {
-        if (MOCK_AUTH) return { success: true, message: '[MOCK] Code sent' };
+        if (MOCK_AUTH) return { success: true, message: '[MOCK] Code sent', has_password: true };
         try {
             const res = await apiCall('/launcher/auth/request', { body: { username }, returnErrorAsResult: true });
-            if (!res.success) return { success: false, error: res.message, status: res.status };
+            if (!res.success) return { success: false, error: res.message, status: res.status, has_password: res.has_password };
             return res;
         } catch (e) {
             return { success: false, error: 'Сервер авторизации недоступен. Проверьте интернет-соединение.', status: 0 };

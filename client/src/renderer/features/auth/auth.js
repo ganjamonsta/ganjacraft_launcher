@@ -77,10 +77,10 @@ export async function requestAuthCode(username) {
         if (result.success) {
             currentUsername = username;
             appState.set('auth.username', username);
-            return { success: true };
+            return { success: true, has_password: result.has_password };
         } else {
             showError('login-error', result.message || result.error || 'Ошибка сервера');
-            return { success: false, error: result.message || result.error, status: result.status };
+            return { success: false, error: result.message || result.error, status: result.status, has_password: result.has_password };
         }
     } catch (e) {
         showError('login-error', e.message);
@@ -300,17 +300,24 @@ export function initAuthHandlers() {
                     stepCode.classList.remove('hidden');
                     stepCode.classList.add('fade-in');
                     codeInput?.focus();
+                    
+                    if (switchToPassBtn) {
+                        switchToPassBtn.style.display = result.has_password ? '' : 'none';
+                    }
                 } else {
                     // Do not fallback if the user doesn't exist (404) or is not approved (403)
                     if (result.status === 404 || result.status === 403) {
                         return;
                     }
                     
-                    // Fast fallback: if requesting code failed (e.g. 409 no TG linked, 500 bot down, 0 network error), show password step automatically
-                    stepLogin.classList.add('hidden');
-                    stepPassword.classList.remove('hidden');
-                    stepPassword.classList.add('fade-in');
-                    passwordInput?.focus();
+                    // Do not fallback to password if the user doesn't have a password set
+                    if (result.has_password) {
+                        // Fast fallback: if requesting code failed (e.g. 409 no TG linked, 500 bot down, 0 network error), show password step automatically
+                        stepLogin.classList.add('hidden');
+                        stepPassword.classList.remove('hidden');
+                        stepPassword.classList.add('fade-in');
+                        passwordInput?.focus();
+                    }
                 }
             } finally {
                 loginBtn.disabled = false;
