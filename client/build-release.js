@@ -53,6 +53,17 @@ pkg.version = newVersion;
 console.log(`🚀 Bumping version to: ${newVersion}`);
 fs.writeFileSync(PACKAGE_PATH, JSON.stringify(pkg, null, 2));
 
+// Auto Git Commit & Push so the remote Linux server gets exact same code
+try {
+    console.log('📤 Auto-committing and pushing release version to Git...');
+    execSync('git add package.json last_build.hash', { stdio: 'ignore', cwd: __dirname });
+    execSync(`git commit -m "chore: release v${newVersion}"`, { stdio: 'ignore', cwd: __dirname });
+    execSync('git push', { stdio: 'ignore', cwd: __dirname });
+    console.log('✅ Git repository synced!');
+} catch (e) {
+    console.warn('⚠️ Auto git push skipped or already up to date.');
+}
+
 // 2.5 Clean dist
 console.log('🧹 Cleaning dist folder...');
 const distPath = path.join(__dirname, 'dist');
@@ -78,7 +89,8 @@ if (env.GITHUB_TOKEN && !env.GH_TOKEN) {
 }
 
 try {
-    execSync('npm run build:renderer && npx electron-builder --win --linux -p always', { stdio: 'inherit', cwd: __dirname, env: env });
+    execSync('npm run build:renderer && npx electron-builder --win -p always', { stdio: 'inherit', cwd: __dirname, env: env });
+    execSync('node trigger-remote-linux.js', { stdio: 'inherit', cwd: __dirname, env: env });
 } catch (e) {
     console.error('❌ Build or Publish failed!');
     process.exit(1);

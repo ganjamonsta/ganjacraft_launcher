@@ -1,6 +1,6 @@
 {
   "name": "ganjacraft-launcher-client",
-  "version": "1.0.151",
+  "version": "1.0.155",
   "description": "Official Launcher for GanjaCraft Server",
   "main": "src/main.js",
   "scripts": {
@@ -31,21 +31,25 @@
       "icon": "src/assets/icon.ico"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
+      "allowToChangeInstallationDirectory": true,
       "artifactName": "GanjaCraft_Installer.exe"
     },
     "linux": {
       "target": [
-        "zip",
-        "deb"
+        "AppImage",
+        "deb",
+        "zip"
       ],
+      "maintainer": "GanjaCraft Team <admin@ganj4craft.ru>",
       "icon": "src/assets/icon.png",
-      "category": "Game"
+      "category": "Game",
+      "artifactName": "GanjaCraft_Linux.${ext}"
     }
   },
-  "author": "GanjaCraft Team",
+  "author": "GanjaCraft Team <admin@ganj4craft.ru>",
+  "homepage": "https://ganj4craft.ru",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^17.4.2",
