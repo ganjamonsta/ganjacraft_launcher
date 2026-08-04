@@ -511,7 +511,7 @@ export function renderModsGrid() {
         categoryCard.appendChild(content);
 
         const upperCat = catName.toUpperCase();
-        if (upperCat === 'ПРОИЗВОДИТЕЛЬНОСТЬ' || upperCat === 'ГРАФИКА И ШЕЙДЕРЫ' || upperCat === 'УТИЛИТЫ И ПРОЧЕЕ') {
+        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА' || upperCat === 'ПРОЧЕЕ') {
             colLeft.appendChild(categoryCard);
         } else {
             colRight.appendChild(categoryCard);
