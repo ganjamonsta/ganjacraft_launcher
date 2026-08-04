@@ -5,16 +5,7 @@ echo   GanjaCraft Launcher - Сборка и деплой
 echo ===================================================
 echo.
 
-echo --- 1/3 Сборка Bootstrap (GanjaCraft.exe) ---
-call BUILD_BOOTSTRAP.bat
-if %errorlevel% neq 0 (
-    echo [ОШИБКА] Ошибка при сборке Bootstrap!
-    pause
-    exit /b %errorlevel%
-)
-
-echo.
-echo --- 2/3 Сборка Клиента (Electron + ZIP обновление) ---
+echo --- Сборка Клиента (Electron NSIS Установщик) ---
 cd client
 call node build-release.js
 set BUILD_ERR=%errorlevel%
@@ -27,6 +18,7 @@ if %BUILD_ERR% neq 0 (
 
 echo ===================================================
 echo   [ГОТОВО] Сборка лаунчера завершена!
+echo   Файлы установщика лежат в deploy_www/api/launcher/files/
 echo ===================================================
 echo.
 pause

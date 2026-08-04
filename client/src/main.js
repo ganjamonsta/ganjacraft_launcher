@@ -14,6 +14,7 @@ app.setPath('userData', customUserDataPath);
 app.commandLine.appendSwitch('enable-features', 'OverlayScrollbar');
 
 const { createWindow, getMainWindow } = require('./main-process');
+const { autoUpdater } = require('electron-updater');
 
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -31,6 +32,9 @@ if (!gotTheLock) {
 
     app.whenReady().then(() => {
         createWindow();
+
+        // Check for updates
+        autoUpdater.checkForUpdatesAndNotify();
 
         app.on('activate', () => {
             if (BrowserWindow.getAllWindows().length === 0) {
