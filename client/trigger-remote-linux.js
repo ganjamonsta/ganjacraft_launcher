@@ -24,7 +24,7 @@ const conn = new Client();
 conn.on('ready', () => {
     console.log('✅ SSH Connected! Triggering Linux build on Debian server...');
     
-    const cmd = `cd ${remotePath}/client && git pull && export GH_TOKEN="${token}" && npm run build:renderer && ./node_modules/.bin/electron-builder --linux -p always`;
+    const cmd = `cd ${remotePath}/client && git pull && export GH_TOKEN="${token}" && npm run build:renderer && ./node_modules/.bin/electron-builder --linux -p always && rm -rf dist`;
     
     conn.exec(cmd, (err, stream) => {
         if (err) {
