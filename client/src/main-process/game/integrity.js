@@ -171,6 +171,5 @@ async function ensureWritableFilePath(filePath) {
 module.exports = {
     isZipIntact,
     cleanZeroByteFiles,
-    assertDirectoryWritable,
     ensureWritableFilePath,
 };

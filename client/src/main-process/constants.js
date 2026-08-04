@@ -4,7 +4,7 @@
  */
 
 // Версии
-const NEOFORGE_VERSION = '21.1.233';
+const NEOFORGE_VERSION = '21.1.247';
 const MC_VERSION = '1.21.1';
 const REQUIRED_JAVA_MAJOR = 21;
 

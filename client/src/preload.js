@@ -180,8 +180,7 @@ contextBridge.exposeInMainWorld('api', {
     
     // Advanced
     reinstallClient: () => ipcRenderer.invoke('reinstall-client'),
-    verifyIntegrity: () => ipcRenderer.invoke('verify-integrity'),
-    onIntegrityProgress: (callback) => ipcRenderer.on('integrity-progress', (event, data) => callback(data)),
+
     getManifest: () => ipcRenderer.invoke('get-manifest'), // To list mods in UI
     resolveModrinth: (hashes) => ipcRenderer.invoke('resolve-modrinth', hashes),
     

@@ -12,7 +12,6 @@ const { authenticateYggdrasil } = require('../../modules/auth');
 const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJavaw, resolveJavaPath } = require('../../modules/java');
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
-const { repairCriticalFiles } = require('./repair');
 const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, ensureNeoForgeVersionJsonMerged, ensureAssetIndex } = require('./neoforge');
 const { 
     NEOFORGE_VERSION,
@@ -473,14 +472,14 @@ function handleLaunchError(error, rootPath) {
         return {
             success: false,
             error:
-                `Критичные файлы Forge повреждены или не скачались.\n\n` +
+                `Критичные файлы NeoForge повреждены или не скачались.\n\n` +
                 `Быстрое решение:\n` +
                 `1) Удалите папку: ${rootPath}\\libraries\\cpw\\mods\\\n` +
                 `2) Попробуйте запустить игру ещё раз (лаунчер переcкачает файлы)\n\n` +
                 `Если не сработало:\n` +
                 `3) Скопируйте файлы из рабочей установки GanjaCraft:\n` +
-                `   - modlauncher-10.0.9.jar\n` +
-                `   - securejarhandler-2.1.10.jar\n` +
+                `   - bootstraplauncher-2.0.2.jar\n` +
+                `   - securejarhandler-3.0.8.jar\n` +
                 `   в папку: ${rootPath}\\libraries\\cpw\\mods\\\n\n` +
                 `Техническая ошибка: ${msg}`
         };
@@ -494,8 +493,8 @@ function handleLaunchError(error, rootPath) {
                 `2) Добавьте папку ${rootPath} в исключения Защитника Windows/антивируса\n\n` +
                 `Если не сработает:\n` +
                 `3) Скопируйте рабочие файлы из другой установки:\n` +
-                `   ${rootPath}\\libraries\\cpw\\mods\\modlauncher\\10.0.9\\modlauncher-10.0.9.jar\n` +
-                `   ${rootPath}\\libraries\\cpw\\mods\\securejarhandler\\2.1.10\\securejarhandler-2.1.10.jar\n\n` +
+                `   ${rootPath}\\libraries\\cpw\\mods\\bootstraplauncher\\2.0.2\\bootstraplauncher-2.0.2.jar\n` +
+                `   ${rootPath}\\libraries\\cpw\\mods\\securejarhandler\\3.0.8\\securejarhandler-3.0.8.jar\n\n` +
                 `Техническая ошибка: ${msg}`
         };
     }
@@ -651,7 +650,7 @@ async function launchGame(event, options) {
         const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
 
         if (!fs.existsSync(neoforgeJsonPath)) {
-            sendLog('Первичная установка NeoForge 21.1.233 (~15-30 сек)...');
+            sendLog(`Первичная установка NeoForge ${NEOFORGE_VERSION} (~15-30 сек)...`);
             sendDebug(`Running NeoForge installer headless: ${forgeInstallerPath}`);
             try {
                 const { execFile } = require('child_process');
@@ -675,11 +674,11 @@ async function launchGame(event, options) {
                     });
                     proc.on('error', err => reject(err));
                 });
-                sendLog('✓ NeoForge 21.1.233 успешно установлен.');
+                sendLog(`✓ NeoForge ${NEOFORGE_VERSION} успешно установлен.`);
             } catch (e) {
                 sendDebug(`NeoForge install error: ${e.stack || e.message}`);
                 isGameRunning = false;
-                return { success: false, error: `Не удалось установить NeoForge 21.1.233:\n${e.message}` };
+                return { success: false, error: `Не удалось установить NeoForge ${NEOFORGE_VERSION}:\n${e.message}` };
             }
         }
 
@@ -722,20 +721,9 @@ async function launchGame(event, options) {
             return { success: false, error: e.message };
         }
 
-        // Comprehensive repair
+        // Preflight checks
         try {
-            sendDebug('Starting comprehensive repair of critical files...');
-            await repairCriticalFiles(rootPath, sendLog, sendDebug);
-            sendDebug('Critical files repair completed successfully.');
-        } catch (e) {
-            sendDebug(`Critical files repair failed: ${e.stack || e.message}`);
-            isGameRunning = false;
-            return { success: false, error: e.message };
-        }
-
-        // Windows-specific preflight
-        try {
-            sendDebug('Preflight: checking Forge library writability...');
+            sendDebug('Preflight: checking NeoForge library writability...');
             await preflightNeoForgeLibraries(rootPath, sendLog, sendDebug);
             sendDebug('Preflight: Forge library writability OK.');
         } catch (e) {
