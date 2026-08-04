@@ -53,15 +53,17 @@ pkg.version = newVersion;
 console.log(`🚀 Bumping version to: ${newVersion}`);
 fs.writeFileSync(PACKAGE_PATH, JSON.stringify(pkg, null, 2));
 
-// Auto Git Commit & Push so the remote Linux server gets exact same code
+// Auto Git Commit & Push so the remote Linux server gets exact same version and code
 try {
     console.log('📤 Auto-committing and pushing release version to Git...');
-    execSync('git add package.json last_build.hash', { stdio: 'ignore', cwd: __dirname });
-    execSync(`git commit -m "chore: release v${newVersion}"`, { stdio: 'ignore', cwd: __dirname });
-    execSync('git push', { stdio: 'ignore', cwd: __dirname });
+    const rootDir = path.join(__dirname, '..');
+    execSync('git add -A', { stdio: 'inherit', cwd: rootDir });
+    execSync(`git commit -m "chore: release v${newVersion}"`, { stdio: 'inherit', cwd: rootDir });
+    execSync('git push', { stdio: 'inherit', cwd: rootDir });
     console.log('✅ Git repository synced!');
 } catch (e) {
-    console.warn('⚠️ Auto git push skipped or already up to date.');
+    console.error('❌ Failed to sync Git repository! Aborting build to prevent version desync.');
+    process.exit(1);
 }
 
 // 2.5 Clean dist
