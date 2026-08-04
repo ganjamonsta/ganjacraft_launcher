@@ -406,7 +406,6 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
     // NeoForge required module system args (MCLC doesn't process inheritsFrom JVM args)
     const neoforgeModuleArgs = [
         `-Djava.net.preferIPv6Addresses=system`,
-        `-DignoreList=client-extra,${MC_VERSION}.jar`,
         `-DlibraryDirectory=${path.join(rootPath, 'libraries')}`,
         `-p`, [
             findLib('cpw/mods/bootstraplauncher'),
