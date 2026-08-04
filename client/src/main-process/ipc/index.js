@@ -7,6 +7,7 @@ const { registerWindowHandlers } = require('./window');
 const { registerConfigHandlers } = require('./config');
 const { registerDevToolsHandlers } = require('./dev-tools');
 const { registerGameHandlers } = require('./game');
+const { registerUpdaterHandlers } = require('./updater');
 
 /**
  * Зарегистрировать все IPC обработчики
@@ -17,6 +18,7 @@ function registerAllHandlers(mainWindow) {
     registerConfigHandlers(mainWindow);
     registerDevToolsHandlers(mainWindow);
     registerGameHandlers();
+    registerUpdaterHandlers();
 }
 
 module.exports = {
@@ -25,4 +27,5 @@ module.exports = {
     registerConfigHandlers,
     registerDevToolsHandlers,
     registerGameHandlers,
+    registerUpdaterHandlers,
 };

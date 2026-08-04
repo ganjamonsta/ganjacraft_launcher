@@ -33,8 +33,21 @@ if (!gotTheLock) {
     app.whenReady().then(() => {
         createWindow();
 
+        // Setup Auto-Updater
+        autoUpdater.autoDownload = false;
+        
+        autoUpdater.on('update-available', (info) => {
+            const win = getMainWindow();
+            if (win) win.webContents.send('update-available', info);
+        });
+        
+        autoUpdater.on('update-downloaded', () => {
+            const win = getMainWindow();
+            if (win) win.webContents.send('update-downloaded');
+        });
+
         // Check for updates
-        autoUpdater.checkForUpdatesAndNotify();
+        autoUpdater.checkForUpdates().catch(err => console.error("Update check failed:", err));
 
         app.on('activate', () => {
             if (BrowserWindow.getAllWindows().length === 0) {

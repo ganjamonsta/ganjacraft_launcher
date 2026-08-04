@@ -195,6 +195,12 @@ contextBridge.exposeInMainWorld('api', {
     // Events
     onGameClosed: (callback) => ipcRenderer.on('game-closed', () => callback()),
     
+    // Updater
+    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, info) => callback(info)),
+    onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', () => callback()),
+    downloadUpdate: () => ipcRenderer.invoke('download-update'),
+    installUpdate: () => ipcRenderer.invoke('install-update'),
+
     cancelLaunch: () => ipcRenderer.invoke('cancel-launch'),
     showContextMenu: () => ipcRenderer.send('show-context-menu')
 });

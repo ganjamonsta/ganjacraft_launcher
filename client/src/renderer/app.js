@@ -7,7 +7,7 @@
 import { dom } from './utils/dom.js';
 
 // === UI Imports ===
-import { customConfirm, customAlert, showError } from './ui/modals.js';
+import { customConfirm, customAlert, showError, showNotification } from './ui/modals.js';
 import { 
     initAllEffects,
     createSnowBurst, 
@@ -93,6 +93,28 @@ function initWindowControls() {
     if (btnClose) {
         btnClose.addEventListener('click', () => {
             window.api.close();
+        });
+    }
+}
+
+// === Auto-Updater ===
+function initUpdaterHandlers() {
+    if (window.api.onUpdateAvailable) {
+        window.api.onUpdateAvailable(async (info) => {
+            const version = info?.version || '';
+            const msg = version ? `Доступна новая версия лаунчера (v${version}). Скачать сейчас?` : 'Доступна новая версия лаунчера. Скачать сейчас?';
+            const shouldDownload = await customConfirm(msg, 'Доступно обновление');
+            if (shouldDownload) {
+                window.api.downloadUpdate();
+                showNotification('Загрузка обновления началась...', 'info', 'Обновление', 4000);
+            }
+        });
+
+        window.api.onUpdateDownloaded(async () => {
+            const shouldInstall = await customConfirm('Обновление успешно загружено. Перезапустить лаунчер для установки?', 'Обновление готово');
+            if (shouldInstall) {
+                window.api.installUpdate();
+            }
         });
     }
 }
@@ -297,6 +319,7 @@ async function init() {
     updateLoaderStatus(45, 'Подготовка интерфейса и настроек...');
     // 3. Init UI handlers & Pre-populate settings fields
     initWindowControls();
+    initUpdaterHandlers();
     initConsoleToggle();
     initSettingsButton();
     initAuthHandlers();
