@@ -303,7 +303,7 @@ export const MOD_GROUPS = [
         description: 'Плавная свободная камера от третьего лица при нажатии F5 (360° обзор).',
         curseSlug: 'leawind-third-person',
         modrinthSlug: 'leawind-third-person',
-        files: ['client-leawind_third_person']
+        files: ['client-leawind_third_person', 'client-BetterThirdPerson']
     },
     {
         id: 'controllable',
@@ -343,11 +343,11 @@ export const SUB_CATEGORIES = [
 ];
 
 export const CATEGORY_ORDER = [
-    'Оптимизация',
-    'Графика',
-    'Интерфейс',
-    'Механики',
-    'Интеграции',
+    'ПРОИЗВОДИТЕЛЬНОСТЬ',
+    'ГРАФИКА И ШЕЙДЕРЫ',
+    'ИНТЕРФЕЙС И КАРТА',
+    'ГЕЙМПЛЕЙ И МЕХАНИКИ',
+    'УТИЛИТЫ И ПРОЧЕЕ',
     'Остальное'
 ];
 
@@ -357,4 +357,6 @@ export const CATEGORY_ORDER = [
 export const DEFAULT_DISABLED_GROUPS = MOD_GROUPS
     .filter(g => g.defaultDisabled)
     .map(g => g.id);
+
+
 
