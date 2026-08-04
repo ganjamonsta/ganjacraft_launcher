@@ -273,7 +273,7 @@ async function prepareAuthlib(rootPath, sendLog, sendDebug) {
  * Игрок не может их убрать — лаунчер восстанавливает их при каждом запуске.
  */
 const REQUIRED_RESOURCE_PACKS = [
-    '[GanjaCraft] Main.zip'
+    'file/[GanjaCraft] Main'
 ];
 
 /**
