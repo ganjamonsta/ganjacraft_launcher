@@ -387,8 +387,18 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
         if (!fs.existsSync(dir)) return '';
         const versions = fs.readdirSync(dir).filter(f => fs.statSync(path.join(dir, f)).isDirectory());
         if (versions.length === 0) return '';
-        // Use the highest version folder
-        const ver = versions.sort().reverse()[0];
+        // Use the highest version folder (semver sort)
+        versions.sort((a, b) => {
+            const pa = a.split('.').map(Number);
+            const pb = b.split('.').map(Number);
+            for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+                const na = pa[i] || 0;
+                const nb = pb[i] || 0;
+                if (na !== nb) return na - nb;
+            }
+            return 0;
+        });
+        const ver = versions[versions.length - 1];
         const jarName = `${path.basename(dir)}-${ver}.jar`;
         return path.join(dir, ver, jarName);
     };
