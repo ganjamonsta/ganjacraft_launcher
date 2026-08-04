@@ -10,6 +10,19 @@ const CONFIG_FILE = path.join(app.getPath('userData'), 'launcher_config.json');
 const LEGACY_CONFIG_FILE = path.join(app.getPath('appData'), '.ganjacraft', 'launcher_config.json');
 
 function getDefaultConfig() {
+    let defaultInstallPath;
+    if (process.platform === 'win32' && app.isPackaged) {
+        const exeDir = path.dirname(app.getPath('exe'));
+        // If installed in Program Files, it requires admin rights, so fallback to AppData
+        if (exeDir.toLowerCase().includes('program files')) {
+            defaultInstallPath = path.join(app.getPath('appData'), '.ganjacraft');
+        } else {
+            defaultInstallPath = path.join(exeDir, 'game');
+        }
+    } else {
+        defaultInstallPath = path.join(app.getPath('appData'), '.ganjacraft');
+    }
+
     return {
         // Setup flags
         isDefault: true,
@@ -18,7 +31,7 @@ function getDefaultConfig() {
         modsDefaultsApplied: false,
 
         // General
-        installPath: path.join(app.getPath('appData'), '.ganjacraft'),
+        installPath: defaultInstallPath,
         javaPath: '', // Empty = auto-detect
         memoryMin: '1G',
         memoryMax: '3G',
