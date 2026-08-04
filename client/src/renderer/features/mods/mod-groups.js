@@ -32,7 +32,7 @@ export const MOD_GROUPS = [
         subCategory: 'Оптимизация',
         icon: 'gear',
         dependsOn: 'sodium',
-        description: 'Расширенная оптимизация анимаций, частиц, частиц облаков и подпрядных чанков. Требует Sodium.',
+        description: 'Расширенная оптимизация анимаций, частиц, частиц облаков и подпрядных чанков.',
         curseSlug: 'sodium-extra',
         modrinthSlug: 'sodium-extra',
         files: ['client-sodium-extra']
@@ -40,13 +40,13 @@ export const MOD_GROUPS = [
     {
         id: 'reeses_options',
         name: 'Reese\'s Options',
-        shortName: 'REESE\'S OPTIONS',
+        shortName: 'Reese\'s Options',
         version: '1.8.3',
         category: 'Оптимизация',
         subCategory: 'Оптимизация',
         icon: 'cloud',
         dependsOn: 'sodium',
-        description: 'Удобное кастомное графическое меню настроек Sodium с вкладками и поиском. Требует Sodium.',
+        description: 'Удобное кастомное графическое меню настроек Sodium с вкладками и поиском.',
         curseSlug: 'reeses-sodium-options',
         modrinthSlug: 'reeses-sodium-options',
         files: ['client-reeses-sodium-options']
@@ -60,7 +60,7 @@ export const MOD_GROUPS = [
         subCategory: 'Оптимизация',
         icon: 'eye',
         dependsOn: 'sodium',
-        description: 'Пропуск рендеринга скрытых стенками сущностей и сундуков. Сильно повышает FPS на базах. Требует Sodium.',
+        description: 'Пропуск рендеринга скрытых стенками сущностей и сундуков. Сильно повышает FPS на базах.',
         curseSlug: 'entityculling',
         modrinthSlug: 'entityculling',
         files: ['client-entityculling']
@@ -87,7 +87,7 @@ export const MOD_GROUPS = [
         subCategory: 'Оптимизация',
         icon: 'gear',
         dependsOn: 'sodium',
-        description: 'Поддержка шейдерпаков OptiFine в интерфейсе настроек Sodium. Требует Sodium.',
+        description: 'Поддержка шейдерпаков OptiFine в интерфейсе настроек Sodium.',
         curseSlug: 'iris',
         modrinthSlug: 'iris',
         files: ['client-oculus', 'client-iris']
@@ -131,7 +131,7 @@ export const MOD_GROUPS = [
         subCategory: 'Графика',
         icon: 'eye',
         dependsOn: 'etf',
-        description: 'Кастомные 3D-модели мобов и сложная живая анимация сущностей. Требует ETF.',
+        description: 'Кастомные 3D-модели мобов и сложная живая анимация сущностей.',
         curseSlug: 'entity-model-features-fabric-forge',
         modrinthSlug: 'entity-model-features',
         files: ['client-entity_model_features']
@@ -286,7 +286,7 @@ export const MOD_GROUPS = [
         subCategory: 'Механики',
         icon: 'block',
         dependsOn: 'forgematica',
-        description: 'Автоматический 3D-принтер блоков по загруженной схематике. Требует Forgematica.',
+        description: 'Автоматический 3D-принтер блоков по загруженной схематике.',
         curseSlug: 'neoforgematica-printer',
         modrinthSlug: 'neoforgematica-printer',
         files: ['client-neoforgematicaprinter', 'client-NeoForgematicaPrinter'],
