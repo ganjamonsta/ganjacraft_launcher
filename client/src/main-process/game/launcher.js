@@ -381,21 +381,33 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
  * Построить опции для MCLC
  */
 function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession, authlibPrefetched) {
+    // Dynamically find library jars instead of hardcoding versions
+    const findLib = (subPath) => {
+        const dir = path.join(rootPath, 'libraries', ...subPath.split('/'));
+        if (!fs.existsSync(dir)) return '';
+        const versions = fs.readdirSync(dir).filter(f => fs.statSync(path.join(dir, f)).isDirectory());
+        if (versions.length === 0) return '';
+        // Use the highest version folder
+        const ver = versions.sort().reverse()[0];
+        const jarName = `${path.basename(dir)}-${ver}.jar`;
+        return path.join(dir, ver, jarName);
+    };
+
     // NeoForge required module system args (MCLC doesn't process inheritsFrom JVM args)
     const neoforgeModuleArgs = [
         `-Djava.net.preferIPv6Addresses=system`,
         `-DignoreList=client-extra,${MC_VERSION}.jar`,
         `-DlibraryDirectory=${path.join(rootPath, 'libraries')}`,
         `-p`, [
-            path.join(rootPath, 'libraries/cpw/mods/bootstraplauncher/2.0.2/bootstraplauncher-2.0.2.jar'),
-            path.join(rootPath, 'libraries/cpw/mods/securejarhandler/3.0.8/securejarhandler-3.0.8.jar'),
-            path.join(rootPath, 'libraries/org/ow2/asm/asm-commons/9.8/asm-commons-9.8.jar'),
-            path.join(rootPath, 'libraries/org/ow2/asm/asm-util/9.8/asm-util-9.8.jar'),
-            path.join(rootPath, 'libraries/org/ow2/asm/asm-analysis/9.8/asm-analysis-9.8.jar'),
-            path.join(rootPath, 'libraries/org/ow2/asm/asm-tree/9.8/asm-tree-9.8.jar'),
-            path.join(rootPath, 'libraries/org/ow2/asm/asm/9.8/asm-9.8.jar'),
-            path.join(rootPath, 'libraries/net/neoforged/JarJarFileSystems/0.4.1/JarJarFileSystems-0.4.1.jar'),
-        ].join(';'),
+            findLib('cpw/mods/bootstraplauncher'),
+            findLib('cpw/mods/securejarhandler'),
+            findLib('org/ow2/asm/asm-commons'),
+            findLib('org/ow2/asm/asm-util'),
+            findLib('org/ow2/asm/asm-analysis'),
+            findLib('org/ow2/asm/asm-tree'),
+            findLib('org/ow2/asm/asm'),
+            findLib('net/neoforged/JarJarFileSystems')
+        ].filter(Boolean).join(process.platform === 'win32' ? ';' : ':'),
         `--add-modules`, `ALL-MODULE-PATH`,
         `--add-opens`, `java.base/java.util.jar=cpw.mods.securejarhandler`,
         `--add-opens`, `java.base/java.lang.invoke=cpw.mods.securejarhandler`,
