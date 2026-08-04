@@ -183,6 +183,7 @@ contextBridge.exposeInMainWorld('api', {
     verifyIntegrity: () => ipcRenderer.invoke('verify-integrity'),
     onIntegrityProgress: (callback) => ipcRenderer.on('integrity-progress', (event, data) => callback(data)),
     getManifest: () => ipcRenderer.invoke('get-manifest'), // To list mods in UI
+    resolveModrinth: (hashes) => ipcRenderer.invoke('resolve-modrinth', hashes),
     
     // Admin Dev Tools
     devSyncCategory: (category, options) => ipcRenderer.invoke('dev-sync-category', category, options),

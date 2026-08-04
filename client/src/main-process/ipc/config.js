@@ -294,6 +294,17 @@ function registerConfigHandlers(mainWindow) {
             repairedFiles
         };
     });
+    // Modrinth Hash Resolver
+    ipcMain.handle('resolve-modrinth', async (event, hashes) => {
+        try {
+            const { resolveModrinthUrls } = require('../../modules/updater/modrinth');
+            return await resolveModrinthUrls(hashes);
+        } catch (e) {
+            console.error('IPC resolve-modrinth error:', e);
+            return {};
+        }
+    });
+
 }
 
 module.exports = {

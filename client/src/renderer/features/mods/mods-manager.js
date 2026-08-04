@@ -605,6 +605,43 @@ let currentRenderedIndex = 0;
 let filteredCatalogItems = [];
 const BATCH_SIZE = 25;
 
+let isModrinthResolving = false;
+let resolvedModrinthUrls = {};
+
+async function resolveModrinthProjectUrlsAsync(hashes) {
+    if (!hashes || hashes.length === 0) return;
+    
+    try {
+        const data = await window.api.resolveModrinth(hashes);
+        if (!data || Object.keys(data).length === 0) return;
+        
+        let hasUpdates = false;
+        for (const [hash, info] of Object.entries(data)) {
+            if (info && info.projectId) {
+                resolvedModrinthUrls[hash.toLowerCase()] = `https://modrinth.com/mod/${info.projectId}`;
+                hasUpdates = true;
+            }
+        }
+        
+        if (hasUpdates && cachedCatalogData) {
+            cachedCatalogData.forEach(item => {
+                if (item.hash && resolvedModrinthUrls[item.hash] && !item.hasFixedModrinthUrl) {
+                    item.modrinthUrl = resolvedModrinthUrls[item.hash];
+                    item.hasFixedModrinthUrl = true;
+                    
+                    // Update live DOM button without re-rendering everything
+                    const btn = document.querySelector(`button[data-hash="${item.hash}"]`);
+                    if (btn) {
+                        btn.dataset.url = item.modrinthUrl;
+                    }
+                }
+            });
+        }
+    } catch (err) {
+        console.warn('[Modrinth UI] IPC resolve error:', err);
+    }
+}
+
 function appendCatalogBatch(contentContainer) {
     if (currentRenderedIndex >= filteredCatalogItems.length) return;
 
@@ -624,7 +661,7 @@ function appendCatalogBatch(contentContainer) {
                 </div>
             </div>
             <div class="setting-control">
-                <button type="button" class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}">⚡ Modrinth ↗</button>
+                <button type="button" class="unified-btn unified-btn-primary" data-url="${item.modrinthUrl}" ${item.hash ? `data-hash="${item.hash}"` : ''}>⚡ Modrinth ↗</button>
             </div>
         `;
         fragment.appendChild(row);
@@ -671,9 +708,25 @@ function renderLinksCatalogIntoContainer(manifest, contentContainer, query = '')
                 cleanName: groupMatch ? groupMatch.name : cleanName,
                 isOptional: !!groupMatch,
                 downloadUrl,
-                modrinthUrl
+                modrinthUrl: (file.hash && resolvedModrinthUrls[file.hash.toLowerCase()]) 
+                             ? resolvedModrinthUrls[file.hash.toLowerCase()] 
+                             : modrinthUrl,
+                hash: file.hash ? file.hash.toLowerCase() : null,
+                hasFixedModrinthUrl: !!groupMatch?.modrinthSlug || !!(file.hash && resolvedModrinthUrls[file.hash.toLowerCase()])
             };
         });
+
+        // Trigger async resolving for any hashes that don't have a fixed URL yet
+        if (!isModrinthResolving) {
+            isModrinthResolving = true;
+            const hashesToResolve = cachedCatalogData
+                .filter(item => item.hash && !item.hasFixedModrinthUrl)
+                .map(item => item.hash);
+            
+            if (hashesToResolve.length > 0) {
+                resolveModrinthProjectUrlsAsync(hashesToResolve);
+            }
+        }
     }
 
     filteredCatalogItems = cachedCatalogData.filter(item => {

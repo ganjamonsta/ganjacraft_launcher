@@ -111,8 +111,8 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
             const resolvedCount = Object.keys(modrinthMap).length;
             if (resolvedCount > 0) {
                 for (const file of manifest.files) {
-                    if (file && file.hash && modrinthMap[file.hash.toLowerCase()]) {
-                        file.url = modrinthMap[file.hash.toLowerCase()];
+                    if (file && file.hash && modrinthMap[file.hash.toLowerCase()] && modrinthMap[file.hash.toLowerCase()].cdnUrl) {
+                        file.url = modrinthMap[file.hash.toLowerCase()].cdnUrl;
                     }
                 }
             }
