@@ -60,26 +60,33 @@ if (fs.existsSync(distPath)) {
     fs.rmSync(distPath, { recursive: true, force: true });
 }
 
-// 3. Run Build
-console.log('🔨 Running build (electron-builder)...');
+// 3. Run Build & Publish
+console.log('🔨 Running build and publishing to GitHub (electron-builder -p always)...');
+
+// Load environment variables to get GITHUB_TOKEN
+const envDeployPath = path.join(__dirname, '../.env.deploy');
 try {
-    execSync('npm run build', { stdio: 'inherit', cwd: __dirname });
+    require('dotenv').config({ path: envDeployPath });
 } catch (e) {
-    console.error('❌ Build failed!');
+    console.warn('⚠️ Could not load .env.deploy', e.message);
+}
+
+// Pass GITHUB_TOKEN as GH_TOKEN to electron-builder
+const env = { ...process.env };
+if (env.GITHUB_TOKEN && !env.GH_TOKEN) {
+    env.GH_TOKEN = env.GITHUB_TOKEN;
+}
+
+try {
+    execSync('npm run build:renderer && npx electron-builder --win --linux -p always', { stdio: 'inherit', cwd: __dirname, env: env });
+} catch (e) {
+    console.error('❌ Build or Publish failed!');
     process.exit(1);
 }
 
-// 4. Run Publish
-console.log('📦 Publishing to local storage...');
-try {
-    execSync('node publish.js', { stdio: 'inherit', cwd: __dirname });
-} catch (e) {
-    console.error('❌ Publish failed!');
-    process.exit(1);
-}
-
-console.log('✅ Done! Update deployed successfully.');
+console.log('✅ Done! Update built and published to GitHub successfully.');
 
 // Save new hash
 fs.writeFileSync(HASH_FILE, currentHash);
+
 

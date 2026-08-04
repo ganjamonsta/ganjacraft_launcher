@@ -5,8 +5,9 @@ const { downloadFile } = require('./updater');
 
 const REQUIRED_JAVA_MAJOR = 21;
 
-// Adoptium JRE 21 for Windows x64
+// Adoptium JRE 21 for Windows and Linux x64
 const JAVA_URL_WIN = 'https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse';
+const JAVA_URL_LINUX = 'https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jre/hotspot/normal/eclipse';
 
 function preferJavaw(javaCommandOrPath) {
     if (process.platform !== 'win32') return javaCommandOrPath;
@@ -206,18 +207,9 @@ async function checkAndDownloadJava(dataDir, sendLog) {
     
     if (!fs.existsSync(runtimeDir)) fs.mkdirSync(runtimeDir, { recursive: true });
 
-    const zipPath = path.join(runtimeDir, 'java.zip');
-    const url = process.platform === 'win32' ? JAVA_URL_WIN : null;
-
-    if (!url) {
-        // Non-Windows: we can't auto-install right now.
-        const systemInfo = await getJavaVersionInfo('java').catch(() => null);
-        if (systemInfo && systemInfo.major >= REQUIRED_JAVA_MAJOR) {
-            sendLog('Автоматическое скачивание Java не поддерживается для этой ОС. Используется системная Java.');
-            return 'java';
-        }
-        throw new Error(`Нужна Java ${REQUIRED_JAVA_MAJOR}+ для запуска Minecraft ${process.env.MC_VERSION || ''}. Установите подходящую Java и попробуйте снова.`);
-    }
+    const isWin = process.platform === 'win32';
+    const zipPath = path.join(runtimeDir, isWin ? 'java.zip' : 'java.tar.gz');
+    const url = isWin ? JAVA_URL_WIN : JAVA_URL_LINUX;
 
     try {
         await downloadFile(url, zipPath);
@@ -255,13 +247,16 @@ async function checkAndDownloadJava(dataDir, sendLog) {
         if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
         if (fs.existsSync(javaExec)) {
+            if (!isWin) {
+                try { fs.chmodSync(javaExec, 0o755); } catch {}
+            }
             const info = await getJavaVersionInfo(javaExec);
             if (!info || info.major < REQUIRED_JAVA_MAJOR) {
                 throw new Error(`Скачанная Java имеет неподходящую версию. Требуется Java ${REQUIRED_JAVA_MAJOR}+.`);
             }
             return javaExec;
         } else {
-            throw new Error('Не удалось найти java.exe после распаковки.');
+            throw new Error('Не удалось найти бинарник Java после распаковки.');
         }
     } catch (e) {
         sendLog('Ошибка при установке Java: ' + e.message);
@@ -306,7 +301,15 @@ function extractZip(zipPath, destDir) {
                 reject(err);
             });
         } else {
-            reject(new Error('Unzip not implemented for non-Windows yet.'));
+            // Use tar on Linux/macOS
+            const tar = spawn('tar', ['-xzf', zipPath, '-C', destDir]);
+            tar.on('close', (code) => {
+                if (code === 0) resolve();
+                else reject(new Error(`Tar extraction failed with code ${code}`));
+            });
+            tar.on('error', (err) => {
+                reject(err);
+            });
         }
     });
 }
