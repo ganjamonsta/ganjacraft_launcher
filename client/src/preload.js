@@ -6,7 +6,7 @@ const API_BASES = [
     'https://ganj4craft.ru/api'
 ];
 const API_BASE = API_BASES[0];
-const DEFAULT_TIMEOUT = 5000;
+const DEFAULT_TIMEOUT = 25000;
 
 async function fetchWithTimeout(resource, options = {}) {
     const { timeout = 5000 } = options;
