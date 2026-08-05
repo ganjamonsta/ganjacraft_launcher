@@ -23,6 +23,7 @@ const {
 
 // Папки для поиска кэша по умолчанию
 const DEFAULT_CACHE_DIRS = [
+    's:\\Games\\GanjaCraft Launcher\\game',
     's:\\Games\\LegacyLauncher_portable\\game',
     process.env.APPDATA ? path.join(process.env.APPDATA, '.minecraft') : '',
     path.join(__dirname, '../cache')
