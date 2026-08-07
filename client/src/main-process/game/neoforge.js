@@ -119,7 +119,6 @@ function parseNeoForgeJvmArgs(rootPath) {
             }
             if (arg.includes('${natives_directory}')) continue;
             if (arg.includes('-Dminecraft.launcher')) continue;
-            if (arg.includes('-DignoreList=client-extra,${version_name}.jar')) continue; // Vanilla version
             
             args.push(arg
                 .replace(/\$\{library_directory\}/g, libraryDir)
