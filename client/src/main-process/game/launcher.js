@@ -12,7 +12,7 @@ const { authenticateYggdrasil } = require('../../modules/auth');
 const { checkAndDownloadJava, getJavaVersionInfo, REQUIRED_JAVA_MAJOR, preferJavaw, resolveJavaPath } = require('../../modules/java');
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
-const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, ensureNeoForgeVersionJsonMerged, ensureAssetIndex } = require('./neoforge');
+const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, ensureNeoForgeVersionJsonMerged, ensureAssetIndex, parseNeoForgeJvmArgs, verifyNeoForgeLibraries } = require('./neoforge');
 const { 
     NEOFORGE_VERSION,
     MC_VERSION,
@@ -38,15 +38,36 @@ const { getMirrorFallbackUrl } = require('../constants');
 
 MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry, type) {
     const fallbackUrl = getMirrorFallbackUrl(url);
+    const filePath = path.join(directory, name);
     
     // Try original URL first
     const result = await originalDownloadAsync.call(this, url, directory, name, retry, type);
+    
+    // MCLC may leave a 0-byte file on failure — clean it up
+    if (!result) {
+        try {
+            if (fs.existsSync(filePath) && fs.statSync(filePath).size === 0) {
+                fs.unlinkSync(filePath);
+                this.client.emit('debug', `[MCLC]: Cleaned up 0-byte file: ${name}`);
+            }
+        } catch {}
+    }
     
     // MCLC resolves with `false` on 404, or `undefined` on error
     if (!result && fallbackUrl) {
         this.client.emit('debug', `[MCLC]: Original URL failed (${url}). Falling back to mirror: ${fallbackUrl}`);
         // Try fallback URL, without passing fallback logic further down
-        return await originalDownloadAsync.call(this, fallbackUrl, directory, name, retry, type);
+        const mirrorResult = await originalDownloadAsync.call(this, fallbackUrl, directory, name, retry, type);
+        
+        // Clean up 0-byte file from mirror failure too
+        if (!mirrorResult) {
+            try {
+                if (fs.existsSync(filePath) && fs.statSync(filePath).size === 0) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch {}
+        }
+        return mirrorResult;
     }
     
     return result;
@@ -381,49 +402,18 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
  * Построить опции для MCLC
  */
 function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession, authlibPrefetched) {
-    // Dynamically find library jars instead of hardcoding versions
-    const findLib = (subPath) => {
-        const dir = path.join(rootPath, 'libraries', ...subPath.split('/'));
-        if (!fs.existsSync(dir)) return '';
-        const versions = fs.readdirSync(dir).filter(f => fs.statSync(path.join(dir, f)).isDirectory());
-        if (versions.length === 0) return '';
-        // Use the highest version folder (semver sort)
-        versions.sort((a, b) => {
-            const pa = a.split('.').map(Number);
-            const pb = b.split('.').map(Number);
-            for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-                const na = pa[i] || 0;
-                const nb = pb[i] || 0;
-                if (na !== nb) return na - nb;
-            }
-            return 0;
-        });
-        const ver = versions[versions.length - 1];
-        const jarName = `${path.basename(dir)}-${ver}.jar`;
-        return path.join(dir, ver, jarName);
-    };
-
-    // NeoForge required module system args (MCLC doesn't process inheritsFrom JVM args)
-    const neoforgeModuleArgs = [
-        `-Djava.net.preferIPv6Addresses=system`,
-        `-DignoreList=${MC_VERSION}.jar`,
-        `-DlibraryDirectory=${path.join(rootPath, 'libraries')}`,
-        `-p`, [
-            findLib('cpw/mods/bootstraplauncher'),
-            findLib('cpw/mods/securejarhandler'),
-            findLib('org/ow2/asm/asm-commons'),
-            findLib('org/ow2/asm/asm-util'),
-            findLib('org/ow2/asm/asm-analysis'),
-            findLib('org/ow2/asm/asm-tree'),
-            findLib('org/ow2/asm/asm'),
-            findLib('net/neoforged/JarJarFileSystems')
-        ].filter(Boolean).join(process.platform === 'win32' ? ';' : ':'),
-        `--add-modules`, `ALL-MODULE-PATH`,
-        `--add-opens`, `java.base/java.util.jar=cpw.mods.securejarhandler`,
-        `--add-opens`, `java.base/java.lang.invoke=cpw.mods.securejarhandler`,
-        `--add-exports`, `java.base/sun.security.util=cpw.mods.securejarhandler`,
-        `--add-exports`, `jdk.naming.dns/com.sun.jndi.dns=java.naming`,
-    ];
+    // Read NeoForge JVM args directly from version.json
+    const parsedJvmArgs = parseNeoForgeJvmArgs(rootPath);
+    
+    let neoforgeModuleArgs;
+    if (parsedJvmArgs) {
+        // Parsed from version.json — exact paths, no guessing
+        neoforgeModuleArgs = parsedJvmArgs;
+    } else {
+        // Fallback: if version.json is not yet created (first install), 
+        // use empty — installer will create it on next run
+        neoforgeModuleArgs = [];
+    }
 
     const customArgs = [...neoforgeModuleArgs, ...JVM_OPTIMIZATION_ARGS];
     if (authlibPath && !authSession.isOffline) {
@@ -706,6 +696,16 @@ async function launchGame(event, options) {
 
         // Ensure NeoForge version JSON is merged with vanilla 1.21.1 libraries BEFORE passing it to MCLC
         ensureNeoForgeVersionJsonMerged(rootPath, sendDebug);
+
+        // Verify NeoForge library SHA1 hashes (delete corrupted, MCLC will re-download)
+        try {
+            const corrupted = await verifyNeoForgeLibraries(rootPath, sendLog, sendDebug);
+            if (corrupted > 0) {
+                sendDebug(`Deleted ${corrupted} corrupted libraries. MCLC will re-download them.`);
+            }
+        } catch (e) {
+            sendDebug(`Library verification failed: ${e.message}`);
+        }
 
         // Prefetch Yggdrasil metadata for authlib-injector (bypass Localtunnel reminder)
         let authlibPrefetched = null;

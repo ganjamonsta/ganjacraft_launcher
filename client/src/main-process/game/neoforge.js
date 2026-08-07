@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { downloadFile } = require('../../modules/updater');
 const { isZipIntact, ensureWritableFilePath } = require('./integrity');
 const { 
@@ -87,6 +88,36 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
 }
 
 /**
+ * Парсит modulepath (-p) и другие JVM аргументы из NeoForge version.json
+ * Возвращает готовые аргументы с подстановкой ${library_directory} и ${classpath_separator}
+ */
+function parseNeoForgeJvmArgs(rootPath) {
+    const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
+    const jsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+    if (!fs.existsSync(jsonPath)) return null;
+
+    try {
+        const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        const jvmArgs = json.arguments?.jvm;
+        if (!Array.isArray(jvmArgs)) return null;
+
+        const libraryDir = path.join(rootPath, 'libraries');
+        const separator = process.platform === 'win32' ? ';' : ':';
+
+        // Подставляем переменные в каждый JVM аргумент
+        return jvmArgs
+            .filter(arg => typeof arg === 'string')
+            .map(arg => arg
+                .replace(/\$\{library_directory\}/g, libraryDir)
+                .replace(/\$\{classpath_separator\}/g, separator)
+                .replace(/\$\{version_name\}/g, MC_VERSION)
+            );
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
  * Preflight проверка NeoForge библиотек на доступность записи
  * @param {string} rootPath - Корневой путь установки
  * @param {Function} sendLog - Функция логирования
@@ -94,17 +125,37 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
  */
 async function preflightNeoForgeLibraries(rootPath, sendLog, sendDebug) {
     const librariesDir = path.join(rootPath, 'libraries');
+    const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
+    const jsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
     
-    const criticalLibs = [
-        path.join(librariesDir, 'net', 'neoforged', 'fancymodloader', 'loader', '4.0.42', 'loader-4.0.42.jar'),
-    ];
+    if (!fs.existsSync(jsonPath)) {
+        sendDebug('Preflight: NeoForge version JSON not found, skipping.');
+        return;
+    }
+    
+    let criticalLibPaths = [];
+    try {
+        const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        const jvmArgs = json.arguments?.jvm || [];
+        
+        // Найти -p аргумент и извлечь пути библиотек
+        const pIdx = jvmArgs.indexOf('-p');
+        if (pIdx >= 0 && typeof jvmArgs[pIdx + 1] === 'string') {
+            const modulepathStr = jvmArgs[pIdx + 1];
+            criticalLibPaths = modulepathStr
+                .split(/\$\{classpath_separator\}/)
+                .map(p => p.replace(/\$\{library_directory\}/g, librariesDir))
+                .filter(Boolean);
+        }
+    } catch (e) {
+        sendDebug(`Preflight: Failed to parse version JSON: ${e.message}`);
+    }
 
-    for (const libPath of criticalLibs) {
+    for (const libPath of criticalLibPaths) {
         if (!fs.existsSync(libPath)) {
             sendDebug(`Preflight: ${path.basename(libPath)} does not exist yet.`);
             continue;
         }
-        
         try {
             await ensureWritableFilePath(libPath);
             sendDebug(`Preflight: ${path.basename(libPath)} is writable.`);
@@ -149,6 +200,19 @@ function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
                     added++;
                 }
             }
+        }
+
+        // Ensure assetIndex is inherited from vanilla (MCLC needs it)
+        if (!neoJson.assetIndex && vanillaJson.assetIndex) {
+            neoJson.assetIndex = vanillaJson.assetIndex;
+        }
+        // Ensure assets field is inherited
+        if (!neoJson.assets && vanillaJson.assets) {
+            neoJson.assets = vanillaJson.assets;
+        }
+        // Ensure downloads are inherited (MCLC uses downloads.client.url for jar)
+        if (!neoJson.downloads && vanillaJson.downloads) {
+            neoJson.downloads = vanillaJson.downloads;
         }
 
         // Merge vanilla game arguments with NeoForge game arguments if missing
@@ -245,9 +309,59 @@ async function ensureAssetIndex(rootPath, sendLog) {
     }
 }
 
+/**
+ * Проверить SHA1 хеши NeoForge библиотек, удалить повреждённые
+ * @returns {Promise<number>} Количество удалённых повреждённых файлов
+ */
+async function verifyNeoForgeLibraries(rootPath, sendLog, sendDebug) {
+    const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
+    const jsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+    if (!fs.existsSync(jsonPath)) return 0;
+    
+    let json;
+    try {
+        json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    } catch (e) {
+        return 0;
+    }
+
+    const libraries = json.libraries || [];
+    const librariesDir = path.join(rootPath, 'libraries');
+    let corrupted = 0;
+    
+    for (const lib of libraries) {
+        const artifact = lib.downloads?.artifact;
+        if (!artifact?.path || !artifact?.sha1) continue;
+        
+        const filePath = path.join(librariesDir, ...artifact.path.split('/'));
+        if (!fs.existsSync(filePath)) continue; // Will be downloaded by MCLC
+        
+        try {
+            const hash = crypto.createHash('sha1');
+            const stream = fs.createReadStream(filePath);
+            for await (const chunk of stream) {
+                hash.update(chunk);
+            }
+            const actual = hash.digest('hex');
+            
+            if (actual !== artifact.sha1) {
+                sendDebug(`SHA1 mismatch: ${artifact.path} (expected ${artifact.sha1}, got ${actual}). Deleting.`);
+                try { fs.unlinkSync(filePath); } catch {}
+                corrupted++;
+            }
+        } catch (e) {
+            sendDebug(`Failed to verify SHA1 for ${artifact.path}: ${e.message}`);
+        }
+    }
+    
+    return corrupted;
+}
+
 module.exports = {
     ensureVanillaVersionFiles,
     preflightNeoForgeLibraries,
     ensureNeoForgeVersionJsonMerged,
     ensureAssetIndex,
+    parseNeoForgeJvmArgs,
+    verifyNeoForgeLibraries,
 };
