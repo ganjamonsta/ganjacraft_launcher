@@ -104,14 +104,30 @@ function parseNeoForgeJvmArgs(rootPath) {
         const libraryDir = path.join(rootPath, 'libraries');
         const separator = process.platform === 'win32' ? ';' : ':';
 
-        // Подставляем переменные в каждый JVM аргумент
-        return jvmArgs
-            .filter(arg => typeof arg === 'string')
-            .map(arg => arg
+        // Подставляем переменные в каждый JVM аргумент, игнорируя ванильные макросы, 
+        // которые MCLC должен обрабатывать сам (например, natives_directory, classpath)
+        const args = [];
+        for (let i = 0; i < jvmArgs.length; i++) {
+            const arg = jvmArgs[i];
+            if (typeof arg !== 'string') continue;
+            
+            // Пропускаем ванильный -cp и его значение ${classpath}, а также ${natives_directory}
+            // MCLC генерирует classpath и natives самостоятельно.
+            if (arg === '-cp' && jvmArgs[i+1] === '${classpath}') {
+                i++; // пропускаем оба
+                continue;
+            }
+            if (arg.includes('${natives_directory}')) continue;
+            if (arg.includes('-Dminecraft.launcher')) continue;
+            if (arg.includes('-DignoreList=client-extra,${version_name}.jar')) continue; // Vanilla version
+            
+            args.push(arg
                 .replace(/\$\{library_directory\}/g, libraryDir)
                 .replace(/\$\{classpath_separator\}/g, separator)
                 .replace(/\$\{version_name\}/g, MC_VERSION)
             );
+        }
+        return args;
     } catch (e) {
         return null;
     }
@@ -240,15 +256,19 @@ function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
         const vanillaJvmArgs = (vanillaJson.arguments && Array.isArray(vanillaJson.arguments.jvm)) ? vanillaJson.arguments.jvm : [];
         const neoJvmArgs = (neoJson.arguments && Array.isArray(neoJson.arguments.jvm)) ? neoJson.arguments.jvm : [];
         
-        const mergedJvmArgs = [...vanillaJvmArgs];
-        for (const arg of neoJvmArgs) {
-            if (typeof arg === 'string' && !mergedJvmArgs.includes(arg)) {
-                mergedJvmArgs.push(arg);
-            } else if (typeof arg !== 'string') {
-                // If it's an object with rules, just push it (or implement deeper dedup if necessary)
-                mergedJvmArgs.push(arg);
-            }
+        // ВАЖНО: Нельзя дедуплицировать строковые аргументы (например, --add-opens), так как они идут парами.
+        // Просто объединяем массивы, как это делает наследование в Minecraft.
+        // Но чтобы избежать дублирования при повторных запусках (так как мы перезаписываем тот же файл),
+        // проверим, содержит ли уже neoJvmArgs ванильные аргументы.
+        
+        let mergedJvmArgs = [...neoJvmArgs];
+        // Если в neoJvmArgs нет типичного ванильного аргумента, значит это чистый forge-файл
+        const hasVanilla = neoJvmArgs.some(arg => typeof arg === 'string' && arg.includes('${natives_directory}'));
+        
+        if (!hasVanilla) {
+            mergedJvmArgs = [...vanillaJvmArgs, ...neoJvmArgs];
         }
+        
         neoJson.arguments.jvm = mergedJvmArgs;
 
         fs.writeFileSync(neoforgeJsonPath, JSON.stringify(neoJson, null, 2), 'utf8');
