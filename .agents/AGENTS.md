@@ -17,15 +17,7 @@ launcher.ganj4craft.ru (VPS/Nginx)
 
 ## 📦 Компоненты
 
-### 1. Bootstrap (Python/PyInstaller)
-- **Папка:** `bootstrap/`
-- **Сборка:** `BUILD_BOOTSTRAP.bat` → `GanjaCraft.exe`
-- **Роль:** Скачивание и верификация Ed25519-подписи Electron-клиента, его запуск.
-- **Delta-обновления:**
-  - Нет лаунчера → качает `fullUrl` (полный архив ~100 МБ).
-  - Лаунчер есть → качает только `url` (`resources/app.asar`, ~1.35 МБ).
-
-### 2. Electron Client (JS)
+### 1. Electron Client (JS)
 - **Папка:** `client/`
 - **Сборка:** `BUILD_CLIENT.bat` → деплой по SFTP на Pterodactyl через `scripts/deploy_remote.js`.
 - **Source of truth для URL:** `client/src/main-process/constants.js` — все URL только отсюда, никакого хардкода в `main.js`, `preload.js` и т.д.
@@ -48,12 +40,12 @@ launcher.ganj4craft.ru (VPS/Nginx)
   - `preload.js` — bridge renderer ↔ main
   - `styles.css` — стили (~100 КБ единый файл)
 
-### 3. Mirror (`mirror/`)
+### 2. Mirror (`mirror/`)
 - Локальная копия Minecraft/Maven/piston-data/assets.
 - Собирается `scripts/collect-mirror.js`, заливается на `https://launcher.ganj4craft.ru/mirror/`.
 - Папки: `assets/`, `github/`, `libraries/`, `maven/`, `piston-data/`, `piston-meta/`.
 
-### 4. Deploy WWW (`deploy_www/`)
+### 3. Deploy WWW (`deploy_www/`)
 - `api/launcher/` — файлы auto-updater для Electron (latest.yml + архивы).
 
 ---
@@ -84,9 +76,6 @@ cd client && npm start
 
 # Сборка релиза
 BUILD_CLIENT.bat
-
-# Сборка GanjaCraft.exe (bootstrap)
-BUILD_BOOTSTRAP.bat
 
 # Деплой всего
 DEPLOY_ALL.bat
