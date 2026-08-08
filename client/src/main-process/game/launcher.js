@@ -603,19 +603,18 @@ function handleLaunchError(error, rootPath) {
     const isClassNotFound = msg.includes('NoClassDefFoundError') || msg.includes('modlauncher') || msg.includes('securejarhandler');
     
     if (isClassNotFound) {
+        try {
+            const cpwDir = path.join(rootPath, 'libraries', 'cpw');
+            if (fs.existsSync(cpwDir)) {
+                fs.rmSync(cpwDir, { recursive: true, force: true });
+            }
+        } catch (e) {}
         return {
             success: false,
             error:
-                `Критичные файлы NeoForge повреждены или не скачались.\n\n` +
-                `Быстрое решение:\n` +
-                `1) Удалите папку: ${rootPath}\\libraries\\cpw\\mods\\\n` +
-                `2) Попробуйте запустить игру ещё раз (лаунчер переcкачает файлы)\n\n` +
-                `Если не сработало:\n` +
-                `3) Скопируйте файлы из рабочей установки GanjaCraft:\n` +
-                `   - bootstraplauncher-2.0.2.jar\n` +
-                `   - securejarhandler-3.0.8.jar\n` +
-                `   в папку: ${rootPath}\\libraries\\cpw\\mods\\\n\n` +
-                `Техническая ошибка: ${msg}`
+                `Обнаружены поврежденные библиотеки NeoForge.\n\n` +
+                `Лаунчер автоматически очистил поврежденные файлы.\n` +
+                `Пожалуйста, нажмите кнопку «Играть» ещё раз — нужные файлы перескачаются автоматически!`
         };
     } else if (isEperm) {
         return {

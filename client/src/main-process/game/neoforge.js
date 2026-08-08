@@ -104,22 +104,54 @@ function parseNeoForgeJvmArgs(rootPath) {
         const libraryDir = path.join(rootPath, 'libraries');
         const separator = process.platform === 'win32' ? ';' : ':';
 
-        // Подставляем переменные в каждый JVM аргумент, игнорируя ванильные макросы, 
-        // которые MCLC должен обрабатывать сам (например, natives_directory, classpath)
+        // Flatten jvmArgs strings and rule objects
+        const rawStrings = [];
+        for (const item of jvmArgs) {
+            if (typeof item === 'string') {
+                rawStrings.push(item);
+            } else if (item && typeof item === 'object' && item.value) {
+                let allowed = true;
+                if (Array.isArray(item.rules)) {
+                    for (const rule of item.rules) {
+                        if (rule.os && rule.os.name) {
+                            const osName = rule.os.name;
+                            const isWin = process.platform === 'win32';
+                            const isMac = process.platform === 'darwin';
+                            const isLinux = process.platform === 'linux';
+                            if (rule.action === 'allow') {
+                                if (osName === 'windows' && !isWin) allowed = false;
+                                if (osName === 'osx' && !isMac) allowed = false;
+                                if (osName === 'linux' && !isLinux) allowed = false;
+                            } else if (rule.action === 'disallow') {
+                                if (osName === 'windows' && isWin) allowed = false;
+                                if (osName === 'osx' && isMac) allowed = false;
+                                if (osName === 'linux' && isLinux) allowed = false;
+                            }
+                        }
+                    }
+                }
+                if (allowed) {
+                    if (Array.isArray(item.value)) {
+                        rawStrings.push(...item.value);
+                    } else if (typeof item.value === 'string') {
+                        rawStrings.push(item.value);
+                    }
+                }
+            }
+        }
+
         const args = [];
-        for (let i = 0; i < jvmArgs.length; i++) {
-            const arg = jvmArgs[i];
+        for (let i = 0; i < rawStrings.length; i++) {
+            const arg = rawStrings[i];
             if (typeof arg !== 'string') continue;
-            
-            // Пропускаем ванильный -cp и его значение ${classpath}, а также ${natives_directory}
-            // MCLC генерирует classpath и natives самостоятельно.
-            if (arg === '-cp' && jvmArgs[i+1] === '${classpath}') {
-                i++; // пропускаем оба
+
+            if (arg === '-cp' && rawStrings[i+1] === '${classpath}') {
+                i++; // skip both
                 continue;
             }
             if (arg.includes('${natives_directory}')) continue;
             if (arg.includes('-Dminecraft.launcher')) continue;
-            
+
             args.push(arg
                 .replace(/\$\{library_directory\}/g, libraryDir)
                 .replace(/\$\{classpath_separator\}/g, separator)
