@@ -41,8 +41,6 @@ function getDefaultConfig() {
         effectsDensity: 'low', // 'low' | 'medium' | 'high'
         enableSmoke: true, // Default smoke effect
         enableParallax: true, // Default parallax background
-        debugMode: false, // Default debug mode off
-        skipSync: false, // Skip file sync on launch (debug feature)
 
         // Mods
         disabledMods: [] // List of paths to skip
@@ -53,6 +51,10 @@ function normalizeLoadedConfig(config) {
     const defaults = getDefaultConfig();
     const hasObj = config && typeof config === 'object';
     const merged = { ...defaults, ...(hasObj ? config : {}) };
+
+    // Strip legacy debug/dev properties if present in config
+    delete merged.debugMode;
+    delete merged.skipSync;
 
     // IMPORTANT: isDefault is only for the very first run when the config file doesn't exist.
     // If a persisted config is missing isDefault (e.g. older versions or UI save), treat it as false.

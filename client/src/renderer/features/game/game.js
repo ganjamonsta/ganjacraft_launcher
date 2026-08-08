@@ -108,18 +108,9 @@ export async function startLaunch() {
         await saveSettings();
     }
 
-    // Check skip sync from config
-    const config = getCurrentConfig();
-    const skipSync = config.skipSync === true;
-    
-    if (skipSync) {
-        logToConsole('[DEBUG] Синхронизация файлов отключена!');
-    }
-    
     const result = await window.api.launchGame({ 
         username: getCurrentUsername(),
-        token: getAuthToken(),
-        devMode: skipSync
+        token: getAuthToken()
     });
     
     if (result.success) {

@@ -70,11 +70,6 @@ import {
 
 import { loadNews } from './features/news/index.js';
 import { startStatusChecker } from './features/server-status/index.js';
-import { 
-    loadDevCategoryCounts, 
-    initDevToolsListeners, 
-    applyAdminClass 
-} from './features/dev-tools/index.js';
 
 // === Application State ===
 let currentConfig = {};
@@ -122,7 +117,6 @@ function initUpdaterHandlers() {
 // === Console Toggle ===
 function initConsoleToggle() {
     const consoleToggleBtn = dom.get('console-toggle-btn');
-    const settingsScreen = dom.get('step-settings');
     
     if (consoleToggleBtn) {
         consoleToggleBtn.addEventListener('click', () => {
@@ -141,34 +135,8 @@ function initConsoleToggle() {
             
             if (consoleVisible) {
                 hideConsole();
-                document.body.classList.remove('is-admin');
-                
-                // Hide dev tab if settings open
-                const devTab = document.querySelector('.tab-dev');
-                if (devTab && settingsScreen && !settingsScreen.classList.contains('hidden')) {
-                    devTab.classList.add('hidden');
-                    const devTabContent = document.getElementById('tab-dev');
-                    if (devTabContent?.classList.contains('active')) {
-                        document.querySelector('.tab-btn[data-tab="general"]')?.click();
-                    }
-                }
             } else {
                 showConsole();
-                
-                // Show dev tab if settings open
-                const devTab = document.querySelector('.tab-dev');
-                if (devTab && settingsScreen && !settingsScreen.classList.contains('hidden')) {
-                    devTab.classList.remove('hidden');
-                    loadDevCategoryCounts();
-                    
-                    const skipSyncCheckbox = document.getElementById('dev-skip-sync-checkbox');
-                    if (skipSyncCheckbox && currentConfig) {
-                        skipSyncCheckbox.checked = currentConfig.skipSync === true;
-                    }
-                    
-                    applyAdminClass();
-                    initDevToolsListeners();
-                }
             }
         });
     }
@@ -223,22 +191,6 @@ function initSettingsButton() {
                 setTimeout(() => {
                     hideEasterEgg();
                 }, 300);
-            }
-            
-            // Update dev tab visibility
-            const devTab = document.querySelector('.tab-dev');
-            if (devTab) {
-                const isConsoleOpen = consoleOutput && !consoleOutput.classList.contains('hidden');
-                if (isConsoleOpen) {
-                    devTab.classList.remove('hidden');
-                    loadDevCategoryCounts();
-                } else {
-                    devTab.classList.add('hidden');
-                    const devTabContent = document.getElementById('tab-dev');
-                    if (devTabContent?.classList.contains('active')) {
-                        document.querySelector('.tab-btn[data-tab="general"]')?.click();
-                    }
-                }
             }
         });
     }

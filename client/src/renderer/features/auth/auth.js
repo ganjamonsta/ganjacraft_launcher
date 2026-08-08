@@ -7,7 +7,6 @@ import { appState } from '../../state/app-state.js';
 import { dom } from '../../utils/dom.js';
 import { showError } from '../../ui/modals.js';
 import { ERROR_DISPLAY_TIME } from '../../constants.js';
-import { applyAdminClass } from '../dev-tools/index.js';
 
 // Локальный стейт для auth flow
 let currentUsername = '';

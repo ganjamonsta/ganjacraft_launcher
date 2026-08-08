@@ -47,7 +47,6 @@ export function getCurrentSettingsState() {
         effectsDensity: document.getElementById('setting-effects-density')?.value || 'low',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
-        skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
         disabledMods: getDisabledMods().sort().join(',')
     };
 }
@@ -318,7 +317,6 @@ export function populateSettingsFields(config) {
     
     if (smokeCheckbox) smokeCheckbox.checked = config.enableSmoke !== false;
     if (parallaxCheckbox) parallaxCheckbox.checked = config.enableParallax !== false;
-    if (debugCheckbox) debugCheckbox.checked = config.debugMode === true;
     
     // Инициализация RAM slider (новый UI)
     initRamSlider(config);
@@ -353,8 +351,6 @@ export async function saveSettings() {
         enableSnow: selectedPreset !== 'off',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
-        debugMode: document.getElementById('setting-debug')?.checked || false,
-        skipSync: document.getElementById('dev-skip-sync-checkbox')?.checked || false,
         disabledMods: getDisabledMods(),
         modsDefaultsApplied: true,
     };

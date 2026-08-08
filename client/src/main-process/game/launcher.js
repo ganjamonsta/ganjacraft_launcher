@@ -115,19 +115,7 @@ function computeDefaultDisabledModsFromManifest(manifest) {
  */
 function createLoggers(event, rootPath, config) {
     const logFile = path.join(rootPath, 'launcher.log');
-    const debugLogFile = path.join(rootPath, 'debug-launcher.log');
-    
     const logStream = fs.createWriteStream(logFile, { flags: 'w' });
-    let debugStream = null;
-
-    if (config.debugMode) {
-        debugStream = fs.createWriteStream(debugLogFile, { flags: 'w' });
-        debugStream.write(`--- DEBUG LOG STARTED AT ${new Date().toISOString()} ---\n`);
-        debugStream.write(`System: ${process.platform} ${process.arch} ${process.release.name}\n`);
-        debugStream.write(`Electron: ${process.versions.electron}\n`);
-        debugStream.write(`Node: ${process.versions.node}\n`);
-        debugStream.write(`Config: ${JSON.stringify(config, null, 2)}\n`);
-    }
 
     logStream.write(`--- Log started at ${new Date().toISOString()} ---\n`);
 
@@ -139,9 +127,6 @@ function createLoggers(event, rootPath, config) {
         if (logStream && !logStream.destroyed) {
             logStream.write(`[${timestamp}] ${msg}\n`);
         }
-        if (debugStream && !debugStream.destroyed) {
-            debugStream.write(`[${timestamp}] [INFO] ${msg}\n`);
-        }
     };
 
     const sendDebug = (msg) => {
@@ -149,12 +134,116 @@ function createLoggers(event, rootPath, config) {
         if (logStream && !logStream.destroyed) {
             logStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
         }
-        if (debugStream && !debugStream.destroyed) {
-            debugStream.write(`[${timestamp}] [DEBUG] ${msg}\n`);
+    };
+
+    return { logStream, sendLog, sendDebug };
+}
+
+let activeModWatcher = null;
+let watcherDebounceTimeout = null;
+const { isModDisabled } = require('../../modules/updater/utils');
+
+/**
+ * Запустить слежение за папкой mods/ во время игры
+ */
+function startModWatcher(rootPath, config, gameProc, sendLog) {
+    stopModWatcher();
+
+    const modsDir = path.join(rootPath, 'mods');
+    if (!fs.existsSync(modsDir)) return;
+
+    const manifestPath = path.join(rootPath, 'manifest.json');
+    if (!fs.existsSync(manifestPath)) return;
+
+    let manifestMods;
+    try {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+        const disabledMods = Array.isArray(config.disabledMods) ? config.disabledMods : [];
+        manifestMods = new Set(
+            (manifest.files || [])
+                .filter(f => f && typeof f.path === 'string' && f.path.startsWith('mods/') && !isModDisabled(f.path, disabledMods))
+                .map(f => path.normalize(f.path))
+        );
+    } catch {
+        return;
+    }
+
+    const checkModsFolder = () => {
+        if (!isGameRunning || !fs.existsSync(modsDir)) return;
+
+        let detectedCheat = false;
+
+        function scanDir(dir, relBase) {
+            let entries;
+            try {
+                entries = fs.readdirSync(dir, { withFileTypes: true });
+            } catch { return; }
+
+            for (const entry of entries) {
+                const fullPath = path.join(dir, entry.name);
+                const relPath = path.join(relBase, entry.name);
+                const normalizedPath = path.normalize(relPath);
+
+                if (entry.isDirectory()) {
+                    scanDir(fullPath, relPath);
+                } else {
+                    if (!manifestMods.has(normalizedPath)) {
+                        sendLog(`[SECURITY] Обнаружен незарегистрированный файл во время игры: ${relPath}`);
+                        detectedCheat = true;
+                        try {
+                            fs.unlinkSync(fullPath);
+                            sendLog(`[SECURITY] Удалён сторонний файл: ${relPath}`);
+                        } catch (e) {
+                            sendLog(`[SECURITY] Не удалось удалить ${relPath}: ${e.message}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        scanDir(modsDir, 'mods');
+
+        if (detectedCheat) {
+            sendLog('[SECURITY GUARD] ОБНАРУЖЕН СТОРОННИЙ МОД/ЧИТ! Принудительное завершение процесса игры...');
+            if (gameProc && gameProc.pid) {
+                const pid = gameProc.pid;
+                sendLog(`[SECURITY GUARD] Завершение процесса игры (PID: ${pid})...`);
+                if (process.platform === 'win32') {
+                    try {
+                        require('child_process').execSync(`taskkill /F /PID ${pid}`);
+                    } catch {}
+                }
+                try {
+                    gameProc.kill('SIGKILL');
+                } catch {}
+            }
         }
     };
 
-    return { logStream, debugStream, sendLog, sendDebug };
+    try {
+        activeModWatcher = fs.watch(modsDir, { recursive: true }, () => {
+            if (watcherDebounceTimeout) clearTimeout(watcherDebounceTimeout);
+            watcherDebounceTimeout = setTimeout(checkModsFolder, 300);
+        });
+    } catch (e) {
+        sendLog(`[SECURITY] Ошибка запуска отслеживания папки модов: ${e.message}`);
+    }
+}
+
+/**
+ * Остановить слежение за папкой mods/
+ */
+function stopModWatcher() {
+    if (watcherDebounceTimeout) {
+        clearTimeout(watcherDebounceTimeout);
+        watcherDebounceTimeout = null;
+    }
+    if (activeModWatcher) {
+        try {
+            activeModWatcher.close();
+        } catch {}
+        activeModWatcher = null;
+    }
 }
 
 /**
@@ -361,16 +450,7 @@ function ensureRequiredResourcePacks(rootPath, sendLog, sendDebug) {
 /**
  * Синхронизация модов
  */
-async function syncMods(event, rootPath, config, sendLog, sendDebug, devMode) {
-    if (devMode) {
-        sendLog('[DEV MODE] Пропуск синхронизации файлов...');
-        sendDebug('Dev mode enabled - skipping syncFiles');
-
-        // Even in dev mode, ensure required resource packs are set
-        ensureRequiredResourcePacks(rootPath, sendLog, sendDebug);
-        return;
-    }
-    
+async function syncMods(event, rootPath, config, sendLog, sendDebug) {
     const onSyncProgress = (p) => {
         if (event.sender && !event.sender.isDestroyed()) {
             event.sender.send('progress', p);
@@ -532,12 +612,9 @@ async function launchGame(event, options) {
         fs.mkdirSync(rootPath, { recursive: true });
     }
 
-    const { logStream, debugStream, sendLog, sendDebug } = createLoggers(event, rootPath, config);
+    const { logStream, sendLog, sendDebug } = createLoggers(event, rootPath, config);
 
     sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
-    if (config.debugMode) {
-        sendLog('РЕЖИМ ОТЛАДКИ ВКЛЮЧЕН. Подробный лог пишется в debug-launcher.log');
-    }
 
     try {
         // Apply default mod settings for fresh installs
@@ -580,7 +657,7 @@ async function launchGame(event, options) {
 
         // Sync mods
         try {
-            await syncMods(event, rootPath, config, sendLog, sendDebug, options.devMode);
+            await syncMods(event, rootPath, config, sendLog, sendDebug);
         } catch (e) {
             if (e.message === 'CANCELLED') {
                 sendLog('Запуск отменен пользователем.');
@@ -765,11 +842,11 @@ async function launchGame(event, options) {
         // Register fresh listeners
         launcher.once('close', (code) => {
             isGameRunning = false;
+            stopModWatcher();
             sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
             sendDebug(`Game closed with code ${code}`);
             
             if (logStream) logStream.end();
-            if (debugStream) debugStream.end();
 
             if (mainWindow && !mainWindow.isDestroyed()) {
                 if (mainWindow.isMinimized()) mainWindow.restore();
@@ -777,6 +854,11 @@ async function launchGame(event, options) {
                 mainWindow.focus();
                 mainWindow.webContents.send('game-closed');
             }
+        });
+
+        launcher.once('spawn', (proc) => {
+            sendDebug(`Game process spawned with PID: ${proc?.pid}`);
+            startModWatcher(rootPath, config, proc, sendLog);
         });
 
         return new Promise((resolve) => {
@@ -792,15 +874,6 @@ async function launchGame(event, options) {
             };
 
             launcher.once('arguments', onArguments);
-
-            if (config.debugMode) {
-                launcher.on('debug', (e) => {
-                    sendDebug(`[MCLC] ${e}`);
-                    if (mainWindow && !mainWindow.isDestroyed()) {
-                        mainWindow.webContents.send('log-message', `[DEBUG] ${e}`);
-                    }
-                });
-            }
 
             launcher.on('data', (e) => {
                 const text = String(e).trim();

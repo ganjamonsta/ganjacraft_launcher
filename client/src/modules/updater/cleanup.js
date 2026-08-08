@@ -80,27 +80,7 @@ function cleanupMods(rootPath, manifest, disabledMods = [], sendLog = () => {}) 
             .map(f => path.normalize(f.path))
     );
 
-    const localFiles = fs.readdirSync(modsDir);
-    
-    for (const file of localFiles) {
-        const fullPath = path.join(modsDir, file);
-        
-        // Skip directories (mods are only flat .jar files)
-        try {
-            if (fs.statSync(fullPath).isDirectory()) continue;
-        } catch (e) { continue; }
-
-        const relativePath = path.normalize(path.join('mods', file));
-
-        if (!manifestMods.has(relativePath)) {
-            sendLog(`Удаление лишнего мода: ${file}`);
-            try {
-                fs.unlinkSync(fullPath);
-            } catch (e) {
-                sendLog(`Не удалось удалить ${file}: ${e.message}`);
-            }
-        }
-    }
+    cleanDirectory(modsDir, 'mods', manifestMods, sendLog);
 }
 
 /**
