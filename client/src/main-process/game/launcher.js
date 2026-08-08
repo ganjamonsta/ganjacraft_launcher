@@ -14,6 +14,7 @@ const { loadConfig, saveConfig } = require('../../modules/config');
 const { cleanZeroByteFiles, isZipIntact } = require('./integrity');
 const { ensureVanillaVersionFiles, preflightNeoForgeLibraries, ensureNeoForgeVersionJsonMerged, ensureAssetIndex, parseNeoForgeJvmArgs, verifyNeoForgeLibraries } = require('./neoforge');
 const { 
+    CLIENT_VERSION,
     NEOFORGE_VERSION,
     MC_VERSION,
     MANIFEST_URL,
@@ -737,8 +738,17 @@ async function launchGame(event, options) {
 
         if (options && options.token) {
             try {
-                sendDebug(`Authenticating user: ${options.username}`);
-                authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token);
+                let manifestHash = '';
+                const manifestPath = path.join(rootPath, 'manifest.json');
+                if (fs.existsSync(manifestPath)) {
+                    try {
+                        manifestHash = crypto.createHash('sha256').update(fs.readFileSync(manifestPath)).digest('hex');
+                    } catch (mHashErr) {
+                        sendDebug(`Failed to compute manifest hash: ${mHashErr.message}`);
+                    }
+                }
+                sendDebug(`Authenticating user: ${options.username} (v${CLIENT_VERSION}, hash: ${manifestHash.slice(0, 8)}...)`);
+                authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token, 2, CLIENT_VERSION, manifestHash);
                 sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
                 sendDebug(`Auth success. UUID: ${authSession.uuid}, Name: ${authSession.name}`);
             } catch (e) {

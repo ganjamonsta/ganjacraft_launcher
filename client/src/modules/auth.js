@@ -1,18 +1,22 @@
 const https = require('https');
 const http = require('http');
 
-function authenticateYggdrasilOnce(authUrl, username, token) {
+function authenticateYggdrasilOnce(authUrl, username, token, clientVersion = null, manifestHash = null) {
     return new Promise((resolve, reject) => {
         // Use Node's built-in crypto.randomUUID (available in Node 16+)
         const clientToken = require('crypto').randomUUID();
         
-        const data = JSON.stringify({
+        const payload = {
             agent: { name: "Minecraft", version: 1 },
             username: username,
             password: token,
             clientToken: clientToken,
             requestUser: true
-        });
+        };
+        if (clientVersion) payload.clientVersion = clientVersion;
+        if (manifestHash) payload.manifestHash = manifestHash;
+
+        const data = JSON.stringify(payload);
 
         const httpModule = authUrl.startsWith('https') ? https : http;
 
@@ -56,20 +60,14 @@ function authenticateYggdrasilOnce(authUrl, username, token) {
     });
 }
 
-async function authenticateYggdrasil(authUrl, username, token, retries = 2) {
-    const urls = [
-        authUrl,
-        'http://192.168.1.8:5000/api/yggdrasil/authserver/authenticate',
-        'https://gcrlauncher1.loca.lt/api/yggdrasil/authserver/authenticate'
-    ];
-    // Deduplicate candidate URLs
-    const candidateUrls = Array.from(new Set(urls.filter(Boolean)));
+async function authenticateYggdrasil(authUrl, username, token, retries = 2, clientVersion = null, manifestHash = null) {
+    const candidateUrls = Array.from(new Set([authUrl].filter(Boolean)));
 
     let lastError;
     for (const url of candidateUrls) {
         for (let i = 1; i <= retries; i++) {
             try {
-                return await authenticateYggdrasilOnce(url, username, token);
+                return await authenticateYggdrasilOnce(url, username, token, clientVersion, manifestHash);
             } catch (e) {
                 lastError = e;
                 if (i < retries) {

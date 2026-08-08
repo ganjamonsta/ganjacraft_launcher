@@ -8,6 +8,20 @@ const NEOFORGE_VERSION = '21.1.247';
 const MC_VERSION = '1.21.1';
 const REQUIRED_JAVA_MAJOR = 21;
 
+const path = require('path');
+const fs = require('fs');
+
+let CLIENT_VERSION = '1.0.0';
+try {
+    const pkgPath = path.join(__dirname, '../../package.json');
+    if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        if (pkg && pkg.version) CLIENT_VERSION = pkg.version;
+    }
+} catch (e) {
+    // fallback
+}
+
 // URLs
 const API_BASES = [
     'https://launcher.ganj4craft.ru/api',
@@ -111,6 +125,7 @@ const JVM_OPTIMIZATION_ARGS = [
 
 module.exports = {
     // Versions
+    CLIENT_VERSION,
     NEOFORGE_VERSION,
     MC_VERSION,
     REQUIRED_JAVA_MAJOR,
