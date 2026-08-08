@@ -3346,3 +3346,72 @@ input[type="checkbox"] {
     }
 }
 
+/* ========================================
+   Nested Addons & Dependent Mods UI
+   ======================================== */
+.mod-addons-container {
+    margin-left: 18px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    padding-left: 12px;
+    border-left: 2px dashed rgba(76, 175, 80, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    transition: opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.25s ease, border-color 0.25s ease;
+}
+
+.mod-addons-container.parent-disabled {
+    opacity: 0.45;
+    filter: grayscale(0.6);
+    border-left-color: rgba(255, 255, 255, 0.15);
+}
+
+.mod-addons-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #81c784;
+    padding: 2px 0 2px 2px;
+    user-select: none;
+}
+
+.mod-addons-container.parent-disabled .mod-addons-header {
+    color: #888;
+}
+
+.setting-item.mod-addon-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.setting-item.mod-addon-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.mod-addon-item .addon-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: #81c784;
+    background: rgba(76, 175, 80, 0.12);
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-left: 6px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.mod-addons-container.parent-disabled .mod-addon-item .addon-badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: #999;
+}
+

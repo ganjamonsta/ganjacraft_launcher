@@ -141,6 +141,7 @@ function createLoggers(event, rootPath, config) {
 
 let activeModWatcher = null;
 let watcherDebounceTimeout = null;
+let watcherInterval = null;
 const { isModDisabled } = require('../../modules/updater/utils');
 
 /**
@@ -162,18 +163,22 @@ function startModWatcher(rootPath, config, gameProc, sendLog) {
         manifestMods = new Set(
             (manifest.files || [])
                 .filter(f => f && typeof f.path === 'string' && f.path.startsWith('mods/') && !isModDisabled(f.path, disabledMods))
-                .map(f => path.normalize(f.path))
+                .map(f => path.normalize(f.path).toLowerCase())
         );
-    } catch {
+    } catch (e) {
+        sendLog(`[SECURITY] Ошибка чтения манифеста для слежки: ${e.message}`);
         return;
     }
+
+    sendLog(`[SECURITY] Запуск отслеживания папки модов (PID игры: ${gameProc?.pid || 'unknown'})...`);
 
     const checkModsFolder = () => {
         if (!isGameRunning || !fs.existsSync(modsDir)) return;
 
         let detectedCheat = false;
+        const cheatsFound = [];
 
-        function scanDir(dir, relBase) {
+        function scanDir(dir) {
             let entries;
             try {
                 entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -181,37 +186,43 @@ function startModWatcher(rootPath, config, gameProc, sendLog) {
 
             for (const entry of entries) {
                 const fullPath = path.join(dir, entry.name);
-                const relPath = path.join(relBase, entry.name);
-                const normalizedPath = path.normalize(relPath);
+                const relPath = path.relative(rootPath, fullPath);
+                const normalizedPath = path.normalize(relPath).toLowerCase();
 
                 if (entry.isDirectory()) {
-                    scanDir(fullPath, relPath);
+                    scanDir(fullPath);
                 } else {
                     if (!manifestMods.has(normalizedPath)) {
-                        sendLog(`[SECURITY] Обнаружен незарегистрированный файл во время игры: ${relPath}`);
                         detectedCheat = true;
-                        try {
-                            fs.unlinkSync(fullPath);
-                            sendLog(`[SECURITY] Удалён сторонний файл: ${relPath}`);
-                        } catch (e) {
-                            sendLog(`[SECURITY] Не удалось удалить ${relPath}: ${e.message}`);
-                        }
+                        cheatsFound.push({ fullPath, relPath });
                     }
                 }
             }
         }
 
-        scanDir(modsDir, 'mods');
+        scanDir(modsDir);
 
         if (detectedCheat) {
-            sendLog('[SECURITY GUARD] ОБНАРУЖЕН СТОРОННИЙ МОД/ЧИТ! Принудительное завершение процесса игры...');
+            for (const cheat of cheatsFound) {
+                sendLog(`[SECURITY GUARD] СТОРОННИЙ МОД ОБНАРУЖЕН: ${cheat.relPath}`);
+                try {
+                    fs.unlinkSync(cheat.fullPath);
+                    sendLog(`[SECURITY GUARD] Успешно удалён сторонний мод: ${cheat.relPath}`);
+                } catch (e) {
+                    sendLog(`[SECURITY GUARD] Не удалось удалить ${cheat.relPath}: ${e.message}`);
+                }
+            }
+
+            sendLog('[SECURITY GUARD] ОБНАРУЖЕН СТОРОННИЙ МОД/ЧИТ! ПРИНУДИТЕЛЬНОЕ УБИЙСТВО ИГРЫ!');
             if (gameProc && gameProc.pid) {
                 const pid = gameProc.pid;
-                sendLog(`[SECURITY GUARD] Завершение процесса игры (PID: ${pid})...`);
+                sendLog(`[SECURITY GUARD] Убийство процесса игры (PID: ${pid})...`);
                 if (process.platform === 'win32') {
                     try {
-                        require('child_process').execSync(`taskkill /F /PID ${pid}`);
-                    } catch {}
+                        require('child_process').execSync(`taskkill /F /T /PID ${pid}`);
+                    } catch (err) {
+                        sendLog(`[SECURITY GUARD] taskkill err: ${err.message}`);
+                    }
                 }
                 try {
                     gameProc.kill('SIGKILL');
@@ -220,13 +231,17 @@ function startModWatcher(rootPath, config, gameProc, sendLog) {
         }
     };
 
+    // 1. Сразу проверяем при старте
+    checkModsFolder();
+
+    // 2. Отслеживаем события ФС на уровне ядра ОС (0% нагрузки на диск/HDD)
     try {
         activeModWatcher = fs.watch(modsDir, { recursive: true }, () => {
             if (watcherDebounceTimeout) clearTimeout(watcherDebounceTimeout);
-            watcherDebounceTimeout = setTimeout(checkModsFolder, 300);
+            watcherDebounceTimeout = setTimeout(checkModsFolder, 200);
         });
     } catch (e) {
-        sendLog(`[SECURITY] Ошибка запуска отслеживания папки модов: ${e.message}`);
+        sendLog(`[SECURITY] Ошибка fs.watch: ${e.message}`);
     }
 }
 
@@ -856,11 +871,6 @@ async function launchGame(event, options) {
             }
         });
 
-        launcher.once('spawn', (proc) => {
-            sendDebug(`Game process spawned with PID: ${proc?.pid}`);
-            startModWatcher(rootPath, config, proc, sendLog);
-        });
-
         return new Promise((resolve) => {
             let hasResolved = false;
 
@@ -890,8 +900,12 @@ async function launchGame(event, options) {
                     mainWindow.webContents.send('progress', { task: e.task, total: e.total, type: e.type });
                 }
             });
-            
-            launcher.launch(opts).then(() => {
+
+            launcher.launch(opts).then((proc) => {
+                if (proc) {
+                    sendDebug(`Game process spawned with PID: ${proc.pid}`);
+                    startModWatcher(rootPath, config, proc, sendLog);
+                }
                 if (!hasResolved) {
                     hasResolved = true;
                     resolve({ success: true });

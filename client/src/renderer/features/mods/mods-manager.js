@@ -20,6 +20,14 @@ function getModStem(filePath) {
         .replace(/[-_](neoforge|forge|fabric|mc\d+.*)$/i, '');
 }
 
+const LEGACY_GROUP_ALIASES = {
+    etf: 'etf_emf_cit',
+    emf: 'etf_emf_cit',
+    etf_emf: 'etf_emf_cit',
+    cit_resewn: 'etf_emf_cit',
+    forgematica_printer: 'forgematica'
+};
+
 function isModDisabled(filePath, disabledMods = []) {
     if (!filePath || !Array.isArray(disabledMods) || disabledMods.length === 0) return false;
     const normPath = String(filePath).replace(/\\/g, '/');
@@ -33,7 +41,8 @@ function isModDisabled(filePath, disabledMods = []) {
         const normDisabled = String(disabledEntry).replace(/\\/g, '/');
         if (normDisabled === normPath) return true;
 
-        const groupById = MOD_GROUPS.find(g => g.id === normDisabled);
+        const lookupId = LEGACY_GROUP_ALIASES[normDisabled] || normDisabled;
+        const groupById = MOD_GROUPS.find(g => g.id === lookupId);
         if (groupById && groupById.files) {
             if (groupById.files.some(p => targetFileName.includes(p.toLowerCase()))) return true;
         }
@@ -329,6 +338,15 @@ export function toggleModState(modId, isChecked) {
         if (input && input.checked !== isChecked) {
             input.checked = isChecked;
         }
+
+        const addonsContainer = grid.querySelector(`.mod-addons-container[data-parent-id="${modId}"]`);
+        if (addonsContainer) {
+            if (isChecked) {
+                addonsContainer.classList.remove('parent-disabled');
+            } else {
+                addonsContainer.classList.add('parent-disabled');
+            }
+        }
     }
 
     if (isChecked) {
@@ -468,28 +486,23 @@ export function renderModsGrid() {
         const content = document.createElement('div');
         content.className = 'category-content';
 
-        categoryMods.forEach(mod => {
-            const itemLabel = document.createElement('label');
-            itemLabel.className = 'setting-item setting-item-toggle';
-            itemLabel.dataset.id = mod.id;
+        const processedIds = new Set();
 
-            let depNotice = '';
-            if (mod.dependsOn) {
-                const parent = allGroupItems.find(p => p.id === mod.dependsOn);
-                if (parent) {
-                    depNotice = ` <strong style="color: #e5c158; font-size: 11px;">(Зависит от ${parent.shortName})</strong>`;
-                }
-            }
+        function createModRow(mod, isAddon = false) {
+            const itemLabel = document.createElement('label');
+            itemLabel.className = `setting-item setting-item-toggle ${isAddon ? 'mod-addon-item' : 'mod-parent-item'}`;
+            itemLabel.dataset.id = mod.id;
 
             const iconSvg = getModItemSVG(mod.icon);
             const paths = mod.paths.join('|');
+            const addonBadge = isAddon ? `<span class="addon-badge">Аддон</span>` : '';
 
             itemLabel.innerHTML = `
                 <div class="setting-label">
                     ${iconSvg}
                     <div class="setting-text">
-                        <span class="setting-title">${mod.shortName} <span style="font-size: 11px; color: #888; font-family: monospace;">v${mod.version}</span></span>
-                        <span class="setting-desc">${mod.description}${depNotice}</span>
+                        <span class="setting-title">${mod.shortName} <span style="font-size: 11px; color: #888; font-family: monospace;">v${mod.version}</span>${addonBadge}</span>
+                        <span class="setting-desc">${mod.description}</span>
                     </div>
                 </div>
                 <div class="setting-control">
@@ -505,7 +518,52 @@ export function renderModsGrid() {
                 toggleModState(mod.id, e.target.checked);
             });
 
-            content.appendChild(itemLabel);
+            return itemLabel;
+        }
+
+        function renderModTree(mod) {
+            if (processedIds.has(mod.id)) return;
+            processedIds.add(mod.id);
+
+            const parentRow = createModRow(mod, false);
+            content.appendChild(parentRow);
+
+            const children = categoryMods.filter(c => c.dependsOn === mod.id);
+            if (children.length > 0) {
+                const addonsContainer = document.createElement('div');
+                addonsContainer.className = `mod-addons-container ${!mod.checked ? 'parent-disabled' : ''}`;
+                addonsContainer.dataset.parentId = mod.id;
+
+                const header = document.createElement('div');
+                header.className = 'mod-addons-header';
+                header.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                    <span>АДДОНЫ И МОДУЛИ ДЛЯ ${mod.shortName.toUpperCase()}</span>
+                `;
+                addonsContainer.appendChild(header);
+
+                children.forEach(child => {
+                    processedIds.add(child.id);
+                    const childRow = createModRow(child, true);
+                    addonsContainer.appendChild(childRow);
+                });
+
+                content.appendChild(addonsContainer);
+            }
+        }
+
+        categoryMods.forEach(mod => {
+            if (processedIds.has(mod.id)) return;
+
+            if (mod.dependsOn) {
+                const parent = categoryMods.find(p => p.id === mod.dependsOn);
+                if (parent && !processedIds.has(parent.id)) {
+                    renderModTree(parent);
+                    return;
+                }
+            }
+
+            renderModTree(mod);
         });
 
         categoryCard.appendChild(content);
