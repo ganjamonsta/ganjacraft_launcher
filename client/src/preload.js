@@ -184,14 +184,6 @@ contextBridge.exposeInMainWorld('api', {
     getManifest: () => ipcRenderer.invoke('get-manifest'), // To list mods in UI
     resolveModrinth: (hashes) => ipcRenderer.invoke('resolve-modrinth', hashes),
     
-    // Admin Dev Tools
-    devSyncCategory: (category, options) => ipcRenderer.invoke('dev-sync-category', category, options),
-    devDeleteCategory: (category) => ipcRenderer.invoke('dev-delete-category', category),
-    devGetCategoryCounts: () => ipcRenderer.invoke('dev-get-category-counts'),
-    devFetchServerScripts: (options) => ipcRenderer.invoke('dev-fetch-server-scripts', options),
-    devCancelOperation: (category) => ipcRenderer.send('dev-cancel-operation', category),
-    onDevProgress: (callback) => ipcRenderer.on('dev-progress', (event, data) => callback(data)),
-    
     // Events
     onGameClosed: (callback) => ipcRenderer.on('game-closed', () => callback()),
     

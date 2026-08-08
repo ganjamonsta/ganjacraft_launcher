@@ -42,7 +42,6 @@ export async function checkSavedAuth() {
                     isAdmin: !!result.is_admin
                 });
                 
-                applyAdminClass();
                 hideLoginStep();
                 showPlayScreen();
                 return true;
@@ -119,7 +118,6 @@ export async function verifyAuthCode(code) {
                 isAdmin: !!result.is_admin
             });
             
-            applyAdminClass();
             return { success: true };
         } else {
             showError('code-error', result.error || 'Неверный код');
@@ -235,7 +233,6 @@ export async function loginWithPassword(password) {
                 isAdmin: !!result.is_admin
             });
             
-            applyAdminClass();
             return { success: true };
         } else {
             showError('password-error', result.message || result.error || 'Неверный пароль');

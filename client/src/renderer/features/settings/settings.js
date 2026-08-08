@@ -117,9 +117,7 @@ export function setupSettingsChangeListeners() {
         'setting-effects-preset',
         'setting-effects-density',
         'setting-enable-smoke',
-        'setting-enable-parallax',
-        'dev-skip-sync-checkbox',
-        'setting-debug'
+        'setting-enable-parallax'
     ];
     
     formControls.forEach(id => {
