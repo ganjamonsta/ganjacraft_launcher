@@ -597,18 +597,31 @@ function buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, auth
 /**
  * Обработать ошибку запуска MCLC
  */
+function purgeCorruptedNeoForge(rootPath) {
+    // Delete corrupted version JSON so installer recreates it cleanly
+    try {
+        const neoforgeVerId = `neoforge-${NEOFORGE_VERSION}`;
+        const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
+        if (fs.existsSync(neoforgeJsonPath)) {
+            fs.unlinkSync(neoforgeJsonPath);
+        }
+    } catch (e) {}
+    // Delete cpw libraries (bootstraplauncher, securejarhandler)
+    try {
+        const cpwDir = path.join(rootPath, 'libraries', 'cpw');
+        if (fs.existsSync(cpwDir)) {
+            fs.rmSync(cpwDir, { recursive: true, force: true });
+        }
+    } catch (e) {}
+}
+
 function handleLaunchError(error, rootPath) {
     const msg = (error && error.message) ? error.message : String(error);
     const isEperm = msg.includes('EPERM') || error?.code === 'EPERM';
     const isClassNotFound = msg.includes('NoClassDefFoundError') || msg.includes('modlauncher') || msg.includes('securejarhandler');
     
     if (isClassNotFound) {
-        try {
-            const cpwDir = path.join(rootPath, 'libraries', 'cpw');
-            if (fs.existsSync(cpwDir)) {
-                fs.rmSync(cpwDir, { recursive: true, force: true });
-            }
-        } catch (e) {}
+        purgeCorruptedNeoForge(rootPath);
         return {
             success: false,
             error:
@@ -624,10 +637,6 @@ function handleLaunchError(error, rootPath) {
                 `Быстрое решение:\n` +
                 `1) Закройте лаунчер/игру, перезагрузите ПК\n` +
                 `2) Добавьте папку ${rootPath} в исключения Защитника Windows/антивируса\n\n` +
-                `Если не сработает:\n` +
-                `3) Скопируйте рабочие файлы из другой установки:\n` +
-                `   ${rootPath}\\libraries\\cpw\\mods\\bootstraplauncher\\2.0.2\\bootstraplauncher-2.0.2.jar\n` +
-                `   ${rootPath}\\libraries\\cpw\\mods\\securejarhandler\\3.0.8\\securejarhandler-3.0.8.jar\n\n` +
                 `Техническая ошибка: ${msg}`
         };
     }
@@ -921,9 +930,28 @@ async function launchGame(event, options) {
 
             launcher.once('arguments', onArguments);
 
+            let detectedFatalClassError = false;
+
             launcher.on('data', (e) => {
                 const text = String(e).trim();
                 if (text) sendLog(`[GAME] ${text}`);
+
+                // Detect fatal Java class loading errors from stderr
+                if (!detectedFatalClassError && (
+                    text.includes('Could not find or load main class') ||
+                    text.includes('NoClassDefFoundError') ||
+                    (text.includes('securejarhandler') && text.includes('ClassNotFoundException'))
+                )) {
+                    detectedFatalClassError = true;
+                    sendLog('[LAUNCHER] Обнаружена критическая ошибка загрузки NeoForge. Автоматическое восстановление...');
+                    purgeCorruptedNeoForge(rootPath);
+                    sendLog('[LAUNCHER] Повреждённые файлы удалены. Пожалуйста, нажмите «Играть» ещё раз.');
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('launch-error', 
+                            'Обнаружена ошибка NeoForge. Лаунчер автоматически починил файлы.\n' +
+                            'Нажмите «Играть» ещё раз!');
+                    }
+                }
             });
             
             launcher.on('error', (e) => {
