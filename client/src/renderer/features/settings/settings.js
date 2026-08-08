@@ -298,7 +298,6 @@ export function populateSettingsFields(config) {
     const densitySelect = document.getElementById('setting-effects-density');
     const smokeCheckbox = document.getElementById('setting-enable-smoke');
     const parallaxCheckbox = document.getElementById('setting-enable-parallax');
-    const debugCheckbox = document.getElementById('setting-debug');
     
     if (pathInput) pathInput.value = config.installPath || '';
     if (javaInput) javaInput.value = config.javaPath || '';
