@@ -752,9 +752,10 @@ async function launchGame(event, options) {
                 sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
                 sendDebug(`Auth success. UUID: ${authSession.uuid}, Name: ${authSession.name}`);
             } catch (e) {
-                sendDebug(`Yggdrasil auth unavailable (${e.message}), using offline session.`);
-                sendLog(`Сервер авторизации недоступен. Запуск в офлайн-режиме под ником ${options.username}...`);
-                authSession = makeOfflineSession(options.username || 'Player');
+                sendDebug(`Yggdrasil auth failed: ${e.message}`);
+                sendLog(`🛑 Ошибка авторизации: ${e.message}`);
+                isGameRunning = false;
+                return { success: false, error: e.message };
             }
         } else {
             const playerNick = (options && options.username) ? options.username : 'Player';

@@ -45,7 +45,18 @@ function authenticateYggdrasilOnce(authUrl, username, token, clientVersion = nul
                         reject(new Error("Invalid JSON response from auth server"));
                     }
                 } else {
-                    reject(new Error(`Auth failed: ${res.statusCode} - ${body}`));
+                    let msg = `Auth failed (${res.statusCode})`;
+                    try {
+                        const parsed = JSON.parse(body);
+                        if (parsed.errorMessage) {
+                            msg = parsed.errorMessage;
+                        } else if (parsed.detail && typeof parsed.detail === 'object' && parsed.detail.errorMessage) {
+                            msg = parsed.detail.errorMessage;
+                        } else if (parsed.message) {
+                            msg = parsed.message;
+                        }
+                    } catch (e) {}
+                    reject(new Error(msg));
                 }
             });
         });
