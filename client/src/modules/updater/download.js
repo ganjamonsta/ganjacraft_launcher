@@ -253,12 +253,14 @@ async function downloadWithRetry(url, dest, options = {}, maxRetries = 4, retryD
 
     // Automatic mirror fallback if official repository failed
     try {
-        const { rewriteUrl } = require('../../main-process/constants');
-        const mirrorUrl = rewriteUrl(url);
+        const { getMirrorFallbackUrl } = require('../../main-process/constants');
+        const mirrorUrl = getMirrorFallbackUrl(url);
         if (mirrorUrl && mirrorUrl !== url) {
+            console.log(`[DOWNLOAD] Primary download failed for ${url} (${lastError?.message}). Retrying with mirror: ${mirrorUrl}`);
             for (let attempt = 1; attempt <= Math.min(maxRetries, 2); attempt++) {
                 try {
                     await downloadFile(mirrorUrl, dest, options);
+                    console.log(`[DOWNLOAD] Successfully downloaded from mirror: ${mirrorUrl}`);
                     return;
                 } catch (err) {
                     lastError = err;
@@ -269,7 +271,7 @@ async function downloadWithRetry(url, dest, options = {}, maxRetries = 4, retryD
             }
         }
     } catch (e) {
-        // Ignore mirror fallback error and throw lastError from primary attempt
+        console.warn(`[DOWNLOAD] Mirror fallback error for ${url}:`, e?.message);
     }
 
     throw lastError;

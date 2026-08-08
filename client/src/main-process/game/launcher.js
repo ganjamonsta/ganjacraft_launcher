@@ -41,31 +41,57 @@ MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry
     const filePath = path.join(directory, name);
     
     // Try original URL first
-    const result = await originalDownloadAsync.call(this, url, directory, name, retry, type);
+    let result = await originalDownloadAsync.call(this, url, directory, name, retry, type);
     
-    // MCLC may leave a 0-byte file on failure — clean it up
-    if (!result) {
+    // Validate downloaded file integrity (0-byte or corrupted ZIP/JAR)
+    if (fs.existsSync(filePath)) {
+        let isInvalid = false;
         try {
-            if (fs.existsSync(filePath) && fs.statSync(filePath).size === 0) {
-                fs.unlinkSync(filePath);
-                this.client.emit('debug', `[MCLC]: Cleaned up 0-byte file: ${name}`);
+            const stat = fs.statSync(filePath);
+            if (stat.size === 0) {
+                isInvalid = true;
+            } else if (name.endsWith('.jar') || name.endsWith('.zip')) {
+                if (!(await isZipIntact(filePath))) {
+                    isInvalid = true;
+                }
             }
-        } catch {}
+        } catch {
+            isInvalid = true;
+        }
+
+        if (isInvalid) {
+            try { fs.unlinkSync(filePath); } catch {}
+            this.client.emit('debug', `[MCLC]: Cleaned up invalid/corrupted download: ${name}`);
+            result = false;
+        }
     }
     
-    // MCLC resolves with `false` on 404, or `undefined` on error
+    // MCLC resolves with `false` on 404/invalid, or `undefined` on error
     if (!result && fallbackUrl) {
-        this.client.emit('debug', `[MCLC]: Original URL failed (${url}). Falling back to mirror: ${fallbackUrl}`);
+        this.client.emit('debug', `[MCLC]: Original URL failed or corrupted (${url}). Falling back to mirror: ${fallbackUrl}`);
         // Try fallback URL, without passing fallback logic further down
         const mirrorResult = await originalDownloadAsync.call(this, fallbackUrl, directory, name, retry, type);
         
-        // Clean up 0-byte file from mirror failure too
-        if (!mirrorResult) {
+        // Clean up invalid file from mirror failure too
+        if (fs.existsSync(filePath)) {
+            let isInvalid = false;
             try {
-                if (fs.existsSync(filePath) && fs.statSync(filePath).size === 0) {
-                    fs.unlinkSync(filePath);
+                const stat = fs.statSync(filePath);
+                if (stat.size === 0) {
+                    isInvalid = true;
+                } else if (name.endsWith('.jar') || name.endsWith('.zip')) {
+                    if (!(await isZipIntact(filePath))) {
+                        isInvalid = true;
+                    }
                 }
-            } catch {}
+            } catch {
+                isInvalid = true;
+            }
+
+            if (isInvalid) {
+                try { fs.unlinkSync(filePath); } catch {}
+                this.client.emit('debug', `[MCLC]: Cleaned up invalid/corrupted mirror download: ${name}`);
+            }
         }
         return mirrorResult;
     }
@@ -359,7 +385,7 @@ async function prepareForge(rootPath, sendLog, sendDebug) {
     if (needForge) {
         sendLog('Скачивание установщика Forge...');
         sendDebug(`Downloading Forge from ${NEOFORGE_INSTALLER_URL}`);
-        await downloadFile(NEOFORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
+        await downloadWithRetry(NEOFORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
         if (!(await isZipIntact(forgeInstallerPath))) {
             try { fs.unlinkSync(forgeInstallerPath); } catch {}
             throw new Error('Downloaded Forge installer is not a valid JAR/ZIP (truncated or HTML response)');

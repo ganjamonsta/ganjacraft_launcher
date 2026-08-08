@@ -329,7 +329,22 @@ async function ensureAssetIndex(rootPath, sendLog) {
 }
 
 /**
- * Проверить SHA1 хеши NeoForge библиотек, удалить повреждённые
+ * Преобразовать name библиотеки (group:artifact:version[:classifier]) в относительный путь
+ */
+function nameToPath(name) {
+    if (!name || typeof name !== 'string') return null;
+    const parts = name.split(':');
+    if (parts.length < 3) return null;
+    const [group, artifact, version, classifier] = parts;
+    const groupPath = group.replace(/\./g, '/');
+    const filename = classifier 
+        ? `${artifact}-${version}-${classifier}.jar`
+        : `${artifact}-${version}.jar`;
+    return `${groupPath}/${artifact}/${version}/${filename}`;
+}
+
+/**
+ * Проверить SHA1 хеши и ZIP-структуру NeoForge библиотек, удалить повреждённые
  * @returns {Promise<number>} Количество удалённых повреждённых файлов
  */
 async function verifyNeoForgeLibraries(rootPath, sendLog, sendDebug) {
@@ -349,27 +364,53 @@ async function verifyNeoForgeLibraries(rootPath, sendLog, sendDebug) {
     let corrupted = 0;
     
     for (const lib of libraries) {
-        const artifact = lib.downloads?.artifact;
-        if (!artifact?.path || !artifact?.sha1) continue;
-        
-        const filePath = path.join(librariesDir, ...artifact.path.split('/'));
+        let relPath = lib.downloads?.artifact?.path;
+        if (!relPath && lib.name) {
+            relPath = nameToPath(lib.name);
+        }
+        if (!relPath) continue;
+
+        const filePath = path.join(librariesDir, ...relPath.split('/'));
         if (!fs.existsSync(filePath)) continue; // Will be downloaded by MCLC
         
-        try {
-            const hash = crypto.createHash('sha1');
-            const stream = fs.createReadStream(filePath);
-            for await (const chunk of stream) {
-                hash.update(chunk);
+        let isCorrupted = false;
+
+        // 1. Check SHA1 if artifact.sha1 exists
+        const expectedSha1 = lib.downloads?.artifact?.sha1;
+        if (expectedSha1) {
+            try {
+                const hash = crypto.createHash('sha1');
+                const stream = fs.createReadStream(filePath);
+                for await (const chunk of stream) {
+                    hash.update(chunk);
+                }
+                const actual = hash.digest('hex');
+                
+                if (actual !== expectedSha1) {
+                    if (sendDebug) sendDebug(`SHA1 mismatch: ${relPath} (expected ${expectedSha1}, got ${actual}). Deleting.`);
+                    isCorrupted = true;
+                }
+            } catch (e) {
+                if (sendDebug) sendDebug(`Failed to verify SHA1 for ${relPath}: ${e.message}`);
             }
-            const actual = hash.digest('hex');
-            
-            if (actual !== artifact.sha1) {
-                sendDebug(`SHA1 mismatch: ${artifact.path} (expected ${artifact.sha1}, got ${actual}). Deleting.`);
-                try { fs.unlinkSync(filePath); } catch {}
-                corrupted++;
+        }
+
+        // 2. Check ZIP structure for JAR files if not already flagged as corrupted
+        if (!isCorrupted && filePath.endsWith('.jar')) {
+            try {
+                const intact = await isZipIntact(filePath);
+                if (!intact) {
+                    if (sendDebug) sendDebug(`Corrupted JAR file detected (failed ZIP check): ${relPath}. Deleting.`);
+                    isCorrupted = true;
+                }
+            } catch (e) {
+                if (sendDebug) sendDebug(`Failed ZIP check for ${relPath}: ${e.message}`);
             }
-        } catch (e) {
-            sendDebug(`Failed to verify SHA1 for ${artifact.path}: ${e.message}`);
+        }
+
+        if (isCorrupted) {
+            try { fs.unlinkSync(filePath); } catch {}
+            corrupted++;
         }
     }
     
