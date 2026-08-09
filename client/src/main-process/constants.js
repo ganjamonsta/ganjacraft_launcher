@@ -105,6 +105,8 @@ const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
 const JVM_OPTIMIZATION_ARGS = [
     '-Dneoforge.readTimeout=600',
     '-Dforge.readTimeout=600',
+    '-Dfml.readTimeout=600',
+    '-Dfml.loginTimeout=600',
     '-XX:+UseG1GC',
     '-XX:+ParallelRefProcEnabled',
     '-XX:MaxGCPauseMillis=200',
