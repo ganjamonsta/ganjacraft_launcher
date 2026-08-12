@@ -181,14 +181,14 @@ export const MOD_GROUPS = [
         id: 'better_advancements',
         name: 'Better Advancements',
         shortName: 'Better Advancements',
-        version: '0.4.2',
+        version: '0.4.3.21',
         category: 'Интерфейс',
         subCategory: 'Интерфейс',
         icon: 'gear',
         description: 'Удобное древо достижений во весь экран с описаниями и прогрессом.',
         curseSlug: 'better-advancements',
         modrinthSlug: 'better-advancements',
-        files: ['client-betteradvancements']
+        files: ['client-betteradvancements', 'client-BetterAdvancements']
     },
     {
         id: 'more_overlays',
@@ -274,6 +274,19 @@ export const MOD_GROUPS = [
         curseSlug: 'leawind-third-person',
         modrinthSlug: 'leawind-third-person',
         files: ['client-leawind_third_person', 'client-BetterThirdPerson']
+    },
+    {
+        id: 'first_person',
+        name: 'First Person Model',
+        shortName: 'First Person',
+        version: '2.7.2',
+        category: 'Механики',
+        subCategory: 'Механики',
+        icon: 'eye',
+        description: 'Вид от первого лица с отображением тела игрока и предметов в руках.',
+        curseSlug: 'first-person-model',
+        modrinthSlug: 'first-person-model',
+        files: ['client-firstperson', 'client-FirstPerson']
     },
     {
         id: 'controllable',
