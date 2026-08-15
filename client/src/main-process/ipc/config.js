@@ -81,9 +81,13 @@ function registerConfigHandlers(mainWindow) {
         return false;
     });
     
-    // Open URL in browser
+    // Open URL in browser safely
     ipcMain.handle('open-url', async (event, url) => {
-        await shell.openExternal(url);
+        if (typeof url === 'string' && (url.startsWith('https://') || url.startsWith('http://'))) {
+            await shell.openExternal(url);
+            return true;
+        }
+        return false;
     });
     
     // Get manifest - с кешированием чтобы не блокировать UI
