@@ -45,7 +45,17 @@
             </div>
         </div>
         <div id="window-controls">
-            <button id="btn-settings" class="control-btn" title="Настройки">⚙</button>
+            <button id="btn-changelog" class="control-btn" title="Что нового в сборке">
+                <svg class="control-btn-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                </svg>
+                <span id="changelog-badge" class="notification-badge hidden"></span>
+            </button>
+            <button id="btn-settings" class="control-btn" title="Настройки">⚙<span id="settings-badge" class="notification-badge hidden"></span></button>
             <button id="btn-minimize" class="control-btn" title="Свернуть">─</button>
             <button id="btn-close" class="control-btn" title="Закрыть">✕</button>
         </div>
@@ -548,6 +558,34 @@
             <div class="custom-modal-footer">
                 <button id="confirm-cancel" class="modal-btn modal-btn-secondary">Отмена</button>
                 <button id="confirm-ok" class="modal-btn modal-btn-danger">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Changelog Modal -->
+    <div id="changelog-modal" class="custom-modal hidden">
+        <div class="custom-modal-content changelog-modal-content">
+            <div class="custom-modal-header changelog-modal-header">
+                <div class="changelog-header-title">
+                    <svg class="changelog-title-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <line x1="10" y1="9" x2="8" y2="9"></line>
+                    </svg>
+                    <h3>История обновлений сборки</h3>
+                </div>
+                <button id="changelog-close-x" class="modal-close-btn" title="Закрыть">✕</button>
+            </div>
+            <div class="custom-modal-body changelog-modal-body">
+                <div id="changelog-list" class="changelog-list">
+                    <div class="changelog-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
+                </div>
+            </div>
+            <div class="custom-modal-footer changelog-modal-footer">
+                <div class="changelog-footer-hint">Обновления сборки фиксируются автоматически</div>
+                <button id="btn-changelog-ok" class="modal-btn modal-btn-primary">Понятно</button>
             </div>
         </div>
     </div>

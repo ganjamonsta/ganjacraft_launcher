@@ -70,6 +70,7 @@ import {
 
 import { loadNews } from './features/news/index.js';
 import { startStatusChecker } from './features/server-status/index.js';
+import { initChangelog, loadChangelogHistory } from './features/changelog/index.js';
 
 // === Application State ===
 let currentConfig = {};
@@ -274,6 +275,7 @@ async function init() {
     initUpdaterHandlers();
     initConsoleToggle();
     initSettingsButton();
+    initChangelog();
     initAuthHandlers();
     initProgressHandlers();
     initGameButtons();
@@ -311,9 +313,10 @@ async function init() {
     captureInitialSettingsState();
 
     updateLoaderStatus(90, 'Загрузка новостей и сервера...');
-    // 6. Load news and start status checker
+    // 6. Load news, changelog and start status checker
     await Promise.allSettled([
         loadNews(),
+        loadChangelogHistory(),
         new Promise(resolve => {
             startStatusChecker();
             setTimeout(resolve, 150);

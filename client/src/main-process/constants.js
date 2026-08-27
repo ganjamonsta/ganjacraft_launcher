@@ -33,6 +33,7 @@ const FILES_BASE = `${BASE_URL}/files`;
 const API_BASE = `${BASE_URL}/api`;
 
 const MANIFEST_URL = `${FILES_BASE}/manifest.json`;
+const MANIFEST_HISTORY_URL = `${FILES_BASE}/manifest_history.json`;
 const NEOFORGE_INSTALLER_URL = `https://maven.neoforged.net/releases/net/neoforged/neoforge/${NEOFORGE_VERSION}/neoforge-${NEOFORGE_VERSION}-installer.jar`;
 const AUTHLIB_INJECTOR_URL = `https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar`;
 const YGGDRASIL_AUTH_URL = `${API_BASE}/yggdrasil/authserver/authenticate`;
@@ -138,6 +139,7 @@ module.exports = {
     BASE_URL,
     API_BASE,
     MANIFEST_URL,
+    MANIFEST_HISTORY_URL,
     NEOFORGE_INSTALLER_URL,
     AUTHLIB_INJECTOR_URL,
     YGGDRASIL_AUTH_URL,

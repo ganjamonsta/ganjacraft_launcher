@@ -8,7 +8,7 @@ const { ipcMain, dialog, shell, app } = require('electron');
 const https = require('https');
 const { loadConfig, saveConfig } = require('../../modules/config');
 const { resolveJavaPath } = require('../../modules/java');
-const { MANIFEST_URL } = require('../constants');
+const { MANIFEST_URL, MANIFEST_HISTORY_URL } = require('../constants');
 const ConfigParser = require('../config-parser');
 
 /**
@@ -156,6 +156,63 @@ function registerConfigHandlers(mainWindow) {
                 return localManifest;
             }
             return null;
+        }
+    });
+
+    // Get manifest history (последние обновления сборки)
+    let historyCache = null;
+    let historyCacheTime = 0;
+    const HISTORY_CACHE_TTL = 60_000; // 1 минута
+
+    ipcMain.handle('get-manifest-history', async () => {
+        const now = Date.now();
+        if (historyCache && (now - historyCacheTime) < HISTORY_CACHE_TTL) {
+            return historyCache;
+        }
+
+        try {
+            const parsedUrl = new URL(MANIFEST_HISTORY_URL);
+            const reqOptions = {
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port || 443,
+                path: parsedUrl.pathname + parsedUrl.search,
+                method: 'GET',
+                timeout: 5000,
+                headers: {
+                    'User-Agent': 'localtunnel',
+                    'Bypass-Tunnel-Reminder': 'true'
+                }
+            };
+            const fresh = await new Promise((resolve, reject) => {
+                const req = https.request(reqOptions, (res) => {
+                    let data = '';
+                    res.on('data', chunk => data += chunk);
+                    res.on('end', () => {
+                        try {
+                            const parsed = JSON.parse(data);
+                            resolve(parsed);
+                        } catch {
+                            reject(new Error('Invalid JSON'));
+                        }
+                    });
+                });
+                req.on('error', reject);
+                req.on('timeout', () => {
+                    req.destroy();
+                    reject(new Error('Timeout'));
+                });
+                req.end();
+            });
+
+            const historyList = Array.isArray(fresh) ? fresh : (fresh.history || []);
+            historyCache = { success: true, history: historyList };
+            historyCacheTime = now;
+            return historyCache;
+        } catch (e) {
+            if (historyCache) {
+                return historyCache;
+            }
+            return { success: false, history: [], error: e.message };
         }
     });
     

@@ -182,6 +182,7 @@ contextBridge.exposeInMainWorld('api', {
     reinstallClient: () => ipcRenderer.invoke('reinstall-client'),
 
     getManifest: () => ipcRenderer.invoke('get-manifest'), // To list mods in UI
+    getManifestHistory: () => ipcRenderer.invoke('get-manifest-history'), // History of pack updates
     resolveModrinth: (hashes) => ipcRenderer.invoke('resolve-modrinth', hashes),
     
     // Events
