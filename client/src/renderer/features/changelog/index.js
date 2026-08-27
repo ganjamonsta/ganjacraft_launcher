@@ -6,7 +6,6 @@ export {
     initChangelog,
     loadChangelogHistory,
     checkChangelogBadge,
-    openChangelogModal,
-    closeChangelogModal,
-    markChangelogSeen
+    markChangelogSeen,
+    renderChangelogList
 } from './changelog-manager.js';
