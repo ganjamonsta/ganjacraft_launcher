@@ -74,20 +74,6 @@
             </div>
         </div>
 
-        <!-- News Section / Console Panel -->
-        <div id="news-section" class="fade-in">
-            <div class="panel-header">
-                <h3 id="panel-title">Новости</h3>
-                <div id="console-toggle-btn" title="Переключить консоль"></div>
-            </div>
-            <div id="news-list">
-                <div class="loading">Загрузка новостей...</div>
-            </div>
-            <div id="console-output" class="hidden">
-                <div style="color: #666; font-style: italic;">Ожидание логов игры...</div>
-            </div>
-        </div>
-
         <!-- Settings Screen (Full Screen) -->
         <div id="step-settings" class="settings-screen hidden">
             <!-- Floating Save Button (Hidden by default) -->
@@ -503,46 +489,50 @@
         </div>
 
     <div class="auth-container fade-in">
-        <h2>Ganj4Craft</h2>
+        <h2 class="auth-brand-header">Ganj4Craft</h2>
 
         <!-- Step 0: Loading -->
-        <div id="step-loading" style="color: #888; font-size: 14px; margin-bottom: 20px;">
-            Проверка сессии...
+        <div id="step-loading" class="auth-step-box">
+            <div class="auth-loading-spinner"></div>
+            <div class="auth-loading-text">Проверка сессии...</div>
         </div>
 
         <!-- Step 1: Login Form (Single Input) -->
-        <div id="step-login" class="hidden">
-            <input type="text" id="username" placeholder="Ваш ник в игре" autocomplete="off" spellcheck="false"
-                style="text-align: center; font-size: 16px; font-weight: bold; letter-spacing: 1px;">
-            <button id="login-btn" style="margin-top: 15px;">Войти</button>
+        <div id="step-login" class="auth-step-box hidden">
+            <div class="auth-input-wrap">
+                <input type="text" id="username" class="unified-auth-input" placeholder="Ваш ник в игре" autocomplete="off" spellcheck="false">
+            </div>
+            <button id="login-btn" class="unified-btn unified-btn-primary auth-submit-btn">Далее</button>
             <div id="login-error" class="error-msg"></div>
         </div>
 
         <!-- Step 2: Code Verification -->
-        <div id="step-code" class="hidden">
-            <p style="font-size: 11.5px; color: #aaa; margin: 0 0 10px 0; line-height: 1.35;">
+        <div id="step-code" class="auth-step-box hidden">
+            <p class="auth-helper-text">
                 Код отправлен в Telegram бот.<br>
-                <a href="#" id="open-tg-link" style="color: #4CAF50; text-decoration: none; font-size: 11px;">Открыть бота @ganjacrafter_bot</a>
+                <a href="#" id="open-tg-link" class="auth-tg-link">Открыть бота @ganjacrafter_bot</a>
             </p>
-            <input type="text" id="auth-code" placeholder="Код (6 цифр)" maxlength="6"
-                style="text-align: center; font-size: 18px; letter-spacing: 5px; font-weight: bold;">
-            <button id="verify-btn" style="margin-top: 15px;">Подтвердить</button>
+            <div class="auth-input-wrap">
+                <input type="text" id="auth-code" class="unified-auth-input code-input" placeholder="Код (6 цифр)" maxlength="6">
+            </div>
+            <button id="verify-btn" class="unified-btn unified-btn-primary auth-submit-btn">Подтвердить</button>
             <div id="code-error" class="error-msg"></div>
             
-            <div style="margin-top: 10px;">
-                <button id="switch-to-pass-btn" style="background: transparent; border: none; color: #888; text-decoration: underline; font-size: 11px; cursor: pointer;">Войти по паролю</button>
+            <div class="auth-switch-box">
+                <button id="switch-to-pass-btn" class="auth-switch-link">Войти по паролю</button>
             </div>
         </div>
 
         <!-- Step 2.5: Password Login -->
-        <div id="step-password" class="hidden">
-            <input type="password" id="auth-password" placeholder="Пароль от аккаунта"
-                style="text-align: center; font-size: 16px; letter-spacing: 2px;">
-            <button id="pass-login-btn" style="margin-top: 15px;">Войти</button>
+        <div id="step-password" class="auth-step-box hidden">
+            <div class="auth-input-wrap">
+                <input type="password" id="auth-password" class="unified-auth-input pass-input" placeholder="Пароль от аккаунта">
+            </div>
+            <button id="pass-login-btn" class="unified-btn unified-btn-primary auth-submit-btn">Войти</button>
             <div id="password-error" class="error-msg"></div>
             
-            <div style="margin-top: 10px;">
-                <button id="switch-to-code-btn" style="background: transparent; border: none; color: #888; text-decoration: underline; font-size: 11px; cursor: pointer;">Ввести код из Telegram</button>
+            <div class="auth-switch-box">
+                <button id="switch-to-code-btn" class="auth-switch-link">Ввести код из Telegram</button>
             </div>
         </div>
 
@@ -678,26 +668,73 @@
             </div>
         </div>
 
-        <!-- Step 4: Progress -->
+        <!-- Step 4: Progress & Live Launch Console Hub -->
         <div id="step-progress" class="hidden">
-            <div id="status">Инициализация...</div>
-
-            <!-- Joint Progress Bar (Game Launch) -->
-            <div class="joint-wrapper" style="margin-top: 20px;">
-                <div id="game-joint-progress" class="joint-progress-container">
-                    <img src="assets/images/loading/progress_bar.png" class="joint-img" alt="Loading...">
+            <div class="launch-progress-layout">
+                <!-- Top Launch Status Header -->
+                <div class="launch-progress-header">
+                    <div class="launch-title-badge">
+                        <span class="launch-brand-text">GANJ4CRAFT</span>
+                        <span class="launch-sub-text">ЗАПУСК КЛИЕНТА</span>
+                    </div>
+                    <div class="launch-status-pill">
+                        <span class="status-indicator online pulse-green"></span>
+                        <span id="game-status" class="launch-status-text">Инициализация запуска...</span>
+                    </div>
                 </div>
-                <div id="game-joint-burn" class="joint-burn-effect">
-                    <div class="joint-burn"></div>
-                    <div class="joint-smoke"></div>
-                </div>
-                <img id="game-joint-end" src="assets/images/loading/progress_bar_end.png" class="joint-end-img hidden">
-            </div>
 
-            <div id="progress-controls" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                <button id="retry-btn" class="hidden"
-                    style="background: #f1c40f; color: #111; font-size: 12px; padding: 8px; font-weight: bold;">Повторить</button>
-                <button id="cancel-btn" style="background: #d32f2f; font-size: 12px; padding: 8px;">Отмена</button>
+                <!-- Smoking Joint Animated Progress Bar -->
+                <div class="launch-joint-section">
+                    <div class="joint-wrapper">
+                        <div id="game-joint-progress" class="joint-progress-container">
+                            <img src="assets/images/loading/progress_bar.png" class="joint-img" alt="Loading...">
+                        </div>
+                        <div id="game-joint-burn" class="joint-burn-effect">
+                            <div class="joint-burn"></div>
+                            <div class="joint-smoke"></div>
+                        </div>
+                        <img id="game-joint-end" src="assets/images/loading/progress_bar_end.png" class="joint-end-img hidden">
+                    </div>
+                </div>
+
+                <!-- Integrated Live Terminal / Launch Console -->
+                <div class="launch-console-card">
+                    <div class="launch-console-header">
+                        <div class="console-header-left">
+                            <span class="console-pulse-indicator"></span>
+                            <span class="console-header-title">КОНСОЛЬ ЗАПУСКА & ЛОГИ ИГРЫ</span>
+                        </div>
+                        <div class="console-header-actions">
+                            <button id="btn-copy-console" class="console-action-btn" title="Копировать все логи в буфер обмена">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                <span>Копировать</span>
+                            </button>
+                            <button id="btn-clear-console" class="console-action-btn" title="Очистить экран консоли">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                                <span>Очистить</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="console-output" class="launch-console-body">
+                        <div class="console-log-line log-system">Ожидание логов запуска игры...</div>
+                    </div>
+                </div>
+
+                <!-- Footer Controls Bar -->
+                <div id="progress-controls" class="launch-controls-bar">
+                    <button id="retry-btn" class="unified-btn unified-btn-warning hidden">
+                        <span>🔄 Повторить запуск</span>
+                    </button>
+                    <button id="cancel-btn" class="unified-btn unified-btn-danger">
+                        <span>✕ Отмена</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

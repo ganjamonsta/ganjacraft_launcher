@@ -6,5 +6,8 @@ export {
     logToConsole,
     isConsoleVisible,
     showConsole,
-    hideConsole
+    hideConsole,
+    clearConsole,
+    copyConsoleLogs,
+    initConsoleActions
 } from './console.js';

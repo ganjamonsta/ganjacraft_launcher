@@ -76,14 +76,17 @@ function showPlayScreen() {
     const stepProgress = dom.get('step-progress');
     
     if (stepProgress) stepProgress.classList.add('hidden');
-    if (stepPlay) stepPlay.classList.remove('hidden');
+    if (stepPlay) {
+        stepPlay.classList.remove('hidden');
+        stepPlay.classList.add('fade-in');
+    }
 }
 
 /**
  * Запустить игру
  */
 export async function startLaunch() {
-    const statusDiv = dom.get('game-status');
+    const statusDiv = dom.get('game-status') || dom.get('status');
     const consoleOutput = dom.get('console-output');
     const retryBtn = dom.get('retry-btn');
     const cancelBtn = dom.get('cancel-btn');
@@ -93,20 +96,21 @@ export async function startLaunch() {
     
     // Reset UI
     if (statusDiv) {
-        statusDiv.innerText = 'Инициализация...';
-        statusDiv.style.color = '#888';
+        statusDiv.innerText = 'Инициализация запуска...';
+        statusDiv.style.color = '#39ff14';
     }
     setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
     
     if (retryBtn) retryBtn.classList.add('hidden');
     if (cancelBtn) cancelBtn.classList.remove('hidden');
     
-    if (consoleOutput) consoleOutput.innerHTML = '';
     // Auto-save any pending setting or mod changes before launching
     if (settingsChanged()) {
         logToConsole('[SETTINGS] Сохранение изменённых настроек перед запуском...');
         await saveSettings();
     }
+
+    logToConsole('[LAUNCHER] Подготовка к запуску игры...');
 
     const result = await window.api.launchGame({ 
         username: getCurrentUsername(),
@@ -114,11 +118,15 @@ export async function startLaunch() {
     });
     
     if (result.success) {
-        if (statusDiv) statusDiv.innerText = 'Игра запущена';
+        if (statusDiv) {
+            statusDiv.innerText = 'Игра запущена';
+            statusDiv.style.color = '#39ff14';
+        }
         setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 100);
         if (cancelBtn) cancelBtn.classList.add('hidden');
 
-        if (config.hideOnPlay !== false) {
+        const cfg = getCurrentConfig() || {};
+        if (cfg.hideOnPlay !== false) {
             window.api.minimize();
         }
     } else {
@@ -129,7 +137,7 @@ export async function startLaunch() {
 
         // Handle Cancellation
         if (err === 'Запуск отменен') {
-            logToConsole('[LAUNCHER] Запуск отменен.');
+            logToConsole('[LAUNCHER] Запуск отменен пользователем.');
             showPlayScreen();
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
             return;
@@ -140,12 +148,12 @@ export async function startLaunch() {
         if (err.includes('ENOTFOUND') || err.includes('ETIMEDOUT') || err.includes('UnknownHostException')) {
             msg = 'Потеряно соединение. Проверьте интернет.';
         } else {
-            msg = 'Ошибка: ' + err.substring(0, 40) + '...';
+            msg = 'Ошибка: ' + err.substring(0, 40) + (err.length > 40 ? '...' : '');
         }
         
         if (statusDiv) {
             statusDiv.innerText = msg;
-            statusDiv.style.color = '#e74c3c';
+            statusDiv.style.color = '#ef5350';
         }
         
         logToConsole(`[ERROR] ${result.error}`);
@@ -168,7 +176,7 @@ export async function cancelLaunch() {
  * Инициализация IPC обработчиков прогресса
  */
 export function initProgressHandlers() {
-    const statusDiv = dom.get('game-status');
+    const statusDiv = dom.get('game-status') || dom.get('status');
     const gameJointProgress = dom.get('game-joint-progress');
     const gameJointBurn = dom.get('game-joint-burn');
     const gameJointEnd = dom.get('game-joint-end');
@@ -181,13 +189,14 @@ export function initProgressHandlers() {
         window.api.onProgress((e) => {
             const percent = (e.task / e.total) * 100;
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, percent);
-            if (statusDiv) {
+            const statusEl = dom.get('game-status') || dom.get('status');
+            if (statusEl) {
                 if (e.currentFile) {
                     const filename = e.currentFile.split(/[/\\]/).pop();
                     const tag = e.sourceName ? `[${e.sourceName}] ` : '';
-                    statusDiv.innerText = `${tag}${filename} (${Math.round(percent)}%)`;
+                    statusEl.innerText = `${tag}${filename} (${Math.round(percent)}%)`;
                 } else {
-                    statusDiv.innerText = `Загрузка ресурсов: ${Math.round(percent)}%`;
+                    statusEl.innerText = `Загрузка ресурсов: ${Math.round(percent)}%`;
                 }
             }
         });
@@ -196,18 +205,19 @@ export function initProgressHandlers() {
     // Log Handler
     window.api.onLog((text) => {
         logToConsole(text);
+        const statusEl = dom.get('game-status') || dom.get('status');
         
         if (text.includes('Скачивание:')) {
-            if (statusDiv) statusDiv.innerText = 'Загрузка ресурсов...';
+            if (statusEl) statusEl.innerText = 'Загрузка ресурсов...';
             if (gameJointProgress && !gameJointProgress.classList.contains('hidden') && gameJointProgress.style.width === '100%') {
                 setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 40);
             }
         } else if (text.includes('Обновление завершено')) {
-            if (statusDiv) statusDiv.innerText = 'Запуск игры...';
+            if (statusEl) statusEl.innerText = 'Запуск игры...';
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 100);
             if (cancelBtn) cancelBtn.classList.add('hidden');
         } else if (text.includes('Проверка обновлений')) {
-            if (statusDiv) statusDiv.innerText = 'Проверка обновлений...';
+            if (statusEl) statusEl.innerText = 'Проверка обновлений...';
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 5);
         }
     });
@@ -217,10 +227,17 @@ export function initProgressHandlers() {
         logToConsole('[LAUNCHER] Игровая сессия завершена.');
         
         if (stepProgress) stepProgress.classList.add('hidden');
-        if (stepPlay) stepPlay.classList.remove('hidden');
+        if (stepPlay) {
+            stepPlay.classList.remove('hidden');
+            stepPlay.classList.add('fade-in');
+        }
         
         setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
-        if (statusDiv) statusDiv.innerText = 'Готов к игре';
+        const statusEl = dom.get('game-status') || dom.get('status');
+        if (statusEl) {
+            statusEl.innerText = 'Готов к игре';
+            statusEl.style.color = '#39ff14';
+        }
         
         const playBtn = dom.get('play-btn');
         if (playBtn) {

@@ -66,7 +66,8 @@ import {
     logToConsole, 
     isConsoleVisible, 
     showConsole, 
-    hideConsole 
+    hideConsole,
+    initConsoleActions
 } from './features/console/index.js';
 
 import { loadNews } from './features/news/index.js';
@@ -272,6 +273,7 @@ async function init() {
     initWindowControls();
     initUpdaterHandlers();
     initConsoleToggle();
+    initConsoleActions();
     initSettingsButton();
     initChangelog();
     initAuthHandlers();
