@@ -14,6 +14,7 @@ import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
 import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
 import { renderChangelogList, markChangelogSeen } from '../changelog/changelog-manager.js';
+import { applySkinMode, getSkinViewerMode } from '../skin-viewer/index.js';
 
 // Стейт для отслеживания изменений
 let initialSettingsState = null;
@@ -44,6 +45,7 @@ export function getCurrentSettingsState() {
         memoryMin: document.getElementById('setting-ram-min')?.value.trim().toUpperCase() || '1G',
         memoryMax: document.getElementById('setting-ram-max')?.value.trim().toUpperCase() || '3G',
         hideOnPlay: document.getElementById('setting-hide-on-play')?.checked ?? true,
+        skinMode: document.getElementById('setting-skin-mode')?.value || '3d',
         effectsPreset: document.getElementById('setting-effects-preset')?.value || 'auto',
         effectsDensity: document.getElementById('setting-effects-density')?.value || 'low',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
@@ -115,6 +117,7 @@ export function setupSettingsChangeListeners() {
     // Controls (Checkboxes & Selects)
     const formControls = [
         'setting-hide-on-play',
+        'setting-skin-mode',
         'setting-effects-preset',
         'setting-effects-density',
         'setting-enable-smoke',
@@ -391,6 +394,7 @@ export function populateSettingsFields(config) {
     const ramMinInput = document.getElementById('setting-ram-min');
     const ramMaxInput = document.getElementById('setting-ram-max');
     const hideOnPlayCheckbox = document.getElementById('setting-hide-on-play');
+    const skinModeSelect = document.getElementById('setting-skin-mode');
     const presetSelect = document.getElementById('setting-effects-preset');
     const densitySelect = document.getElementById('setting-effects-density');
     const smokeCheckbox = document.getElementById('setting-enable-smoke');
@@ -402,6 +406,9 @@ export function populateSettingsFields(config) {
     if (ramMaxInput) ramMaxInput.value = config.memoryMax || '3G';
     if (hideOnPlayCheckbox) hideOnPlayCheckbox.checked = config.hideOnPlay !== false;
     
+    const skinMode = config.skinMode || getSkinViewerMode() || '3d';
+    if (skinModeSelect) skinModeSelect.value = skinMode;
+
     let preset = config.effectsPreset || 'auto';
     if (config.enableSnow === false && (!config.effectsPreset || config.effectsPreset === 'snow')) {
         preset = 'off';
@@ -432,6 +439,7 @@ export async function saveSettings() {
     if (!/^\d+[MG]$/.test(memMax)) memMax = '3G';
 
     const selectedPreset = document.getElementById('setting-effects-preset')?.value || 'auto';
+    const selectedSkinMode = document.getElementById('setting-skin-mode')?.value || '3d';
 
     const newConfig = {
         ...currentConfig,
@@ -440,6 +448,7 @@ export async function saveSettings() {
         memoryMin: memMin,
         memoryMax: memMax,
         hideOnPlay: document.getElementById('setting-hide-on-play')?.checked ?? true,
+        skinMode: selectedSkinMode,
         effectsPreset: selectedPreset,
         effectsDensity: document.getElementById('setting-effects-density')?.value || 'low',
         enableSnow: selectedPreset !== 'off',
@@ -456,6 +465,9 @@ export async function saveSettings() {
     }
     
     currentConfig = newConfig;
+
+    // Apply Skin Mode (3D / 2D / off)
+    applySkinMode(selectedSkinMode);
     
     // Apply Visual Effects
     applyEffectsConfig(newConfig);

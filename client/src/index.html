@@ -336,6 +336,25 @@
                                 <div class="setting-item">
                                     <div class="setting-label">
                                         <svg class="setting-icon">
+                                            <use href="#icon-appearance" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Отображение скина</span>
+                                            <span class="setting-desc">3D WebGL, 2D или отключить</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="setting-skin-mode" class="setting-select">
+                                            <option value="3d">🎮 3D (WebGL рендер)</option>
+                                            <option value="2d">🖼️ 2D (Изометрия)</option>
+                                            <option value="off">🚫 Отключить скин</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
                                             <use href="#icon-snow" />
                                         </svg>
                                         <div class="setting-text">
@@ -520,10 +539,6 @@
                 <div class="player-character-section">
                     <div class="player-skin-header">
                         <span class="player-username-title" id="player-display-name">OPERATOR</span>
-                        <div class="skin-mode-toggle" title="Переключение режима отображения скина">
-                            <button id="btn-skin-3d" class="skin-mode-btn active" title="3D WebGL режим">3D</button>
-                            <button id="btn-skin-2d" class="skin-mode-btn" title="2D изометрический режим">2D</button>
-                        </div>
                     </div>
 
                     <div id="skin-viewer-container" class="skin-viewer-wrapper frameless-skin">

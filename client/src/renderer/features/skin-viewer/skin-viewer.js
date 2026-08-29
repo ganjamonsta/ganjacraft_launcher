@@ -12,8 +12,15 @@ const CAPE_BASE_URL = 'https://launcher.ganj4craft.ru/api/capes';
 
 let skinViewer3d = null;
 let currentUsername = '';
-let currentMode = localStorage.getItem(STORAGE_KEY_MODE) || '3d'; // '3d' | '2d'
+let currentMode = localStorage.getItem(STORAGE_KEY_MODE) || '3d'; // '3d' | '2d' | 'off'
 let mouseMoveHandler = null;
+
+/**
+ * Получить текущий режим отображения скина
+ */
+export function getSkinViewerMode() {
+    return currentMode;
+}
 
 /**
  * Инициализировать или обновить скин игрока
@@ -23,38 +30,48 @@ export async function initSkinViewer(username) {
     if (!username) return;
     currentUsername = username;
 
-    const container = dom.get('skin-viewer-container');
-    if (!container) return;
-
     // Восстанавливаем сохраненный режим
     currentMode = localStorage.getItem(STORAGE_KEY_MODE) || '3d';
-    updateModeButtonsUI();
-
-    if (currentMode === '3d') {
-        await render3dSkin(username);
-    } else {
-        await render2dSkin(username);
-    }
-
+    await applySkinMode(currentMode);
     setupMouseTracking();
-    setupToggleControls();
 }
 
 /**
- * Переключить режим рендера 3D <-> 2D
- * @param {'3d'|'2d'} mode 
+ * Применить режим отображения скина (3d, 2d, off)
+ * @param {'3d'|'2d'|'off'} mode 
+ */
+export async function applySkinMode(mode) {
+    currentMode = mode || '3d';
+    localStorage.setItem(STORAGE_KEY_MODE, currentMode);
+
+    const layout = document.querySelector('.main-dashboard-layout');
+    const playerSection = document.querySelector('.player-character-section');
+
+    if (currentMode === 'off') {
+        if (playerSection) playerSection.style.display = 'none';
+        if (layout) layout.classList.add('layout-skin-off');
+        return;
+    }
+
+    if (playerSection) playerSection.style.display = '';
+    if (layout) layout.classList.remove('layout-skin-off');
+
+    if (currentUsername) {
+        if (currentMode === '3d') {
+            await render3dSkin(currentUsername);
+        } else {
+            await render2dSkin(currentUsername);
+        }
+    }
+}
+
+/**
+ * Переключить режим рендера 3D / 2D / off
+ * @param {'3d'|'2d'|'off'} mode 
  */
 export async function setSkinViewerMode(mode) {
     if (mode === currentMode) return;
-    currentMode = mode;
-    localStorage.setItem(STORAGE_KEY_MODE, mode);
-    updateModeButtonsUI();
-
-    if (currentMode === '3d') {
-        await render3dSkin(currentUsername);
-    } else {
-        await render2dSkin(currentUsername);
-    }
+    await applySkinMode(mode);
 }
 
 /**
@@ -238,34 +255,4 @@ function setupMouseTracking() {
     };
 
     window.addEventListener('mousemove', mouseMoveHandler);
-}
-
-/**
- * Инициализация кнопок переключения 3D / 2D
- */
-function setupToggleControls() {
-    const btn3d = dom.get('btn-skin-3d');
-    const btn2d = dom.get('btn-skin-2d');
-
-    if (btn3d) {
-        btn3d.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setSkinViewerMode('3d');
-        });
-    }
-
-    if (btn2d) {
-        btn2d.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setSkinViewerMode('2d');
-        });
-    }
-}
-
-function updateModeButtonsUI() {
-    const btn3d = dom.get('btn-skin-3d');
-    const btn2d = dom.get('btn-skin-2d');
-
-    if (btn3d) btn3d.classList.toggle('active', currentMode === '3d');
-    if (btn2d) btn2d.classList.toggle('active', currentMode === '2d');
 }

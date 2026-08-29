@@ -1848,6 +1848,35 @@ body {
     100% { r: 4.8; opacity: 1; }
 }
 
+/* Layout state when skin viewer is OFF (Logo shifts to Left) */
+.main-dashboard-layout.layout-skin-off {
+    justify-content: space-between;
+    padding: 0 40px;
+}
+
+.main-dashboard-layout.layout-skin-off .player-character-section {
+    display: none !important;
+}
+
+.main-dashboard-layout.layout-skin-off .hero-brand-section.center-brand {
+    flex: 1;
+    max-width: 480px;
+    align-items: flex-start;
+    text-align: left;
+    margin-left: 20px;
+}
+
+.main-dashboard-layout.layout-skin-off .hero-brand-section.center-brand .hero-neon-title {
+    font-size: 38px;
+    letter-spacing: 4px;
+}
+
+.main-dashboard-layout.layout-skin-off .hero-brand-section.center-brand .neon-leaf-wrapper {
+    width: 320px;
+    height: 320px;
+    margin-left: -15px;
+}
+
 /* 3. Right: Action / Launch Hub */
 .launch-action-hub {
     flex: 1;
