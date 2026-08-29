@@ -184,9 +184,11 @@ export function toggleMainUIVisibility(show, config) {
  */
 export function openSettings(config) {
     initDOMRefs();
-    if (settingsAnimating || !settingsScreen) return;
-    settingsAnimating = true;
+    if (!settingsScreen) return;
     
+    // Безусловно и мгновенно глушим changelog
+    closeChangelogScreen(true);
+
     // Сбросить горизонтальные направления каскадов от предыдущих переключений вкладок
     document.querySelectorAll('.inertia-cascade, [data-dir]').forEach(el => {
         delete el.dataset.dir;
@@ -196,11 +198,7 @@ export function openSettings(config) {
         });
     });
 
-    // Закрыть экран обновлений мгновенно, если он был открыт
-    if (isChangelogOpen()) {
-        closeChangelogScreen(true);
-    }
-
+    settingsAnimating = true;
     settingsScreen.classList.remove('hidden', 'closing');
     settingsScreen.classList.add('opening');
     
@@ -216,6 +214,11 @@ export function openSettings(config) {
     // Деактивировать главную вкладку и запустить выпадение вкладок настроек
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.remove('active');
+
+    const changelogTabs = document.getElementById('changelog-tabs-bar');
+    if (changelogTabs) {
+        changelogTabs.className = 'changelog-tabs hidden';
+    }
 
     const titleBarTabs = document.getElementById('settings-tabs-bar');
     if (titleBarTabs) {
@@ -251,8 +254,9 @@ export function openSettings(config) {
     
     setTimeout(() => {
         settingsScreen.classList.remove('opening');
+        if (titleBarTabs) titleBarTabs.classList.remove('opening');
         settingsAnimating = false;
-    }, 580);
+    }, 280);
 }
 
 /**
@@ -260,7 +264,8 @@ export function openSettings(config) {
  */
 export function closeSettings(instant = false) {
     initDOMRefs();
-    if (settingsAnimating || !settingsScreen) return;
+    if (!settingsScreen) return;
+    if (settingsAnimating && !instant) return;
 
     if (instant) {
         settingsScreen.className = 'settings-screen hidden';

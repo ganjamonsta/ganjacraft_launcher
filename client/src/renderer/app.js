@@ -174,11 +174,14 @@ function initSettingsButton() {
     // Open/Toggle settings
     if (btnSettings) {
         btnSettings.addEventListener('click', async () => {
-            if (isSettingsAnimating()) return;
-
+            // Если открыты обновления — сразу переключаемся на настройки
             if (isChangelogOpen()) {
-                closeChangelogScreen();
+                toggleMainUIVisibility(false, currentConfig);
+                openSettings(currentConfig);
+                return;
             }
+
+            if (isSettingsAnimating()) return;
             
             // Toggle behavior
             if (settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {

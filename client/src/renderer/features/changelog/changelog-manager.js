@@ -579,7 +579,7 @@ function escapeHtml(str) {
 }
 
 const BELL_SVG = `
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
     </svg>
@@ -600,24 +600,26 @@ export function isChangelogOpen() {
  */
 export function openChangelogScreen() {
     const screen = dom.get('step-changelog');
-    if (changelogAnimating || !screen) return;
-    changelogAnimating = true;
+    if (!screen) return;
 
-    // Плавно скрываем основные блоки интерфейса (новости, статус, форма авторизации/игры)
+    // 1. Безусловно и мгновенно глушим настройки
+    closeSettings(true);
+
+    // 2. Плавно скрываем основные блоки интерфейса (новости, статус, форма авторизации/игры)
     toggleMainUIVisibility(false);
 
-    // Закрываем настройки мгновенно, если они были открыты
-    const settingsScreen = dom.get('step-settings');
-    if (settingsScreen && !settingsScreen.classList.contains('hidden')) {
-        closeSettings(true);
-    }
-
+    changelogAnimating = true;
     screen.classList.remove('hidden', 'closing');
     screen.classList.add('opening');
 
     // Title bar tabs
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.remove('active');
+
+    const settingsTabs = document.getElementById('settings-tabs-bar');
+    if (settingsTabs) {
+        settingsTabs.className = 'settings-tabs hidden';
+    }
 
     const changelogTabs = document.getElementById('changelog-tabs-bar');
     if (changelogTabs) {
@@ -652,8 +654,9 @@ export function openChangelogScreen() {
 
     setTimeout(() => {
         screen.classList.remove('opening');
+        if (changelogTabs) changelogTabs.classList.remove('opening');
         changelogAnimating = false;
-    }, 300);
+    }, 280);
 }
 
 /**
@@ -661,7 +664,8 @@ export function openChangelogScreen() {
  */
 export function closeChangelogScreen(instant = false) {
     const screen = dom.get('step-changelog');
-    if (changelogAnimating || !screen) return;
+    if (!screen) return;
+    if (changelogAnimating && !instant) return;
 
     if (instant) {
         screen.className = 'settings-screen changelog-screen hidden';
