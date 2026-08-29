@@ -3745,8 +3745,8 @@ input[type="checkbox"] {
 #tab-general .settings-categories {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-rows: auto 1fr;
+    gap: 10px;
     height: 100%;
     flex: 1;
 }
@@ -3757,12 +3757,31 @@ input[type="checkbox"] {
     height: 100%;
 }
 
+#tab-general .category-full-width {
+    grid-column: 1 / -1;
+}
+
 #tab-general .category-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
     padding: 2px 0;
+}
+
+#tab-general .category-content-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 4px 14px;
+    align-items: stretch;
+}
+
+#tab-general .category-subcolumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    gap: 4px;
 }
 
 /* Settings Categories Container */
