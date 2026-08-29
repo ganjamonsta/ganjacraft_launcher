@@ -153,7 +153,6 @@ export function toggleMainUIVisibility(show, config) {
     // Ленивая инициализация кеша элементов
     if (!cachedUIElements) {
         cachedUIElements = [
-            { el: document.getElementById('news-section'), defaultTransform: 'none', hideTransform: 'translateX(-120%)', side: 'left' },
             { el: document.getElementById('server-status-widget'), defaultTransform: 'none', hideTransform: 'translateY(-150%)', side: null },
             { el: document.querySelector('.auth-container'), defaultTransform: 'translateY(-50%)', hideTransform: 'translateY(-50%) translateX(120%)', side: 'right' }
         ];

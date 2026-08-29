@@ -1684,24 +1684,9 @@ button:active {
     animation: fadeInCentered 0.5s ease-in-out;
 }
 
-/* News Section */
+/* News Section (Moved to Changelog & Notifications Drawer) */
 #news-section {
-    position: absolute;
-    left: 20px;
-    right: auto;
-    top: 20px;
-    bottom: 20px;
-    width: 300px;
-    background: rgba(20, 20, 20, 0.55);
-    backdrop-filter: blur(6px);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 15px;
-    overflow: hidden; /* Changed from overflow-y: auto to handle inner scrolling */
-    z-index: 600;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 14px 50px rgba(0,0,0,0.35);
+    display: none !important;
 }
 
 .panel-header {
@@ -2654,6 +2639,17 @@ input[type="checkbox"] {
     letter-spacing: 0.4px;
 }
 
+.changelog-badge-scope-news {
+    font-size: 10px;
+    font-weight: 700;
+    color: #00e5ff;
+    background: rgba(0, 229, 255, 0.12);
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+}
+
 .changelog-badge-ver.ver-launcher {
     color: #e1bee7;
     background: rgba(171, 71, 188, 0.15);
@@ -2770,6 +2766,16 @@ input[type="checkbox"] {
 .changelog-release-card.card-theme-launcher:hover {
     border-color: rgba(179, 136, 255, 0.5);
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(124, 77, 255, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.changelog-release-card.card-theme-news {
+    border-color: rgba(0, 229, 255, 0.25);
+    background: linear-gradient(135deg, rgba(14, 26, 36, 0.94) 0%, rgba(8, 14, 20, 0.98) 100%);
+}
+
+.changelog-release-card.card-theme-news:hover {
+    border-color: rgba(0, 229, 255, 0.5);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
 .changelog-release-card.card-theme-pack:hover {
@@ -2918,6 +2924,55 @@ input[type="checkbox"] {
     color: #f0f0f0;
     line-height: 1.5;
     white-space: pre-wrap;
+}
+
+/* News Content in Changelog */
+.changelog-news-content {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.changelog-news-image-wrap {
+    width: 100%;
+    max-height: 280px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.changelog-news-img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    display: block;
+}
+
+.changelog-news-text {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #e2e8f0;
+}
+
+.changelog-news-text p {
+    margin: 0 0 8px 0;
+}
+
+.changelog-news-text p:last-child {
+    margin-bottom: 0;
+}
+
+.changelog-news-link {
+    color: #00e5ff;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.changelog-news-link:hover {
+    color: #80d8ff;
 }
 
 .changelog-group {

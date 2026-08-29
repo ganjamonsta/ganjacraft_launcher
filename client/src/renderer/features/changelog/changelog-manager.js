@@ -13,6 +13,7 @@ const STORAGE_KEY_SEEN = 'ganja_last_seen_changelog_id';
 
 let cachedPackHistory = [];
 let cachedLauncherReleases = [];
+let cachedNews = [];
 let isInitialized = false;
 
 /**
@@ -130,13 +131,15 @@ function formatReleaseDate(dateStr, timestamp) {
 function getLatestCompoundId() {
     const latestPack = cachedPackHistory[0];
     const latestLauncher = cachedLauncherReleases[0];
+    const latestNews = cachedNews[0];
     const pId = latestPack ? (latestPack.id || String(latestPack.timestamp || '')) : '';
     const lId = latestLauncher ? (latestLauncher.version || String(latestLauncher.timestamp || '')) : '';
-    return `${pId}_${lId}`;
+    const nId = latestNews ? (latestNews.id || String(latestNews.timestamp || '')) : '';
+    return `${pId}_${lId}_${nId}`;
 }
 
 /**
- * Загрузить историю изменений манифеста и релизов лаунчера
+ * Загрузить историю изменений манифеста, релизов лаунчера и новостей
  */
 export async function loadChangelogHistory() {
     try {
@@ -153,7 +156,13 @@ export async function loadChangelogHistory() {
             promises.push(Promise.resolve({ success: false, releases: [] }));
         }
 
-        const [packRes, launcherRes] = await Promise.all(promises);
+        if (window.api && window.api.getNews) {
+            promises.push(window.api.getNews().catch(() => ({ success: false, news: [] })));
+        } else {
+            promises.push(Promise.resolve({ success: false, news: [] }));
+        }
+
+        const [packRes, launcherRes, newsRes] = await Promise.all(promises);
 
         if (packRes && packRes.success && Array.isArray(packRes.history)) {
             cachedPackHistory = packRes.history;
@@ -161,6 +170,10 @@ export async function loadChangelogHistory() {
 
         if (launcherRes && launcherRes.success && Array.isArray(launcherRes.releases)) {
             cachedLauncherReleases = launcherRes.releases;
+        }
+
+        if (newsRes && newsRes.success && Array.isArray(newsRes.news)) {
+            cachedNews = newsRes.news;
         }
 
         checkChangelogBadge();
@@ -178,7 +191,9 @@ export function checkChangelogBadge() {
     const badge = dom.get('changelog-badge');
     if (!badge) return;
 
-    if ((!cachedPackHistory || cachedPackHistory.length === 0) && (!cachedLauncherReleases || cachedLauncherReleases.length === 0)) {
+    if ((!cachedPackHistory || cachedPackHistory.length === 0) &&
+        (!cachedLauncherReleases || cachedLauncherReleases.length === 0) &&
+        (!cachedNews || cachedNews.length === 0)) {
         badge.classList.add('hidden');
         return;
     }
@@ -206,7 +221,7 @@ export function markChangelogSeen() {
 }
 
 /**
- * Рендер карточек объединённой истории обновлений
+ * Рендер карточек объединённой истории обновлений и новостей
  */
 export function renderChangelogList() {
     const container = dom.get('changelog-list');
@@ -215,26 +230,43 @@ export function renderChangelogList() {
     const allItems = [];
 
     // 1. Обновления сборки
-    cachedPackHistory.forEach((item, index) => {
+    cachedPackHistory.forEach((item) => {
         const ts = item.timestamp ? Number(item.timestamp) : (item.date ? new Date(item.date).getTime() / 1000 : 0);
         allItems.push({
             itemType: 'pack',
             timestamp: ts,
             date: item.date,
-            isLatest: index === 0,
             data: item
         });
     });
 
     // 2. Релизы лаунчера
-    cachedLauncherReleases.forEach((rel, index) => {
+    cachedLauncherReleases.forEach((rel) => {
         const ts = rel.timestamp ? Number(rel.timestamp) : (rel.date ? new Date(rel.date).getTime() / 1000 : 0);
         allItems.push({
             itemType: 'launcher',
             timestamp: ts,
             date: rel.date,
-            isLatest: index === 0,
             data: rel
+        });
+    });
+
+    // 3. Новости Telegram / бота
+    cachedNews.forEach((newsItem) => {
+        let ts = newsItem.timestamp ? Number(newsItem.timestamp) : 0;
+        if (!ts && newsItem.created_at) {
+            const parts = String(newsItem.created_at).match(/(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2})/);
+            if (parts) {
+                const isoStr = `${parts[3]}-${parts[2]}-${parts[1]}T${parts[4]}:${parts[5]}:00+03:00`;
+                const d = new Date(isoStr);
+                if (!isNaN(d.getTime())) ts = d.getTime() / 1000;
+            }
+        }
+        allItems.push({
+            itemType: 'news',
+            timestamp: ts || 0,
+            date: newsItem.created_at,
+            data: newsItem
         });
     });
 
@@ -242,7 +274,7 @@ export function renderChangelogList() {
     allItems.sort((a, b) => b.timestamp - a.timestamp);
 
     if (allItems.length === 0) {
-        renderEmptyState('История обновлений пока пуста');
+        renderEmptyState('История обновлений и новостей пока пуста');
         return;
     }
 
@@ -250,16 +282,67 @@ export function renderChangelogList() {
 
     allItems.forEach((entry, idx) => {
         const card = document.createElement('div');
-        card.className = `changelog-release-card ${entry.itemType === 'launcher' ? 'card-theme-launcher' : 'card-theme-pack'}`;
+        let themeClass = 'card-theme-pack';
+        if (entry.itemType === 'launcher') themeClass = 'card-theme-launcher';
+        else if (entry.itemType === 'news') themeClass = 'card-theme-news';
+
+        card.className = `changelog-release-card ${themeClass}`;
 
         if (entry.itemType === 'launcher') {
             card.innerHTML = renderLauncherCardHtml(entry.data, idx === 0);
+        } else if (entry.itemType === 'news') {
+            card.innerHTML = renderNewsCardHtml(entry.data, idx === 0);
         } else {
             card.innerHTML = renderPackCardHtml(entry.data, idx === 0);
         }
 
         container.appendChild(card);
     });
+}
+
+/**
+ * Рендер карточки новости из Telegram-канала / бота
+ */
+function renderNewsCardHtml(item, isLatest) {
+    const formattedDate = formatReleaseDate(item.created_at, item.timestamp);
+    
+    let imageHtml = '';
+    if (item.image_url) {
+        imageHtml = `
+            <div class="changelog-news-image-wrap">
+                <img src="${escapeHtml(item.image_url)}" alt="Изображение к новости" class="changelog-news-img" loading="lazy" />
+            </div>
+        `;
+    }
+
+    const rawText = item.text || '';
+    let formattedText = escapeHtml(rawText);
+    const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+    formattedText = formattedText.replace(urlPattern, '<a href="$1" class="changelog-news-link" target="_blank" onclick="event.preventDefault(); window.api.openUrl(this.href);">$1</a>');
+    formattedText = formattedText.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>');
+
+    return `
+        <div class="changelog-release-header news-release-header">
+            <div class="changelog-header-left">
+                <svg class="changelog-date-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <h4>${escapeHtml(formattedDate)}</h4>
+                <span class="changelog-badge-tag changelog-badge-scope-news">📢 НОВОСТЬ</span>
+                ${isLatest ? '<span class="changelog-badge-latest">СВЕЖЕЕ</span>' : ''}
+            </div>
+        </div>
+
+        <div class="changelog-card-content changelog-news-content">
+            ${imageHtml}
+            <div class="changelog-news-text">
+                <p>${formattedText}</p>
+            </div>
+        </div>
+    `;
 }
 
 /**

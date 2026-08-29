@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const MOCK_AUTH = process.env.MOCK_AUTH === '1';
 
 const API_BASES = [
-    'https://ganj4craft.ru/api'
+    'https://launcher.ganj4craft.ru/api'
 ];
 const API_BASE = API_BASES[0];
 const DEFAULT_TIMEOUT = 25000;
@@ -157,7 +157,7 @@ contextBridge.exposeInMainWorld('api', {
         if (MOCK_AUTH) return { success: true, news: [{ id: 1, title: '[MOCK] GanjaCraft News', content: 'Локальный тестовый режим', date: new Date().toISOString() }] };
         for (const base of API_BASES) {
             try {
-                const response = await fetchWithTimeout(`${base}/news?limit=5`, { timeout: 3000 });
+                const response = await fetchWithTimeout(`${base}/news?limit=50`, { timeout: 4000 });
                 if (response.ok) return await response.json();
             } catch (e) {}
         }
