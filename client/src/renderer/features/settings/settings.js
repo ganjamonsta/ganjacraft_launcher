@@ -13,7 +13,7 @@ import { loadModsList, getDisabledMods, setAllModsState, updateModsCounter, upda
 import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
 import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
-import { markChangelogSeen } from '../changelog/index.js';
+import { isChangelogOpen, closeChangelogScreen } from '../changelog/index.js';
 
 // Стейт для отслеживания изменений
 let initialSettingsState = null;
@@ -195,6 +195,11 @@ export function openSettings(config) {
             child.style.animation = '';
         });
     });
+
+    // Закрыть экран обновлений, если он был открыт
+    if (isChangelogOpen()) {
+        closeChangelogScreen();
+    }
 
     settingsScreen.classList.remove('hidden', 'closing');
     settingsScreen.classList.add('opening');
@@ -455,10 +460,6 @@ export function initSettingsTabs(config) {
             
             targetTab.classList.add('active');
             targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
-            
-            if (targetTabId === 'changelog') {
-                markChangelogSeen();
-            }
 
             const cascadeTarget = targetTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid, .inertia-cascade');
             if (cascadeTarget) {

@@ -7,5 +7,9 @@ export {
     loadChangelogHistory,
     checkChangelogBadge,
     markChangelogSeen,
-    renderChangelogList
+    renderChangelogList,
+    openChangelogScreen,
+    closeChangelogScreen,
+    toggleChangelogScreen,
+    isChangelogOpen
 } from './changelog-manager.js';

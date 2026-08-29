@@ -4,6 +4,10 @@
  */
 
 import { dom } from '../../utils/dom.js';
+import { closeSettings } from '../settings/index.js';
+import { createSnowBurst } from '../../ui/effects/index.js';
+import { triggerInertiaCascade } from '../../utils/performance.js';
+import { appState } from '../../state/app-state.js';
 
 const STORAGE_KEY_SEEN = 'ganja_last_seen_changelog_id';
 
@@ -137,15 +141,14 @@ function updateChangelogTotalCount() {
 }
 
 /**
- * Проверить актуальность последнего обновления и переключить бейджи
+ * Проверить актуальность последнего обновления и переключить бейдж на колокольчике
  */
 export function checkChangelogBadge() {
-    const settingsBadge = dom.get('settings-badge');
-    const tabBadge = dom.get('changelog-tab-badge');
+    const badge = dom.get('changelog-badge');
+    if (!badge) return;
 
     if (!cachedHistory || cachedHistory.length === 0) {
-        if (settingsBadge) settingsBadge.classList.add('hidden');
-        if (tabBadge) tabBadge.classList.add('hidden');
+        badge.classList.add('hidden');
         return;
     }
 
@@ -153,21 +156,16 @@ export function checkChangelogBadge() {
     const latestId = latest.id || String(latest.timestamp || '');
     const seenId = localStorage.getItem(STORAGE_KEY_SEEN);
 
-    const hasUnseen = latestId && seenId !== latestId;
-
-    if (settingsBadge) {
-        if (hasUnseen) settingsBadge.classList.remove('hidden');
-        else settingsBadge.classList.add('hidden');
-    }
-
-    if (tabBadge) {
-        if (hasUnseen) tabBadge.classList.remove('hidden');
-        else tabBadge.classList.add('hidden');
+    const hasUnseen = Boolean(latestId && seenId !== latestId);
+    if (hasUnseen) {
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
     }
 }
 
 /**
- * Отметить текущие обновления как просмотренные (гасит бейджи)
+ * Отметить текущие обновления как просмотренные (гасит бейдж)
  */
 export function markChangelogSeen() {
     if (cachedHistory && cachedHistory.length > 0) {
@@ -177,11 +175,8 @@ export function markChangelogSeen() {
             localStorage.setItem(STORAGE_KEY_SEEN, latestId);
         }
     }
-    const settingsBadge = dom.get('settings-badge');
-    if (settingsBadge) settingsBadge.classList.add('hidden');
-
-    const tabBadge = dom.get('changelog-tab-badge');
-    if (tabBadge) tabBadge.classList.add('hidden');
+    const badge = dom.get('changelog-badge');
+    if (badge) badge.classList.add('hidden');
 }
 
 /**
@@ -583,66 +578,167 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+const BELL_SVG = `
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>
+`;
+
+let changelogAnimating = false;
+
 /**
- * Инициализация обработчиков поисковой строки, фильтров и кнопки обновления
+ * Проверить открыт ли экран истории обновлений
+ */
+export function isChangelogOpen() {
+    const screen = dom.get('step-changelog');
+    return Boolean(screen && !screen.classList.contains('hidden') && !screen.classList.contains('closing'));
+}
+
+/**
+ * Открыть экран истории обновлений с анимацией
+ */
+export function openChangelogScreen() {
+    const screen = dom.get('step-changelog');
+    if (changelogAnimating || !screen) return;
+    changelogAnimating = true;
+
+    // Закрываем настройки, если они были открыты
+    const settingsScreen = dom.get('step-settings');
+    if (settingsScreen && !settingsScreen.classList.contains('hidden')) {
+        closeSettings();
+    }
+
+    screen.classList.remove('hidden', 'closing');
+    screen.classList.add('opening');
+
+    // Title bar tabs
+    const titleMainTab = document.getElementById('title-bar-title');
+    if (titleMainTab) titleMainTab.classList.remove('active');
+
+    const changelogTabs = document.getElementById('changelog-title-tab');
+    if (changelogTabs) {
+        changelogTabs.classList.remove('hidden', 'closing');
+        changelogTabs.classList.add('opening');
+    }
+
+    // Button icon to ✕
+    const btnChangelog = document.getElementById('btn-changelog');
+    if (btnChangelog) {
+        btnChangelog.classList.add('settings-active');
+        const iconSpan = document.getElementById('btn-changelog-icon');
+        if (iconSpan) {
+            iconSpan.textContent = '✕';
+        }
+        btnChangelog.title = 'Закрыть обновления';
+    }
+
+    // Snow burst в едином стиле
+    if (appState.get('effects.snowEnabled')) {
+        createSnowBurst();
+    }
+
+    // Инерция на список
+    const feed = dom.get('changelog-list');
+    if (feed) {
+        triggerInertiaCascade(feed, 'down', true);
+    }
+
+    markChangelogSeen();
+    renderChangelogList();
+
+    setTimeout(() => {
+        screen.classList.remove('opening');
+        changelogAnimating = false;
+    }, 300);
+}
+
+/**
+ * Закрыть экран истории обновлений с анимацией
+ */
+export function closeChangelogScreen() {
+    const screen = dom.get('step-changelog');
+    if (changelogAnimating || !screen) return;
+    changelogAnimating = true;
+
+    screen.classList.remove('opening');
+    screen.classList.add('closing');
+
+    // Восстанавливаем вкладку Title
+    const titleMainTab = document.getElementById('title-bar-title');
+    if (titleMainTab) titleMainTab.classList.add('active');
+
+    const changelogTabs = document.getElementById('changelog-title-tab');
+    if (changelogTabs) {
+        changelogTabs.classList.remove('opening');
+        changelogTabs.classList.add('closing');
+        setTimeout(() => {
+            changelogTabs.classList.remove('closing');
+            changelogTabs.classList.add('hidden');
+        }, 250);
+    }
+
+    // Сбрасываем кнопку
+    const btnChangelog = document.getElementById('btn-changelog');
+    if (btnChangelog) {
+        btnChangelog.classList.remove('settings-active');
+        const iconSpan = document.getElementById('btn-changelog-icon');
+        if (iconSpan) {
+            iconSpan.innerHTML = BELL_SVG;
+        }
+        btnChangelog.title = 'Обновления сборки';
+    }
+
+    setTimeout(() => {
+        screen.classList.remove('closing');
+        screen.classList.add('hidden');
+        changelogAnimating = false;
+    }, 250);
+}
+
+/**
+ * Переключить видимость экрана истории обновлений
+ */
+export function toggleChangelogScreen() {
+    if (isChangelogOpen()) {
+        closeChangelogScreen();
+    } else {
+        openChangelogScreen();
+    }
+}
+
+/**
+ * Инициализация обработчиков экрана обновлений, колокольчика и загрузка данных
  */
 export function initChangelog() {
     if (isInitialized) return;
     isInitialized = true;
 
-    // Поиск
-    const searchInput = dom.get('changelog-search-input');
-    const clearBtn = dom.get('changelog-search-clear');
+    // Кнопка колокольчика в шапке
+    const bellBtn = dom.get('btn-changelog');
+    if (bellBtn) {
+        bellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleChangelogScreen();
+        });
+    }
 
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            currentSearchQuery = searchInput.value;
-            if (clearBtn) {
-                if (currentSearchQuery.length > 0) {
-                    clearBtn.classList.remove('hidden');
-                } else {
-                    clearBtn.classList.add('hidden');
-                }
+    // Клик на логотип лаунчера в шапке закрывает открытый чейнджлог
+    const titleMainTab = document.getElementById('title-bar-title');
+    if (titleMainTab) {
+        titleMainTab.addEventListener('click', () => {
+            if (isChangelogOpen()) {
+                closeChangelogScreen();
             }
-            renderChangelogList();
         });
     }
 
-    if (clearBtn && searchInput) {
-        clearBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            currentSearchQuery = '';
-            clearBtn.classList.add('hidden');
-            renderChangelogList();
-            searchInput.focus();
-        });
-    }
-
-    // Фильтр-кнопки
-    const filterButtons = document.querySelectorAll('.changelog-filter-btn');
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter || 'all';
-            renderChangelogList();
-        });
+    // Закрытие по клавише Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isChangelogOpen()) {
+            closeChangelogScreen();
+        }
     });
-
-    // Кнопка обновления
-    const refreshBtn = dom.get('btn-changelog-refresh');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', async () => {
-            refreshBtn.classList.add('spinning');
-            try {
-                await loadChangelogHistory();
-            } finally {
-                setTimeout(() => {
-                    refreshBtn.classList.remove('spinning');
-                }, 400);
-            }
-        });
-    }
 
     // Фоновая загрузка истории
     loadChangelogHistory();

@@ -41,11 +41,22 @@
                 <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
                 <button class="tab-btn" data-tab="mods">МОДЫ</button>
                 <button class="tab-btn" data-tab="configs">КОНФИГИ</button>
-                <button class="tab-btn" data-tab="changelog">ОБНОВЛЕНИЯ<span id="changelog-tab-badge" class="notification-badge hidden"></span></button>
                 <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
+            </div>
+            <div id="changelog-title-tab" class="settings-tabs changelog-tabs hidden">
+                <span class="tab-btn active">ОБНОВЛЕНИЯ СБОРКИ</span>
             </div>
         </div>
         <div id="window-controls">
+            <button id="btn-changelog" class="control-btn" title="Обновления сборки">
+                <span id="btn-changelog-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </span>
+                <span id="changelog-badge" class="notification-badge hidden"></span>
+            </button>
             <button id="btn-settings" class="control-btn" title="Настройки"><span id="btn-settings-icon">⚙</span><span id="settings-badge" class="notification-badge hidden"></span></button>
             <button id="btn-minimize" class="control-btn" title="Свернуть">─</button>
             <button id="btn-close" class="control-btn" title="Закрыть">✕</button>
@@ -456,16 +467,15 @@
                     </div>
                 </div>
 
-                <!-- Changelog Tab (Pack Updates History) -->
-                <div id="tab-changelog" class="tab-content">
-                    <div id="changelog-grid-container">
-                        <div id="changelog-list" class="changelog-feed inertia-cascade">
-                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
-                        </div>
-                    </div>
+            </div>
+        </div>
+
+        <!-- Changelog Screen (Full Screen Drawer in Launcher Style) -->
+        <div id="step-changelog" class="settings-screen changelog-screen hidden">
+            <div class="settings-body changelog-screen-body">
+                <div id="changelog-list" class="changelog-feed inertia-cascade">
+                    <div class="unified-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
                 </div>
-
-
             </div>
         </div>
     </div>
