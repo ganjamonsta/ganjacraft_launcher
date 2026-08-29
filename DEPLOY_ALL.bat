@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 chcp 65001 >nul
 cd /d "%~dp0"
 echo ===================================================
-echo   GanjaCraft Launcher - Сборка и публикация на GitHub
+echo   Ganj4Craft Launcher - Сборка и публикация на GitHub
 echo ===================================================
 echo.
 

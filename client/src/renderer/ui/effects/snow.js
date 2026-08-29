@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Snow Effect
+ * Ganj4Craft Launcher - Snow Effect
  * Визуальный эффект снега с burst-эффектами (оптимизировано)
  */
 

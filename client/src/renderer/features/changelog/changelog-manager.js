@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Pack & Client Changelog Feature
+ * Ganj4Craft Launcher - Pack & Client Changelog Feature
  * Управление историей изменений сборки и релизов лаунчера
  */
 

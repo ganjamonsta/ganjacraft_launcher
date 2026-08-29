@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Authentication Feature
+ * Ganj4Craft Launcher - Authentication Feature
  * Аутентификация через Telegram OTP
  */
 

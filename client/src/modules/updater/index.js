@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Updater Module
+ * Ganj4Craft Launcher - Updater Module
  * Главный файл модуля обновления
  * 
  * Экспортирует все функции для обратной совместимости

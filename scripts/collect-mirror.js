@@ -1,5 +1,5 @@
 /**
- * GanjaCraft - Game Files Mirror Collector
+ * Ganj4Craft - Game Files Mirror Collector
  * Автоматический сборщик официальных файлов игры для размещения на внешнем VPS зеркале.
  * Сбирает ВСЮ игру: клиент, JSON версии, индекс ассетов, все библиотеки Minecraft и NeoForge, а также все ассеты игры (звуки, текстуры, шрифты).
  *
@@ -23,7 +23,7 @@ const {
 
 // Папки для поиска кэша по умолчанию
 const DEFAULT_CACHE_DIRS = [
-    's:\\Games\\GanjaCraft Launcher\\game',
+    's:\\Games\\Ganj4Craft Launcher\\game',
     's:\\Games\\LegacyLauncher_portable\\game',
     process.env.APPDATA ? path.join(process.env.APPDATA, '.minecraft') : '',
     path.join(__dirname, '../cache')
@@ -190,7 +190,7 @@ async function collectFile(url, destPath, cacheCandidates = []) {
 
 async function runCollector() {
     console.log('============================================================');
-    console.log('        GanjaCraft - Game Files Mirror Collector');
+    console.log('        Ganj4Craft - Game Files Mirror Collector');
     console.log('============================================================');
 
     const args = process.argv.slice(2);

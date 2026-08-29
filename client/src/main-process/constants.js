@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Main Process Constants
+ * Ganj4Craft Launcher - Main Process Constants
  * Все константы для main process
  */
 

@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Configs Manager (Master-Detail UI)
+ * Ganj4Craft Launcher - Configs Manager (Master-Detail UI)
  * Управление конфигурациями модов с парсингом напрямую из файлов
  */
 

@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Window Module Index
+ * Ganj4Craft Launcher - Window Module Index
  */
 
 const { createWindow, getMainWindow } = require('./create-window');

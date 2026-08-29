@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Performance Utilities
+ * Ganj4Craft Launcher - Performance Utilities
  * Утилиты для оптимизации производительности
  */
 

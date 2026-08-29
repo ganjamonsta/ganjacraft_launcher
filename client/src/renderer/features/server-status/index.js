@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Server Status Feature Index
+ * Ganj4Craft Launcher - Server Status Feature Index
  */
 
 export {

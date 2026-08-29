@@ -1,7 +1,7 @@
 {
   "name": "ganjacraft-launcher-client",
   "version": "1.0.181",
-  "description": "Official Launcher for GanjaCraft Server",
+  "description": "Official Launcher for Ganj4Craft Server",
   "main": "src/main.js",
   "scripts": {
     "start": "npm run build:renderer && electron .",
@@ -14,7 +14,7 @@
   },
   "build": {
     "appId": "ru.ganjacraft.launcher",
-    "productName": "GanjaCraft Launcher",
+    "productName": "Ganj4Craft Launcher",
     "publish": [
       {
         "provider": "github",
@@ -34,7 +34,7 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "GanjaCraft_Installer.exe",
+      "artifactName": "Ganj4Craft_Installer.exe",
       "include": "installer.nsh"
     },
     "linux": {
@@ -43,13 +43,13 @@
         "deb",
         "zip"
       ],
-      "maintainer": "GanjaCraft Team <admin@ganj4craft.ru>",
+      "maintainer": "Ganj4Craft Team <admin@ganj4craft.ru>",
       "icon": "src/assets/icon.png",
       "category": "Game",
-      "artifactName": "GanjaCraft_Linux.${ext}"
+      "artifactName": "Ganj4Craft_Linux.${ext}"
     }
   },
-  "author": "GanjaCraft Team <admin@ganj4craft.ru>",
+  "author": "Ganj4Craft Team <admin@ganj4craft.ru>",
   "homepage": "https://ganj4craft.ru",
   "license": "ISC",
   "dependencies": {

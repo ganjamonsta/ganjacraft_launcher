@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Updater IPC Handlers
+ * Ganj4Craft Launcher - Updater IPC Handlers
  * Обработчики IPC для нативных обновлений лаунчера
  */
 const { ipcMain } = require('electron');

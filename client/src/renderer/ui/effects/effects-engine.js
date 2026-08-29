@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Universal Particle Engine
+ * Ganj4Craft Launcher - Universal Particle Engine
  * Двухслойный движок эффектов (Задний план за карточками + Малый процент на переднем плане)
  */
 

@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Game Module Index
+ * Ganj4Craft Launcher - Game Module Index
  * Экспорт всех игровых модулей
  */
 

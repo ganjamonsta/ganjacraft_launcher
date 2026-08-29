@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Window IPC Handlers
+ * Ganj4Craft Launcher - Window IPC Handlers
  * Обработчики управления окном
  */
 

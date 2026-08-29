@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Game Launcher
+ * Ganj4Craft Launcher - Game Launcher
  * Основная логика запуска игры
  */
 
@@ -776,8 +776,8 @@ async function launchGame(event, options) {
         if (!fs.existsSync(profilesPath)) {
             const defaultProfiles = {
                 profiles: {
-                    "GanjaCraft": {
-                        name: "GanjaCraft",
+                    "Ganj4Craft": {
+                        name: "Ganj4Craft",
                         type: "custom",
                         created: new Date().toISOString(),
                         lastUsed: new Date().toISOString(),

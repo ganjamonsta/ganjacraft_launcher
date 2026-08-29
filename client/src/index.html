@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>GanjaCraft Launcher</title>
+    <title>Ganj4Craft Launcher</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="configs.css">
 
@@ -19,7 +19,7 @@
     <div id="launcher-loader-screen" class="launcher-loader-screen">
         <div class="loader-content">
             <div class="loader-logo">
-                <span class="loader-logo-text">GANJACRAFT</span>
+                <span class="loader-logo-text">GANJ4CRAFT</span>
                 <span class="loader-logo-sub">LAUNCHER</span>
             </div>
             <div class="loader-status-container">
@@ -35,7 +35,7 @@
     <!-- Custom Title Bar -->
     <div id="title-bar">
         <div class="title-bar-left">
-            <button id="title-bar-title" class="tab-btn title-main-tab active" title="Главная">GANJACRAFT
+            <button id="title-bar-title" class="tab-btn title-main-tab active" title="Главная">GANJ4CRAFT
                 LAUNCHER</button>
             <div id="settings-tabs-bar" class="settings-tabs hidden">
                 <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
@@ -199,7 +199,7 @@
                     </div>
 
                     <div class="settings-categories inertia-cascade">
-                        <!-- Category: Paths -->
+                        <!-- Category 1: Paths -->
                         <div class="settings-category">
                             <div class="category-header">
                                 <svg class="category-icon">
@@ -260,7 +260,7 @@
                             </div>
                         </div>
 
-                        <!-- Category: Performance -->
+                        <!-- Category 2: Performance -->
                         <div class="settings-category">
                             <div class="category-header">
                                 <svg class="category-icon">
@@ -324,138 +324,143 @@
                             </div>
                         </div>
 
-                        <!-- Category: Appearance & Maintenance (Unified 2x1 Full Width Card) -->
-                        <div class="settings-category category-full-width">
+                        <!-- Category 3: Appearance -->
+                        <div class="settings-category">
                             <div class="category-header">
                                 <svg class="category-icon">
                                     <use href="#icon-appearance" />
                                 </svg>
-                                <h4>Внешний вид и обслуживание</h4>
+                                <h4>Внешний вид</h4>
                             </div>
-                            <div class="category-content category-content-columns">
-                                <!-- Left Subcolumn: Dropdowns -->
-                                <div class="category-subcolumn">
-                                    <div class="setting-item">
-                                        <div class="setting-label">
-                                            <svg class="setting-icon">
-                                                <use href="#icon-appearance" />
-                                            </svg>
-                                            <div class="setting-text">
-                                                <span class="setting-title">Отображение скина</span>
-                                                <span class="setting-desc">3D WebGL, 2D или отключить</span>
-                                            </div>
-                                        </div>
-                                        <div class="setting-control">
-                                            <select id="setting-skin-mode" class="setting-select">
-                                                <option value="3d">🎮 3D (WebGL рендер)</option>
-                                                <option value="2d">🖼️ 2D (Изометрия)</option>
-                                                <option value="off">🚫 Отключить скин</option>
-                                            </select>
+                            <div class="category-content">
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-appearance" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Отображение скина</span>
+                                            <span class="setting-desc">3D WebGL, 2D или отключить</span>
                                         </div>
                                     </div>
-
-                                    <div class="setting-item">
-                                        <div class="setting-label">
-                                            <svg class="setting-icon">
-                                                <use href="#icon-snow" />
-                                            </svg>
-                                            <div class="setting-text">
-                                                <span class="setting-title">Тема эффектов</span>
-                                                <span class="setting-desc">Сезонные частицы и анимация</span>
-                                            </div>
-                                        </div>
-                                        <div class="setting-control">
-                                            <select id="setting-effects-preset" class="setting-select">
-                                                <option value="auto">🔄 Авто (По сезону)</option>
-                                                <option value="snow">❄️ Зима (Снежинки)</option>
-                                                <option value="leaves">🍂 Осень (Листопад)</option>
-                                                <option value="sakura">🌸 Весна (Сакура)</option>
-                                                <option value="fireflies">✨ Лето (Светлячки)</option>
-                                                <option value="ganja">🌿 Ganja Special</option>
-                                                <option value="off">🚫 Отключено</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="setting-item">
-                                        <div class="setting-label">
-                                            <svg class="setting-icon">
-                                                <use href="#icon-appearance" />
-                                            </svg>
-                                            <div class="setting-text">
-                                                <span class="setting-title">Плотность частиц</span>
-                                                <span class="setting-desc">Количество частиц на экране</span>
-                                            </div>
-                                        </div>
-                                        <div class="setting-control">
-                                            <select id="setting-effects-density" class="setting-select">
-                                                <option value="low">Низкая</option>
-                                                <option value="medium">Средняя</option>
-                                                <option value="high">Высокая</option>
-                                            </select>
-                                        </div>
+                                    <div class="setting-control">
+                                        <select id="setting-skin-mode" class="setting-select">
+                                            <option value="3d">🎮 3D (WebGL рендер)</option>
+                                            <option value="2d">🖼️ 2D (Изометрия)</option>
+                                            <option value="off">🚫 Отключить скин</option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                <!-- Right Subcolumn: Toggles & Reinstall -->
-                                <div class="category-subcolumn">
-                                    <label class="setting-item setting-item-toggle">
-                                        <div class="setting-label">
-                                            <svg class="setting-icon">
-                                                <use href="#icon-smoke" />
-                                            </svg>
-                                            <div class="setting-text">
-                                                <span class="setting-title">Эффект дыма</span>
-                                                <span class="setting-desc">Дым следует за курсором</span>
-                                            </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-snow" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Тема эффектов</span>
+                                            <span class="setting-desc">Сезонные частицы и анимация</span>
                                         </div>
-                                        <div class="setting-control">
-                                            <span class="toggle-switch">
-                                                <input type="checkbox" id="setting-enable-smoke">
-                                                <span class="toggle-slider"></span>
-                                            </span>
-                                        </div>
-                                    </label>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="setting-effects-preset" class="setting-select">
+                                            <option value="auto">🔄 Авто (По сезону)</option>
+                                            <option value="snow">❄️ Зима (Снежинки)</option>
+                                            <option value="leaves">🍂 Осень (Листопад)</option>
+                                            <option value="sakura">🌸 Весна (Сакура)</option>
+                                            <option value="fireflies">✨ Лето (Светлячки)</option>
+                                            <option value="ganja">🌿 Ganja Special</option>
+                                            <option value="off">🚫 Отключено</option>
+                                        </select>
+                                    </div>
+                                </div>
 
-                                    <label class="setting-item setting-item-toggle">
-                                        <div class="setting-label">
-                                            <svg class="setting-icon">
-                                                <use href="#icon-parallax" />
-                                            </svg>
-                                            <div class="setting-text">
-                                                <span class="setting-title">Параллакс-эффект</span>
-                                                <span class="setting-desc">Фон реагирует на курсор</span>
-                                            </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-appearance" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Плотность частиц</span>
+                                            <span class="setting-desc">Количество частиц на экране</span>
                                         </div>
-                                        <div class="setting-control">
-                                            <span class="toggle-switch">
-                                                <input type="checkbox" id="setting-enable-parallax">
-                                                <span class="toggle-slider"></span>
-                                            </span>
-                                        </div>
-                                    </label>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="setting-effects-density" class="setting-select">
+                                            <option value="low">Низкая</option>
+                                            <option value="medium">Средняя</option>
+                                            <option value="high">Высокая</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <div class="setting-item danger-item">
-                                        <div class="setting-label">
-                                            <svg class="setting-icon">
-                                                <use href="#icon-wrench" />
+                        <!-- Category 4: Interface & Maintenance -->
+                        <div class="settings-category">
+                            <div class="category-header">
+                                <svg class="category-icon">
+                                    <use href="#icon-wrench" />
+                                </svg>
+                                <h4>Интерфейс и сервис</h4>
+                            </div>
+                            <div class="category-content">
+                                <label class="setting-item setting-item-toggle">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-smoke" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Эффект дыма</span>
+                                            <span class="setting-desc">Дым следует за курсором</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="setting-enable-smoke">
+                                            <span class="toggle-slider"></span>
+                                        </span>
+                                    </div>
+                                </label>
+
+                                <label class="setting-item setting-item-toggle">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-parallax" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Параллакс-эффект</span>
+                                            <span class="setting-desc">Фон реагирует на курсор</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control">
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="setting-enable-parallax">
+                                            <span class="toggle-slider"></span>
+                                        </span>
+                                    </div>
+                                </label>
+
+                                <div class="setting-item danger-item">
+                                    <div class="setting-label">
+                                        <svg class="setting-icon">
+                                            <use href="#icon-danger" />
+                                        </svg>
+                                        <div class="setting-text">
+                                            <span class="setting-title">Обслуживание</span>
+                                            <span class="setting-desc">Смена аккаунта или сброс</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-control setting-actions-group">
+                                        <button id="logout-btn" class="secondary-btn settings-action-btn">
+                                            Выйти
+                                        </button>
+                                        <button id="btn-reinstall" class="danger-btn settings-action-btn">
+                                            <svg class="btn-icon">
+                                                <use href="#icon-reset" />
                                             </svg>
-                                            <div class="setting-text">
-                                                <span class="setting-title">Обслуживание</span>
-                                                <span class="setting-desc">Смена аккаунта или сброс</span>
-                                            </div>
-                                        </div>
-                                        <div class="setting-control" style="display: flex; gap: 8px;">
-                                            <button id="logout-btn" class="secondary-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #e2e8f0; font-size: 11px; font-weight: 700; border-radius: 8px; padding: 6px 12px; cursor: pointer;">
-                                                Выйти
-                                            </button>
-                                            <button id="btn-reinstall" class="danger-btn">
-                                                <svg class="btn-icon">
-                                                    <use href="#icon-reset" />
-                                                </svg>
-                                                Переустановить
-                                            </button>
-                                        </div>
+                                            Переустановить
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -498,7 +503,7 @@
         </div>
 
     <div class="auth-container fade-in">
-        <h2>GanjaCraft</h2>
+        <h2>Ganj4Craft</h2>
 
         <!-- Step 0: Loading -->
         <div id="step-loading" style="color: #888; font-size: 14px; margin-bottom: 20px;">
@@ -585,7 +590,7 @@
 
                 <!-- 2. Center: Glowing Neon Constellation Brand & Logo -->
                 <div class="hero-brand-section center-brand">
-                    <h2 class="hero-neon-title">GANJACRAFT</h2>
+                    <h2 class="hero-neon-title">GANJ4CRAFT</h2>
                     <div class="neon-leaf-wrapper center-leaf">
                         <svg class="neon-constellation-leaf" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <defs>
@@ -663,9 +668,11 @@
                     </div>
 
                     <div class="play-btn-container">
-                        <button id="play-btn" class="magnetic-play-btn">
+                        <button id="play-btn" class="magnetic-play-btn" aria-label="Играть" title="Играть">
                             <span class="play-btn-glow"></span>
-                            <span class="play-btn-text">ИГРАТЬ</span>
+                            <svg class="play-btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5.14v13.72a1 1 0 001.53.85l11-6.86a1 1 0 000-1.7l-11-6.86A1 1 0 008 5.14z"/>
+                            </svg>
                         </button>
                     </div>
                 </div>

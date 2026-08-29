@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Game Launch Feature
+ * Ganj4Craft Launcher - Game Launch Feature
  * Запуск игры и обработка прогресса
  */
 
@@ -225,7 +225,6 @@ export function initProgressHandlers() {
         const playBtn = dom.get('play-btn');
         if (playBtn) {
             playBtn.disabled = false;
-            playBtn.innerText = 'ИГРАТЬ';
         }
     });
 }

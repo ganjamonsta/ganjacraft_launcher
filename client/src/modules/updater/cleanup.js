@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Cleanup Module
+ * Ganj4Craft Launcher - Cleanup Module
  * Унифицированные функции очистки устаревших файлов
  * 
  * Правила очистки соответствуют правилам генерации манифеста на сервере:

@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Settings Feature
+ * Ganj4Craft Launcher - Settings Feature
  * Управление настройками лаунчера
  */
 

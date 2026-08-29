@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - NeoForge Management
+ * Ganj4Craft Launcher - NeoForge Management
  * Управление NeoForge: preflight, version files
  */
 

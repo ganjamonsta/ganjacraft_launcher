@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Ganja Special Preset (Фирменный Стиль)
+ * Ganj4Craft Launcher - Ganja Special Preset (Фирменный Стиль)
  * Векторные стилизованные неоновые каннабис-листики и яркие искорки без эмодзи
  */
 

@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Snow Preset (Зима)
+ * Ganj4Craft Launcher - Snow Preset (Зима)
  * Кристаллический снег и мягкая снежная пыль
  */
 

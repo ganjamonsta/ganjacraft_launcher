@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Fireflies Preset (Лето - Неоновые Светлячки)
+ * Ganj4Craft Launcher - Fireflies Preset (Лето - Неоновые Светлячки)
  * Векторные светящиеся частицы без использования эмодзи
  */
 

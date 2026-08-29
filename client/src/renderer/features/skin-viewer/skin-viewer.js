@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Skin Viewer Feature
+ * Ganj4Craft Launcher - Skin Viewer Feature
  * Интерактивный 3D WebGL и 2D рендер скина игрока
  */
 

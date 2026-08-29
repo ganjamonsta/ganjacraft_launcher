@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - File Sync Module
+ * Ganj4Craft Launcher - File Sync Module
  * Основная логика синхронизации файлов с манифестом
  */
 
@@ -60,7 +60,7 @@ function formatBytes(bytes) {
 function getSourceInfo(url) {
     if (!url) return { name: 'Сервер', icon: '📦' };
     if (url.includes('modrinth.com')) return { name: 'Modrinth CDN', icon: '⚡' };
-    return { name: 'Сервер GanjaCraft', icon: '📦' };
+    return { name: 'Сервер Ganj4Craft', icon: '📦' };
 }
 
 /**

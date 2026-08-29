@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Smoke Effect
+ * Ganj4Craft Launcher - Smoke Effect
  * Визуальный эффект дыма от курсора (оптимизировано)
  */
 

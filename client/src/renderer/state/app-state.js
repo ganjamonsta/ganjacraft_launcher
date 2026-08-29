@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - App State
+ * Ganj4Craft Launcher - App State
  * Простое хранилище состояния приложения
  */
 

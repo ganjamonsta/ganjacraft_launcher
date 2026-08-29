@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Game IPC Handlers
+ * Ganj4Craft Launcher - Game IPC Handlers
  * Обработчики запуска игры
  */
 

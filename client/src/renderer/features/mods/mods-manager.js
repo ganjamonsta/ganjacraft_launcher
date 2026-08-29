@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Mods Manager (Native Launcher UI)
+ * Ganj4Craft Launcher - Mods Manager (Native Launcher UI)
  * Управление модами с использованием стандартных категорий и переключателей лаунчера
  */
 

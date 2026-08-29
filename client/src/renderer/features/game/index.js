@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Game Feature Index
+ * Ganj4Craft Launcher - Game Feature Index
  */
 
 export {

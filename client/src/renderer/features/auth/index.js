@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Auth Feature Index
+ * Ganj4Craft Launcher - Auth Feature Index
  */
 
 export {

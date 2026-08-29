@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Main Application Entry Point
+ * Ganj4Craft Launcher - Main Application Entry Point
  * Точка входа для renderer process
  */
 

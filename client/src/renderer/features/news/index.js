@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - News Feature Index
+ * Ganj4Craft Launcher - News Feature Index
  */
 
 export { loadNews } from './news.js';

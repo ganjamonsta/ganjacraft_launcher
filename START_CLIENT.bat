@@ -1,6 +1,6 @@
 @echo off
 cd /d "%~dp0client"
-echo Starting GanjaCraft Launcher...
+echo Starting Ganj4Craft Launcher...
 call npm start
 if %errorlevel% neq 0 (
     echo.

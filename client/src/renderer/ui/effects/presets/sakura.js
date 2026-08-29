@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Sakura Preset (Весна)
+ * Ganj4Craft Launcher - Sakura Preset (Весна)
  * Векторные лепестки сакуры без эмодзи
  */
 

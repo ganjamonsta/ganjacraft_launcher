@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Settings Easter Egg
+ * Ganj4Craft Launcher - Settings Easter Egg
  * Пасхалка при закрытии настроек
  */
 

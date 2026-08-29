@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Window Creation
+ * Ganj4Craft Launcher - Window Creation
  * Создание и настройка главного окна
  */
 

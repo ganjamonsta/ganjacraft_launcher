@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Константы Renderer
+ * Ganj4Craft Launcher - Константы Renderer
  * Централизованное хранение констант UI
  */
 

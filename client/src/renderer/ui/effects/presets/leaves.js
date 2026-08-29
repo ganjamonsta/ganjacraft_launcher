@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Leaves Preset (Осень)
+ * Ganj4Craft Launcher - Leaves Preset (Осень)
  * Векторный реалистичный листопад без эмодзи
  */
 

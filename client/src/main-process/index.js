@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Main Process Index
+ * Ganj4Craft Launcher - Main Process Index
  * Экспорт всех модулей main process
  */
 

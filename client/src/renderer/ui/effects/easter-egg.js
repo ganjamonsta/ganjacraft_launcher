@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Easter Egg
+ * Ganj4Craft Launcher - Easter Egg
  * Пасхалка с 420 и BeatDrop анимацией
  */
 

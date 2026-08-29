@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Parallax Effect
+ * Ganj4Craft Launcher - Parallax Effect
  * Эффект параллакса фона (оптимизировано)
  */
 

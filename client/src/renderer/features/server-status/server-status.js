@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Server Status Feature
+ * Ganj4Craft Launcher - Server Status Feature
  * Проверка статуса сервера + список игроков при наведении
  */
 

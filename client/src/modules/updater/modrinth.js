@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Modrinth Resolver Module
+ * Ganj4Craft Launcher - Modrinth Resolver Module
  * Позволяет автоматически резолвить CDN ссылки Modrinth по SHA1 хешам модов
  */
 

@@ -154,7 +154,7 @@ contextBridge.exposeInMainWorld('api', {
     },
     
     getNews: async () => {
-        if (MOCK_AUTH) return { success: true, news: [{ id: 1, title: '[MOCK] GanjaCraft News', content: 'Локальный тестовый режим', date: new Date().toISOString() }] };
+        if (MOCK_AUTH) return { success: true, news: [{ id: 1, title: '[MOCK] Ganj4Craft News', content: 'Локальный тестовый режим', date: new Date().toISOString() }] };
         for (const base of API_BASES) {
             try {
                 const response = await fetchWithTimeout(`${base}/news?limit=50`, { timeout: 4000 });

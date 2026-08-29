@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Console Feature
+ * Ganj4Craft Launcher - Console Feature
  * Консоль вывода логов
  */
 

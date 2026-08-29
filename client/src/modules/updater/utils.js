@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Updater Utilities
+ * Ganj4Craft Launcher - Updater Utilities
  * Утилиты безопасности и хеширования
  */
 

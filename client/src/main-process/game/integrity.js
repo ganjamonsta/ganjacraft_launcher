@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - File Integrity Checks
+ * Ganj4Craft Launcher - File Integrity Checks
  * Проверка целостности файлов (ZIP/JAR)
  */
 

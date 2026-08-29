@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Admin Sync Tools
+ * Ganj4Craft Launcher - Admin Sync Tools
  * Инструменты для разработчиков/администраторов:
  * - Синхронизация отдельных категорий
  * - Удаление категорий

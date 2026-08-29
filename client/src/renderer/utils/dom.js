@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - DOM Utilities
+ * Ganj4Craft Launcher - DOM Utilities
  * Кеширование и хелперы для работы с DOM
  */
 

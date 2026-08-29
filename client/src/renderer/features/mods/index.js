@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Mods Feature Index
+ * Ganj4Craft Launcher - Mods Feature Index
  */
 
 export { MOD_GROUPS, SUB_CATEGORIES, CATEGORY_ORDER, DEFAULT_DISABLED_GROUPS } from './mod-groups.js';

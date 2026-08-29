@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - File Downloader
+ * Ganj4Craft Launcher - File Downloader
  * Унифицированная функция загрузки файлов с поддержкой:
  * - Опциональной авторизации (X-Auth-Token)
  * - Атомарной записи через tmp файл
@@ -65,7 +65,7 @@ function downloadFile(url, dest, options = {}) {
 
         // Build headers: send localtunnel bypass headers ONLY to localtunnel/zrok hosts
         const reqHeaders = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) GanjaCraftLauncher/1.0'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Ganj4CraftLauncher/1.0'
         };
         if (parsedUrl.hostname.includes('loca.lt') || parsedUrl.hostname.includes('zrok.io')) {
             reqHeaders['User-Agent'] = 'localtunnel';

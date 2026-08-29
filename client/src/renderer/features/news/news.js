@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - News Feature
+ * Ganj4Craft Launcher - News Feature
  * Загрузка и отображение новостей
  */
 

@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Mods Configuration
+ * Ganj4Craft Launcher - Mods Configuration
  * Конфигурация групп модов и метаданных
  */
 
@@ -225,7 +225,7 @@ export const MOD_GROUPS = [
         category: 'Интеграции',
         subCategory: 'Интерфейс',
         icon: 'gear',
-        description: 'Отображение статуса игры и сервера GanjaCraft в Discord.',
+        description: 'Отображение статуса игры и сервера Ganj4Craft в Discord.',
         curseSlug: 'simple-discord-rpc',
         modrinthSlug: 'simple-rpc',
         files: ['client-simplerpc']

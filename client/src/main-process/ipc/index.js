@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - IPC Handlers Index
+ * Ganj4Craft Launcher - IPC Handlers Index
  * Регистрация всех IPC обработчиков
  */
 

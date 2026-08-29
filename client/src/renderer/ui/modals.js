@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Modal Dialogs
+ * Ganj4Craft Launcher - Modal Dialogs
  * Кастомные модальные окна (confirm, alert)
  */
 

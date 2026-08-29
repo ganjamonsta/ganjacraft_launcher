@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Console Feature Index
+ * Ganj4Craft Launcher - Console Feature Index
  */
 
 export {

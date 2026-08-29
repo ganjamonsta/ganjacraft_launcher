@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - RAM Slider Module
+ * Ganj4Craft Launcher - RAM Slider Module
  * Двойной ползунок для выбора минимальной и максимальной памяти
  */
 

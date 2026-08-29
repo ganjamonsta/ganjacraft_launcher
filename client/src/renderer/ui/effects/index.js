@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Visual Effects Index
+ * Ganj4Craft Launcher - Visual Effects Index
  * Единая точка управления визуальными эффектами
  */
 

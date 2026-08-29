@@ -1,5 +1,5 @@
 /**
- * GanjaCraft Launcher - Config IPC Handlers
+ * Ganj4Craft Launcher - Config IPC Handlers
  * Обработчики конфигурации
  */
 
@@ -244,7 +244,7 @@ function registerConfigHandlers(mainWindow) {
                 method: 'GET',
                 timeout: 4000,
                 headers: {
-                    'User-Agent': 'GanjaCraft-Launcher'
+                    'User-Agent': 'Ganj4Craft-Launcher'
                 }
             };
             const githubReleases = await new Promise((resolve, reject) => {
