@@ -190,6 +190,46 @@ function showLoginScreen() {
     if (usernameInput) usernameInput.focus();
 }
 
+export async function loadPlayerStats(username) {
+    if (!username) return;
+
+    const nameEl = dom.get('player-display-name');
+    if (nameEl) nameEl.textContent = username;
+
+    const coinsEl = dom.get('stat-coins');
+    const karmaEl = dom.get('stat-karma');
+    const playtimeEl = dom.get('stat-playtime');
+
+    try {
+        const res = await fetch('https://launcher.ganj4craft.ru/api/stats/leaderboards', {
+            headers: {
+                'User-Agent': 'localtunnel',
+                'Bypass-Tunnel-Reminder': 'true'
+            }
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.players)) {
+                const player = data.players.find(p => p.nick && p.nick.toLowerCase() === username.toLowerCase());
+                if (player) {
+                    if (coinsEl) coinsEl.textContent = (player.emc != null ? Number(player.emc).toLocaleString() : '0');
+                    if (karmaEl) karmaEl.textContent = player.rank_name || 'Игрок';
+                    const hours = player.season_hours || player.total_hours || (player.season_playtime_minutes ? Math.round(player.season_playtime_minutes / 60) : 0);
+                    if (playtimeEl) playtimeEl.textContent = `${hours} ч`;
+                    return;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('[AUTH] Failed to fetch player leaderboard stats:', e);
+    }
+
+    if (coinsEl) coinsEl.textContent = '0';
+    if (karmaEl) karmaEl.textContent = 'Игрок';
+    if (playtimeEl) playtimeEl.textContent = '0 ч';
+}
+
 function showPlayScreen() {
     hideLoadingStep();
     const stepPlay = dom.get('step-play');
@@ -202,6 +242,7 @@ function showPlayScreen() {
     // Инициализируем 3D/2D скин игрока
     if (currentUsername) {
         initSkinViewer(currentUsername);
+        loadPlayerStats(currentUsername);
     }
 
     // Инициализируем магнитную физику для кнопки «ИГРАТЬ»
