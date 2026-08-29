@@ -2770,13 +2770,13 @@ input[type="checkbox"] {
 /* Release Card Layout */
 .changelog-release-card {
     width: 100%;
+    flex-shrink: 0;
+    min-height: fit-content;
     box-sizing: border-box;
     background: linear-gradient(135deg, rgba(26, 31, 40, 0.94) 0%, rgba(14, 17, 22, 0.98) 100%);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 14px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-    overflow: hidden;
-    animation: subtabCategoryIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
     transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 

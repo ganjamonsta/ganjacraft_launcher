@@ -697,14 +697,14 @@ export function openChangelogScreen() {
         createSnowBurst();
     }
 
-    // Инерция на список
+    markChangelogSeen();
+    renderChangelogList();
+
+    // Инерция на элементы списка
     const feed = dom.get('changelog-list');
     if (feed) {
         triggerInertiaCascade(feed, 'down', true);
     }
-
-    markChangelogSeen();
-    renderChangelogList();
 
     setTimeout(() => {
         screen.classList.remove('opening');
