@@ -1327,6 +1327,15 @@ body {
     transform: none; /* Reset global button transform */
 }
 
+#title-bar:has(#settings-tabs-bar:not(.hidden)) #btn-changelog,
+#settings-tabs-bar:not(.hidden) ~ #window-controls #btn-changelog {
+    display: none !important;
+}
+
+#btn-changelog.hidden {
+    display: none !important;
+}
+
 #btn-changelog-icon,
 #btn-settings-icon {
     display: flex;

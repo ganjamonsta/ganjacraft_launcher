@@ -185,31 +185,43 @@ export async function loadChangelogHistory() {
 }
 
 /**
- * Проверить актуальность последнего обновления и переключить бейдж на колокольчике
+ * Проверить актуальность последнего обновления и переключить видимость колокольчика и бейджа
  */
 export function checkChangelogBadge() {
+    const btnChangelog = dom.get('btn-changelog');
     const badge = dom.get('changelog-badge');
-    if (!badge) return;
+    const settingsScreen = dom.get('step-settings');
+    const isSettingsOpen = settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing');
+
+    // Если сейчас открыты настройки — кнопка колокольчика ВСЕГДА скрыта
+    if (isSettingsOpen) {
+        if (btnChangelog) btnChangelog.classList.add('hidden');
+        return;
+    }
 
     if ((!cachedPackHistory || cachedPackHistory.length === 0) &&
         (!cachedLauncherReleases || cachedLauncherReleases.length === 0) &&
         (!cachedNews || cachedNews.length === 0)) {
-        badge.classList.add('hidden');
+        if (badge) badge.classList.add('hidden');
+        if (btnChangelog) btnChangelog.classList.add('hidden');
         return;
     }
 
     const compoundId = getLatestCompoundId();
     const seenId = localStorage.getItem(STORAGE_KEY_SEEN);
+    const hasUnseen = Boolean(compoundId && seenId !== compoundId);
 
-    if (compoundId && seenId !== compoundId) {
-        badge.classList.remove('hidden');
+    if (hasUnseen) {
+        if (btnChangelog) btnChangelog.classList.remove('hidden');
+        if (badge) badge.classList.remove('hidden');
     } else {
-        badge.classList.add('hidden');
+        if (btnChangelog) btnChangelog.classList.add('hidden');
+        if (badge) badge.classList.add('hidden');
     }
 }
 
 /**
- * Отметить текущие обновления как просмотренные (гасит бейдж)
+ * Отметить текущие обновления как просмотренные (гасит бейдж и скрывает колокольчик)
  */
 export function markChangelogSeen() {
     const compoundId = getLatestCompoundId();
@@ -218,6 +230,7 @@ export function markChangelogSeen() {
     }
     const badge = dom.get('changelog-badge');
     if (badge) badge.classList.add('hidden');
+    checkChangelogBadge();
 }
 
 /**

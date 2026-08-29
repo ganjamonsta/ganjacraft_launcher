@@ -13,7 +13,7 @@ import { loadModsList, getDisabledMods, setAllModsState, updateModsCounter, upda
 import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
 import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
-import { renderChangelogList, markChangelogSeen } from '../changelog/changelog-manager.js';
+import { renderChangelogList, markChangelogSeen, checkChangelogBadge } from '../changelog/changelog-manager.js';
 import { applySkinMode, getSkinViewerMode } from '../skin-viewer/index.js';
 
 // Стейт для отслеживания изменений
@@ -242,18 +242,9 @@ export function updateHeaderControlsForTab(tabId) {
         btnSettings.title = 'Закрыть настройки';
     }
 
-    // Кнопка 🔔 ВСЕГДА остаётся колокольчиком-индикатором и быстрым переходом к обновлениям
+    // Внутри настроек колокольчик ВСЕГДА скрыт (так как в табах есть вкладка ОБНОВЛЕНИЯ)
     if (btnChangelog) {
-        btnChangelog.classList.remove('settings-active');
-        const icon = document.getElementById('btn-changelog-icon');
-        if (icon) {
-            icon.innerHTML = `
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>`;
-        }
-        btnChangelog.title = 'Обновления сборки';
+        btnChangelog.classList.add('hidden');
     }
 }
 
@@ -269,19 +260,8 @@ function resetHeaderButtons() {
         btnSettings.title = 'Настройки';
     }
 
-    const btnChangelog = document.getElementById('btn-changelog');
-    if (btnChangelog) {
-        btnChangelog.classList.remove('settings-active');
-        const iconSpan = document.getElementById('btn-changelog-icon');
-        if (iconSpan) {
-            iconSpan.innerHTML = `
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>`;
-        }
-        btnChangelog.title = 'Обновления сборки';
-    }
+    // Проверяем актуальность обновлений для показа колокольчика на главном экране
+    checkChangelogBadge();
 }
 
 /**
