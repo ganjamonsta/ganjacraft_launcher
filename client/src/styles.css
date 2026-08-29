@@ -2639,6 +2639,88 @@ input[type="checkbox"] {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    gap: 12px;
+}
+
+/* Top Filter & Search Controls */
+.changelog-top-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 2px;
+    flex-shrink: 0;
+}
+
+.changelog-scope-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.changelog-scope-btn {
+    background: transparent;
+    border: none;
+    color: #9aa2b0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.changelog-scope-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.changelog-scope-btn.active {
+    color: #39ff14;
+    background: rgba(57, 255, 20, 0.12);
+    border: 1px solid rgba(57, 255, 20, 0.3);
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.15);
+}
+
+.changelog-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 280px;
+}
+
+.changelog-search-icon {
+    position: absolute;
+    left: 10px;
+    stroke: #718096;
+    pointer-events: none;
+}
+
+#changelog-search-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 7px 12px 7px 32px;
+    color: #f0f0f0;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#changelog-search-input:focus {
+    border-color: rgba(57, 255, 20, 0.4);
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.15);
+}
+
+#changelog-search-input::placeholder {
+    color: #64748b;
 }
 
 .changelog-tabs {
@@ -2647,6 +2729,76 @@ input[type="checkbox"] {
     height: 100%;
     gap: 2px;
     -webkit-app-region: no-drag;
+}
+
+/* Scope Badges */
+.changelog-badge-scope-pack {
+    font-size: 10px;
+    font-weight: 700;
+    color: #69f0ae;
+    background: rgba(76, 175, 80, 0.14);
+    border: 1px solid rgba(76, 175, 80, 0.4);
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+}
+
+.changelog-badge-scope-launcher {
+    font-size: 10px;
+    font-weight: 700;
+    color: #b388ff;
+    background: rgba(124, 77, 255, 0.15);
+    border: 1px solid rgba(124, 77, 255, 0.45);
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+}
+
+.changelog-badge-ver.ver-launcher {
+    color: #e1bee7;
+    background: rgba(171, 71, 188, 0.15);
+    border: 1px solid rgba(171, 71, 188, 0.35);
+}
+
+.changelog-admin-note.launcher-note {
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.08) 0%, rgba(26, 20, 36, 0.45) 100%);
+    border-left-color: #b388ff;
+    border-top-color: rgba(124, 77, 255, 0.2);
+    border-right-color: rgba(124, 77, 255, 0.2);
+    border-bottom-color: rgba(124, 77, 255, 0.2);
+}
+
+.changelog-admin-note.launcher-note .admin-note-header {
+    color: #b388ff;
+}
+
+.group-label-launcher { color: #b388ff; }
+.group-label-launcher .title-dot { background: #b388ff; box-shadow: 0 0 8px #b388ff; }
+
+/* Launcher Changes Grid */
+.changelog-launcher-changes-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+.changelog-launcher-change-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #e2e8f0;
+    line-height: 1.45;
+}
+
+.launcher-change-bullet {
+    color: #b388ff;
+    font-weight: 700;
+    flex-shrink: 0;
 }
 
 /* Full Width Feed Container */

@@ -215,6 +215,99 @@ function registerConfigHandlers(mainWindow) {
             return { success: false, history: [], error: e.message };
         }
     });
+
+    // Launcher Client Releases
+    let launcherReleasesCache = null;
+    let launcherReleasesCacheTime = 0;
+    const RELEASES_CACHE_TTL = 60_000;
+
+    ipcMain.handle('get-launcher-releases', async () => {
+        const now = Date.now();
+        if (launcherReleasesCache && (now - launcherReleasesCacheTime) < RELEASES_CACHE_TTL) {
+            return launcherReleasesCache;
+        }
+
+        let localReleases = [];
+        try {
+            const localPath = path.join(__dirname, '../../assets/launcher_releases.json');
+            if (fs.existsSync(localPath)) {
+                localReleases = JSON.parse(fs.readFileSync(localPath, 'utf-8'));
+            }
+        } catch (e) {
+            console.warn('[IPC] Could not read local launcher_releases.json:', e.message);
+        }
+
+        try {
+            const reqOptions = {
+                hostname: 'api.github.com',
+                path: '/repos/ganjamonsta/ganjacraft_launcher/releases?per_page=15',
+                method: 'GET',
+                timeout: 4000,
+                headers: {
+                    'User-Agent': 'GanjaCraft-Launcher'
+                }
+            };
+            const githubReleases = await new Promise((resolve, reject) => {
+                const req = https.request(reqOptions, (res) => {
+                    if (res.statusCode !== 200) {
+                        return reject(new Error(`GitHub returned ${res.statusCode}`));
+                    }
+                    let data = '';
+                    res.on('data', chunk => data += chunk);
+                    res.on('end', () => {
+                        try {
+                            const parsed = JSON.parse(data);
+                            resolve(Array.isArray(parsed) ? parsed : []);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    });
+                });
+                req.on('error', reject);
+                req.on('timeout', () => {
+                    req.destroy();
+                    reject(new Error('Timeout'));
+                });
+                req.end();
+            });
+
+            const formattedGithub = githubReleases.map(r => {
+                const version = (r.tag_name || '').replace(/^v/i, '');
+                const bodyLines = (r.body || '').split('\n').map(l => l.trim()).filter(Boolean);
+                return {
+                    version,
+                    date: r.published_at || r.created_at,
+                    timestamp: r.published_at ? Math.floor(new Date(r.published_at).getTime() / 1000) : null,
+                    title: r.name || `Релиз v${version}`,
+                    description: bodyLines[0] || '',
+                    changes: bodyLines,
+                    html_url: r.html_url
+                };
+            });
+
+            const map = new Map();
+            for (const r of formattedGithub) {
+                if (r.version) map.set(r.version, r);
+            }
+            for (const r of localReleases) {
+                if (r.version) map.set(r.version, { ...(map.get(r.version) || {}), ...r });
+            }
+
+            const merged = Array.from(map.values()).sort((a, b) => {
+                const timeA = a.timestamp || (a.date ? new Date(a.date).getTime() / 1000 : 0);
+                const timeB = b.timestamp || (b.date ? new Date(b.date).getTime() / 1000 : 0);
+                return timeB - timeA;
+            });
+
+            launcherReleasesCache = { success: true, releases: merged };
+            launcherReleasesCacheTime = now;
+            return launcherReleasesCache;
+        } catch (err) {
+            launcherReleasesCache = { success: true, releases: localReleases };
+            launcherReleasesCacheTime = now;
+            return launcherReleasesCache;
+        }
+    });
     
     // Reinstall client (delete mods, config, libraries, versions)
     ipcMain.handle('reinstall-client', async () => {

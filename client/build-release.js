@@ -53,12 +53,69 @@ pkg.version = newVersion;
 console.log(`🚀 Bumping version to: ${newVersion}`);
 fs.writeFileSync(PACKAGE_PATH, JSON.stringify(pkg, null, 2));
 
+// 2.2 Generate / Process Release Notes
+const userNote = process.argv.slice(2).join(' ').trim();
+console.log('📝 Generating launcher changelog...');
+
+function generateGitChanges() {
+    try {
+        const rootDir = path.join(__dirname, '..');
+        const rawLog = execSync('git log -n 15 --pretty=format:"%s"', { encoding: 'utf-8', cwd: rootDir });
+        const commits = rawLog.split('\n')
+            .map(s => s.trim())
+            .filter(s => s && !s.toLowerCase().startsWith('chore: release') && !s.toLowerCase().startsWith('merge '));
+        
+        if (commits.length === 0) {
+            return ['⚡ Оптимизация и повышение стабильности клиента'];
+        }
+
+        return commits.slice(0, 7).map(c => {
+            let clean = c.replace(/^(feat|fix|refactor|style|docs|perf|test)(\(.*?\))?:\s*/i, '').trim();
+            clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+            const lower = c.toLowerCase();
+            if (lower.startsWith('feat') || lower.includes('добавлен') || lower.includes('новый')) return `✨ ${clean}`;
+            if (lower.startsWith('fix') || lower.includes('исправлен') || lower.includes('поправ')) return `🐛 ${clean}`;
+            if (lower.startsWith('perf') || lower.startsWith('refactor') || lower.includes('оптимиз')) return `⚡ ${clean}`;
+            return `• ${clean}`;
+        });
+    } catch {
+        return ['⚡ Обновление компонентов и оптимизация лаунчера'];
+    }
+}
+
+const changesList = generateGitChanges();
+const RELEASES_FILE = path.join(__dirname, 'src/assets/launcher_releases.json');
+let releasesList = [];
+
+if (fs.existsSync(RELEASES_FILE)) {
+    try {
+        releasesList = JSON.parse(fs.readFileSync(RELEASES_FILE, 'utf-8'));
+        if (!Array.isArray(releasesList)) releasesList = [];
+    } catch {
+        releasesList = [];
+    }
+}
+
+releasesList = releasesList.filter(r => r.version !== newVersion);
+const newReleaseEntry = {
+    version: newVersion,
+    date: new Date().toISOString(),
+    timestamp: Math.floor(Date.now() / 1000),
+    title: userNote ? `Релиз v${newVersion}` : `Обновление лаунчера v${newVersion}`,
+    description: userNote || (changesList.length > 0 ? changesList[0].replace(/^[^\wа-яА-ЯёЁ]+/, '') : 'Улучшения и исправления клиента'),
+    changes: changesList
+};
+releasesList.unshift(newReleaseEntry);
+fs.writeFileSync(RELEASES_FILE, JSON.stringify(releasesList, null, 2), 'utf-8');
+console.log(`✅ Launcher changelog entry created for v${newVersion}`);
+
 // Auto Git Commit & Push so the remote Linux server gets exact same version and code
 try {
     console.log('📤 Auto-committing and pushing release version to Git...');
     const rootDir = path.join(__dirname, '..');
     execSync('git add -A', { stdio: 'inherit', cwd: rootDir });
-    execSync(`git commit -m "chore: release v${newVersion}"`, { stdio: 'inherit', cwd: rootDir });
+    const commitMsg = userNote ? `chore: release v${newVersion} - ${userNote}` : `chore: release v${newVersion}`;
+    execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, { stdio: 'inherit', cwd: rootDir });
     execSync('git push', { stdio: 'inherit', cwd: rootDir });
     console.log('✅ Git repository synced!');
 } catch (e) {

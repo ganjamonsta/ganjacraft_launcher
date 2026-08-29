@@ -183,6 +183,7 @@ contextBridge.exposeInMainWorld('api', {
 
     getManifest: () => ipcRenderer.invoke('get-manifest'), // To list mods in UI
     getManifestHistory: () => ipcRenderer.invoke('get-manifest-history'), // History of pack updates
+    getLauncherReleases: () => ipcRenderer.invoke('get-launcher-releases'), // History of launcher client releases
     resolveModrinth: (hashes) => ipcRenderer.invoke('resolve-modrinth', hashes),
     
     // Events

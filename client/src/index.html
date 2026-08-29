@@ -473,6 +473,20 @@
         <!-- Changelog Screen (Full Screen Drawer in Launcher Style) -->
         <div id="step-changelog" class="settings-screen changelog-screen hidden">
             <div class="settings-body changelog-screen-body">
+                <div class="changelog-top-controls">
+                    <div class="changelog-scope-tabs">
+                        <button class="changelog-scope-btn active" data-scope="all">✨ ВСЕ ОБНОВЛЕНИЯ</button>
+                        <button class="changelog-scope-btn" data-scope="pack">📦 СБОРКА И МОДЫ</button>
+                        <button class="changelog-scope-btn" data-scope="launcher">🚀 КЛИЕНТ ЛАУНЧЕРА</button>
+                    </div>
+                    <div class="changelog-search-wrap">
+                        <svg class="changelog-search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="changelog-search-input" placeholder="Поиск мода, патча, фичи..." autocomplete="off">
+                    </div>
+                </div>
                 <div id="changelog-list" class="changelog-feed inertia-cascade">
                     <div class="unified-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
                 </div>
