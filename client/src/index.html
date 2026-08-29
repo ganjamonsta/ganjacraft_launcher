@@ -41,10 +41,8 @@
                 <button class="tab-btn active" data-tab="general">ОБЩИЕ</button>
                 <button class="tab-btn" data-tab="mods">МОДЫ</button>
                 <button class="tab-btn" data-tab="configs">КОНФИГИ</button>
+                <button class="tab-btn" data-tab="changelog">ОБНОВЛЕНИЯ</button>
                 <button class="tab-btn tab-dev hidden" data-tab="dev">🐞 DEBUG</button>
-            </div>
-            <div id="changelog-tabs-bar" class="changelog-tabs hidden">
-                <span class="tab-btn active" style="pointer-events: none;">ОБНОВЛЕНИЯ СБОРКИ</span>
             </div>
         </div>
         <div id="window-controls">
@@ -467,15 +465,13 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
-
-        <!-- Changelog Screen (Full Screen Drawer in Launcher Style) -->
-        <div id="step-changelog" class="settings-screen changelog-screen hidden">
-            <div class="settings-body changelog-screen-body">
-                <div id="changelog-list" class="changelog-feed inertia-cascade">
-                    <div class="unified-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
+                <!-- Changelog Tab (История обновлений) -->
+                <div id="tab-changelog" class="tab-content">
+                    <div id="changelog-list" class="changelog-feed inertia-cascade">
+                        <div class="unified-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>

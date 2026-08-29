@@ -2624,29 +2624,11 @@ input[type="checkbox"] {
     transform: rotate(12deg) scale(1.1);
 }
 
-/* Changelog Screen (Unified Full Screen Drawer) */
-.changelog-screen {
-    z-index: 850;
-}
-
-.changelog-screen-body {
-    max-width: 1240px;
-    margin: 0 auto;
-    width: 100%;
+/* Changelog Tab Container */
+#tab-changelog {
+    padding: 14px 18px;
     height: 100%;
     box-sizing: border-box;
-    padding: 16px 20px 20px 20px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.changelog-tabs {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    gap: 2px;
-    -webkit-app-region: no-drag;
 }
 
 /* Scope Badges */

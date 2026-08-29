@@ -39,6 +39,7 @@ import {
     toggleMainUIVisibility,
     openSettings,
     closeSettings,
+    switchTab,
     populateSettingsFields,
     saveSettings,
     initSettingsTabs,
@@ -158,15 +159,10 @@ function initSettingsButton() {
             if (isSettingsAnimating()) return;
             if (settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {
                 tryTriggerEasterEgg();
-                toggleMainUIVisibility(true, currentConfig);
                 closeSettings();
                 cancelPendingConfigs();
                 const saveBtn = dom.get('save-settings');
                 if (saveBtn) saveBtn.classList.remove('visible');
-            }
-            if (isChangelogOpen()) {
-                toggleMainUIVisibility(true, currentConfig);
-                closeChangelogScreen();
             }
         });
     }
@@ -174,19 +170,17 @@ function initSettingsButton() {
     // Open/Toggle settings
     if (btnSettings) {
         btnSettings.addEventListener('click', async () => {
-            // Если открыты обновления — сразу переключаемся на настройки
-            if (isChangelogOpen()) {
-                toggleMainUIVisibility(false, currentConfig);
-                openSettings(currentConfig);
-                return;
-            }
-
             if (isSettingsAnimating()) return;
-            
-            // Toggle behavior
+
+            // Если панель открыта: если сейчас открыт changelog, плавно переключаем на general; иначе закрываем
             if (settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {
+                const activeTabBtn = document.querySelector('#settings-tabs-bar .tab-btn.active');
+                if (activeTabBtn && activeTabBtn.dataset.tab === 'changelog') {
+                    switchTab('general');
+                    return;
+                }
+
                 tryTriggerEasterEgg();
-                toggleMainUIVisibility(true, currentConfig);
                 closeSettings();
                 cancelPendingConfigs();
                 const saveBtn = dom.get('save-settings');
@@ -194,9 +188,8 @@ function initSettingsButton() {
                 return;
             }
             
-            // Phase 1: Smooth exit of main UI elements & Instant Settings Drop
-            toggleMainUIVisibility(false, currentConfig);
-            openSettings(currentConfig);
+            // Открываем панель на вкладке 'general'
+            openSettings('general');
             
             // Hide easter egg after animation if active
             if (isSettingsEasterEggActive()) {

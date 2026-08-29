@@ -13,7 +13,7 @@ import { loadModsList, getDisabledMods, setAllModsState, updateModsCounter, upda
 import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
 import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
-import { isChangelogOpen, closeChangelogScreen } from '../changelog/index.js';
+import { renderChangelogList, markChangelogSeen } from '../changelog/changelog-manager.js';
 
 // Стейт для отслеживания изменений
 let initialSettingsState = null;
@@ -180,16 +180,95 @@ export function toggleMainUIVisibility(show, config) {
 }
 
 /**
- * Открыть настройки с анимацией
+ * Синхронизация иконок и активности кнопок ⚙️ и 🔔 в window-controls
  */
-export function openSettings(config) {
+export function updateHeaderControlsForTab(tabId) {
+    const btnSettings = document.getElementById('btn-settings');
+    const btnChangelog = document.getElementById('btn-changelog');
+
+    if (tabId === 'changelog') {
+        if (btnChangelog) {
+            btnChangelog.classList.add('settings-active');
+            const icon = document.getElementById('btn-changelog-icon');
+            if (icon) icon.innerHTML = '<span style="font-size:15px;line-height:1;font-weight:700;">✕</span>';
+            btnChangelog.title = 'Закрыть обновления';
+        }
+        if (btnSettings) {
+            btnSettings.classList.remove('settings-active');
+            const icon = document.getElementById('btn-settings-icon');
+            if (icon) icon.textContent = '⚙';
+            btnSettings.title = 'Настройки';
+        }
+    } else {
+        if (btnSettings) {
+            btnSettings.classList.add('settings-active');
+            const icon = document.getElementById('btn-settings-icon');
+            if (icon) icon.textContent = '✕';
+            btnSettings.title = 'Закрыть настройки';
+        }
+        if (btnChangelog) {
+            btnChangelog.classList.remove('settings-active');
+            const icon = document.getElementById('btn-changelog-icon');
+            if (icon) {
+                icon.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>`;
+            }
+            btnChangelog.title = 'Обновления сборки';
+        }
+    }
+}
+
+/**
+ * Сброс состояния кнопок в заголовке окна
+ */
+function resetHeaderButtons() {
+    const btnSettings = document.getElementById('btn-settings');
+    if (btnSettings) {
+        btnSettings.classList.remove('settings-active');
+        const iconSpan = document.getElementById('btn-settings-icon');
+        if (iconSpan) iconSpan.textContent = '⚙';
+        btnSettings.title = 'Настройки';
+    }
+
+    const btnChangelog = document.getElementById('btn-changelog');
+    if (btnChangelog) {
+        btnChangelog.classList.remove('settings-active');
+        const iconSpan = document.getElementById('btn-changelog-icon');
+        if (iconSpan) {
+            iconSpan.innerHTML = `
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>`;
+        }
+        btnChangelog.title = 'Обновления сборки';
+    }
+}
+
+/**
+ * Открыть панель настроек / чейнджлога с анимацией выпадания
+ * @param {string|object} target - ID целевой вкладки ('general', 'mods', 'configs', 'changelog') или объект конфига
+ */
+export function openSettings(target = 'general') {
     initDOMRefs();
     if (!settingsScreen) return;
-    
-    // Безусловно и мгновенно глушим changelog
-    closeChangelogScreen(true);
+    if (settingsAnimating) return;
 
-    // Сбросить горизонтальные направления каскадов от предыдущих переключений вкладок
+    const targetTabId = (typeof target === 'string') ? target : 'general';
+
+    // Если экран уже открыт — плавно переключаем вкладку горизонтально
+    if (!settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {
+        switchTab(targetTabId);
+        return;
+    }
+
+    // Скрываем основной интерфейс
+    toggleMainUIVisibility(false);
+
+    // Сбросить горизонтальные направления каскадов
     document.querySelectorAll('.inertia-cascade, [data-dir]').forEach(el => {
         delete el.dataset.dir;
         el.classList.remove('inertia-cascade');
@@ -201,57 +280,54 @@ export function openSettings(config) {
     settingsAnimating = true;
     settingsScreen.classList.remove('hidden', 'closing');
     settingsScreen.classList.add('opening');
-    
-    // Эффектная инерционная анимация для карточек активной вкладки
-    const activeTab = document.querySelector('.tab-content.active') || document.querySelector('#tab-general');
+
+    // Настраиваем активный таб
+    const tabButtons = Array.from(document.querySelectorAll('#settings-tabs-bar .tab-btn'));
+    tabButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === targetTabId));
+
+    const allTabs = Array.from(document.querySelectorAll('.tab-content'));
+    allTabs.forEach(t => {
+        t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
+        if (t.id === `tab-${targetTabId}`) {
+            t.classList.add('active');
+        } else {
+            t.classList.remove('active');
+        }
+    });
+
+    if (targetTabId === 'changelog') {
+        renderChangelogList();
+        markChangelogSeen();
+    }
+
+    const activeTab = document.getElementById(`tab-${targetTabId}`);
     if (activeTab) {
-        const cascadeTarget = activeTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid');
+        const cascadeTarget = activeTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid, .inertia-cascade');
         if (cascadeTarget) {
             triggerInertiaCascade(cascadeTarget, 'down', true);
         }
     }
 
-    // Деактивировать главную вкладку и запустить выпадение вкладок настроек
+    // Деактивировать главную вкладку и запустить выпадение вкладок
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.remove('active');
-
-    const changelogTabs = document.getElementById('changelog-tabs-bar');
-    if (changelogTabs) {
-        changelogTabs.className = 'changelog-tabs hidden';
-    }
 
     const titleBarTabs = document.getElementById('settings-tabs-bar');
     if (titleBarTabs) {
         titleBarTabs.classList.remove('hidden', 'closing');
         titleBarTabs.classList.add('opening');
     }
-    
-    const btnSettings = document.getElementById('btn-settings');
-    if (btnSettings) {
-        btnSettings.classList.add('settings-active');
-        const iconSpan = document.getElementById('btn-settings-icon');
-        if (iconSpan) {
-            iconSpan.textContent = '✕';
-        } else {
-            btnSettings.textContent = '✕';
-        }
-        btnSettings.title = 'Закрыть настройки';
-    }
-    
-    // Reset tab index
-    const tabButtons = Array.from(document.querySelectorAll('#settings-tabs-bar .tab-btn'));
+
+    updateHeaderControlsForTab(targetTabId);
+
     const activeTabBtn = document.querySelector('#settings-tabs-bar .tab-btn.active');
-    if (activeTabBtn) {
-        currentTabIndex = tabButtons.indexOf(activeTabBtn);
-    } else {
-        currentTabIndex = 0;
-    }
-    
-    // Snow burst (мгновенный вызов в тайминг клика)
+    currentTabIndex = activeTabBtn ? tabButtons.indexOf(activeTabBtn) : 0;
+
+    // Snow burst
     if (appState.get('effects.snowEnabled')) {
         createSnowBurst();
     }
-    
+
     setTimeout(() => {
         settingsScreen.classList.remove('opening');
         if (titleBarTabs) titleBarTabs.classList.remove('opening');
@@ -271,28 +347,19 @@ export function closeSettings(instant = false) {
         settingsScreen.className = 'settings-screen hidden';
         const titleBarTabs = document.getElementById('settings-tabs-bar');
         if (titleBarTabs) titleBarTabs.className = 'settings-tabs hidden';
-        const btnSettings = document.getElementById('btn-settings');
-        if (btnSettings) {
-            btnSettings.classList.remove('settings-active');
-            const iconSpan = document.getElementById('btn-settings-icon');
-            if (iconSpan) {
-                iconSpan.textContent = '⚙';
-            } else {
-                btnSettings.textContent = '⚙';
-            }
-            btnSettings.title = 'Настройки';
-        }
+        resetHeaderButtons();
         settingsAnimating = false;
+        toggleMainUIVisibility(true);
         return;
     }
 
     settingsAnimating = true;
     settingsScreen.classList.remove('opening');
     settingsScreen.classList.add('closing');
-    
+
     // Активировать главную вкладку и спрятать вкладки настроек с анимацией
     const titleMainTab = document.getElementById('title-bar-title');
-    if (titleMainTab && !isChangelogOpen()) titleMainTab.classList.add('active');
+    if (titleMainTab) titleMainTab.classList.add('active');
 
     const titleBarTabs = document.getElementById('settings-tabs-bar');
     if (titleBarTabs) {
@@ -303,23 +370,14 @@ export function closeSettings(instant = false) {
             titleBarTabs.classList.add('hidden');
         }, 250);
     }
-    
-    const btnSettings = document.getElementById('btn-settings');
-    if (btnSettings) {
-        btnSettings.classList.remove('settings-active');
-        const iconSpan = document.getElementById('btn-settings-icon');
-        if (iconSpan) {
-            iconSpan.textContent = '⚙';
-        } else {
-            btnSettings.textContent = '⚙';
-        }
-        btnSettings.title = 'Настройки';
-    }
-    
+
+    resetHeaderButtons();
+
     setTimeout(() => {
         settingsScreen.classList.remove('closing');
         settingsScreen.classList.add('hidden');
         settingsAnimating = false;
+        toggleMainUIVisibility(true);
     }, 250);
 }
 
@@ -437,94 +495,116 @@ export async function saveSettings() {
  */
 let mainTabTimer = null;
 
+/**
+ * Переключить активную вкладку с плавной горизонтальной анимацией (ViewPager)
+ * @param {string} targetTabId - ID вкладки ('general', 'mods', 'configs', 'changelog', 'dev')
+ */
+export function switchTab(targetTabId) {
+    if (!targetTabId) return;
+
+    const tabButtons = Array.from(document.querySelectorAll('.settings-tabs .tab-btn'));
+    const btn = tabButtons.find(b => b.dataset.tab === targetTabId);
+    const targetTab = document.getElementById(`tab-${targetTabId}`);
+
+    if (!btn || !targetTab) return;
+
+    // Если вкладка уже активна — ничего не делаем
+    if (btn.classList.contains('active') && targetTab.classList.contains('active')) return;
+
+    // Если идет анимация переключения — пропуск
+    const settingsBody = document.querySelector('.settings-body');
+    if (settingsBody && settingsBody.classList.contains('animating')) return;
+
+    const allTabs = Array.from(document.querySelectorAll('.tab-content'));
+    const currentActiveTab = allTabs.find(t => t.classList.contains('active') && t !== targetTab);
+
+    const index = tabButtons.indexOf(btn);
+    const direction = index >= currentTabIndex ? 'right' : 'left';
+    currentTabIndex = index;
+
+    if (mainTabTimer) {
+        clearTimeout(mainTabTimer);
+        mainTabTimer = null;
+    }
+
+    tabButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Синхронизация кнопок ⚙️ и 🔔 в заголовке
+    updateHeaderControlsForTab(targetTabId);
+
+    if (settingsBody) settingsBody.classList.add('animating');
+
+    allTabs.forEach(t => {
+        t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
+    });
+
+    if (currentActiveTab) {
+        currentActiveTab.classList.remove('active');
+        currentActiveTab.classList.add(direction === 'right' ? 'slide-out-to-left' : 'slide-out-to-right');
+    }
+
+    targetTab.classList.add('active');
+    targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
+
+    if (targetTabId === 'changelog') {
+        renderChangelogList();
+        markChangelogSeen();
+    }
+
+    const cascadeTarget = targetTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid, .inertia-cascade');
+    if (cascadeTarget) {
+        triggerInertiaCascade(cascadeTarget, direction, true);
+    }
+
+    if (appState.get('effects.snowEnabled')) {
+        createDirectionalBurst(direction);
+        if (targetTabId === 'configs' || targetTabId === 'dev' || targetTabId === 'changelog') {
+            effectsEngine.stop();
+        } else {
+            effectsEngine.start();
+        }
+    }
+
+    mainTabTimer = setTimeout(() => {
+        const activeBtn = document.querySelector('.settings-tabs .tab-btn.active');
+        const activeId = activeBtn ? activeBtn.dataset.tab : null;
+        const activeTab = activeId ? document.getElementById(`tab-${activeId}`) : targetTab;
+
+        allTabs.forEach(t => {
+            t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
+            if (t === activeTab) {
+                t.classList.add('active');
+            } else {
+                t.classList.remove('active');
+            }
+        });
+
+        if (cascadeTarget) {
+            delete cascadeTarget.dataset.dir;
+            cascadeTarget.classList.remove('inertia-cascade');
+            Array.from(cascadeTarget.children).forEach(child => {
+                child.style.animation = '';
+            });
+        }
+
+        if (settingsBody) settingsBody.classList.remove('animating');
+        mainTabTimer = null;
+    }, 550);
+}
+
+/**
+ * Инициализация табов настроек
+ */
 export function initSettingsTabs(config) {
     const tabButtons = Array.from(document.querySelectorAll('.settings-tabs .tab-btn'));
     
-    tabButtons.forEach((btn, index) => {
+    tabButtons.forEach((btn) => {
         if (btn.dataset.tabsBound) return;
         btn.dataset.tabsBound = 'true';
 
         btn.addEventListener('click', () => {
-            const targetTabId = btn.dataset.tab;
-            const targetTab = document.getElementById(`tab-${targetTabId}`);
-            
-            // Если вкладка уже активна — пропуск
-            if (btn.classList.contains('active')) return;
-
-            // Если идет анимация переключения настроек — пропуск
-            const settingsBody = document.querySelector('.settings-body');
-            if (settingsBody && settingsBody.classList.contains('animating')) return;
-
-            if (!targetTab) return;
-            
-            const allTabs = Array.from(document.querySelectorAll('.tab-content'));
-            const currentActiveTab = allTabs.find(t => t.classList.contains('active') && t !== targetTab);
-
-            const direction = index > currentTabIndex ? 'right' : 'left';
-            currentTabIndex = index;
-
-            if (mainTabTimer) {
-                clearTimeout(mainTabTimer);
-                mainTabTimer = null;
-            }
-
-            tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            if (settingsBody) settingsBody.classList.add('animating');
-
-            allTabs.forEach(t => {
-                t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
-            });
-            
-            if (currentActiveTab) {
-                currentActiveTab.classList.remove('active');
-                currentActiveTab.classList.add(direction === 'right' ? 'slide-out-to-left' : 'slide-out-to-right');
-            }
-            
-            targetTab.classList.add('active');
-            targetTab.classList.add(direction === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
-
-            const cascadeTarget = targetTab.querySelector('.settings-categories, .unified-dev-grid, #mods-grid, .inertia-cascade');
-            if (cascadeTarget) {
-                triggerInertiaCascade(cascadeTarget, direction, true);
-            }
-
-            if (appState.get('effects.snowEnabled')) {
-                createDirectionalBurst(direction);
-                // Если перешли на Конфиги или Настройки, отключаем партиклы
-                if (targetTabId === 'configs' || targetTabId === 'dev') {
-                    effectsEngine.stop();
-                } else {
-                    effectsEngine.start();
-                }
-            }
-            
-            mainTabTimer = setTimeout(() => {
-                const activeBtn = document.querySelector('.settings-tabs .tab-btn.active');
-                const activeId = activeBtn ? activeBtn.dataset.tab : null;
-                const activeTab = activeId ? document.getElementById(`tab-${activeId}`) : targetTab;
-
-                allTabs.forEach(t => {
-                    t.classList.remove('slide-in-from-right', 'slide-in-from-left', 'slide-out-to-left', 'slide-out-to-right');
-                    if (t === activeTab) {
-                        t.classList.add('active');
-                    } else {
-                        t.classList.remove('active');
-                    }
-                });
-
-                if (cascadeTarget) {
-                    delete cascadeTarget.dataset.dir;
-                    cascadeTarget.classList.remove('inertia-cascade');
-                    Array.from(cascadeTarget.children).forEach(child => {
-                        child.style.animation = '';
-                    });
-                }
-
-                if (settingsBody) settingsBody.classList.remove('animating');
-                mainTabTimer = null;
-            }, 550);
+            switchTab(btn.dataset.tab);
         });
     });
 }

@@ -4,7 +4,7 @@
  */
 
 import { dom } from '../../utils/dom.js';
-import { closeSettings, toggleMainUIVisibility } from '../settings/index.js';
+import { openSettings, closeSettings, switchTab } from '../settings/index.js';
 import { createSnowBurst } from '../../ui/effects/index.js';
 import { triggerInertiaCascade } from '../../utils/performance.js';
 import { appState } from '../../state/app-state.js';
@@ -642,153 +642,46 @@ const BELL_SVG = `
 let changelogAnimating = false;
 
 /**
- * Проверить открыт ли экран истории обновлений
- */
-export function isChangelogOpen() {
-    const screen = dom.get('step-changelog');
-    return Boolean(screen && !screen.classList.contains('hidden') && !screen.classList.contains('closing'));
-}
-
-/**
- * Открыть экран истории обновлений с анимацией
+ * Открыть экран истории обновлений с анимацией (или переключить таб)
  */
 export function openChangelogScreen() {
-    const screen = dom.get('step-changelog');
-    if (!screen) return;
-
-    // 1. Безусловно и мгновенно глушим настройки
-    closeSettings(true);
-
-    // 2. Плавно скрываем основные блоки интерфейса
-    toggleMainUIVisibility(false);
-
-    changelogAnimating = true;
-    screen.classList.remove('hidden', 'closing');
-    screen.classList.add('opening');
-
-    // Title bar tabs
-    const titleMainTab = document.getElementById('title-bar-title');
-    if (titleMainTab) titleMainTab.classList.remove('active');
-
-    const settingsTabs = document.getElementById('settings-tabs-bar');
-    if (settingsTabs) {
-        settingsTabs.className = 'settings-tabs hidden';
-    }
-
-    const changelogTabs = document.getElementById('changelog-tabs-bar');
-    if (changelogTabs) {
-        changelogTabs.classList.remove('hidden', 'closing');
-        changelogTabs.classList.add('opening');
-    }
-
-    // Button icon to ✕
-    const btnChangelog = document.getElementById('btn-changelog');
-    if (btnChangelog) {
-        btnChangelog.classList.add('settings-active');
-        const iconSpan = document.getElementById('btn-changelog-icon');
-        if (iconSpan) {
-            iconSpan.textContent = '✕';
-        }
-        btnChangelog.title = 'Закрыть обновления';
-    }
-
-    // Snow burst в едином стиле
-    if (appState.get('effects.snowEnabled')) {
-        createSnowBurst();
-    }
-
-    markChangelogSeen();
-    renderChangelogList();
-
-    // Инерция на элементы списка
-    const feed = dom.get('changelog-list');
-    if (feed) {
-        triggerInertiaCascade(feed, 'down', true);
-    }
-
-    setTimeout(() => {
-        screen.classList.remove('opening');
-        if (changelogTabs) changelogTabs.classList.remove('opening');
-        changelogAnimating = false;
-    }, 280);
+    openSettings('changelog');
 }
 
 /**
- * Закрыть экран истории обновлений с анимацией (или мгновенно при переключении разделов)
+ * Закрыть экран истории обновлений с анимацией
  */
 export function closeChangelogScreen(instant = false) {
-    const screen = dom.get('step-changelog');
-    if (!screen) return;
-    if (changelogAnimating && !instant) return;
-
-    if (instant) {
-        screen.className = 'settings-screen changelog-screen hidden';
-        const changelogTabs = document.getElementById('changelog-tabs-bar');
-        if (changelogTabs) changelogTabs.className = 'changelog-tabs hidden';
-        const btnChangelog = document.getElementById('btn-changelog');
-        if (btnChangelog) {
-            btnChangelog.classList.remove('settings-active');
-            const iconSpan = document.getElementById('btn-changelog-icon');
-            if (iconSpan) {
-                iconSpan.innerHTML = BELL_SVG;
-            }
-            btnChangelog.title = 'Обновления';
-        }
-        changelogAnimating = false;
-        return;
-    }
-
-    changelogAnimating = true;
-    screen.classList.remove('opening');
-    screen.classList.add('closing');
-
-    // Плавно возвращаем основные блоки интерфейса
-    const settingsScreen = dom.get('step-settings');
-    if (!settingsScreen || settingsScreen.classList.contains('hidden')) {
-        toggleMainUIVisibility(true);
-    }
-
-    // Восстанавливаем вкладку Title
-    const titleMainTab = document.getElementById('title-bar-title');
-    if (titleMainTab) titleMainTab.classList.add('active');
-
-    const changelogTabs = document.getElementById('changelog-tabs-bar');
-    if (changelogTabs) {
-        changelogTabs.classList.remove('opening');
-        changelogTabs.classList.add('closing');
-        setTimeout(() => {
-            changelogTabs.classList.remove('closing');
-            changelogTabs.classList.add('hidden');
-        }, 250);
-    }
-
-    // Сбрасываем кнопку
-    const btnChangelog = document.getElementById('btn-changelog');
-    if (btnChangelog) {
-        btnChangelog.classList.remove('settings-active');
-        const iconSpan = document.getElementById('btn-changelog-icon');
-        if (iconSpan) {
-            iconSpan.innerHTML = BELL_SVG;
-        }
-        btnChangelog.title = 'Обновления';
-    }
-
-    setTimeout(() => {
-        screen.classList.remove('closing');
-        screen.classList.add('hidden');
-        changelogAnimating = false;
-    }, 250);
+    closeSettings(instant);
 }
 
 /**
  * Переключить видимость экрана истории обновлений
  */
 export function toggleChangelogScreen() {
-    if (isChangelogOpen()) {
-        closeChangelogScreen();
+    const settingsScreen = dom.get('step-settings');
+    const isVisible = settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing');
+
+    if (isVisible) {
+        const activeTabBtn = document.querySelector('#settings-tabs-bar .tab-btn.active');
+        if (activeTabBtn && activeTabBtn.dataset.tab !== 'changelog') {
+            switchTab('changelog');
+        } else {
+            closeSettings();
+        }
     } else {
-        openChangelogScreen();
+        openSettings('changelog');
     }
+}
+
+/**
+ * Проверка, открыт ли чейнджлог прямо сейчас
+ */
+export function isChangelogOpen() {
+    const settingsScreen = dom.get('step-settings');
+    const isVisible = settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing');
+    const activeTabBtn = document.querySelector('#settings-tabs-bar .tab-btn.active');
+    return Boolean(isVisible && activeTabBtn && activeTabBtn.dataset.tab === 'changelog');
 }
 
 /**
@@ -807,20 +700,10 @@ export function initChangelog() {
         });
     }
 
-    // Клик на логотип лаунчера в шапке закрывает открытый чейнджлог
-    const titleMainTab = document.getElementById('title-bar-title');
-    if (titleMainTab) {
-        titleMainTab.addEventListener('click', () => {
-            if (isChangelogOpen()) {
-                closeChangelogScreen();
-            }
-        });
-    }
-
     // Закрытие по клавише Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && isChangelogOpen()) {
-            closeChangelogScreen();
+            closeSettings();
         }
     });
 

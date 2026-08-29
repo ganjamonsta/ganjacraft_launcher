@@ -19,7 +19,9 @@ export {
     captureInitialSettingsState,
     isSettingsAnimating,
     getCurrentConfig,
-    setCurrentConfig
+    setCurrentConfig,
+    switchTab,
+    updateHeaderControlsForTab
 } from './settings.js';
 
 export {
