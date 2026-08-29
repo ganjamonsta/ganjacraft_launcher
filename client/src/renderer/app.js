@@ -172,14 +172,8 @@ function initSettingsButton() {
         btnSettings.addEventListener('click', async () => {
             if (isSettingsAnimating()) return;
 
-            // Если панель открыта: если сейчас открыт changelog, плавно переключаем на general; иначе закрываем
+            // Если панель открыта на любой вкладке — сразу закрываем её
             if (settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {
-                const activeTabBtn = document.querySelector('#settings-tabs-bar .tab-btn.active');
-                if (activeTabBtn && activeTabBtn.dataset.tab === 'changelog') {
-                    switchTab('general');
-                    return;
-                }
-
                 tryTriggerEasterEgg();
                 closeSettings();
                 cancelPendingConfigs();
