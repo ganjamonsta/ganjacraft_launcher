@@ -7,6 +7,8 @@ import { appState } from '../../state/app-state.js';
 import { dom } from '../../utils/dom.js';
 import { showError } from '../../ui/modals.js';
 import { ERROR_DISPLAY_TIME } from '../../constants.js';
+import { initSkinViewer } from '../skin-viewer/index.js';
+import { initMagneticPlayButton } from '../ui/magnetic-button.js';
 
 // Локальный стейт для auth flow
 let currentUsername = '';
@@ -191,16 +193,19 @@ function showLoginScreen() {
 function showPlayScreen() {
     hideLoadingStep();
     const stepPlay = dom.get('step-play');
-    const welcomeMsg = dom.get('welcome-msg');
     
     if (stepPlay) {
         stepPlay.classList.remove('hidden');
         stepPlay.classList.add('fade-in');
     }
     
-    if (welcomeMsg) {
-        welcomeMsg.innerText = `Добро пожаловать, ${currentUsername}!`;
+    // Инициализируем 3D/2D скин игрока
+    if (currentUsername) {
+        initSkinViewer(currentUsername);
     }
+
+    // Инициализируем магнитную физику для кнопки «ИГРАТЬ»
+    initMagneticPlayButton();
 }
 
 /**

@@ -121,9 +121,15 @@ export async function updateServerStatus() {
             }
         }
 
+        const bottomCount = dom.get('bottom-player-count');
+
         if (isOnline) {
             playerCount.textContent = `${onlineCount} / ${maxCount} онлайн`;
             playerCount.style.cursor = 'default';
+
+            if (bottomCount) {
+                bottomCount.textContent = `В сети (${onlineCount} игроков)`;
+            }
 
             indicator.className = 'status-indicator online';
             indicator.title = 'Сервер доступен';
@@ -131,9 +137,13 @@ export async function updateServerStatus() {
             // Тултип с никами при наведении
             attachTooltip(playerCount, list);
             attachTooltip(indicator, list);
+            if (bottomCount) attachTooltip(bottomCount, list);
         } else {
             playerCount.textContent = 'Оффлайн';
             playerCount.style.cursor = 'default';
+            if (bottomCount) {
+                bottomCount.textContent = 'Оффлайн';
+            }
             indicator.className = 'status-indicator offline';
             indicator.title = 'Сервер недоступен';
 
