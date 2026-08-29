@@ -1575,7 +1575,7 @@ body {
     left: 0;
     right: 0;
     top: 36px;
-    bottom: 30px;
+    bottom: 20px;
     width: 100%;
     height: auto;
     transform: none;
@@ -1584,10 +1584,11 @@ body {
     -webkit-backdrop-filter: none;
     box-shadow: none;
     border: none;
-    padding: 0 36px;
+    padding: 0 16px;
     pointer-events: none;
     z-index: 600;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .auth-container:has(#step-play:not(.hidden)) > h2 {
@@ -1628,17 +1629,19 @@ body {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 1140px;
+    max-width: 868px;
     margin: 0 auto;
     height: 100%;
-    gap: 24px;
+    gap: 16px;
     box-sizing: border-box;
+    padding: 0 4px;
 }
 
 /* 1. Left: Player Character & Stats (Frameless) */
 .player-character-section {
-    flex: 1;
-    max-width: 300px;
+    flex: 0 0 230px;
+    max-width: 230px;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1648,6 +1651,7 @@ body {
     border: none;
     box-shadow: none;
     z-index: 10;
+    gap: 4px;
 }
 
 .player-skin-header {
@@ -1655,8 +1659,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 4px;
-    padding: 0 8px;
+    margin-bottom: 2px;
+    padding: 0;
     box-sizing: border-box;
 }
 
@@ -1664,18 +1668,22 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
+    max-width: 100%;
 }
 
 .player-username-title {
     font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
     color: #f8fafc;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     text-shadow: 0 0 14px rgba(255, 255, 255, 0.35), 0 0 25px rgba(57, 255, 20, 0.25);
     text-transform: uppercase;
     text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .player-rank-pill {
@@ -1683,16 +1691,17 @@ body {
     align-items: center;
     justify-content: center;
     font-family: 'Inter', sans-serif;
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 10px;
+    padding: 1.5px 6px;
+    border-radius: 8px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     background: rgba(57, 255, 20, 0.15);
     color: #39ff14;
     border: 1px solid rgba(57, 255, 20, 0.35);
     box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+    white-space: nowrap;
 }
 
 .player-rank-pill.rank-veteran {
@@ -1725,8 +1734,8 @@ body {
 }
 
 .skin-viewer-wrapper.frameless-skin {
-    width: 280px;
-    height: 380px;
+    width: 220px;
+    height: 330px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1736,7 +1745,7 @@ body {
     background: transparent;
     border: none;
     box-shadow: none;
-    margin: -10px 0;
+    margin: -8px 0;
 }
 
 .skin-viewer-wrapper.frameless-skin:active {
@@ -1744,61 +1753,51 @@ body {
 }
 
 .skin-viewer-wrapper canvas {
-    width: 280px !important;
-    height: 380px !important;
+    width: 220px !important;
+    height: 330px !important;
     display: block;
 }
 
-.player-stats-bar.frameless-stats.clean-stats {
+/* Frameless Clean Stats */
+.player-stats-bar.clean-stats {
     width: 100%;
-    max-width: 220px;
+    max-width: 210px;
     display: flex;
-    justify-content: space-around;
     align-items: center;
+    justify-content: space-around;
+    gap: 12px;
     background: transparent;
+    border: none;
+    box-shadow: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    margin-top: -2px;
-    box-shadow: none;
+    padding: 2px 0;
+    margin-top: 0;
 }
 
-.player-stats-bar.frameless-stats.clean-stats .player-stat-col {
-    flex: 1;
+.player-stats-bar.clean-stats .player-stat-col {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    border: none !important;
 }
 
-.player-stats-bar.frameless-stats.clean-stats .stat-label {
+.stat-label {
     font-size: 10px;
-    color: #94a3b8;
     font-weight: 700;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-}
-
-.player-stats-bar.frameless-stats.clean-stats .stat-value {
-    font-size: 14px;
-    font-weight: 800;
-    color: #f8fafc;
-    letter-spacing: 0.5px;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 12px rgba(57, 255, 20, 0.25);
+    letter-spacing: 0.8px;
 }
 
 .stat-icon-wrap {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 2px 0;
+    margin-bottom: 1px;
 }
 
 .stat-icon-coins {
@@ -1806,13 +1805,6 @@ body {
     color: #39ff14;
     border: 1px solid rgba(57, 255, 20, 0.3);
     box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
-}
-
-.stat-icon-karma {
-    background: rgba(0, 229, 255, 0.12);
-    color: #00e5ff;
-    border: 1px solid rgba(0, 229, 255, 0.3);
-    box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
 }
 
 .stat-icon-playtime {
@@ -1823,7 +1815,7 @@ body {
 }
 
 .stat-value {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 800;
     color: #ffffff;
     font-family: 'Outfit', 'Inter', monospace;
@@ -1832,7 +1824,10 @@ body {
 
 /* 2. Center: Glowing Neon Constellation Brand & Logo */
 .hero-brand-section.center-brand {
-    flex: 1.2;
+    flex: 1;
+    min-width: 260px;
+    max-width: 360px;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1841,21 +1836,21 @@ body {
     position: relative;
     pointer-events: none;
     z-index: 5;
-    margin-top: -10px;
+    box-sizing: border-box;
 }
 
 .hero-neon-title {
     font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
-    font-size: 38px;
+    font-size: 32px;
     font-weight: 900;
     font-style: italic;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     color: #39ff14;
     text-shadow: 
         0 0 10px rgba(57, 255, 20, 0.8),
         0 0 25px rgba(57, 255, 20, 0.55),
         0 0 50px rgba(0, 230, 118, 0.35);
-    margin: 0 0 -10px 0;
+    margin: 0 0 -6px 0;
     text-transform: uppercase;
     transform: perspective(600px) rotateX(10deg);
     animation: neon-title-pulse 3.5s ease-in-out infinite alternate;
@@ -1873,12 +1868,12 @@ body {
 }
 
 .neon-leaf-wrapper.center-leaf {
-    width: 260px;
-    height: 260px;
+    width: 220px;
+    height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: drop-shadow(0 0 18px rgba(57, 255, 20, 0.35));
+    filter: drop-shadow(0 0 16px rgba(57, 255, 20, 0.35));
 }
 
 .neon-constellation-leaf {
@@ -1921,19 +1916,19 @@ body {
     }
 }
 
-/* 3. Right: Action / Launch Hub */
 /* 3. Right: Action / Launch Hub with Live Online Panel */
 .launch-action-hub {
-    flex: 0 0 270px;
-    max-width: 270px;
+    flex: 0 0 236px;
+    max-width: 236px;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: stretch;
-    padding: 12px 0 16px 0;
+    padding: 8px 0 12px 0;
     box-sizing: border-box;
     z-index: 10;
+    gap: 12px;
 }
 
 /* Server Live Card */
@@ -1942,67 +1937,70 @@ body {
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(57, 255, 20, 0.25);
-    border-radius: 16px;
-    padding: 12px 14px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(57, 255, 20, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(57, 255, 20, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.15);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .server-live-card:hover {
     border-color: rgba(57, 255, 20, 0.45);
-    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.65), 0 0 28px rgba(57, 255, 20, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 28px rgba(57, 255, 20, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.25);
 }
 
 .server-live-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .server-live-status {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .server-live-title {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 800;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     color: #e2e8f0;
     text-transform: uppercase;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .server-live-count {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 800;
     color: #39ff14;
     background: rgba(57, 255, 20, 0.12);
     border: 1px solid rgba(57, 255, 20, 0.35);
-    padding: 2px 8px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+    padding: 1.5px 6px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
     font-family: 'Outfit', 'Inter', monospace;
+    white-space: nowrap;
 }
 
 .server-players-live-list {
-    max-height: 185px;
-    min-height: 80px;
+    max-height: 160px;
+    min-height: 70px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding-right: 4px;
+    gap: 5px;
+    padding-right: 2px;
 }
 
 .server-players-live-list::-webkit-scrollbar {
-    width: 4px;
+    width: 3.5px;
 }
 
 .server-players-live-list::-webkit-scrollbar-thumb {
@@ -2013,12 +2011,13 @@ body {
 .live-player-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 5px 10px;
-    border-radius: 8px;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .live-player-item:hover {
@@ -2028,8 +2027,8 @@ body {
 }
 
 .live-player-avatar-wrap {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 4px;
     overflow: hidden;
     background: #111;
@@ -2037,6 +2036,7 @@ body {
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.12);
+    flex-shrink: 0;
 }
 
 .live-player-avatar {
@@ -2047,10 +2047,10 @@ body {
 }
 
 .live-player-name {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
     color: #f8fafc;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -2061,17 +2061,17 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 16px 0;
+    padding: 12px 0;
     color: #94a3b8;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 600;
     text-align: center;
-    gap: 4px;
+    gap: 3px;
 }
 
 .live-empty-icon {
-    font-size: 20px;
-    margin-bottom: 2px;
+    font-size: 18px;
+    margin-bottom: 1px;
     filter: drop-shadow(0 0 6px rgba(57, 255, 20, 0.4));
 }
 
@@ -2086,21 +2086,15 @@ body {
 .play-btn-container {
     width: 100%;
     perspective: 800px;
+    box-sizing: border-box;
 }
 
 .magnetic-play-btn {
     position: relative;
     width: 100%;
-    height: 64px;
+    height: 58px;
     background: linear-gradient(135deg, #00e676 0%, #2e7d32 100%);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 16px;
-    color: #ffffff;
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
     outline: none;
     overflow: hidden;
     box-shadow: 0 0 25px rgba(57, 255, 20, 0.45), 0 10px 24px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
