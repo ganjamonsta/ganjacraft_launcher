@@ -70,7 +70,7 @@ import {
 
 import { loadNews } from './features/news/index.js';
 import { startStatusChecker } from './features/server-status/index.js';
-import { initChangelog, loadChangelogHistory } from './features/changelog/index.js';
+import { initChangelog, loadChangelogHistory, isChangelogOpen, closeChangelogScreen } from './features/changelog/index.js';
 
 // === Application State ===
 let currentConfig = {};
@@ -164,6 +164,10 @@ function initSettingsButton() {
                 const saveBtn = dom.get('save-settings');
                 if (saveBtn) saveBtn.classList.remove('visible');
             }
+            if (isChangelogOpen()) {
+                toggleMainUIVisibility(true, currentConfig);
+                closeChangelogScreen();
+            }
         });
     }
     
@@ -171,6 +175,10 @@ function initSettingsButton() {
     if (btnSettings) {
         btnSettings.addEventListener('click', async () => {
             if (isSettingsAnimating()) return;
+
+            if (isChangelogOpen()) {
+                closeChangelogScreen();
+            }
             
             // Toggle behavior
             if (settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {

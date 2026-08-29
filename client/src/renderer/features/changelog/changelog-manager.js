@@ -4,7 +4,7 @@
  */
 
 import { dom } from '../../utils/dom.js';
-import { closeSettings } from '../settings/index.js';
+import { closeSettings, toggleMainUIVisibility } from '../settings/index.js';
 import { createSnowBurst } from '../../ui/effects/index.js';
 import { triggerInertiaCascade } from '../../utils/performance.js';
 import { appState } from '../../state/app-state.js';
@@ -603,6 +603,9 @@ export function openChangelogScreen() {
     if (changelogAnimating || !screen) return;
     changelogAnimating = true;
 
+    // Плавно скрываем основные блоки интерфейса (новости, статус, форма авторизации/игры)
+    toggleMainUIVisibility(false);
+
     // Закрываем настройки, если они были открыты
     const settingsScreen = dom.get('step-settings');
     if (settingsScreen && !settingsScreen.classList.contains('hidden')) {
@@ -663,6 +666,12 @@ export function closeChangelogScreen() {
 
     screen.classList.remove('opening');
     screen.classList.add('closing');
+
+    // Плавно возвращаем основные блоки интерфейса
+    const settingsScreen = dom.get('step-settings');
+    if (!settingsScreen || settingsScreen.classList.contains('hidden')) {
+        toggleMainUIVisibility(true);
+    }
 
     // Восстанавливаем вкладку Title
     const titleMainTab = document.getElementById('title-bar-title');
