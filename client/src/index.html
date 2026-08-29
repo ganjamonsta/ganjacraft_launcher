@@ -459,43 +459,7 @@
                 <!-- Changelog Tab (Pack Updates History) -->
                 <div id="tab-changelog" class="tab-content">
                     <div id="changelog-grid-container">
-                        <div class="changelog-header-bar">
-                            <div class="changelog-header-text">
-                                <div class="changelog-title-row">
-                                    <svg class="changelog-main-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/>
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                                        <line x1="12" y1="22.08" x2="12" y2="12"/>
-                                    </svg>
-                                    <h3>ИСТОРИЯ ОБНОВЛЕНИЙ СБОРКИ</h3>
-                                    <span id="changelog-total-count" class="changelog-count-badge">0 обновлений</span>
-                                </div>
-                                <p class="changelog-desc">Все изменения модов, конфигураций и KubeJS скриптов фиксируются автоматически при сборке сервера.</p>
-                            </div>
-                            <div class="changelog-header-actions">
-                                <div class="changelog-search-wrap">
-                                    <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8"/>
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                                    </svg>
-                                    <input type="text" id="changelog-search-input" placeholder="Поиск мода или файла..." spellcheck="false" autocomplete="off">
-                                    <button id="changelog-search-clear" class="search-clear-btn hidden" title="Очистить">✕</button>
-                                </div>
-                                <div class="changelog-filters">
-                                    <button class="changelog-filter-btn active" data-filter="all">Все</button>
-                                    <button class="changelog-filter-btn" data-filter="added">Добавленные</button>
-                                    <button class="changelog-filter-btn" data-filter="updated">Обновлённые</button>
-                                    <button class="changelog-filter-btn" data-filter="configs">Конфиги / Скрипты</button>
-                                </div>
-                                <button id="btn-changelog-refresh" class="changelog-action-btn" title="Обновить историю с сервера">
-                                    <svg class="refresh-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="changelog-list" class="settings-categories inertia-cascade changelog-feed">
+                        <div id="changelog-list" class="changelog-feed inertia-cascade">
                             <div class="unified-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
                         </div>
                     </div>

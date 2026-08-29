@@ -13,6 +13,91 @@ let currentFilter = 'all';
 let currentSearchQuery = '';
 
 /**
+ * Парсер имени мода для красивого человекочитаемого отображения
+ */
+export function formatModDisplay(raw) {
+    if (!raw) return { title: 'Мод', version: '', raw: '' };
+    let fileName = String(raw).replace(/^mods\//i, '').replace(/^client_mods\//i, '').replace(/\.jar$/i, '').trim();
+    let isOptional = false;
+
+    if (fileName.startsWith('client-') || fileName.startsWith('client_')) {
+        fileName = fileName.slice(7);
+        isOptional = true;
+    }
+
+    let title = fileName;
+    let version = '';
+
+    // Проверка формата CamelCase + Version: "IronBarrels1.21.1-V1.02NeoForge"
+    const camelMatch = fileName.match(/^([A-Za-z]+?)((?:1\.\d|v\d|\d\d).*)$/i);
+    if (camelMatch) {
+        title = camelMatch[1];
+        version = camelMatch[2];
+    } else {
+        // Формат с разделителем: "jei-1.21.1-neoforge-19.2.0.35", "create_connected-0.9.1"
+        const delimMatch = fileName.match(/^([A-Za-z0-9_]+?)[-_](v?\d|\+mc|neoforge|forge|fabric)(.*)$/i);
+        if (delimMatch) {
+            title = delimMatch[1];
+            version = (delimMatch[2] + delimMatch[3]).replace(/^[-_]+/, '');
+        }
+    }
+
+    // Преобразуем camelCase и snake_case в аккуратный Title Case с пробелами
+    let cleanTitle = title
+        .replace(/([a-z])([A-Z])/g, (m, p1, p2) => p1 + ' ' + p2)
+        .replace(/([A-Z]+)([A-Z][a-z])/g, (m, p1, p2) => p1 + ' ' + p2)
+        .replace(/[_-]+/g, ' ')
+        .trim();
+
+    // Список аббревиатур, которые должны оставаться в верхнем регистре
+    const upperWords = new Set(['jei', 'ftb', 'emf', 'etf', 'cit', 'rei', 'emi', 'xaero', 'xaeros', 'mc', 'hud', 'fps', 'tps', 'waila', 'jade', 'mekanism']);
+    cleanTitle = cleanTitle.split(' ').map(w => {
+        if (upperWords.has(w.toLowerCase())) return w.toUpperCase();
+        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }).join(' ');
+
+    // Очищаем строку версии
+    let cleanVer = version
+        .replace(/[-_]?(?:neoforge|forge|fabric)[-_]?/gi, ' ')
+        .replace(/[-_]?(?:mc)?1\.21(?:\.1)?[-_]?/gi, ' ')
+        .replace(/[-_]+/g, ' ')
+        .trim();
+
+    if (cleanVer && !cleanVer.toLowerCase().startsWith('v') && /^\d/.test(cleanVer)) {
+        cleanVer = 'v' + cleanVer;
+    }
+
+    return {
+        title: cleanTitle || fileName,
+        version: cleanVer || '',
+        isOptional,
+        raw
+    };
+}
+
+/**
+ * Красивое форматирование даты
+ */
+function formatReleaseDate(dateStr, timestamp) {
+    if (timestamp && typeof timestamp === 'number') {
+        const d = new Date(timestamp * 1000);
+        const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+        const day = d.getDate();
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, '0');
+        const mins = String(d.getMinutes()).padStart(2, '0');
+        return `${day} ${month} ${year} • ${hours}:${mins}`;
+    }
+
+    if (dateStr) {
+        return dateStr;
+    }
+
+    return 'Недавнее обновление';
+}
+
+/**
  * Загрузить историю изменений манифеста и обновить бейдж и список
  */
 export async function loadChangelogHistory() {
@@ -124,7 +209,7 @@ export function renderChangelogList() {
         const scripts = summary.scripts_count || 0;
         const packs = summary.resourcepacks_count || 0;
 
-        // Фильтр по типам
+        // Фильтр по категориям
         if (filter === 'added') {
             updated = [];
             removed = [];
@@ -133,6 +218,10 @@ export function renderChangelogList() {
             added = [];
             removed = [];
             if (updated.length === 0) return null;
+        } else if (filter === 'removed') {
+            added = [];
+            updated = [];
+            if (removed.length === 0) return null;
         } else if (filter === 'configs') {
             added = [];
             updated = [];
@@ -140,16 +229,28 @@ export function renderChangelogList() {
             if (configs === 0 && scripts === 0 && packs === 0) return null;
         }
 
-        // Поиск по тексту
+        // Поиск по ключевому слову
         if (query) {
-            const matchInAdded = added.filter(m => String(m).toLowerCase().includes(query));
-            const matchInUpdated = updated.filter(u => {
-                if (typeof u === 'string') return u.toLowerCase().includes(query);
-                return (u.old && u.old.toLowerCase().includes(query)) ||
-                       (u.new && u.new.toLowerCase().includes(query)) ||
-                       (u.name && u.name.toLowerCase().includes(query));
+            const matchInAdded = added.filter(m => {
+                const parsed = formatModDisplay(m);
+                return parsed.title.toLowerCase().includes(query) || String(m).toLowerCase().includes(query);
             });
-            const matchInRemoved = removed.filter(m => String(m).toLowerCase().includes(query));
+
+            const matchInUpdated = updated.filter(u => {
+                const oldRaw = typeof u === 'string' ? u : (u.old || '');
+                const newRaw = typeof u === 'string' ? u : (u.new || u.name || '');
+                const pOld = formatModDisplay(oldRaw);
+                const pNew = formatModDisplay(newRaw);
+                return pOld.title.toLowerCase().includes(query) ||
+                       pNew.title.toLowerCase().includes(query) ||
+                       oldRaw.toLowerCase().includes(query) ||
+                       newRaw.toLowerCase().includes(query);
+            });
+
+            const matchInRemoved = removed.filter(m => {
+                const parsed = formatModDisplay(m);
+                return parsed.title.toLowerCase().includes(query) || String(m).toLowerCase().includes(query);
+            });
 
             const matchInDate = item.date && item.date.toLowerCase().includes(query);
             const matchInVer = item.launcher_version && item.launcher_version.toLowerCase().includes(query);
@@ -163,7 +264,6 @@ export function renderChangelogList() {
                 return null;
             }
 
-            // Оставляем только совпавшие моды если был конкретный поиск
             if (hasItemMatch) {
                 added = matchInAdded;
                 updated = matchInUpdated;
@@ -184,7 +284,7 @@ export function renderChangelogList() {
     }).filter(Boolean);
 
     if (filteredHistory.length === 0) {
-        renderEmptyState(query ? `По запросу «${escapeHtml(query)}» ничего не найдено` : 'Нет записей в выбранной категории');
+        renderEmptyState(query ? `По запросу «${escapeHtml(query)}» ничего не найдено` : 'В этой категории пока нет записей');
         return;
     }
 
@@ -192,10 +292,10 @@ export function renderChangelogList() {
 
     filteredHistory.forEach((item) => {
         const card = document.createElement('div');
-        card.className = 'settings-category changelog-release-card';
+        card.className = 'changelog-release-card';
 
         const summary = item.summary || {};
-        const dateStr = item.date || (item.timestamp ? new Date(item.timestamp * 1000).toLocaleString('ru-RU') : 'Недавно');
+        const formattedDate = formatReleaseDate(item.date, item.timestamp);
         const versionStr = item.launcher_version ? `v${item.launcher_version}` : '';
 
         const added = item._filteredAdded;
@@ -207,22 +307,23 @@ export function renderChangelogList() {
 
         // Pills для заголовка
         const summaryPills = [];
-        if (added.length > 0) summaryPills.push(`<span class="changelog-pill pill-add">+${added.length}</span>`);
+        if (added.length > 0) summaryPills.push(`<span class="changelog-pill pill-add">➕ ${added.length}</span>`);
         if (updated.length > 0) summaryPills.push(`<span class="changelog-pill pill-update">🔄 ${updated.length}</span>`);
-        if (removed.length > 0) summaryPills.push(`<span class="changelog-pill pill-remove">-${removed.length}</span>`);
+        if (removed.length > 0) summaryPills.push(`<span class="changelog-pill pill-remove">➖ ${removed.length}</span>`);
         if (configs > 0) summaryPills.push(`<span class="changelog-pill pill-misc">⚙️ ${configs}</span>`);
         if (scripts > 0) summaryPills.push(`<span class="changelog-pill pill-misc">📜 ${scripts}</span>`);
+        if (packs > 0) summaryPills.push(`<span class="changelog-pill pill-misc">🎨 ${packs}</span>`);
 
         const headerHtml = `
-            <div class="category-header changelog-release-header">
+            <div class="changelog-release-header">
                 <div class="changelog-header-left">
-                    <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="changelog-date-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
                         <line x1="8" y1="2" x2="8" y2="6"/>
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    <h4>${escapeHtml(dateStr)}</h4>
+                    <h4>${escapeHtml(formattedDate)}</h4>
                     ${item._isLatest ? '<span class="changelog-badge-latest">СВЕЖЕЕ</span>' : ''}
                     ${versionStr ? `<span class="changelog-badge-ver">${escapeHtml(versionStr)}</span>` : ''}
                 </div>
@@ -232,18 +333,32 @@ export function renderChangelogList() {
             </div>
         `;
 
-        let groupsHtml = '<div class="category-content changelog-card-content">';
+        let sectionsHtml = '<div class="changelog-card-content">';
 
         // 1. Добавленные моды
         if (added.length > 0) {
-            groupsHtml += `
+            sectionsHtml += `
                 <div class="changelog-group">
-                    <div class="changelog-group-label group-label-add">
-                        <span class="group-dot"></span>
-                        <span>Добавлено (${added.length})</span>
+                    <div class="changelog-section-title group-label-add">
+                        <span class="title-dot dot-add"></span>
+                        <span>Добавленные моды (${added.length})</span>
                     </div>
-                    <div class="changelog-chips-wrap">
-                        ${added.map(m => `<span class="changelog-chip chip-add" title="${escapeHtml(m)}"><span class="chip-sign">+</span> ${escapeHtml(cleanModName(m))}</span>`).join('')}
+                    <div class="changelog-mods-grid">
+                        ${added.map(m => {
+                            const parsed = formatModDisplay(m);
+                            return `
+                                <div class="changelog-mod-card card-add" title="${escapeHtml(m)}">
+                                    <div class="mod-card-left">
+                                        <div class="mod-type-icon icon-add">➕</div>
+                                        <div class="mod-info-block">
+                                            <span class="mod-main-name">${escapeHtml(parsed.title)}</span>
+                                            <span class="mod-sub-filename">${escapeHtml(parsed.raw)}</span>
+                                        </div>
+                                    </div>
+                                    ${parsed.version ? `<span class="mod-version-tag">${escapeHtml(parsed.version)}</span>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
@@ -251,23 +366,34 @@ export function renderChangelogList() {
 
         // 2. Обновлённые моды
         if (updated.length > 0) {
-            groupsHtml += `
+            sectionsHtml += `
                 <div class="changelog-group">
-                    <div class="changelog-group-label group-label-update">
-                        <span class="group-dot"></span>
-                        <span>Обновлено (${updated.length})</span>
+                    <div class="changelog-section-title group-label-update">
+                        <span class="title-dot dot-update"></span>
+                        <span>Обновлённые моды (${updated.length})</span>
                     </div>
-                    <div class="changelog-chips-wrap">
+                    <div class="changelog-mods-grid">
                         ${updated.map(u => {
-                            if (typeof u === 'string') {
-                                return `<span class="changelog-chip chip-update">${escapeHtml(cleanModName(u))}</span>`;
-                            }
-                            const oldF = cleanModName(u.old || '');
-                            const newF = cleanModName(u.new || u.name || '');
-                            if (oldF && newF && oldF !== newF) {
-                                return `<span class="changelog-chip chip-update" title="${escapeHtml(u.old)} ➔ ${escapeHtml(u.new)}"><span class="chip-sign">🔄</span> <span class="chip-old">${escapeHtml(oldF)}</span> <span class="chip-arrow">➔</span> <b class="chip-new">${escapeHtml(newF)}</b></span>`;
-                            }
-                            return `<span class="changelog-chip chip-update"><span class="chip-sign">🔄</span> ${escapeHtml(newF || 'мод')}</span>`;
+                            const oldRaw = typeof u === 'string' ? u : (u.old || '');
+                            const newRaw = typeof u === 'string' ? u : (u.new || u.name || '');
+                            const pOld = formatModDisplay(oldRaw);
+                            const pNew = formatModDisplay(newRaw);
+                            return `
+                                <div class="changelog-mod-card card-update" title="${escapeHtml(oldRaw)} ➔ ${escapeHtml(newRaw)}">
+                                    <div class="mod-card-left">
+                                        <div class="mod-type-icon icon-update">🔄</div>
+                                        <div class="mod-info-block">
+                                            <span class="mod-main-name">${escapeHtml(pNew.title || pOld.title)}</span>
+                                            <span class="mod-sub-filename">${escapeHtml(newRaw)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mod-diff-tag">
+                                        ${pOld.version ? `<span class="v-old">${escapeHtml(pOld.version)}</span>` : ''}
+                                        <span class="v-arrow">➔</span>
+                                        <span class="v-new">${escapeHtml(pNew.version || 'new')}</span>
+                                    </div>
+                                </div>
+                            `;
                         }).join('')}
                     </div>
                 </div>
@@ -276,14 +402,28 @@ export function renderChangelogList() {
 
         // 3. Удалённые моды
         if (removed.length > 0) {
-            groupsHtml += `
+            sectionsHtml += `
                 <div class="changelog-group">
-                    <div class="changelog-group-label group-label-remove">
-                        <span class="group-dot"></span>
-                        <span>Удалено (${removed.length})</span>
+                    <div class="changelog-section-title group-label-remove">
+                        <span class="title-dot dot-remove"></span>
+                        <span>Удалённые моды (${removed.length})</span>
                     </div>
-                    <div class="changelog-chips-wrap">
-                        ${removed.map(m => `<span class="changelog-chip chip-remove" title="${escapeHtml(m)}"><span class="chip-sign">-</span> ${escapeHtml(cleanModName(m))}</span>`).join('')}
+                    <div class="changelog-mods-grid">
+                        ${removed.map(m => {
+                            const parsed = formatModDisplay(m);
+                            return `
+                                <div class="changelog-mod-card card-remove" title="${escapeHtml(m)}">
+                                    <div class="mod-card-left">
+                                        <div class="mod-type-icon icon-remove">➖</div>
+                                        <div class="mod-info-block">
+                                            <span class="mod-main-name">${escapeHtml(parsed.title)}</span>
+                                            <span class="mod-sub-filename">${escapeHtml(parsed.raw)}</span>
+                                        </div>
+                                    </div>
+                                    ${parsed.version ? `<span class="mod-version-tag tag-removed">${escapeHtml(parsed.version)}</span>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
@@ -293,25 +433,25 @@ export function renderChangelogList() {
         if (configs > 0 || scripts > 0 || packs > 0 || summary.is_initial) {
             const extraChips = [];
             if (summary.is_initial) {
-                extraChips.push('<span class="changelog-chip chip-misc">🚀 Начальный слепок сборки</span>');
+                extraChips.push('<span class="changelog-misc-chip">🚀 Начальный слепок сборки</span>');
             }
             if (configs > 0) {
-                extraChips.push(`<span class="changelog-chip chip-misc">⚙️ Конфигурации (${configs})</span>`);
+                extraChips.push(`<span class="changelog-misc-chip">⚙️ Конфигурации (${configs})</span>`);
             }
             if (scripts > 0) {
-                extraChips.push(`<span class="changelog-chip chip-misc">📜 Скрипты KubeJS (${scripts})</span>`);
+                extraChips.push(`<span class="changelog-misc-chip">📜 Скрипты KubeJS (${scripts})</span>`);
             }
             if (packs > 0) {
-                extraChips.push(`<span class="changelog-chip chip-misc">🎨 Ресурспаки (${packs})</span>`);
+                extraChips.push(`<span class="changelog-misc-chip">🎨 Ресурспаки (${packs})</span>`);
             }
 
-            groupsHtml += `
+            sectionsHtml += `
                 <div class="changelog-group">
-                    <div class="changelog-group-label group-label-misc">
-                        <span class="group-dot"></span>
+                    <div class="changelog-section-title group-label-misc">
+                        <span class="title-dot dot-misc"></span>
                         <span>Конфигурации и скрипты</span>
                     </div>
-                    <div class="changelog-chips-wrap">
+                    <div class="changelog-misc-wrap">
                         ${extraChips.join('')}
                     </div>
                 </div>
@@ -319,12 +459,12 @@ export function renderChangelogList() {
         }
 
         if (added.length === 0 && updated.length === 0 && removed.length === 0 && configs === 0 && scripts === 0 && packs === 0 && !summary.is_initial) {
-            groupsHtml += '<div class="changelog-item-empty">Мелкие системные изменения сборки</div>';
+            sectionsHtml += '<div class="changelog-item-empty">Мелкие системные изменения сборки</div>';
         }
 
-        groupsHtml += '</div>';
+        sectionsHtml += '</div>';
 
-        card.innerHTML = headerHtml + groupsHtml;
+        card.innerHTML = headerHtml + sectionsHtml;
         container.appendChild(card);
     });
 }
@@ -345,14 +485,6 @@ function renderEmptyState(message) {
             </div>
         </div>
     `;
-}
-
-/**
- * Упростить имя файла мода для чистого отображения
- */
-function cleanModName(fileName) {
-    if (!fileName) return '';
-    return String(fileName).replace(/\.jar$/i, '').trim();
 }
 
 /**
