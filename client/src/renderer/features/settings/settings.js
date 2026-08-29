@@ -146,39 +146,85 @@ export function setupSettingsChangeListeners() {
     }
 }
 
-// Кеш для UI элементов в toggleMainUIVisibility
-let cachedUIElements = null;
-
 /**
- * Показать/скрыть основные UI элементы (оптимизировано)
+ * Показать/скрыть основные UI элементы с эффектными анимациями входа/выхода
  */
 export function toggleMainUIVisibility(show, config) {
-    // Ленивая инициализация кеша элементов
-    if (!cachedUIElements) {
-        cachedUIElements = [
-            { el: document.getElementById('server-status-widget'), defaultTransform: 'none', hideTransform: 'translateY(-150%)', side: null },
-            { el: document.querySelector('.auth-container'), defaultTransform: 'translateY(-50%)', hideTransform: 'translateY(-50%) translateX(120%)', side: 'right' }
-        ];
+    const isPlayingStep = !document.getElementById('step-play')?.classList.contains('hidden');
+    const serverWidget = document.getElementById('server-status-widget');
+    const authContainer = document.querySelector('.auth-container');
+    const playerSection = document.querySelector('.player-character-section');
+    const centerBrand = document.querySelector('.hero-brand-section');
+    const launchHub = document.querySelector('.launch-action-hub');
+
+    // 1. Top Server status widget
+    if (serverWidget) {
+        serverWidget.style.transition = show
+            ? 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease'
+            : 'transform 0.15s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+        serverWidget.style.transform = show ? 'none' : 'translateY(-150%)';
+        serverWidget.style.opacity = show ? '1' : '0';
+        serverWidget.style.pointerEvents = show ? 'auto' : 'none';
     }
-    
-    cachedUIElements.forEach(({ el, defaultTransform, hideTransform, side }, index) => {
-        if (el) {
-            if (show) {
-                const delay = index * 50;
-                el.style.transition = `transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`;
-                el.style.transform = defaultTransform;
-                
-                if (side && appState.get('effects.snowEnabled')) {
-                    setTimeout(() => createSideBurst(side), delay + 50);
-                }
-            } else {
-                const delay = index * 20;
-                el.style.transition = `transform 0.15s cubic-bezier(0.4, 0, 1, 1) ${delay}ms`;
-                el.style.transform = hideTransform;
-            }
-            el.style.pointerEvents = show ? 'auto' : 'none';
+
+    if (isPlayingStep) {
+        // Сбрасываем ломающие inline-трансформы с auth-container
+        if (authContainer) {
+            authContainer.style.transform = 'none';
+            authContainer.style.pointerEvents = show ? 'auto' : 'none';
         }
-    });
+
+        // Анимируем левую часть (игрок)
+        if (playerSection) {
+            playerSection.style.transition = show
+                ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 40ms, opacity 0.35s ease 40ms'
+                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+            playerSection.style.transform = show ? 'none' : 'translateX(-130%) scale(0.9)';
+            playerSection.style.opacity = show ? '1' : '0';
+            playerSection.style.pointerEvents = show ? 'auto' : 'none';
+
+            if (show && appState.get('effects.snowEnabled')) {
+                setTimeout(() => createSideBurst('left'), 80);
+            }
+        }
+
+        // Анимируем центральный логотип
+        if (centerBrand) {
+            centerBrand.style.transition = show
+                ? 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 70ms, opacity 0.4s ease 70ms'
+                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+            centerBrand.style.transform = show ? 'none' : 'scale(0.7) translateY(-30px)';
+            centerBrand.style.opacity = show ? '1' : '0';
+        }
+
+        // Анимируем правую кнопку запуска
+        if (launchHub) {
+            launchHub.style.transition = show
+                ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 60ms, opacity 0.35s ease 60ms'
+                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+            launchHub.style.transform = show ? 'none' : 'translateX(130%) scale(0.9)';
+            launchHub.style.opacity = show ? '1' : '0';
+            launchHub.style.pointerEvents = show ? 'auto' : 'none';
+
+            if (show && appState.get('effects.snowEnabled')) {
+                setTimeout(() => createSideBurst('right'), 100);
+            }
+        }
+    } else {
+        // Режим авторизации (не залогинен)
+        if (authContainer) {
+            authContainer.style.transition = show
+                ? 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 50ms, opacity 0.35s ease 50ms'
+                : 'transform 0.15s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+            authContainer.style.transform = show ? 'translateY(-50%)' : 'translateY(-50%) translateX(120%)';
+            authContainer.style.opacity = show ? '1' : '0';
+            authContainer.style.pointerEvents = show ? 'auto' : 'none';
+
+            if (show && appState.get('effects.snowEnabled')) {
+                setTimeout(() => createSideBurst('right'), 100);
+            }
+        }
+    }
 }
 
 /**
