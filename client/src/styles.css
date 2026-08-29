@@ -2017,7 +2017,8 @@ button:active {
     pointer-events: none;
 }
 
-.settings-tabs {
+.settings-tabs,
+.changelog-tabs {
     display: flex;
     align-items: center;
     height: 100%;
@@ -2026,17 +2027,20 @@ button:active {
     backface-visibility: hidden;
 }
 
-.settings-tabs.opening {
+.settings-tabs.opening,
+.changelog-tabs.opening {
     animation: tabs-drop 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
     pointer-events: auto;
 }
 
-.settings-tabs.closing {
+.settings-tabs.closing,
+.changelog-tabs.closing {
     animation: tabs-slideup 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
     pointer-events: none;
 }
 
-.settings-tabs.hidden {
+.settings-tabs.hidden,
+.changelog-tabs.hidden {
     display: none !important;
     opacity: 0;
     pointer-events: none;

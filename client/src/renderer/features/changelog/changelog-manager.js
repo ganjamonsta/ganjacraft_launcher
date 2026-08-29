@@ -606,10 +606,10 @@ export function openChangelogScreen() {
     // Плавно скрываем основные блоки интерфейса (новости, статус, форма авторизации/игры)
     toggleMainUIVisibility(false);
 
-    // Закрываем настройки, если они были открыты
+    // Закрываем настройки мгновенно, если они были открыты
     const settingsScreen = dom.get('step-settings');
     if (settingsScreen && !settingsScreen.classList.contains('hidden')) {
-        closeSettings();
+        closeSettings(true);
     }
 
     screen.classList.remove('hidden', 'closing');
@@ -619,7 +619,7 @@ export function openChangelogScreen() {
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.remove('active');
 
-    const changelogTabs = document.getElementById('changelog-title-tab');
+    const changelogTabs = document.getElementById('changelog-tabs-bar');
     if (changelogTabs) {
         changelogTabs.classList.remove('hidden', 'closing');
         changelogTabs.classList.add('opening');
@@ -657,13 +657,30 @@ export function openChangelogScreen() {
 }
 
 /**
- * Закрыть экран истории обновлений с анимацией
+ * Закрыть экран истории обновлений с анимацией (или мгновенно при переключении разделов)
  */
-export function closeChangelogScreen() {
+export function closeChangelogScreen(instant = false) {
     const screen = dom.get('step-changelog');
     if (changelogAnimating || !screen) return;
-    changelogAnimating = true;
 
+    if (instant) {
+        screen.className = 'settings-screen changelog-screen hidden';
+        const changelogTabs = document.getElementById('changelog-tabs-bar');
+        if (changelogTabs) changelogTabs.className = 'changelog-tabs hidden';
+        const btnChangelog = document.getElementById('btn-changelog');
+        if (btnChangelog) {
+            btnChangelog.classList.remove('settings-active');
+            const iconSpan = document.getElementById('btn-changelog-icon');
+            if (iconSpan) {
+                iconSpan.innerHTML = BELL_SVG;
+            }
+            btnChangelog.title = 'Обновления сборки';
+        }
+        changelogAnimating = false;
+        return;
+    }
+
+    changelogAnimating = true;
     screen.classList.remove('opening');
     screen.classList.add('closing');
 
@@ -677,7 +694,7 @@ export function closeChangelogScreen() {
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.add('active');
 
-    const changelogTabs = document.getElementById('changelog-title-tab');
+    const changelogTabs = document.getElementById('changelog-tabs-bar');
     if (changelogTabs) {
         changelogTabs.classList.remove('opening');
         changelogTabs.classList.add('closing');

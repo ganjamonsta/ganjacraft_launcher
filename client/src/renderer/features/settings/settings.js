@@ -196,9 +196,9 @@ export function openSettings(config) {
         });
     });
 
-    // Закрыть экран обновлений, если он был открыт
+    // Закрыть экран обновлений мгновенно, если он был открыт
     if (isChangelogOpen()) {
-        closeChangelogScreen();
+        closeChangelogScreen(true);
     }
 
     settingsScreen.classList.remove('hidden', 'closing');
@@ -217,7 +217,7 @@ export function openSettings(config) {
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.remove('active');
 
-    const titleBarTabs = document.querySelector('#title-bar .settings-tabs');
+    const titleBarTabs = document.getElementById('settings-tabs-bar');
     if (titleBarTabs) {
         titleBarTabs.classList.remove('hidden', 'closing');
         titleBarTabs.classList.add('opening');
@@ -236,8 +236,8 @@ export function openSettings(config) {
     }
     
     // Reset tab index
-    const tabButtons = Array.from(document.querySelectorAll('.settings-tabs .tab-btn'));
-    const activeTabBtn = document.querySelector('.settings-tabs .tab-btn.active');
+    const tabButtons = Array.from(document.querySelectorAll('#settings-tabs-bar .tab-btn'));
+    const activeTabBtn = document.querySelector('#settings-tabs-bar .tab-btn.active');
     if (activeTabBtn) {
         currentTabIndex = tabButtons.indexOf(activeTabBtn);
     } else {
@@ -256,21 +256,40 @@ export function openSettings(config) {
 }
 
 /**
- * Закрыть настройки с анимацией
+ * Закрыть настройки с анимацией (или мгновенно при переключении разделов)
  */
-export function closeSettings() {
+export function closeSettings(instant = false) {
     initDOMRefs();
     if (settingsAnimating || !settingsScreen) return;
+
+    if (instant) {
+        settingsScreen.className = 'settings-screen hidden';
+        const titleBarTabs = document.getElementById('settings-tabs-bar');
+        if (titleBarTabs) titleBarTabs.className = 'settings-tabs hidden';
+        const btnSettings = document.getElementById('btn-settings');
+        if (btnSettings) {
+            btnSettings.classList.remove('settings-active');
+            const iconSpan = document.getElementById('btn-settings-icon');
+            if (iconSpan) {
+                iconSpan.textContent = '⚙';
+            } else {
+                btnSettings.textContent = '⚙';
+            }
+            btnSettings.title = 'Настройки';
+        }
+        settingsAnimating = false;
+        return;
+    }
+
     settingsAnimating = true;
-    
     settingsScreen.classList.remove('opening');
     settingsScreen.classList.add('closing');
     
     // Активировать главную вкладку и спрятать вкладки настроек с анимацией
     const titleMainTab = document.getElementById('title-bar-title');
-    if (titleMainTab) titleMainTab.classList.add('active');
+    if (titleMainTab && !isChangelogOpen()) titleMainTab.classList.add('active');
 
-    const titleBarTabs = document.querySelector('#title-bar .settings-tabs');
+    const titleBarTabs = document.getElementById('settings-tabs-bar');
     if (titleBarTabs) {
         titleBarTabs.classList.remove('opening');
         titleBarTabs.classList.add('closing');
