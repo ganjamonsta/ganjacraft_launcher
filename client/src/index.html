@@ -432,11 +432,14 @@
                                                 <use href="#icon-wrench" />
                                             </svg>
                                             <div class="setting-text">
-                                                <span class="setting-title">Переустановка</span>
-                                                <span class="setting-desc">Очистить и скачать клиент</span>
+                                                <span class="setting-title">Обслуживание</span>
+                                                <span class="setting-desc">Смена аккаунта или сброс</span>
                                             </div>
                                         </div>
-                                        <div class="setting-control">
+                                        <div class="setting-control" style="display: flex; gap: 8px;">
+                                            <button id="logout-btn" class="secondary-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #e2e8f0; font-size: 11px; font-weight: 700; border-radius: 8px; padding: 6px 12px; cursor: pointer;">
+                                                Выйти
+                                            </button>
                                             <button id="btn-reinstall" class="danger-btn">
                                                 <svg class="btn-icon">
                                                     <use href="#icon-reset" />
@@ -449,10 +452,21 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Settings Footer -->
+                    <div class="settings-footer">
+                        <div class="footer-actions">
+                            <button id="save-settings" class="primary-btn pulse-glow">
+                                <svg class="btn-icon">
+                                    <use href="#icon-folder" />
+                                </svg>
+                                Сохранить
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Mods Tab -->
-                <!-- Mods Tab (Unified Single Page) -->
                 <div id="tab-mods" class="tab-content">
                     <div id="mods-grid-container">
                         <div id="mods-grid" class="settings-categories inertia-cascade">
@@ -465,18 +479,24 @@
                 <div id="tab-configs" class="tab-content">
                     <div id="configs-grid-container">
                         <div id="configs-grid" class="settings-categories inertia-cascade">
-                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка конфигураций...</div>
+                            <div class="unified-loading"><span class="unified-spinner"></span>Загрузка конфигов...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Changelog Tab (История обновлений) -->
+                <!-- Changelog Tab -->
                 <div id="tab-changelog" class="tab-content">
-                    <div id="changelog-list" class="changelog-feed inertia-cascade">
-                        <div class="unified-loading"><span class="unified-spinner"></span>Загрузка истории обновлений...</div>
+                    <div id="changelog-container" class="changelog-container">
+                        <!-- Changelog will be dynamically rendered here -->
                     </div>
                 </div>
 
+                <!-- Dev Tab (Admin only) -->
+                <div id="tab-dev" class="tab-content">
+                    <div id="dev-grid" class="unified-dev-grid inertia-cascade">
+                        <!-- Dev content rendered dynamically -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -489,19 +509,25 @@
             Проверка сессии...
         </div>
 
-        <!-- Step 1: Login -->
+        <!-- Step 1: Login Form (Single Input) -->
         <div id="step-login" class="hidden">
-            <input type="text" id="username" placeholder="Имя пользователя" spellcheck="false">
-            <div id="login-error" class="error-msg hidden"></div>
-            <button id="login-btn">Далее</button>
+            <input type="text" id="username" placeholder="Ваш ник в игре" autocomplete="off" spellcheck="false"
+                style="text-align: center; font-size: 16px; font-weight: bold; letter-spacing: 1px;">
+            <button id="login-btn" style="margin-top: 15px;">Войти</button>
+            <div id="login-error" class="error-msg"></div>
         </div>
 
         <!-- Step 2: Code Verification -->
         <div id="step-code" class="hidden">
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Код отправлен в Telegram</p>
-            <input type="text" id="auth-code" placeholder="Введите код" spellcheck="false">
-            <div id="code-error" class="error-msg hidden"></div>
-            <button id="verify-btn">Подтвердить</button>
+            <p style="font-size: 11.5px; color: #aaa; margin: 0 0 10px 0; line-height: 1.35;">
+                Код отправлен в Telegram бот.<br>
+                <a href="#" id="open-tg-link" style="color: #4CAF50; text-decoration: none; font-size: 11px;">Открыть бота @ganjacrafter_bot</a>
+            </p>
+            <input type="text" id="auth-code" placeholder="Код (6 цифр)" maxlength="6"
+                style="text-align: center; font-size: 18px; letter-spacing: 5px; font-weight: bold;">
+            <button id="verify-btn" style="margin-top: 15px;">Подтвердить</button>
+            <div id="code-error" class="error-msg"></div>
+            
             <div style="margin-top: 10px;">
                 <button id="switch-to-pass-btn" style="background: transparent; border: none; color: #888; text-decoration: underline; font-size: 11px; cursor: pointer;">Войти по паролю</button>
             </div>
@@ -509,10 +535,11 @@
 
         <!-- Step 2.5: Password Login -->
         <div id="step-password" class="hidden">
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Вход по паролю</p>
-            <input type="password" id="auth-password" placeholder="Введите пароль" spellcheck="false">
-            <div id="password-error" class="error-msg hidden"></div>
-            <button id="pass-login-btn">Войти</button>
+            <input type="password" id="auth-password" placeholder="Пароль от аккаунта"
+                style="text-align: center; font-size: 16px; letter-spacing: 2px;">
+            <button id="pass-login-btn" style="margin-top: 15px;">Войти</button>
+            <div id="password-error" class="error-msg"></div>
+            
             <div style="margin-top: 10px;">
                 <button id="switch-to-code-btn" style="background: transparent; border: none; color: #888; text-decoration: underline; font-size: 11px; cursor: pointer;">Ввести код из Telegram</button>
             </div>
@@ -524,7 +551,10 @@
                 <!-- 1. Left: Player Character & Stats (Frameless) -->
                 <div class="player-character-section">
                     <div class="player-skin-header">
-                        <span class="player-username-title" id="player-display-name">OPERATOR</span>
+                        <div class="player-identity-badge">
+                            <span class="player-username-title" id="player-display-name">OPERATOR</span>
+                            <span class="player-rank-pill" id="player-rank-badge">Игрок</span>
+                        </div>
                     </div>
 
                     <div id="skin-viewer-container" class="skin-viewer-wrapper frameless-skin">
@@ -532,9 +562,9 @@
                         <canvas id="skin-canvas-2d" width="280" height="380" style="display:none;"></canvas>
                     </div>
 
-                    <div class="player-stats-bar frameless-stats">
+                    <div class="player-stats-bar frameless-stats clean-stats">
                         <div class="player-stat-col">
-                            <div class="stat-label">Coins</div>
+                            <div class="stat-label">EMC</div>
                             <div class="stat-icon-wrap stat-icon-coins">
                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="9"/>
@@ -542,17 +572,6 @@
                                 </svg>
                             </div>
                             <div id="stat-coins" class="stat-value">—</div>
-                        </div>
-
-                        <div class="player-stat-col">
-                            <div class="stat-label">Karma</div>
-                            <div class="stat-icon-wrap stat-icon-karma">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                            </div>
-                            <div id="stat-karma" class="stat-value">—</div>
                         </div>
 
                         <div class="player-stat-col">
@@ -635,10 +654,6 @@
                             <span class="play-btn-glow"></span>
                             <span class="play-btn-text">ИГРАТЬ</span>
                         </button>
-                    </div>
-
-                    <div class="logout-btn-container">
-                        <button id="logout-btn" class="launcher-logout-btn">ВЫЙТИ</button>
                     </div>
                 </div>
             </div>

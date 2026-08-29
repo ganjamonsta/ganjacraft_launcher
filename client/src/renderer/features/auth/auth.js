@@ -196,8 +196,8 @@ export async function loadPlayerStats(username) {
     const nameEl = dom.get('player-display-name');
     if (nameEl) nameEl.textContent = username;
 
+    const rankBadgeEl = dom.get('player-rank-badge');
     const coinsEl = dom.get('stat-coins');
-    const karmaEl = dom.get('stat-karma');
     const playtimeEl = dom.get('stat-playtime');
 
     try {
@@ -213,9 +213,14 @@ export async function loadPlayerStats(username) {
             if (data.success && Array.isArray(data.players)) {
                 const player = data.players.find(p => p.nick && p.nick.toLowerCase() === username.toLowerCase());
                 if (player) {
-                    if (coinsEl) coinsEl.textContent = (player.emc != null ? Number(player.emc).toLocaleString() : '0');
-                    if (karmaEl) karmaEl.textContent = player.rank_name || 'Игрок';
-                    const hours = player.season_hours || player.total_hours || (player.season_playtime_minutes ? Math.round(player.season_playtime_minutes / 60) : 0);
+                    if (rankBadgeEl) {
+                        const rankName = player.rank_name || 'Игрок';
+                        rankBadgeEl.textContent = rankName;
+                        const rankSlug = rankName.toLowerCase().replace(/\s+/g, '-');
+                        rankBadgeEl.className = `player-rank-pill rank-${rankSlug}`;
+                    }
+                    if (coinsEl) coinsEl.textContent = (player.emc != null ? Number(player.emc).toLocaleString('ru-RU') : '0');
+                    const hours = player.season_hours || player.total_hours || (player.season_playtime_minutes ? (player.season_playtime_minutes / 60).toFixed(1) : '0');
                     if (playtimeEl) playtimeEl.textContent = `${hours} ч`;
                     return;
                 }
@@ -225,8 +230,11 @@ export async function loadPlayerStats(username) {
         console.warn('[AUTH] Failed to fetch player leaderboard stats:', e);
     }
 
+    if (rankBadgeEl) {
+        rankBadgeEl.textContent = 'Игрок';
+        rankBadgeEl.className = 'player-rank-pill rank-player';
+    }
     if (coinsEl) coinsEl.textContent = '0';
-    if (karmaEl) karmaEl.textContent = 'Игрок';
     if (playtimeEl) playtimeEl.textContent = '0 ч';
 }
 
