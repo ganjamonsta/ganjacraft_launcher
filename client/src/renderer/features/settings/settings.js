@@ -234,38 +234,26 @@ export function updateHeaderControlsForTab(tabId) {
     const btnSettings = document.getElementById('btn-settings');
     const btnChangelog = document.getElementById('btn-changelog');
 
-    if (tabId === 'changelog') {
-        if (btnChangelog) {
-            btnChangelog.classList.add('settings-active');
-            const icon = document.getElementById('btn-changelog-icon');
-            if (icon) icon.innerHTML = '<span style="font-size:15px;line-height:1;font-weight:700;">✕</span>';
-            btnChangelog.title = 'Закрыть обновления';
+    // Кнопка ⚙️ ВСЕГДА выполняет роль закрытия [ ✕ ] пока открыты настройки/обновления
+    if (btnSettings) {
+        btnSettings.classList.add('settings-active');
+        const icon = document.getElementById('btn-settings-icon');
+        if (icon) icon.textContent = '✕';
+        btnSettings.title = 'Закрыть настройки';
+    }
+
+    // Кнопка 🔔 ВСЕГДА остаётся колокольчиком-индикатором и быстрым переходом к обновлениям
+    if (btnChangelog) {
+        btnChangelog.classList.remove('settings-active');
+        const icon = document.getElementById('btn-changelog-icon');
+        if (icon) {
+            icon.innerHTML = `
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>`;
         }
-        if (btnSettings) {
-            btnSettings.classList.remove('settings-active');
-            const icon = document.getElementById('btn-settings-icon');
-            if (icon) icon.textContent = '⚙';
-            btnSettings.title = 'Настройки';
-        }
-    } else {
-        if (btnSettings) {
-            btnSettings.classList.add('settings-active');
-            const icon = document.getElementById('btn-settings-icon');
-            if (icon) icon.textContent = '✕';
-            btnSettings.title = 'Закрыть настройки';
-        }
-        if (btnChangelog) {
-            btnChangelog.classList.remove('settings-active');
-            const icon = document.getElementById('btn-changelog-icon');
-            if (icon) {
-                icon.innerHTML = `
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>`;
-            }
-            btnChangelog.title = 'Обновления сборки';
-        }
+        btnChangelog.title = 'Обновления сборки';
     }
 }
 
