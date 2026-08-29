@@ -643,8 +643,25 @@
                     </div>
                 </div>
 
-                <!-- 3. Right: Action / Launch Hub -->
+                <!-- 3. Right: Action / Launch Hub with Live Online Panel -->
                 <div class="launch-action-hub">
+                    <!-- Live Server Online Card -->
+                    <div class="server-live-card">
+                        <div class="server-live-header">
+                            <div class="server-live-status">
+                                <span class="status-indicator online"></span>
+                                <span class="server-live-title" id="live-status-text">СЕРВЕР В СЕТИ</span>
+                            </div>
+                            <span class="server-live-count" id="live-player-count">0 / 1337</span>
+                        </div>
+                        <div class="server-players-live-list" id="live-players-container">
+                            <div class="live-empty-state">
+                                <span class="live-empty-icon">🎮</span>
+                                <span>Сервер свободен • Будь первым!</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="play-btn-container">
                         <button id="play-btn" class="magnetic-play-btn">
                             <span class="play-btn-glow"></span>

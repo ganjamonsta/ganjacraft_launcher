@@ -1598,6 +1598,11 @@ body {
     pointer-events: auto;
 }
 
+/* При входе пользователя скрываем дублирующий виджет в шапке, так как справа есть живая панель */
+#main-content:has(#step-play:not(.hidden)) #server-status-widget {
+    display: none !important;
+}
+
 /* Auth steps */
 #step-loading,
 #step-login,
@@ -1917,22 +1922,169 @@ body {
 }
 
 /* 3. Right: Action / Launch Hub */
+/* 3. Right: Action / Launch Hub with Live Online Panel */
 .launch-action-hub {
-    flex: 1;
-    max-width: 250px;
+    flex: 0 0 270px;
+    max-width: 270px;
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    justify-content: flex-end;
-    padding-bottom: 24px;
+    justify-content: space-between;
+    align-items: stretch;
+    padding: 12px 0 16px 0;
     box-sizing: border-box;
     z-index: 10;
 }
 
+/* Server Live Card */
+.server-live-card {
+    background: linear-gradient(135deg, rgba(18, 26, 22, 0.8) 0%, rgba(10, 14, 12, 0.88) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(57, 255, 20, 0.25);
+    border-radius: 16px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(57, 255, 20, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.server-live-card:hover {
+    border-color: rgba(57, 255, 20, 0.45);
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.65), 0 0 28px rgba(57, 255, 20, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.server-live-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.server-live-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.server-live-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.server-live-count {
+    font-size: 11px;
+    font-weight: 800;
+    color: #39ff14;
+    background: rgba(57, 255, 20, 0.12);
+    border: 1px solid rgba(57, 255, 20, 0.35);
+    padding: 2px 8px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+    font-family: 'Outfit', 'Inter', monospace;
+}
+
+.server-players-live-list {
+    max-height: 185px;
+    min-height: 80px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+.server-players-live-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.server-players-live-list::-webkit-scrollbar-thumb {
+    background: rgba(57, 255, 20, 0.3);
+    border-radius: 4px;
+}
+
+.live-player-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.2s ease;
+}
+
+.live-player-item:hover {
+    background: rgba(57, 255, 20, 0.1);
+    border-color: rgba(57, 255, 20, 0.3);
+    transform: translateX(2px);
+}
+
+.live-player-avatar-wrap {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.live-player-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: pixelated;
+}
+
+.live-player-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.live-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 0;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    gap: 4px;
+}
+
+.live-empty-icon {
+    font-size: 20px;
+    margin-bottom: 2px;
+    filter: drop-shadow(0 0 6px rgba(57, 255, 20, 0.4));
+}
+
+.live-empty-state.offline {
+    color: #f87171;
+}
+
+.live-empty-state.offline .live-empty-icon {
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.4));
+}
+
 .play-btn-container {
     width: 100%;
-    max-width: 230px;
     perspective: 800px;
 }
 

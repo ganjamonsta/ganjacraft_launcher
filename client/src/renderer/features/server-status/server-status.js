@@ -122,6 +122,9 @@ export async function updateServerStatus() {
         }
 
         const bottomCount = dom.get('bottom-player-count');
+        const liveStatusText = dom.get('live-status-text');
+        const livePlayerCount = dom.get('live-player-count');
+        const livePlayersContainer = dom.get('live-players-container');
 
         if (isOnline) {
             playerCount.textContent = `${onlineCount} / ${maxCount} онлайн`;
@@ -133,6 +136,37 @@ export async function updateServerStatus() {
 
             indicator.className = 'status-indicator online';
             indicator.title = 'Сервер доступен';
+
+            if (liveStatusText) {
+                liveStatusText.textContent = 'СЕРВЕР В СЕТИ';
+            }
+            if (livePlayerCount) {
+                livePlayerCount.textContent = `${onlineCount} / ${maxCount}`;
+            }
+
+            if (livePlayersContainer) {
+                if (Array.isArray(list) && list.length > 0) {
+                    livePlayersContainer.innerHTML = list.map(p => {
+                        const name = typeof p === 'string' ? p : (p?.name_clean || p?.name_raw || 'Игрок');
+                        const avatarUrl = `https://launcher.ganj4craft.ru/api/skins/${encodeURIComponent(name)}.png`;
+                        return `
+                            <div class="live-player-item" title="${name}">
+                                <div class="live-player-avatar-wrap">
+                                    <img src="${avatarUrl}" class="live-player-avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2339ff14%22><rect width=%2224%22 height=%2224%22 rx=%224%22 fill=%22%23111%22/><circle cx=%2212%22 cy=%229%22 r=%224%22 fill=%22%2339ff14%22/><path d=%22M4 20c0-4 4-6 8-6s8 2 8 6%22 fill=%22%2339ff14%22/></svg>'">
+                                </div>
+                                <span class="live-player-name">${name}</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    livePlayersContainer.innerHTML = `
+                        <div class="live-empty-state">
+                            <span class="live-empty-icon">🎮</span>
+                            <span>Сервер свободен • Будь первым!</span>
+                        </div>
+                    `;
+                }
+            }
 
             // Тултип с никами при наведении
             attachTooltip(playerCount, list);
@@ -147,6 +181,21 @@ export async function updateServerStatus() {
             indicator.className = 'status-indicator offline';
             indicator.title = 'Сервер недоступен';
 
+            if (liveStatusText) {
+                liveStatusText.textContent = 'ОФФЛАЙН';
+            }
+            if (livePlayerCount) {
+                livePlayerCount.textContent = '0 / 0';
+            }
+            if (livePlayersContainer) {
+                livePlayersContainer.innerHTML = `
+                    <div class="live-empty-state offline">
+                        <span class="live-empty-icon">⚠️</span>
+                        <span>Сервер временно недоступен</span>
+                    </div>
+                `;
+            }
+
             // Убираем тултип если есть
             const tooltip = document.getElementById('players-tooltip');
             if (tooltip) tooltip.remove();
@@ -155,6 +204,15 @@ export async function updateServerStatus() {
         console.error('Status check failed:', error);
         playerCount.textContent = '—';
         indicator.className = 'status-indicator offline';
+        const livePlayersContainer = dom.get('live-players-container');
+        if (livePlayersContainer) {
+            livePlayersContainer.innerHTML = `
+                <div class="live-empty-state offline">
+                    <span class="live-empty-icon">⚠️</span>
+                    <span>Ошибка связи с сервером</span>
+                </div>
+            `;
+        }
     }
 }
 
