@@ -335,6 +335,19 @@ export function renderChangelogList() {
 
         let sectionsHtml = '<div class="changelog-card-content">';
 
+        // 0. Авторская заметка/патчноут админа (если есть)
+        if (item.custom_note && item.custom_note.trim()) {
+            sectionsHtml += `
+                <div class="changelog-admin-note">
+                    <div class="admin-note-header">
+                        <span class="note-icon">💬</span>
+                        <span class="note-title">Патчноут сборки</span>
+                    </div>
+                    <div class="admin-note-body">${escapeHtml(item.custom_note)}</div>
+                </div>
+            `;
+        }
+
         // 1. Добавленные моды
         if (added.length > 0) {
             sectionsHtml += `
@@ -429,27 +442,97 @@ export function renderChangelogList() {
             `;
         }
 
-        // 4. Прочее (конфиги, скрипты, паки)
-        if (configs > 0 || scripts > 0 || packs > 0 || summary.is_initial) {
+        // 4. Серверные скрипты и рецепты KubeJS
+        const scriptsList = summary.scripts_list || [];
+        if (scriptsList.length > 0) {
+            sectionsHtml += `
+                <div class="changelog-group">
+                    <div class="changelog-section-title group-label-script">
+                        <span class="title-dot dot-script"></span>
+                        <span>Серверные скрипты и рецепты KubeJS (${scriptsList.length})</span>
+                    </div>
+                    <div class="changelog-mods-grid">
+                        ${scriptsList.map(s => `
+                            <div class="changelog-mod-card card-script" title="${escapeHtml(s.path || s.name)}">
+                                <div class="mod-card-left">
+                                    <div class="mod-type-icon icon-script">📜</div>
+                                    <div class="mod-info-block">
+                                        <span class="mod-main-name">${escapeHtml(s.label || s.name)}</span>
+                                        <span class="mod-sub-filename">${escapeHtml(s.path || s.name)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else if (scripts > 0) {
+            sectionsHtml += `
+                <div class="changelog-group">
+                    <div class="changelog-section-title group-label-script">
+                        <span class="title-dot dot-script"></span>
+                        <span>Серверные скрипты KubeJS (${scripts})</span>
+                    </div>
+                    <div class="changelog-misc-wrap">
+                        <span class="changelog-misc-chip">📜 Изменено скриптов: ${scripts}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 5. Конфигурации сервера
+        const configsList = summary.configs_list || [];
+        if (configsList.length > 0) {
+            sectionsHtml += `
+                <div class="changelog-group">
+                    <div class="changelog-section-title group-label-config">
+                        <span class="title-dot dot-config"></span>
+                        <span>Конфигурации сервера (${configsList.length})</span>
+                    </div>
+                    <div class="changelog-mods-grid">
+                        ${configsList.map(c => `
+                            <div class="changelog-mod-card card-config" title="${escapeHtml(c.path || c.name)}">
+                                <div class="mod-card-left">
+                                    <div class="mod-type-icon icon-config">⚙️</div>
+                                    <div class="mod-info-block">
+                                        <span class="mod-main-name">${escapeHtml(c.label || c.name)}</span>
+                                        <span class="mod-sub-filename">${escapeHtml(c.path || c.name)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else if (configs > 0) {
+            sectionsHtml += `
+                <div class="changelog-group">
+                    <div class="changelog-section-title group-label-config">
+                        <span class="title-dot dot-config"></span>
+                        <span>Конфигурации сервера (${configs})</span>
+                    </div>
+                    <div class="changelog-misc-wrap">
+                        <span class="changelog-misc-chip">⚙️ Изменено конфигураций: ${configs}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 6. Ресурспаки и шейдеры
+        if (packs > 0 || summary.is_initial) {
             const extraChips = [];
             if (summary.is_initial) {
                 extraChips.push('<span class="changelog-misc-chip">🚀 Начальный слепок сборки</span>');
             }
-            if (configs > 0) {
-                extraChips.push(`<span class="changelog-misc-chip">⚙️ Конфигурации (${configs})</span>`);
-            }
-            if (scripts > 0) {
-                extraChips.push(`<span class="changelog-misc-chip">📜 Скрипты KubeJS (${scripts})</span>`);
-            }
             if (packs > 0) {
-                extraChips.push(`<span class="changelog-misc-chip">🎨 Ресурспаки (${packs})</span>`);
+                extraChips.push(`<span class="changelog-misc-chip">🎨 Ресурспаки и шейдеры (${packs})</span>`);
             }
 
             sectionsHtml += `
                 <div class="changelog-group">
                     <div class="changelog-section-title group-label-misc">
                         <span class="title-dot dot-misc"></span>
-                        <span>Конфигурации и скрипты</span>
+                        <span>Дополнительно</span>
                     </div>
                     <div class="changelog-misc-wrap">
                         ${extraChips.join('')}
@@ -458,7 +541,7 @@ export function renderChangelogList() {
             `;
         }
 
-        if (added.length === 0 && updated.length === 0 && removed.length === 0 && configs === 0 && scripts === 0 && packs === 0 && !summary.is_initial) {
+        if (added.length === 0 && updated.length === 0 && removed.length === 0 && configs === 0 && scripts === 0 && packs === 0 && !summary.is_initial && !item.custom_note) {
             sectionsHtml += '<div class="changelog-item-empty">Мелкие системные изменения сборки</div>';
         }
 
