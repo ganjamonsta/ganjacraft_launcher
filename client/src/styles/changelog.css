@@ -23,6 +23,8 @@
 .group-label-skill .title-dot { background: #ffca28; box-shadow: 0 0 10px #ffca28; }
 .group-label-quest { color: #4fc3f7; }
 .group-label-quest .title-dot { background: #29b6f6; box-shadow: 0 0 10px #29b6f6; }
+.group-label-mods { color: #69f0ae; }
+.group-label-mods .title-dot { background: var(--gc-green); box-shadow: 0 0 8px var(--gc-green); }
 .group-label-server { color: #69f0ae; }
 .group-label-server .title-dot { background: var(--gc-green); box-shadow: 0 0 8px var(--gc-green); }
 .group-label-client { color: var(--gc-blue-light); }

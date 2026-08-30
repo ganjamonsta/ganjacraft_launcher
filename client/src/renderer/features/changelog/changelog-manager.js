@@ -562,34 +562,12 @@ function renderPackCardHtml(item, isLatest) {
     const scriptsCount = summary.scripts_count || scriptsList.length;
     const packsCount = summary.resourcepacks_count || resourcepacksList.length;
 
-    // Разделение модов на Клиентские и Серверные
-    const clientAdded = [];
-    const serverAdded = [];
-    allAdded.forEach(m => {
-        if (isClientMod(m)) clientAdded.push(m);
-        else serverAdded.push(m);
-    });
-
-    const clientUpdated = [];
-    const serverUpdated = [];
-    allUpdated.forEach(u => {
-        const raw = typeof u === 'string' ? u : (u.new || u.name || u.old || '');
-        if (isClientMod(raw)) clientUpdated.push(u);
-        else serverUpdated.push(u);
-    });
-
-    const clientRemoved = [];
-    const serverRemoved = [];
-    allRemoved.forEach(m => {
-        if (isClientMod(m)) clientRemoved.push(m);
-        else serverRemoved.push(m);
-    });
-
     // Бейджи в шапке
     const summaryPills = [];
     const totalAdded = allAdded.length;
     const totalUpdated = allUpdated.length;
     const totalRemoved = allRemoved.length;
+    const totalMods = totalAdded + totalUpdated + totalRemoved + packsCount;
 
     if (activitiesCount > 0) summaryPills.push(`<span class="changelog-pill pill-activity">⚔️ ${activitiesCount}</span>`);
     if (skillsCount > 0) summaryPills.push(`<span class="changelog-pill pill-skill">⭐ ${skillsCount}</span>`);
@@ -634,67 +612,12 @@ function renderPackCardHtml(item, isLatest) {
         `;
     }
 
-    // 1. ГРУППА: ВНУТРИИГРОВЫЕ АКТИВНОСТИ И РЕЖИМЫ (Свернуто по умолчанию)
-    if (activitiesList.length > 0) {
-        sectionsHtml += renderChangelogGroup({
-            labelClass: 'group-label-activity',
-            dotClass: 'dot-activity',
-            title: '⚔️ Внутриигровые активности и режимы',
-            count: activitiesList.length,
-            itemsHtml: activitiesList.map(a => renderActivityCard(a)).join(''),
-            isOpen: false
-        });
-    }
-
-    // 2. ГРУППА: ДРЕВО НАВЫКОВ И ПРОКАЧКИ (Свернуто по умолчанию)
-    if (skillsList.length > 0) {
-        sectionsHtml += renderChangelogGroup({
-            labelClass: 'group-label-skill',
-            dotClass: 'dot-skill',
-            title: '⭐ Древо навыков и прокачка',
-            count: skillsList.length,
-            itemsHtml: skillsList.map(s => renderActivityCard(s)).join(''),
-            isOpen: false
-        });
-    }
-
-    // 3. ГРУППА: КВЕСТОВЫЕ ЦЕПОЧКИ И ЗАДАНИЯ (Свернуто по умолчанию)
-    if (questsList.length > 0) {
-        sectionsHtml += renderChangelogGroup({
-            labelClass: 'group-label-quest',
-            dotClass: 'dot-quest',
-            title: '📜 Квестовые цепочки и задания',
-            count: questsList.length,
-            itemsHtml: questsList.map(q => renderActivityCard(q)).join(''),
-            isOpen: false
-        });
-    }
-
-    // 4. ГРУППА: СЕРВЕРНЫЕ МОДЫ И ЯДРО (Свернуто по умолчанию)
-    const hasServerMods = serverAdded.length > 0 || serverUpdated.length > 0 || serverRemoved.length > 0;
-    if (hasServerMods) {
-        const serverHtml = [
-            ...serverAdded.map(m => renderModCard(m, 'add')),
-            ...serverUpdated.map(u => renderModCard(u, 'update')),
-            ...serverRemoved.map(m => renderModCard(m, 'remove'))
-        ].join('');
-        sectionsHtml += renderChangelogGroup({
-            labelClass: 'group-label-server',
-            dotClass: 'dot-server',
-            title: '⚙️ Серверные моды и ядро',
-            count: serverAdded.length + serverUpdated.length + serverRemoved.length,
-            itemsHtml: serverHtml,
-            isOpen: false
-        });
-    }
-
-    // 5. ГРУППА: КЛИЕНТСКИЕ МОДЫ И ГРАФИКА (РАСКРЫТО ПО ДЕФОЛТУ)
-    const hasClientMods = clientAdded.length > 0 || clientUpdated.length > 0 || clientRemoved.length > 0 || packsCount > 0;
-    if (hasClientMods) {
-        const clientHtml = [
-            ...clientAdded.map(m => renderModCard(m, 'add')),
-            ...clientUpdated.map(u => renderModCard(u, 'update')),
-            ...clientRemoved.map(m => renderModCard(m, 'remove')),
+    // 1. ГРУППА: МОДЫ СБОРКИ (ЕДИНАЯ ГРУППА, НА САМОМ ВЕРХУ, РАСКРЫТО ПО ДЕФОЛТУ)
+    if (totalMods > 0) {
+        const modsHtml = [
+            ...allAdded.map(m => renderModCard(m, 'add')),
+            ...allUpdated.map(u => renderModCard(u, 'update')),
+            ...allRemoved.map(m => renderModCard(m, 'remove')),
             ...resourcepacksList.map(r => `
                 <div class="changelog-mod-card card-misc" title="${escapeHtml(r.path || r.name)}">
                     <div class="mod-card-left">
@@ -708,16 +631,52 @@ function renderPackCardHtml(item, isLatest) {
             `)
         ].join('');
         sectionsHtml += renderChangelogGroup({
-            labelClass: 'group-label-client',
-            dotClass: 'dot-client',
-            title: '💻 Клиентские моды и графика',
-            count: clientAdded.length + clientUpdated.length + clientRemoved.length + packsCount,
-            itemsHtml: clientHtml,
-            isOpen: true // <<< РАСКРЫТО ПО ДЕФОЛТУ
+            labelClass: 'group-label-mods',
+            dotClass: 'dot-mods',
+            title: '🧩 Моды сборки',
+            count: totalMods,
+            itemsHtml: modsHtml,
+            isOpen: true // <<< РАСКРЫТО ПО ДЕФОЛТУ НАВЕРХУ
         });
     }
 
-    // 6. ГРУППА: БАЛАНС, КРАФТЫ И СЕРВЕРНЫЕ СКРИПТЫ (Свернуто по умолчанию)
+    // 2. ГРУППА: ВНУТРИИГРОВЫЕ АКТИВНОСТИ И РЕЖИМЫ (Свернуто по умолчанию)
+    if (activitiesList.length > 0) {
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-activity',
+            dotClass: 'dot-activity',
+            title: '⚔️ Внутриигровые активности и режимы',
+            count: activitiesList.length,
+            itemsHtml: activitiesList.map(a => renderActivityCard(a)).join(''),
+            isOpen: false
+        });
+    }
+
+    // 3. ГРУППА: ДРЕВО НАВЫКОВ И ПРОКАЧКИ (Свернуто по умолчанию)
+    if (skillsList.length > 0) {
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-skill',
+            dotClass: 'dot-skill',
+            title: '⭐ Древо навыков и прокачка',
+            count: skillsList.length,
+            itemsHtml: skillsList.map(s => renderActivityCard(s)).join(''),
+            isOpen: false
+        });
+    }
+
+    // 4. ГРУППА: КВЕСТОВЫЕ ЦЕПОЧКИ И ЗАДАНИЯ (Свернуто по умолчанию)
+    if (questsList.length > 0) {
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-quest',
+            dotClass: 'dot-quest',
+            title: '📜 Квестовые цепочки и задания',
+            count: questsList.length,
+            itemsHtml: questsList.map(q => renderActivityCard(q)).join(''),
+            isOpen: false
+        });
+    }
+
+    // 5. ГРУППА: БАЛАНС, КРАФТЫ И СЕРВЕРНЫЕ СКРИПТЫ (Свернуто по умолчанию)
     const otherScripts = scriptsList.filter(s => {
         const cat = s.category || '';
         return !cat.startsWith('activity_') && !cat.startsWith('skill_') && cat !== 'skills' && !cat.startsWith('quest_') && cat !== 'quests';
@@ -744,7 +703,7 @@ function renderPackCardHtml(item, isLatest) {
         });
     }
 
-    // 7. ГРУППА: КОНФИГУРАЦИИ СЕРВЕРА (Свернуто по умолчанию)
+    // 6. ГРУППА: КОНФИГУРАЦИИ СЕРВЕРА (Свернуто по умолчанию)
     if (configsList.length > 0) {
         const configsHtml = configsList.map(c => `
             <div class="changelog-mod-card card-config" title="${escapeHtml(c.path || c.name)}">
@@ -767,7 +726,7 @@ function renderPackCardHtml(item, isLatest) {
         });
     }
 
-    if (activitiesList.length === 0 && !hasServerMods && !hasClientMods && otherScripts.length === 0 && configsCount === 0 && !item.custom_note) {
+    if (activitiesList.length === 0 && skillsList.length === 0 && questsList.length === 0 && totalMods === 0 && otherScripts.length === 0 && configsCount === 0 && !item.custom_note) {
         sectionsHtml += '<div class="changelog-item-empty">Мелкие системные исправления сборки</div>';
     }
 
