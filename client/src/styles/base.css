@@ -1,0 +1,126 @@
+/* ==========================================================================
+   Ganj4Craft Launcher — Base Styles
+   Reset, body, scrollbar, utility classes
+   ========================================================================== */
+
+/* Reset */
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--gc-font-family);
+    background-color: var(--gc-surface-dark);
+    color: var(--gc-text-body);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: auto;
+    text-rendering: geometricPrecision;
+}
+
+/* ── Scrollbar — Overlay Layer ── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 0px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--gc-radius-xs);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+/* ── Utility Classes ── */
+.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* ── Отложенная отрисовка невидимого контента ── */
+.tab-content:not(.active) {
+    content-visibility: hidden;
+}
+
+/* ── Disabled header buttons during game launch ── */
+.control-btn.disabled-launch,
+.tab-btn.disabled-launch,
+.control-btn[disabled],
+.tab-btn[disabled] {
+    opacity: 0.25 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    filter: grayscale(1) !important;
+}
+
+/* ── Admin-only visibility ── */
+.admin-only {
+    display: none !important;
+}
+
+body.is-admin .admin-only {
+    display: flex !important;
+}
+
+body.is-admin .unified-dev-card.admin-only {
+    display: flex !important;
+}
+
+body.is-admin .unified-toolbar-label.admin-only {
+    display: flex !important;
+}
+
+/* ── Global Checkboxes ── */
+input[type="checkbox"] {
+    accent-color: var(--gc-accent);
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ── Global status and error messages ── */
+#status {
+    margin-top: 15px;
+    font-size: var(--gc-font-md);
+    color: var(--gc-text-subtle);
+    min-height: 1.2em;
+}
+
+.error-msg {
+    color: #ff5252;
+    font-size: var(--gc-font-md);
+    margin-top: 10px;
+    margin-bottom: 5px;
+    min-height: 1.2em;
+    text-align: center;
+}
+
+#update-status-text {
+    margin-top: 10px;
+    color: #aaa;
+    font-size: var(--gc-font-xl);
+}

@@ -1,0 +1,185 @@
+/* ==========================================================================
+   Ganj4Craft Launcher — Auth Screens
+   Login, code, password forms
+   ========================================================================== */
+
+/* ── Auth Container ── */
+.auth-container {
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 20px);
+    transform: translate(-50%, -50%);
+    z-index: var(--gc-z-ui);
+    background: linear-gradient(135deg, rgba(22, 27, 34, 0.9) 0%, rgba(12, 15, 20, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 32px 36px;
+    border-radius: 18px;
+    border: 1px solid rgba(var(--gc-green-rgb), 0.25);
+    box-shadow: var(--gc-shadow-elevated);
+    width: 380px;
+    min-height: 300px;
+    text-align: center;
+    transition: all 0.3s var(--gc-ease-decelerate);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.auth-container.fade-in {
+    animation: fadeInCentered 0.4s ease-in-out;
+}
+
+/* Fullscreen Dashboard/Launch Hub mode */
+.auth-container:has(#step-play:not(.hidden)),
+.auth-container:has(#step-progress:not(.hidden)) {
+    position: absolute;
+    left: 0; right: 0;
+    top: 40px; bottom: 0;
+    width: 100%;
+    height: calc(100% - 40px);
+    transform: none;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    border: none;
+    padding: 8px 24px 10px 24px;
+    pointer-events: none;
+    z-index: var(--gc-z-ui);
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    box-sizing: border-box;
+}
+
+.auth-container:has(#step-play:not(.hidden)) > h2,
+.auth-container:has(#step-progress:not(.hidden)) > h2 {
+    display: none;
+}
+
+.auth-container:has(#step-play:not(.hidden)) *,
+.auth-container:has(#step-progress:not(.hidden)) * {
+    pointer-events: auto;
+}
+
+/* Hide server status widget on main/launch screens */
+#main-content:has(#step-play:not(.hidden)) #server-status-widget,
+#main-content:has(#step-progress:not(.hidden)) #server-status-widget {
+    display: none !important;
+}
+
+/* Auth steps */
+#step-loading, #step-login, #step-code, #step-password {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#step-play {
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* ── Auth Forms & Branding ── */
+.auth-brand-header {
+    font-family: var(--gc-font-display);
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--gc-green);
+    text-shadow: 0 0 16px rgba(var(--gc-green-rgb), 0.6);
+    text-transform: uppercase;
+    margin: 0 0 20px 0;
+}
+
+.auth-step-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    flex: 1;
+}
+
+.auth-loading-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(var(--gc-green-rgb), 0.15);
+    border-top-color: var(--gc-green);
+    border-radius: var(--gc-radius-round);
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+}
+
+.auth-loading-text { color: var(--gc-text-muted); font-size: var(--gc-font-lg); font-weight: 600; }
+
+.auth-input-wrap { width: 100%; margin-bottom: 14px; }
+
+.unified-auth-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(14, 18, 24, 0.85);
+    border: 1px solid var(--gc-border-default);
+    border-radius: var(--gc-radius-lg);
+    color: var(--gc-text-white);
+    font-size: var(--gc-font-2xl);
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 1px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.unified-auth-input:focus {
+    border-color: var(--gc-green);
+    background: rgba(18, 24, 32, 0.95);
+    box-shadow: 0 0 14px rgba(var(--gc-green-rgb), 0.35);
+}
+
+.unified-auth-input.code-input { font-size: 20px; letter-spacing: 6px; font-weight: 900; font-family: 'Outfit', monospace; }
+.unified-auth-input.pass-input { letter-spacing: 3px; }
+
+.auth-submit-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: var(--gc-font-lg);
+    font-weight: 800;
+    letter-spacing: 1px;
+    border-radius: var(--gc-radius-lg);
+    margin-top: 4px;
+}
+
+.auth-helper-text { font-size: var(--gc-font-md); color: var(--gc-text-muted); line-height: 1.4; margin: 0 0 14px 0; }
+
+.auth-tg-link {
+    color: var(--gc-green);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.auth-tg-link:hover { color: var(--gc-green-light); text-shadow: 0 0 8px rgba(var(--gc-green-rgb), 0.6); }
+
+.auth-switch-box { margin-top: 14px; }
+
+.auth-switch-link {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    color: var(--gc-text-muted) !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    text-decoration: underline !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
+    width: auto !important;
+    transition: color 0.2s ease !important;
+}
+
+.auth-switch-link:hover { color: var(--gc-green) !important; }

@@ -1,0 +1,187 @@
+/* ==========================================================================
+   Ganj4Craft Launcher — Visual Effects & Loader
+   Snow, smoke, particles, parallax, splash screen
+   ========================================================================== */
+
+/* ── Smoke Cursor Effect ── */
+.smoke-particle {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, rgba(220, 220, 220, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: var(--gc-radius-round);
+    pointer-events: none;
+    z-index: var(--gc-z-smoke);
+    animation: smoke-anim 1.2s ease-out forwards;
+}
+
+@keyframes smoke-anim {
+    0% { opacity: 0.5; transform: scale(0.5) translate(0, 0); }
+    100% { opacity: 0; transform: scale(2.5) translate(var(--tx), -40px); }
+}
+
+/* ── Snow Background Container ── */
+#snow-bg-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: var(--gc-z-particles-bg);
+    overflow: hidden;
+}
+
+/* ── Snow Foreground ── */
+#snow-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: var(--gc-z-particles-fg);
+    overflow: hidden;
+}
+
+/* ── Burst Snow Container ── */
+#snow-burst-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: var(--gc-z-burst);
+    overflow: hidden;
+}
+
+.snowflake {
+    position: absolute;
+    top: -20px;
+    color: #fff;
+    font-size: 1em;
+    font-family: Arial, sans-serif;
+    text-shadow: 0 0 2px #000;
+    user-select: none;
+    z-index: 5;
+    pointer-events: none;
+    will-change: transform;
+    animation-timing-function: linear;
+}
+
+@keyframes fall-1 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(20px, 25vh) rotate(45deg); }
+    50% { transform: translate(-20px, 50vh) rotate(90deg); }
+    75% { transform: translate(20px, 75vh) rotate(135deg); }
+    100% { transform: translate(0, 110vh) rotate(180deg); }
+}
+
+@keyframes fall-2 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    20% { transform: translate(-25px, 20vh) rotate(-45deg); }
+    40% { transform: translate(15px, 40vh) rotate(-90deg); }
+    60% { transform: translate(-25px, 60vh) rotate(-135deg); }
+    80% { transform: translate(15px, 80vh) rotate(-180deg); }
+    100% { transform: translate(0, 110vh) rotate(-360deg); }
+}
+
+@keyframes fall-3 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    30% { transform: translate(30px, 30vh) rotate(60deg); }
+    60% { transform: translate(-30px, 60vh) rotate(120deg); }
+    100% { transform: translate(0, 110vh) rotate(360deg); }
+}
+
+/* Burst snowflakes */
+.snowflake.burst {
+    animation-name: snow-burst !important;
+    animation-timing-function: cubic-bezier(0, 0.06, 0.45, 1) !important;
+}
+
+@keyframes snow-burst {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--burst-x), var(--burst-y)) scale(0.7) rotate(var(--burst-rotate)); opacity: 0; }
+}
+
+/* ── Initial Launcher Loading Splash Screen ── */
+.launcher-loader-screen {
+    position: fixed;
+    top: 40px; left: 0;
+    width: 100%;
+    height: calc(100% - 40px);
+    background: radial-gradient(circle at center, rgba(20, 25, 32, 0.98) 0%, rgba(10, 12, 16, 0.99) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: var(--gc-z-loader);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.4s var(--gc-ease-decelerate), visibility 0.4s ease;
+}
+
+.launcher-loader-screen.loaded {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 320px;
+    max-width: 90%;
+    text-align: center;
+}
+
+.loader-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.loader-logo-text {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: var(--gc-text-white);
+    text-shadow: 0 0 16px rgba(var(--gc-green-rgb), 0.5);
+}
+
+.loader-logo-sub {
+    font-size: var(--gc-font-xs);
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--gc-green);
+    margin-top: 2px;
+}
+
+.loader-status-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+    font-size: var(--gc-font-sm);
+    font-weight: 500;
+}
+
+.loader-status-text { color: #cccccc; letter-spacing: 0.3px; }
+.loader-percent-text { color: var(--gc-green); font-weight: 700; font-family: monospace; }
+
+.loader-bar-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--gc-radius-xs);
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.loader-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #25a00e 0%, var(--gc-green) 100%);
+    box-shadow: 0 0 10px rgba(var(--gc-green-rgb), 0.8);
+    border-radius: var(--gc-radius-xs);
+    transition: width 0.25s var(--gc-ease-decelerate);
+}

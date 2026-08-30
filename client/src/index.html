@@ -4,8 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Ganj4Craft Launcher</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="configs.css">
+    <!-- Design System — Modular CSS -->
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/effects.css">
+    <link rel="stylesheet" href="styles/titlebar.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/settings.css">
+    <link rel="stylesheet" href="styles/mods.css">
+    <link rel="stylesheet" href="styles/configs.css">
+    <link rel="stylesheet" href="styles/changelog.css">
+    <link rel="stylesheet" href="styles/console.css">
+    <link rel="stylesheet" href="styles/modals.css">
 
 </head>
 
@@ -597,64 +610,54 @@
                             <svg class="sacred-geometry-leaf" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <defs>
                                     <filter id="sacred-leaf-glow" x="-30%" y="-30%" width="160%" height="160%">
-                                        <feGaussianBlur stdDeviation="4" result="blur" />
+                                        <feGaussianBlur stdDeviation="3.5" result="blur" />
                                         <feMerge>
                                             <feMergeNode in="blur" />
                                             <feMergeNode in="SourceGraphic" />
                                         </feMerge>
                                     </filter>
+                                    <!-- Vivid Neon Emerald Gradient -->
                                     <linearGradient id="leaf-grad-vivid" x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" stop-color="#84ff00" />
+                                        <stop offset="0%" stop-color="#a6ff00" />
                                         <stop offset="40%" stop-color="#39ff14" />
-                                        <stop offset="100%" stop-color="#00c853" />
+                                        <stop offset="100%" stop-color="#00a844" />
                                     </linearGradient>
                                 </defs>
 
-                                <!-- Sacred Geometry Wireframe Grid -->
-                                <g class="geometry-wireframe" stroke="#39ff14" opacity="0.25" stroke-width="1">
-                                    <!-- Outer Circle -->
-                                    <circle cx="100" cy="100" r="75" stroke-dasharray="4 4" />
-                                    <!-- Upward Triangle -->
-                                    <polygon points="100,25 165,138 35,138" />
-                                    <!-- Downward Triangle -->
-                                    <polygon points="100,175 165,62 35,62" />
-                                    <!-- Inner Hexagon -->
-                                    <polygon points="100,38 154,69 154,131 100,162 46,131 46,69" stroke-dasharray="2 3" opacity="0.4" />
-                                    <!-- Horizontal & Vertical Grid Lines -->
-                                    <line x1="100" y1="15" x2="100" y2="185" stroke-dasharray="2 4" />
-                                    <line x1="15" y1="100" x2="185" y2="100" stroke-dasharray="2 4" />
-                                </g>
+                                <!-- 5-Blade Glowing Cannabis Leaf Emblem -->
+                                <g class="emblem-leaf-group" filter="url(#sacred-leaf-glow)">
+                                    <!-- 1. Central Blade (Tallest) -->
+                                    <path class="leaf-blade blade-center" d="M100 154 C94 140 91 128 90 122 L87 124 L89 110 L85 112 L87 96 L83 98 L86 80 L82 83 L87 64 L84 68 L91 48 L89 52 L95 32 L93 35 L100 18 L107 35 L105 32 L111 52 L109 48 L116 68 L113 64 L118 83 L114 80 L117 98 L113 96 L115 112 L111 110 L113 124 L110 122 C109 128 106 140 100 154 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                    <!-- Central Blade Veins -->
+                                    <line x1="100" y1="20" x2="100" y2="154" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+                                    <path d="M100 118 L90 111 M100 118 L110 111 M100 94 L86 86 M100 94 L114 86 M100 70 L86 63 M100 70 L114 63 M100 46 L92 40 M100 46 L108 40" stroke="#ffffff" stroke-width="0.7" opacity="0.4"/>
 
-                                <!-- High Detail 7-blade Cannabis Leaf -->
-                                <g class="cannabis-leaf-group" filter="url(#sacred-leaf-glow)">
-                                    <!-- Central Blade (Tallest) -->
-                                    <path d="M100 155 Q82 95 100 24 Q118 95 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.2" />
-                                    <line x1="100" y1="26" x2="100" y2="155" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+                                    <!-- 2. Upper Left Blade -->
+                                    <path class="leaf-blade blade-upper-left" d="M100 154 C87 137 75 118 71 112 L70 116 L64 100 L62 104 L56 86 L54 90 L49 70 L47 74 L44 48 L53 56 L50 58 L61 76 L58 78 L69 96 L66 99 L77 116 L74 120 C83 132 92 143 100 154 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                    <!-- Upper Left Veins -->
+                                    <line x1="46" y1="50" x2="100" y2="154" stroke="#ffffff" stroke-width="0.9" opacity="0.55"/>
+                                    <path d="M84 128 L72 120 M71 108 L60 101 M58 86 L49 80" stroke="#ffffff" stroke-width="0.65" opacity="0.35"/>
 
-                                    <!-- Upper Left Blade -->
-                                    <path d="M100 155 Q56 100 42 58 Q74 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
-                                    <line x1="44" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+                                    <!-- 3. Upper Right Blade -->
+                                    <path class="leaf-blade blade-upper-right" d="M100 154 C113 137 125 118 129 112 L130 116 L136 100 L138 104 L144 86 L146 90 L151 70 L153 74 L156 48 L147 56 L150 58 L139 76 L142 78 L131 96 L134 99 L123 116 L126 120 C117 132 108 143 100 154 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                    <!-- Upper Right Veins -->
+                                    <line x1="154" y1="50" x2="100" y2="154" stroke="#ffffff" stroke-width="0.9" opacity="0.55"/>
+                                    <path d="M116 128 L128 120 M129 108 L140 101 M142 86 L151 80" stroke="#ffffff" stroke-width="0.65" opacity="0.35"/>
 
-                                    <!-- Upper Right Blade -->
-                                    <path d="M100 155 Q144 100 158 58 Q126 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
-                                    <line x1="156" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+                                    <!-- 4. Lower Left Blade -->
+                                    <path class="leaf-blade blade-lower-left" d="M100 154 C81 143 63 135 55 131 L55 135 L45 125 L44 129 L34 119 L33 123 L20 108 L31 116 L29 119 L41 128 L39 132 L53 140 L50 144 L67 150 C77 153 88 154 100 154 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.0" />
+                                    <!-- Lower Left Veins -->
+                                    <line x1="22" y1="110" x2="100" y2="154" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+                                    <path d="M76 146 L64 140 M60 137 L49 131 M44 127 L35 121" stroke="#ffffff" stroke-width="0.6" opacity="0.3"/>
 
-                                    <!-- Mid Left Blade -->
-                                    <path d="M100 155 Q34 136 22 108 Q64 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
-                                    <line x1="24" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
-
-                                    <!-- Mid Right Blade -->
-                                    <path d="M100 155 Q166 136 178 108 Q136 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
-                                    <line x1="176" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
-
-                                    <!-- Lower Left Blade (Smallest) -->
-                                    <path d="M100 155 Q52 165 38 158 Q72 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
-
-                                    <!-- Lower Right Blade (Smallest) -->
-                                    <path d="M100 155 Q148 165 162 158 Q128 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
+                                    <!-- 5. Lower Right Blade -->
+                                    <path class="leaf-blade blade-lower-right" d="M100 154 C119 143 137 135 145 131 L145 135 L155 125 L156 129 L166 119 L167 123 L180 108 L169 116 L171 119 L159 128 L161 132 L147 140 L150 144 L133 150 C123 153 112 154 100 154 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.0" />
+                                    <!-- Lower Right Veins -->
+                                    <line x1="178" y1="110" x2="100" y2="154" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+                                    <path d="M124 146 L136 140 M140 137 L151 131 M156 127 L165 121" stroke="#ffffff" stroke-width="0.6" opacity="0.3"/>
 
                                     <!-- Leaf Stem -->
-                                    <path d="M100 155 L100 178" stroke="#39ff14" stroke-width="2.5" stroke-linecap="round" />
+                                    <path d="M100 154 C100 162 99 170 97 178" stroke="#39ff14" stroke-width="2.6" stroke-linecap="round" />
                                 </g>
                             </svg>
                         </div>

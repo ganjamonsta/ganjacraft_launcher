@@ -1,0 +1,214 @@
+/* ==========================================================================
+   Ganj4Craft Launcher — Shared Keyframes & Animations
+   Все общие @keyframes в одном месте — без дубликатов
+   ========================================================================== */
+
+/* ── Fade ── */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInCentered {
+    from { opacity: 0; transform: translateY(calc(-50% + 20px)); }
+    to { opacity: 1; transform: translateY(-50%); }
+}
+
+/* ── Spin ── */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Pulse ── */
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(var(--gc-accent-rgb), 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(var(--gc-accent-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--gc-accent-rgb), 0); }
+}
+
+@keyframes pulse-indicator {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+@keyframes badge-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 6px var(--gc-green), 0 0 12px rgba(var(--gc-green-rgb), 0.6);
+    }
+    50% {
+        transform: scale(1.4);
+        box-shadow: 0 0 10px var(--gc-green), 0 0 20px rgba(var(--gc-green-rgb), 0.95);
+    }
+}
+
+/* ── Unified Spinner ── */
+@keyframes unified-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Settings Drop/Slide ── */
+@keyframes settings-drop {
+    0% { transform: translateY(-100%); opacity: 1; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes settings-slideup {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-100%); opacity: 0.5; }
+}
+
+@keyframes tabs-drop {
+    0% { transform: translateY(-105%); opacity: 1; }
+    50% { transform: translateY(0); opacity: 1; }
+    65% { transform: translateY(-2px); }
+    85% { transform: translateY(1px); }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes tabs-slideup {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-105%); opacity: 0; }
+}
+
+/* ── Gallery ViewPager Tab Slide ── */
+@keyframes gallery-slide-out-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+@keyframes gallery-slide-in-right {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes gallery-slide-out-right {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes gallery-slide-in-left {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
+/* ── Sub-tab Transitions ── */
+@keyframes subtabCategoryIn {
+    0% { opacity: 1; transform: translateY(14px) scale(0.97); }
+    70% { opacity: 1; transform: translateY(-1px) scale(1.002); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes subtabFadeIn {
+    0% { opacity: 1; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes subtabSlideInRight {
+    0% { opacity: 1; transform: translateX(36px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes subtabSlideOutLeft {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(-36px); }
+}
+
+@keyframes subtabSlideInLeft {
+    0% { opacity: 1; transform: translateX(-36px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes subtabSlideOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(36px); }
+}
+
+/* ── Subtab transition classes ── */
+.subtab-enter-right {
+    will-change: transform, opacity;
+    animation: subtabSlideInRight 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.subtab-exit-left {
+    will-change: transform, opacity;
+    animation: subtabSlideOutLeft 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.subtab-enter-left {
+    will-change: transform, opacity;
+    animation: subtabSlideInLeft 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.subtab-exit-right {
+    will-change: transform, opacity;
+    animation: subtabSlideOutRight 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+/* ── Inertia Cascade Motion System ── */
+@keyframes inertia-enter-right {
+    0% { opacity: 1; transform: translateX(100px); }
+    75% { opacity: 1; transform: translateX(-4px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes inertia-enter-left {
+    0% { opacity: 1; transform: translateX(-100px); }
+    75% { opacity: 1; transform: translateX(4px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes inertia-enter-down {
+    0% { opacity: 1; transform: translateY(-80px); }
+    75% { opacity: 1; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes inertia-enter-up {
+    0% { opacity: 1; transform: translateY(80px); }
+    75% { opacity: 1; transform: translateY(-4px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Cascade delay matrix (up to 12 children) */
+.inertia-cascade > *:nth-child(1) { animation-delay: 20ms !important; }
+.inertia-cascade > *:nth-child(2) { animation-delay: 60ms !important; }
+.inertia-cascade > *:nth-child(3) { animation-delay: 100ms !important; }
+.inertia-cascade > *:nth-child(4) { animation-delay: 140ms !important; }
+.inertia-cascade > *:nth-child(5) { animation-delay: 180ms !important; }
+.inertia-cascade > *:nth-child(6) { animation-delay: 220ms !important; }
+.inertia-cascade > *:nth-child(7) { animation-delay: 260ms !important; }
+.inertia-cascade > *:nth-child(8) { animation-delay: 300ms !important; }
+.inertia-cascade > *:nth-child(9) { animation-delay: 340ms !important; }
+.inertia-cascade > *:nth-child(10) { animation-delay: 380ms !important; }
+.inertia-cascade > *:nth-child(11) { animation-delay: 420ms !important; }
+.inertia-cascade > *:nth-child(12) { animation-delay: 460ms !important; }
+
+/* ── Save Button Slide ── */
+@keyframes save-btn-slide-in {
+    0% { transform: translateX(120px); opacity: 1; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Modal Content Stagger ── */
+@keyframes modal-content-stagger {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Joint Progress ── */
+@keyframes burn-pulse {
+    from { transform: translateY(-50%) scale(0.9); opacity: 0.8; }
+    to { transform: translateY(-50%) scale(1.1); opacity: 1; }
+}
+
+@keyframes smoke-rise {
+    0% { transform: translateY(0) scale(1); opacity: 0.5; }
+    100% { transform: translateY(-40px) scale(2); opacity: 0; }
+}
