@@ -30,7 +30,7 @@ const BASE_URL = 'https://launcher.ganj4craft.ru';
 const SITE_URL = 'https://ganj4craft.ru';
 
 // Discord Rich Presence Application ID
-const DISCORD_CLIENT_ID = '1345077465352634408';
+const DISCORD_CLIENT_ID = '1407381680871833662';
 
 
 const MIRROR_BASE = `${BASE_URL}/mirror`;
