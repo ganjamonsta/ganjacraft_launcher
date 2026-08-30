@@ -189,14 +189,15 @@
 #tab-general .setting-control { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
 /* Setting Select */
-.setting-select { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--gc-border-medium); border-radius: var(--gc-radius-sm); color: #eee; padding: 6px 12px; font-size: var(--gc-font-md); outline: none; cursor: pointer; transition: all 0.2s ease; }
-.setting-select:hover { border-color: rgba(var(--gc-accent-rgb), 0.5); background: rgba(0, 0, 0, 0.6); }
-.setting-select:focus { border-color: var(--gc-accent); box-shadow: 0 0 8px rgba(var(--gc-accent-rgb), 0.3); }
-.setting-select option { background: #1e1e1e; color: var(--gc-text-white); padding: 6px; }
+.setting-select { background: rgba(14, 18, 24, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; color: #e2e8f0; padding: 0 10px; font-size: 11.5px; font-weight: 500; height: 28px; outline: none; cursor: pointer; transition: all 0.2s ease; }
+.setting-select:hover { border-color: rgba(var(--gc-accent-rgb), 0.5); background: rgba(20, 26, 34, 0.95); }
+.setting-select:focus { border-color: var(--gc-accent); box-shadow: 0 0 0 2px rgba(var(--gc-accent-rgb), 0.15); }
+.setting-select option { background: #141820; color: #f8fafc; padding: 8px 12px; }
 
-#tab-general .setting-select { background: var(--gc-surface-input); border: 1px solid var(--gc-border-default); border-radius: 5px; color: var(--gc-text-secondary); padding: 3px 6px; font-size: var(--gc-font-sm); height: 25px; outline: none; cursor: pointer; min-width: 130px; max-width: 150px; transition: border-color 0.2s ease, background 0.2s ease; }
-#tab-general .setting-select:hover { border-color: rgba(var(--gc-green-rgb), 0.4); background: rgba(18, 22, 28, 0.95); }
-#tab-general .setting-select:focus { border-color: var(--gc-green); box-shadow: 0 0 0 2px rgba(var(--gc-green-rgb), 0.15); }
+#tab-general .setting-select { background: rgba(14, 18, 24, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; color: #e2e8f0; padding: 0 10px; font-size: 11.5px; font-weight: 500; height: 28px; outline: none; cursor: pointer; width: 145px; min-width: 145px; max-width: 145px; transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; }
+#tab-general .setting-select:hover { border-color: rgba(var(--gc-green-rgb), 0.45); background: rgba(20, 26, 34, 0.98); }
+#tab-general .setting-select:focus { border-color: var(--gc-green); box-shadow: 0 0 0 2px rgba(var(--gc-green-rgb), 0.15); background: rgba(20, 26, 34, 0.98); }
+#tab-general .setting-select option { background: #141820; color: #f8fafc; padding: 6px 10px; }
 
 /* Path Control */
 .path-control { max-width: 320px; flex: 1; }

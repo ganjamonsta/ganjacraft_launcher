@@ -156,7 +156,7 @@ async function render3dSkin(username) {
                     }
                     if (player.skin.leftArm) {
                         if (weaponId === 'tacz_minigun') {
-                            player.skin.leftArm.rotation.set(-1.25, 0.65, -0.30);
+                            player.skin.leftArm.rotation.set(-61.25, 16.65, -16.30);
                         } else if (weaponId === 'tacz_rpg7') {
                             player.skin.leftArm.rotation.set(-Math.PI / 2.05, 0.70, -0.30);
                         } else {
@@ -328,7 +328,7 @@ async function render2dSkin(username) {
         const startY = 10;
 
         // Рисуем персонажа по частям (Head, Body, Arms, Legs)
-        
+
         // 1. Голова (8x8 из 8,8)
         ctx.drawImage(img, 8, 8, 8, 8, centerX - 4 * scale, startY, 8 * scale, 8 * scale);
         // Голова оверлей (40,8)
