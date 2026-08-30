@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.0.185",
+    "date": "2026-08-30T12:40:49.070Z",
+    "timestamp": 1788093649,
+    "title": "Релиз v1.0.185",
+    "description": "Улучшен визуал страницы патчноутов",
+    "changes": [
+      "✨ Implement unified design system with new global stylesheets and settings architecture",
+      "✨ Implement changelog manager and stylesheet for launcher updates UI",
+      "✨ Implement changelog manager and define UI styles for release feed, badges, and patch notes",
+      "✨ Implement changelog manager and define UI styles for release feed and patch notes",
+      "🐛 Use local electron-builder binary in trigger script",
+      "🐛 Add three dependency to package.json and improve remote linux build script",
+      "✨ Add dashboard styles and launcher updater module to improve UI and game management capabilities"
+    ]
+  },
+  {
     "version": "1.0.184",
     "date": "2026-08-30T12:04:53.238Z",
     "timestamp": 1788091493,
