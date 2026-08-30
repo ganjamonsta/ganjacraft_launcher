@@ -40,7 +40,7 @@
 /* ── Server Status Widget (top-right corner) ── */
 #server-status-widget {
     position: absolute;
-    top: 16px; right: 16px;
+    top: 52px; right: 16px;
     background: rgba(20, 20, 20, 0.6);
     backdrop-filter: blur(6px);
     padding: 8px 12px;
@@ -134,7 +134,7 @@
 /* ── 1. Left: Player Character & Stats ── */
 .player-character-section {
     grid-column: 1;
-    width: 100%; max-width: 280px; height: 100%;
+    width: 100%; max-width: 220px; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     box-sizing: border-box;
     background: transparent; border: none; box-shadow: none;
@@ -223,7 +223,7 @@
 }
 
 .skin-viewer-wrapper.frameless-skin {
-    width: 380px; flex: 1 1 auto; height: 100%; min-height: 0; max-height: 375px;
+    width: 220px; flex: 1 1 auto; height: 100%; min-height: 0; max-height: 320px;
     display: flex; align-items: center; justify-content: center;
     overflow: visible; position: relative; cursor: grab;
     background: transparent; border: none; box-shadow: none; margin: 0;
@@ -231,7 +231,8 @@
 .skin-viewer-wrapper.frameless-skin:active { cursor: grabbing; }
 
 .skin-viewer-wrapper canvas {
-    width: 380px !important; height: 100% !important; max-height: 375px !important;
+    /* 3D рендер остаётся 380px (высокое качество), CSS масштабирует до 220px — суперсэмплинг */
+    width: 220px !important; height: auto !important; max-height: 320px !important;
     display: block;
     filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.75));
     overflow: visible;
