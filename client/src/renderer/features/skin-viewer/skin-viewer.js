@@ -156,7 +156,7 @@ async function render3dSkin(username) {
                     }
                     if (player.skin.leftArm) {
                         if (weaponId === 'tacz_minigun') {
-                            player.skin.leftArm.rotation.set(-61.25, 16.65, -16.30);
+                            player.skin.leftArm.rotation.set(-1.25, 0.65, -0.30);
                         } else if (weaponId === 'tacz_rpg7') {
                             player.skin.leftArm.rotation.set(-Math.PI / 2.05, 0.70, -0.30);
                         } else {
@@ -192,7 +192,7 @@ async function render3dSkin(username) {
                         // Тяжелая поза минигана (стрельба от бедра)
                         player.skin.rightArm.rotation.x = -0.75 + breath;
                         player.skin.rightArm.rotation.y = -0.15;
-                        player.skin.rightArm.rotation.z = 10.10;
+                        player.skin.rightArm.rotation.z = 0.10;
                     } else if (weaponId === 'tacz_rpg7') {
                         // РПГ на плече
                         player.skin.rightArm.rotation.x = -Math.PI / 2.10 + breath;
