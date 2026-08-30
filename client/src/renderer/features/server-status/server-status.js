@@ -151,10 +151,15 @@ export async function updateServerStatus() {
                 livePlayerCount.textContent = `${onlineCount} / ${maxCount}`;
             }
 
+            const mainLayout = document.querySelector('.main-dashboard-layout');
             if (Array.isArray(list) && list.length > 0) {
                 if (liveCard) {
                     liveCard.classList.add('has-players');
                     liveCard.classList.remove('empty-card');
+                }
+                if (mainLayout) {
+                    mainLayout.classList.add('has-players');
+                    mainLayout.classList.remove('empty-card');
                 }
                 if (livePlayersContainer) {
                     livePlayersContainer.innerHTML = list.map(p => {
@@ -175,6 +180,10 @@ export async function updateServerStatus() {
                 if (liveCard) {
                     liveCard.classList.remove('has-players');
                     liveCard.classList.add('empty-card');
+                }
+                if (mainLayout) {
+                    mainLayout.classList.remove('has-players');
+                    mainLayout.classList.add('empty-card');
                 }
                 if (livePlayersContainer) {
                     livePlayersContainer.innerHTML = '';
@@ -200,9 +209,14 @@ export async function updateServerStatus() {
                 liveDot.title = 'Сервер недоступен';
             }
 
+            const mainLayout = document.querySelector('.main-dashboard-layout');
             if (liveCard) {
                 liveCard.classList.remove('has-players');
                 liveCard.classList.add('empty-card');
+            }
+            if (mainLayout) {
+                mainLayout.classList.remove('has-players');
+                mainLayout.classList.add('empty-card');
             }
             if (liveStatusText) {
                 liveStatusText.textContent = 'ОФФЛАЙН';
