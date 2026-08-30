@@ -126,10 +126,89 @@
 .changelog-news-link { color: var(--gc-cyan); text-decoration: underline; transition: color 0.2s ease; cursor: pointer; }
 .changelog-news-link:hover { color: #80d8ff; }
 
-/* ── Change Groups ── */
+/* ── Change Groups (Collapsible) ── */
 .changelog-group { display: flex; flex-direction: column; gap: var(--gc-gap-sm); }
-.changelog-section-title { display: flex; align-items: center; gap: var(--gc-gap-sm); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
-.changelog-section-title .title-dot { width: 7px; height: 7px; border-radius: var(--gc-radius-round); }
+.changelog-group.collapsible {
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: var(--gc-radius-lg);
+    padding: 6px 8px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.changelog-group.collapsible:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+}
+.changelog-group.collapsible.is-open {
+    padding-bottom: 10px;
+    background: rgba(0, 0, 0, 0.18);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.changelog-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+.changelog-group-toggle {
+    cursor: pointer;
+    user-select: none;
+    padding: 6px 8px;
+    border-radius: var(--gc-radius-md);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+.changelog-group-toggle:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+.changelog-group-toggle:active {
+    transform: scale(0.995);
+}
+
+.group-title-left {
+    display: flex;
+    align-items: center;
+    gap: var(--gc-gap-sm);
+    min-width: 0;
+}
+.changelog-section-title .title-dot { width: 7px; height: 7px; border-radius: var(--gc-radius-round); flex-shrink: 0; }
+
+.group-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--gc-radius-sm);
+    color: #8c9ba5;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease, background 0.15s ease;
+    flex-shrink: 0;
+}
+.changelog-group-toggle:hover .group-chevron {
+    color: #f5f5f5;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+.changelog-group.is-open .group-chevron {
+    transform: rotate(180deg);
+}
+.changelog-group.is-collapsed .group-chevron {
+    transform: rotate(0deg);
+}
+
+.changelog-group-body {
+    margin-top: 6px;
+    animation: fadeInGroup 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeInGroup {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 /* ── Mod Cards Grid ── */
 .changelog-mods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; width: 100%; }

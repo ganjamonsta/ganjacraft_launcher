@@ -311,6 +311,40 @@ export function renderChangelogList() {
 
         container.appendChild(card);
     });
+
+    // Навешиваем обработчик сворачивания/разворачивания групп
+    if (!container._hasGroupToggleListener) {
+        container._hasGroupToggleListener = true;
+        container.addEventListener('click', (e) => {
+            const toggle = e.target.closest('.changelog-group-toggle');
+            if (!toggle) return;
+            const group = toggle.closest('.changelog-group');
+            if (!group) return;
+            const body = group.querySelector('.changelog-group-body');
+            if (!body) return;
+
+            const isCollapsed = group.classList.contains('is-collapsed') || body.classList.contains('hidden');
+            if (isCollapsed) {
+                group.classList.remove('is-collapsed');
+                group.classList.add('is-open');
+                body.classList.remove('hidden');
+            } else {
+                group.classList.remove('is-open');
+                group.classList.add('is-collapsed');
+                body.classList.add('hidden');
+            }
+        });
+
+        container.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const toggle = e.target.closest('.changelog-group-toggle');
+                if (toggle) {
+                    e.preventDefault();
+                    toggle.click();
+                }
+            }
+        });
+    }
 }
 
 /**
@@ -475,7 +509,35 @@ function renderActivityCard(item) {
 }
 
 /**
- * Рендер карточки обновления сборки (чётко разделено по группам: Активности, Клиент, Сервер, KubeJS, Конфиги)
+ * Рендер отдельной сворачиваемой группы изменений
+ */
+function renderChangelogGroup({ labelClass, dotClass, title, count, itemsHtml, isOpen = false }) {
+    if (!itemsHtml || count <= 0) return '';
+
+    return `
+        <div class="changelog-group collapsible ${isOpen ? 'is-open' : 'is-collapsed'}">
+            <div class="changelog-section-title ${labelClass} changelog-group-toggle" role="button" tabindex="0" title="Нажмите, чтобы свернуть или развернуть">
+                <div class="group-title-left">
+                    <span class="title-dot ${dotClass}"></span>
+                    <span class="group-title-text">${title} (${count})</span>
+                </div>
+                <div class="group-chevron">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+            </div>
+            <div class="changelog-group-body ${isOpen ? '' : 'hidden'}">
+                <div class="changelog-mods-grid">
+                    ${itemsHtml}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Рендер карточки обновления сборки (чётко разделено по группам, с возможностью сворачивания)
  */
 function renderPackCardHtml(item, isLatest) {
     const summary = item.summary || {};
@@ -572,174 +634,137 @@ function renderPackCardHtml(item, isLatest) {
         `;
     }
 
-    // 1. ГРУППА: ВНУТРИИГРОВЫЕ АКТИВНОСТИ И РЕЖИМЫ (CSC, Air Combat, Crysis, GunGame, Боссы, Казино...)
+    // 1. ГРУППА: ВНУТРИИГРОВЫЕ АКТИВНОСТИ И РЕЖИМЫ (Свернуто по умолчанию)
     if (activitiesList.length > 0) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-activity">
-                    <span class="title-dot dot-activity"></span>
-                    <span>⚔️ Внутриигровые активности и режимы (${activitiesList.length})</span>
-                </div>
-                <div class="changelog-mods-grid">
-                    ${activitiesList.map(a => renderActivityCard(a)).join('')}
-                </div>
-            </div>
-        `;
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-activity',
+            dotClass: 'dot-activity',
+            title: '⚔️ Внутриигровые активности и режимы',
+            count: activitiesList.length,
+            itemsHtml: activitiesList.map(a => renderActivityCard(a)).join(''),
+            isOpen: false
+        });
     }
 
-    // 2. ГРУППА: ДРЕВО НАВЫКОВ И ПРОКАЧКИ (Puffish Skills)
+    // 2. ГРУППА: ДРЕВО НАВЫКОВ И ПРОКАЧКИ (Свернуто по умолчанию)
     if (skillsList.length > 0) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-skill">
-                    <span class="title-dot dot-skill"></span>
-                    <span>⭐ Древо навыков и прокачка (${skillsList.length})</span>
-                </div>
-                <div class="changelog-mods-grid">
-                    ${skillsList.map(s => renderActivityCard(s)).join('')}
-                </div>
-            </div>
-        `;
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-skill',
+            dotClass: 'dot-skill',
+            title: '⭐ Древо навыков и прокачка',
+            count: skillsList.length,
+            itemsHtml: skillsList.map(s => renderActivityCard(s)).join(''),
+            isOpen: false
+        });
     }
 
-    // 3. ГРУППА: КВЕСТОВЫЕ ЦЕПОЧКИ И ЗАДАНИЯ (FTB Quests)
+    // 3. ГРУППА: КВЕСТОВЫЕ ЦЕПОЧКИ И ЗАДАНИЯ (Свернуто по умолчанию)
     if (questsList.length > 0) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-quest">
-                    <span class="title-dot dot-quest"></span>
-                    <span>📜 Квестовые цепочки и задания (${questsList.length})</span>
-                </div>
-                <div class="changelog-mods-grid">
-                    ${questsList.map(q => renderActivityCard(q)).join('')}
-                </div>
-            </div>
-        `;
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-quest',
+            dotClass: 'dot-quest',
+            title: '📜 Квестовые цепочки и задания',
+            count: questsList.length,
+            itemsHtml: questsList.map(q => renderActivityCard(q)).join(''),
+            isOpen: false
+        });
     }
 
-    // 4. ГРУППА: СЕРВЕРНАЯ ЧАСТЬ И ГЕЙМПЛЕЙНЫЕ МОДЫ
+    // 4. ГРУППА: СЕРВЕРНЫЕ МОДЫ И ЯДРО (Свернуто по умолчанию)
     const hasServerMods = serverAdded.length > 0 || serverUpdated.length > 0 || serverRemoved.length > 0;
     if (hasServerMods) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-server">
-                    <span class="title-dot dot-server"></span>
-                    <span>⚙️ Серверные моды и ядро (${serverAdded.length + serverUpdated.length + serverRemoved.length})</span>
-                </div>
-                <div class="changelog-mods-grid">
-                    ${serverAdded.map(m => renderModCard(m, 'add')).join('')}
-                    ${serverUpdated.map(u => renderModCard(u, 'update')).join('')}
-                    ${serverRemoved.map(m => renderModCard(m, 'remove')).join('')}
-                </div>
-            </div>
-        `;
+        const serverHtml = [
+            ...serverAdded.map(m => renderModCard(m, 'add')),
+            ...serverUpdated.map(u => renderModCard(u, 'update')),
+            ...serverRemoved.map(m => renderModCard(m, 'remove'))
+        ].join('');
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-server',
+            dotClass: 'dot-server',
+            title: '⚙️ Серверные моды и ядро',
+            count: serverAdded.length + serverUpdated.length + serverRemoved.length,
+            itemsHtml: serverHtml,
+            isOpen: false
+        });
     }
 
-    // 5. ГРУППА: КЛИЕНТСКИЕ МОДЫ И ГРАФИКА
+    // 5. ГРУППА: КЛИЕНТСКИЕ МОДЫ И ГРАФИКА (РАСКРЫТО ПО ДЕФОЛТУ)
     const hasClientMods = clientAdded.length > 0 || clientUpdated.length > 0 || clientRemoved.length > 0 || packsCount > 0;
     if (hasClientMods) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-client">
-                    <span class="title-dot dot-client"></span>
-                    <span>💻 Клиентские моды и графика (${clientAdded.length + clientUpdated.length + clientRemoved.length + packsCount})</span>
-                </div>
-                <div class="changelog-mods-grid">
-                    ${clientAdded.map(m => renderModCard(m, 'add')).join('')}
-                    ${clientUpdated.map(u => renderModCard(u, 'update')).join('')}
-                    ${clientRemoved.map(m => renderModCard(m, 'remove')).join('')}
-                    ${resourcepacksList.map(r => `
-                        <div class="changelog-mod-card card-misc" title="${escapeHtml(r.path || r.name)}">
-                            <div class="mod-card-left">
-                                <div class="mod-type-icon icon-misc">🎨</div>
-                                <div class="mod-info-block">
-                                    <span class="mod-main-name">${escapeHtml(r.label || r.name)}</span>
-                                    <span class="mod-sub-filename">${escapeHtml(r.path || r.name)}</span>
-                                </div>
-                            </div>
+        const clientHtml = [
+            ...clientAdded.map(m => renderModCard(m, 'add')),
+            ...clientUpdated.map(u => renderModCard(u, 'update')),
+            ...clientRemoved.map(m => renderModCard(m, 'remove')),
+            ...resourcepacksList.map(r => `
+                <div class="changelog-mod-card card-misc" title="${escapeHtml(r.path || r.name)}">
+                    <div class="mod-card-left">
+                        <div class="mod-type-icon icon-misc">🎨</div>
+                        <div class="mod-info-block">
+                            <span class="mod-main-name">${escapeHtml(r.label || r.name)}</span>
+                            <span class="mod-sub-filename">${escapeHtml(r.path || r.name)}</span>
                         </div>
-                    `).join('')}
+                    </div>
                 </div>
-            </div>
-        `;
+            `)
+        ].join('');
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-client',
+            dotClass: 'dot-client',
+            title: '💻 Клиентские моды и графика',
+            count: clientAdded.length + clientUpdated.length + clientRemoved.length + packsCount,
+            itemsHtml: clientHtml,
+            isOpen: true // <<< РАСКРЫТО ПО ДЕФОЛТУ
+        });
     }
 
-    // 6. ГРУППА: БАЛАНС, КРАФТЫ И ДРУГИЕ СКРИПТЫ KUBEJS
+    // 6. ГРУППА: БАЛАНС, КРАФТЫ И СЕРВЕРНЫЕ СКРИПТЫ (Свернуто по умолчанию)
     const otherScripts = scriptsList.filter(s => {
         const cat = s.category || '';
         return !cat.startsWith('activity_') && !cat.startsWith('skill_') && cat !== 'skills' && !cat.startsWith('quest_') && cat !== 'quests';
     });
     if (otherScripts.length > 0) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-script">
-                    <span class="title-dot dot-script"></span>
-                    <span>🛠️ Баланс, крафты и серверные скрипты (${otherScripts.length})</span>
-                </div>
-                <div class="changelog-mods-grid">
-                    ${otherScripts.map(s => `
-                        <div class="changelog-mod-card card-script" title="${escapeHtml(s.path || s.name)}">
-                            <div class="mod-card-left">
-                                <div class="mod-type-icon icon-script">${escapeHtml(s.icon || '🛠️')}</div>
-                                <div class="mod-info-block">
-                                    <span class="mod-main-name">${escapeHtml(s.label || s.name)}</span>
-                                    <span class="mod-sub-filename">${escapeHtml(s.path || s.name)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
+        const scriptsHtml = otherScripts.map(s => `
+            <div class="changelog-mod-card card-script" title="${escapeHtml(s.path || s.name)}">
+                <div class="mod-card-left">
+                    <div class="mod-type-icon icon-script">${escapeHtml(s.icon || '🛠️')}</div>
+                    <div class="mod-info-block">
+                        <span class="mod-main-name">${escapeHtml(s.label || s.name)}</span>
+                        <span class="mod-sub-filename">${escapeHtml(s.path || s.name)}</span>
+                    </div>
                 </div>
             </div>
-        `;
-    } else if (scriptsCount > 0 && activitiesList.length === 0) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-script">
-                    <span class="title-dot dot-script"></span>
-                    <span>📜 Баланс и скрипты KubeJS (${scriptsCount})</span>
-                </div>
-                <div class="changelog-misc-wrap">
-                    <span class="changelog-misc-chip">📜 Обновлены серверные скрипты и рецепты крафтов (${scriptsCount})</span>
-                </div>
-            </div>
-        `;
+        `).join('');
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-script',
+            dotClass: 'dot-script',
+            title: '🛠️ Баланс, крафты и серверные скрипты',
+            count: otherScripts.length,
+            itemsHtml: scriptsHtml,
+            isOpen: false
+        });
     }
 
-    // 5. ГРУППА: КОНФИГУРАЦИИ СЕРВЕРА
+    // 7. ГРУППА: КОНФИГУРАЦИИ СЕРВЕРА (Свернуто по умолчанию)
     if (configsList.length > 0) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-config">
-                    <span class="title-dot dot-config"></span>
-                    <span>🔧 Конфигурации сервера (${configsList.length})</span>
-                </div>
-                <div class="changelog-mods-grid">
-                    ${configsList.map(c => `
-                        <div class="changelog-mod-card card-config" title="${escapeHtml(c.path || c.name)}">
-                            <div class="mod-card-left">
-                                <div class="mod-type-icon icon-config">⚙️</div>
-                                <div class="mod-info-block">
-                                    <span class="mod-main-name">${escapeHtml(c.label || c.name)}</span>
-                                    <span class="mod-sub-filename">${escapeHtml(c.path || c.name)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
+        const configsHtml = configsList.map(c => `
+            <div class="changelog-mod-card card-config" title="${escapeHtml(c.path || c.name)}">
+                <div class="mod-card-left">
+                    <div class="mod-type-icon icon-config">⚙️</div>
+                    <div class="mod-info-block">
+                        <span class="mod-main-name">${escapeHtml(c.label || c.name)}</span>
+                        <span class="mod-sub-filename">${escapeHtml(c.path || c.name)}</span>
+                    </div>
                 </div>
             </div>
-        `;
-    } else if (configsCount > 0) {
-        sectionsHtml += `
-            <div class="changelog-group">
-                <div class="changelog-section-title group-label-config">
-                    <span class="title-dot dot-config"></span>
-                    <span>🔧 Конфигурации сервера (${configsCount})</span>
-                </div>
-                <div class="changelog-misc-wrap">
-                    <span class="changelog-misc-chip">⚙️ Обновлены серверные конфигурации и баланс (${configsCount})</span>
-                </div>
-            </div>
-        `;
+        `).join('');
+        sectionsHtml += renderChangelogGroup({
+            labelClass: 'group-label-config',
+            dotClass: 'dot-config',
+            title: '🔧 Конфигурации сервера',
+            count: configsList.length,
+            itemsHtml: configsHtml,
+            isOpen: false
+        });
     }
 
     if (activitiesList.length === 0 && !hasServerMods && !hasClientMods && otherScripts.length === 0 && configsCount === 0 && !item.custom_note) {
