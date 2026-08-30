@@ -389,12 +389,10 @@ class EquipmentManager {
         if (this.currentEquipment.chest !== 'none') {
             const item = EQUIPMENT_CATALOG.chest[this.currentEquipment.chest];
             if (item && item.armorTex) {
-                if (skin && skin.body) {
-                    const mesh = armorMeshBuilder.buildChestplate(item.armorTex, skin, item);
-                    if (mesh) {
-                        skin.body.add(mesh);
-                        this.activeAttachedObjects.set('chest', mesh);
-                    }
+                const target = (rig && rig.bones) ? rig.bones : skin;
+                const mesh = armorMeshBuilder.buildChestplate(item.armorTex, target, item);
+                if (mesh) {
+                    this.activeAttachedObjects.set('chest', mesh);
                 }
             }
         }
@@ -402,16 +400,18 @@ class EquipmentManager {
         // 3. Поножи
         if (this.currentEquipment.legs !== 'none') {
             const item = EQUIPMENT_CATALOG.legs[this.currentEquipment.legs];
-            if (item && item.armorLegsTex && skin) {
-                armorMeshBuilder.buildLeggings(item.armorLegsTex, skin, item);
+            if (item && item.armorLegsTex) {
+                const target = (rig && rig.bones) ? rig.bones : skin;
+                armorMeshBuilder.buildLeggings(item.armorLegsTex, target, item);
             }
         }
 
         // 4. Ботинки
         if (this.currentEquipment.boots !== 'none') {
             const item = EQUIPMENT_CATALOG.boots[this.currentEquipment.boots];
-            if (item && item.armorTex && skin) {
-                armorMeshBuilder.buildBoots(item.armorTex, skin, item);
+            if (item && item.armorTex) {
+                const target = (rig && rig.bones) ? rig.bones : skin;
+                armorMeshBuilder.buildBoots(item.armorTex, target, item);
             }
         }
 

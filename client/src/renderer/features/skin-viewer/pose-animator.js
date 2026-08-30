@@ -29,7 +29,7 @@ export class PoseAnimator {
         // 1. Поворот торса и головы (слежение за курсором)
         if (rig.bones.torso) {
             rig.bones.torso.rotation.y = cursor.bodyY + breathSlow * 0.5;
-            rig.bones.torso.position.y = 12 + breath * 0.5;
+            rig.bones.torso.position.y = breath * 0.5;
         }
 
         if (rig.bones.head) {

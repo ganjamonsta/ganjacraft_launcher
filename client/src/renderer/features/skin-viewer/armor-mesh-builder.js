@@ -90,106 +90,147 @@ class ArmorMeshBuilder {
     }
 
     // ── 🎽 НАГРУДНИК ──
-    buildChestplate(textureUrl, skin, options = {}) {
+    buildChestplate(textureUrl, target, options = {}) {
         const group = new THREE.Group();
         group.name = `ARMOR_CHEST_${options.id || 'custom'}`;
         const mat = this.createMaterial(textureUrl);
+
+        const isRig = !!(target && target.torso);
 
         // Торс нагрудника (Body Layer 1: u=16, v=16, w=8, h=12, d=4)
         const bodyGeo = new THREE.BoxGeometry(8.9, 12.5, 4.8);
         setMinecraftUVs(bodyGeo, 16, 16, 8, 12, 4, 64, 32);
         const bodyMesh = new THREE.Mesh(bodyGeo, mat);
-        bodyMesh.position.set(0, 0, 0);
-        group.add(bodyMesh);
+        bodyMesh.name = `ARMOR_BODY_${options.id || 'custom'}`;
+        bodyMesh.position.set(0, isRig ? -6.0 : 0, 0);
+
+        if (isRig) {
+            target.torso.add(bodyMesh);
+        } else if (target && target.body) {
+            target.body.add(bodyMesh);
+        }
 
         // Наплечник правый (Right Arm Layer 1: u=40, v=16, w=4, h=12, d=4)
-        const pauldronGeoR = new THREE.BoxGeometry(4.8, 12.5, 4.8);
-        setMinecraftUVs(pauldronGeoR, 40, 16, 4, 12, 4, 64, 32);
+        const pauldronGeoR = new THREE.BoxGeometry(4.8, isRig ? 6.5 : 12.5, 4.8);
+        setMinecraftUVs(pauldronGeoR, 40, 16, 4, isRig ? 6 : 12, 4, 64, 32);
 
-        if (skin.rightArm) {
+        if (isRig && target.rightUpperArm) {
+            const pauldronR = new THREE.Mesh(pauldronGeoR, mat);
+            pauldronR.name = `ARMOR_PAULDRON_R_${options.id || 'custom'}`;
+            pauldronR.position.set(0, -3.0, 0);
+            target.rightUpperArm.add(pauldronR);
+        } else if (target && target.rightArm) {
             const pauldronR = new THREE.Mesh(pauldronGeoR, mat);
             pauldronR.name = `ARMOR_PAULDRON_R_${options.id || 'custom'}`;
             pauldronR.position.set(-1.0, -4.0, 0);
-            skin.rightArm.add(pauldronR);
+            target.rightArm.add(pauldronR);
         }
 
         // Наплечник левый (Left Arm Layer 1: u=40, v=16 mirrored в 64x32)
-        const pauldronGeoL = new THREE.BoxGeometry(4.8, 12.5, 4.8);
-        setMinecraftUVs(pauldronGeoL, 40, 16, 4, 12, 4, 64, 32);
+        const pauldronGeoL = new THREE.BoxGeometry(4.8, isRig ? 6.5 : 12.5, 4.8);
+        setMinecraftUVs(pauldronGeoL, 40, 16, 4, isRig ? 6 : 12, 4, 64, 32);
 
-        if (skin.leftArm) {
+        if (isRig && target.leftUpperArm) {
+            const pauldronL = new THREE.Mesh(pauldronGeoL, mat);
+            pauldronL.name = `ARMOR_PAULDRON_L_${options.id || 'custom'}`;
+            pauldronL.position.set(0, -3.0, 0);
+            target.leftUpperArm.add(pauldronL);
+        } else if (target && target.leftArm) {
             const pauldronL = new THREE.Mesh(pauldronGeoL, mat);
             pauldronL.name = `ARMOR_PAULDRON_L_${options.id || 'custom'}`;
             pauldronL.position.set(1.0, -4.0, 0);
-            skin.leftArm.add(pauldronL);
+            target.leftArm.add(pauldronL);
         }
 
         return group;
     }
 
     // ── 👖 ПОНОЖИ (Layer 2) ──
-    buildLeggings(textureUrl, skin, options = {}) {
+    buildLeggings(textureUrl, target, options = {}) {
         const mat = this.createMaterial(textureUrl);
+        const isRig = !!(target && target.torso);
 
         // Пояс на теле (Body Layer 2: u=16, v=16, w=8, h=12, d=4)
-        if (skin.body) {
-            const beltGeo = new THREE.BoxGeometry(8.6, 5.0, 4.6);
-            setMinecraftUVs(beltGeo, 16, 16, 8, 12, 4, 64, 32);
-            const beltMesh = new THREE.Mesh(beltGeo, mat);
-            beltMesh.name = `ARMOR_BELT_${options.id || 'custom'}`;
-            beltMesh.position.set(0, -3.8, 0);
-            skin.body.add(beltMesh);
+        const beltGeo = new THREE.BoxGeometry(8.6, 5.0, 4.6);
+        setMinecraftUVs(beltGeo, 16, 16, 8, 12, 4, 64, 32);
+        const beltMesh = new THREE.Mesh(beltGeo, mat);
+        beltMesh.name = `ARMOR_BELT_${options.id || 'custom'}`;
+        beltMesh.position.set(0, isRig ? -9.8 : -3.8, 0);
+
+        if (isRig && target.torso) {
+            target.torso.add(beltMesh);
+        } else if (target && target.body) {
+            target.body.add(beltMesh);
         }
 
         // Правая штанина (Leg Layer 2: u=0, v=16, w=4, h=12, d=4)
-        const legGeoR = new THREE.BoxGeometry(4.6, 12.2, 4.6);
-        setMinecraftUVs(legGeoR, 0, 16, 4, 12, 4, 64, 32);
+        const legGeoR = new THREE.BoxGeometry(4.6, isRig ? 6.2 : 12.2, 4.6);
+        setMinecraftUVs(legGeoR, 0, 16, 4, isRig ? 6 : 12, 4, 64, 32);
 
-        if (skin.rightLeg) {
+        if (isRig && target.rightUpperLeg) {
+            const legR = new THREE.Mesh(legGeoR, mat);
+            legR.name = `ARMOR_LEGS_R_${options.id || 'custom'}`;
+            legR.position.set(0, -3.0, 0);
+            target.rightUpperLeg.add(legR);
+        } else if (target && target.rightLeg) {
             const legR = new THREE.Mesh(legGeoR, mat);
             legR.name = `ARMOR_LEGS_R_${options.id || 'custom'}`;
             legR.position.set(0, -6.0, 0);
-            skin.rightLeg.add(legR);
+            target.rightLeg.add(legR);
         }
 
         // Левая штанина (Leg Layer 2: u=0, v=16, w=4, h=12, d=4)
-        const legGeoL = new THREE.BoxGeometry(4.6, 12.2, 4.6);
-        setMinecraftUVs(legGeoL, 0, 16, 4, 12, 4, 64, 32);
+        const legGeoL = new THREE.BoxGeometry(4.6, isRig ? 6.2 : 12.2, 4.6);
+        setMinecraftUVs(legGeoL, 0, 16, 4, isRig ? 6 : 12, 4, 64, 32);
 
-        if (skin.leftLeg) {
+        if (isRig && target.leftUpperLeg) {
+            const legL = new THREE.Mesh(legGeoL, mat);
+            legL.name = `ARMOR_LEGS_L_${options.id || 'custom'}`;
+            legL.position.set(0, -3.0, 0);
+            target.leftUpperLeg.add(legL);
+        } else if (target && target.leftLeg) {
             const legL = new THREE.Mesh(legGeoL, mat);
             legL.name = `ARMOR_LEGS_L_${options.id || 'custom'}`;
             legL.position.set(0, -6.0, 0);
-            skin.leftLeg.add(legL);
+            target.leftLeg.add(legL);
         }
     }
 
     // ── 👢 БОТИНКИ (Layer 1) ──
-    buildBoots(textureUrl, skin, options = {}) {
+    buildBoots(textureUrl, target, options = {}) {
         const mat = this.createMaterial(textureUrl);
+        const isRig = !!(target && target.torso);
 
         // Правый ботинок (Boot Layer 1: u=0, v=16, w=4, h=12, d=4)
-        // Бокс во всю длину ноги с центром в y = -6.0. В layer_1.png текстура ботинок расположена
-        // строго в нижней части, поэтому ложится на ступни со 100% пиксельной точностью Minecraft.
-        const bootGeoR = new THREE.BoxGeometry(4.8, 12.2, 4.8);
-        setMinecraftUVs(bootGeoR, 0, 16, 4, 12, 4, 64, 32);
+        const bootGeoR = new THREE.BoxGeometry(4.8, isRig ? 6.2 : 12.2, 4.8);
+        setMinecraftUVs(bootGeoR, 0, 16, 4, isRig ? 6 : 12, 4, 64, 32);
 
-        if (skin.rightLeg) {
+        if (isRig && target.rightLowerLeg) {
+            const bootR = new THREE.Mesh(bootGeoR, mat);
+            bootR.name = `ARMOR_BOOTS_R_${options.id || 'custom'}`;
+            bootR.position.set(0, -3.0, 0);
+            target.rightLowerLeg.add(bootR);
+        } else if (target && target.rightLeg) {
             const bootR = new THREE.Mesh(bootGeoR, mat);
             bootR.name = `ARMOR_BOOTS_R_${options.id || 'custom'}`;
             bootR.position.set(0, -6.0, 0);
-            skin.rightLeg.add(bootR);
+            target.rightLeg.add(bootR);
         }
 
         // Левый ботинок (Boot Layer 1: u=0, v=16, w=4, h=12, d=4)
-        const bootGeoL = new THREE.BoxGeometry(4.8, 12.2, 4.8);
-        setMinecraftUVs(bootGeoL, 0, 16, 4, 12, 4, 64, 32);
+        const bootGeoL = new THREE.BoxGeometry(4.8, isRig ? 6.2 : 12.2, 4.8);
+        setMinecraftUVs(bootGeoL, 0, 16, 4, isRig ? 6 : 12, 4, 64, 32);
 
-        if (skin.leftLeg) {
+        if (isRig && target.leftLowerLeg) {
+            const bootL = new THREE.Mesh(bootGeoL, mat);
+            bootL.name = `ARMOR_BOOTS_L_${options.id || 'custom'}`;
+            bootL.position.set(0, -3.0, 0);
+            target.leftLowerLeg.add(bootL);
+        } else if (target && target.leftLeg) {
             const bootL = new THREE.Mesh(bootGeoL, mat);
             bootL.name = `ARMOR_BOOTS_L_${options.id || 'custom'}`;
             bootL.position.set(0, -6.0, 0);
-            skin.leftLeg.add(bootL);
+            target.leftLeg.add(bootL);
         }
     }
 }

@@ -92,7 +92,7 @@ export class BedrockPlayerRig {
         // 1. Torso
         this.bones.torso = new THREE.Group();
         this.bones.torso.name = 'bone_torso';
-        this.bones.torso.position.set(0, 12, 0);
+        this.bones.torso.position.set(0, 0, 0);
         this.root.add(this.bones.torso);
 
         // 2. Head (на шее сверху торса, y = 0 relative to torso top)
@@ -104,7 +104,7 @@ export class BedrockPlayerRig {
         // 3. Right Arm (Плечо -> Локоть -> Предплечье -> Сокет)
         this.bones.rightShoulder = new THREE.Group();
         this.bones.rightShoulder.name = 'bone_right_shoulder';
-        this.bones.rightShoulder.position.set(-6, -2, 0);
+        this.bones.rightShoulder.position.set(-5, -2, 0);
         this.bones.torso.add(this.bones.rightShoulder);
 
         this.bones.rightUpperArm = new THREE.Group();
@@ -123,7 +123,7 @@ export class BedrockPlayerRig {
         // 4. Left Arm (Плечо -> Локоть -> Предплечье -> Сокет)
         this.bones.leftShoulder = new THREE.Group();
         this.bones.leftShoulder.name = 'bone_left_shoulder';
-        this.bones.leftShoulder.position.set(6, -2, 0);
+        this.bones.leftShoulder.position.set(5, -2, 0);
         this.bones.torso.add(this.bones.leftShoulder);
 
         this.bones.leftUpperArm = new THREE.Group();
@@ -142,7 +142,7 @@ export class BedrockPlayerRig {
         // 5. Right Leg (Бедро -> Колено -> Голень)
         this.bones.rightHip = new THREE.Group();
         this.bones.rightHip.name = 'bone_right_hip';
-        this.bones.rightHip.position.set(-2, -12, 0);
+        this.bones.rightHip.position.set(-1.9, -12, 0);
         this.bones.torso.add(this.bones.rightHip);
 
         this.bones.rightUpperLeg = new THREE.Group();
@@ -161,7 +161,7 @@ export class BedrockPlayerRig {
         // 6. Left Leg (Бедро -> Колено -> Голень)
         this.bones.leftHip = new THREE.Group();
         this.bones.leftHip.name = 'bone_left_hip';
-        this.bones.leftHip.position.set(2, -12, 0);
+        this.bones.leftHip.position.set(1.9, -12, 0);
         this.bones.torso.add(this.bones.leftHip);
 
         this.bones.leftUpperLeg = new THREE.Group();

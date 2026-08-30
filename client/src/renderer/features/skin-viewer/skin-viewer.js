@@ -138,6 +138,7 @@ async function render3dSkin(username) {
                 // Скрываем базовый недеформируемый 6-блочный меш
                 if (skinViewer3d.playerObject.skin) {
                     skinViewer3d.playerObject.skin.visible = false;
+                    skinViewer3d.playerObject.skin.traverse(o => { if (o.isMesh) o.visible = false; });
                 }
             }
 
@@ -151,6 +152,11 @@ async function render3dSkin(username) {
             skinViewer3d.animation = new skinview3d.FunctionAnimation((player, progress) => {
                 const t = progress * 1.5;
                 if (!player) return;
+
+                if (player.skin && player.skin.visible) {
+                    player.skin.visible = false;
+                    player.skin.traverse(o => { if (o.isMesh) o.visible = false; });
+                }
 
                 // Плавная интерполяция к целевым углам курсора (lerp)
                 currentHeadX += (targetHeadX - currentHeadX) * 0.12;
