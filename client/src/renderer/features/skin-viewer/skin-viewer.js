@@ -244,9 +244,9 @@ async function render3dSkin(username) {
                     }
                 }
 
-                // Ноги в боевой стойке
-                if (player.skin.rightLeg) player.skin.rightLeg.rotation.set(0.04, -0.05, 0.04);
-                if (player.skin.leftLeg) player.skin.leftLeg.rotation.set(-0.04, 0.05, -0.04);
+                // Ноги в широкой героической боевой стойке (разведение + упор)
+                if (player.skin.rightLeg) player.skin.rightLeg.rotation.set(0.18, -0.12, -0.16);
+                if (player.skin.leftLeg) player.skin.leftLeg.rotation.set(-0.14, 0.12, 0.16);
 
                 // Плащ
                 if (player.cape) {
