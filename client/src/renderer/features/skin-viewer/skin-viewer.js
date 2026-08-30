@@ -115,8 +115,10 @@ async function render3dSkin(username) {
             }
 
             // Тактическая плавная анимация (дыхание и боевая готовность оружия)
-            skinViewer3d.animation = (player, progress) => {
+            skinViewer3d.animation = new skinview3d.FunctionAnimation((player, progress) => {
                 const t = progress * 1.5;
+                if (!player || !player.skin) return;
+
                 // Дыхание головы
                 if (player.skin.head) {
                     player.skin.head.rotation.y = Math.sin(t * 0.5) * 0.05;
@@ -150,7 +152,12 @@ async function render3dSkin(username) {
                         player.skin.leftArm.rotation.z = 0;
                     }
                 }
-            };
+
+                // Плащ
+                if (player.cape) {
+                    player.cape.rotation.x = Math.sin(t * 0.6) * 0.03 + Math.PI * 0.06;
+                }
+            });
 
             // Управление вращением
             if (skinViewer3d.controls) {
