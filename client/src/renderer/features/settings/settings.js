@@ -163,7 +163,7 @@ export function toggleMainUIVisibility(show, config) {
     if (serverWidget) {
         serverWidget.style.transition = show
             ? 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease'
-            : 'transform 0.15s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+            : 'transform 0.2s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease';
         serverWidget.style.transform = show ? 'none' : 'translateY(-150%)';
         serverWidget.style.opacity = show ? '1' : '0';
         serverWidget.style.pointerEvents = show ? 'auto' : 'none';
@@ -173,7 +173,7 @@ export function toggleMainUIVisibility(show, config) {
     if (appVersion) {
         appVersion.style.transition = show
             ? 'transform 0.35s ease 80ms, opacity 0.35s ease 80ms'
-            : 'transform 0.15s ease, opacity 0.15s ease';
+            : 'transform 0.2s ease, opacity 0.2s ease';
         appVersion.style.transform = show ? 'none' : 'translateY(150%)';
         appVersion.style.opacity = show ? '1' : '0';
     }
@@ -185,12 +185,12 @@ export function toggleMainUIVisibility(show, config) {
             authContainer.style.pointerEvents = show ? 'auto' : 'none';
         }
 
-        // Анимируем левую часть (игрок)
+        // Анимируем левую часть (игрок) - улетает влево
         if (playerSection) {
             playerSection.style.transition = show
                 ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 40ms, opacity 0.35s ease 40ms'
-                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
-            playerSection.style.transform = show ? 'none' : 'translateX(-130%) scale(0.9)';
+                : 'transform 0.22s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease';
+            playerSection.style.transform = show ? 'none' : 'translateX(-140%) scale(0.85)';
             playerSection.style.opacity = show ? '1' : '0';
             playerSection.style.pointerEvents = show ? 'auto' : 'none';
 
@@ -199,31 +199,32 @@ export function toggleMainUIVisibility(show, config) {
             }
         }
 
-        // Анимируем центральный заголовок
+        // Анимируем центральный заголовок - улетает вверх
         if (centerBrand) {
             centerBrand.style.transition = show
                 ? 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 70ms, opacity 0.4s ease 70ms'
-                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
-            centerBrand.style.transform = show ? 'none' : 'scale(0.7) translateY(-30px)';
+                : 'transform 0.22s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease';
+            centerBrand.style.transform = show ? 'none' : 'scale(0.65) translateY(-50px)';
             centerBrand.style.opacity = show ? '1' : '0';
+            centerBrand.style.pointerEvents = show ? 'auto' : 'none';
         }
 
-        // Анимируем блок логотипа и кнопки Play
+        // Анимируем блок логотипа и кнопки Play - улетает вправо
         if (playBrandGroup) {
             playBrandGroup.style.transition = show
                 ? 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 80ms, opacity 0.4s ease 80ms'
-                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
-            playBrandGroup.style.transform = show ? 'none' : 'scale(0.8) translateY(40px)';
+                : 'transform 0.22s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease';
+            playBrandGroup.style.transform = show ? 'none' : 'translateX(140%) scale(0.85)';
             playBrandGroup.style.opacity = show ? '1' : '0';
             playBrandGroup.style.pointerEvents = show ? 'auto' : 'none';
         }
 
-        // Анимируем правую панель со статусом сервера
+        // Анимируем правую панель со статусом сервера - улетает вправо
         if (launchHub) {
             launchHub.style.transition = show
                 ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 60ms, opacity 0.35s ease 60ms'
-                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
-            launchHub.style.transform = show ? 'none' : 'translateX(130%) scale(0.9)';
+                : 'transform 0.22s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease';
+            launchHub.style.transform = show ? 'none' : 'translateX(140%) scale(0.85)';
             launchHub.style.opacity = show ? '1' : '0';
             launchHub.style.pointerEvents = show ? 'auto' : 'none';
 
@@ -236,7 +237,7 @@ export function toggleMainUIVisibility(show, config) {
         if (authContainer) {
             authContainer.style.transition = show
                 ? 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 50ms, opacity 0.35s ease 50ms'
-                : 'transform 0.15s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+                : 'transform 0.2s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease';
             authContainer.style.transform = show ? 'translateY(-50%)' : 'translateY(-50%) translateX(120%)';
             authContainer.style.opacity = show ? '1' : '0';
             authContainer.style.pointerEvents = show ? 'auto' : 'none';
@@ -308,7 +309,7 @@ export function openSettings(target = 'general') {
         return;
     }
 
-    // Скрываем основной интерфейс
+    // Скрываем основной интерфейс с анимацией разлетания
     toggleMainUIVisibility(false);
 
     // Сбросить горизонтальные направления каскадов
@@ -400,6 +401,9 @@ export function closeSettings(instant = false) {
     settingsScreen.classList.remove('opening');
     settingsScreen.classList.add('closing');
 
+    // Запускаем появление элементов главного экрана синхронно с закрытием настроек!
+    toggleMainUIVisibility(true);
+
     // Активировать главную вкладку и спрятать вкладки настроек с анимацией
     const titleMainTab = document.getElementById('title-bar-title');
     if (titleMainTab) titleMainTab.classList.add('active');
@@ -420,7 +424,6 @@ export function closeSettings(instant = false) {
         settingsScreen.classList.remove('closing');
         settingsScreen.classList.add('hidden');
         settingsAnimating = false;
-        toggleMainUIVisibility(true);
     }, 250);
 }
 
