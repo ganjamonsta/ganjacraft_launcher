@@ -2,9 +2,9 @@
  * Ganj4Craft Launcher - 3D Character Equipment & Wardrobe Engine
  * Полнофункциональный менеджер 3D экипировки персонажа:
  * 1. Оригинальные Bedrock .geo.json 3D модели оружия TACZ с точными UV-текстурами
- * 2. 3D воксельные модели мечей, инструментов и артефактов из модов
- * 3. 3D Броня Minecraft с точным наложением оригинальных текстур слоев 1 и 2
- * 4. Полная рандомизация экипировки и боевые позы персонажа!
+ * 2. 3D воксельные модели мечей и инструментов из модов и ваниллы
+ * 3. 3D Броня Minecraft с оригинальными текстурами layer_1 и layer_2 из официального client.jar
+ * 4. Полная рандомизация экипировки и естественные боевые позы персонажа!
  */
 
 import * as THREE from 'three';
@@ -15,11 +15,50 @@ import { backpackMeshBuilder } from './backpack-mesh-builder.js';
 
 const STORAGE_KEY_EQUIPMENT = 'ganjacraft_player_equipment_v1';
 
-// ── Полный каталог экипировки из игры и модов ──
+// ── Полный каталог экипировки с официальными текстурами ──
 export const EQUIPMENT_CATALOG = {
     // 🪖 ШЛЕМЫ / ГОЛОВА
     head: {
         none: { id: 'none', name: 'Без шлема', icon: '👤', rarity: 'common' },
+        netherite_helmet: { 
+            id: 'netherite_helmet', 
+            name: 'Незеритовый шлем', 
+            icon: 'assets/equipment/items/netherite_helmet.png', 
+            isImage: true, 
+            rarity: 'epic', 
+            armorTex: 'assets/equipment/armor/netherite_layer_1.png' 
+        },
+        diamond_helmet: { 
+            id: 'diamond_helmet', 
+            name: 'Алмазный шлем', 
+            icon: 'assets/equipment/items/diamond_helmet.png', 
+            isImage: true, 
+            rarity: 'rare', 
+            armorTex: 'assets/equipment/armor/diamond_layer_1.png' 
+        },
+        iron_helmet: { 
+            id: 'iron_helmet', 
+            name: 'Железный шлем', 
+            icon: 'assets/equipment/items/iron_helmet.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorTex: 'assets/equipment/armor/iron_layer_1.png' 
+        },
+        gold_helmet: { 
+            id: 'gold_helmet', 
+            name: 'Золотой шлем', 
+            icon: 'assets/equipment/items/golden_helmet.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorTex: 'assets/equipment/armor/gold_layer_1.png' 
+        },
+        turtle_helmet: { 
+            id: 'turtle_helmet', 
+            name: 'Черепаший панцирь', 
+            icon: '🐢', 
+            rarity: 'rare', 
+            armorTex: 'assets/equipment/armor/turtle_layer_1.png' 
+        },
         ignitium_helmet: { 
             id: 'ignitium_helmet', 
             name: 'Шлем Игнития', 
@@ -49,29 +88,6 @@ export const EQUIPMENT_CATALOG = {
             armorTex: 'assets/equipment/armor/monstrous_helm.png',
             hasHorns: true 
         },
-        netherite_helmet: { 
-            id: 'netherite_helmet', 
-            name: 'Незеритовый шлем', 
-            icon: '🪖', 
-            rarity: 'epic', 
-            armorTex: 'assets/equipment/armor/netherite_armor.png' 
-        },
-        diamond_helmet: { 
-            id: 'diamond_helmet', 
-            name: 'Алмазный шлем', 
-            icon: '💎', 
-            rarity: 'rare', 
-            armorTex: 'assets/equipment/armor/diamond_armor.png' 
-        },
-        mekasuit_helmet: { 
-            id: 'mekasuit_helmet', 
-            name: 'MekaSuit Helmet', 
-            mod: 'Mekanism', 
-            icon: 'assets/equipment/items/mek_mekasuit_helmet.png', 
-            isImage: true, 
-            rarity: 'legendary', 
-            armorTex: 'assets/equipment/armor/mekasuit_armor.png' 
-        },
         create_goggles: { 
             id: 'create_goggles', 
             name: 'Очки инженера', 
@@ -95,6 +111,38 @@ export const EQUIPMENT_CATALOG = {
     // 🎽 НАГРУДНИК / ТЕЛО
     chest: {
         none: { id: 'none', name: 'Без брони', icon: '👕', rarity: 'common' },
+        netherite_chestplate: { 
+            id: 'netherite_chestplate', 
+            name: 'Незеритовый нагрудник', 
+            icon: 'assets/equipment/items/netherite_chestplate.png', 
+            isImage: true, 
+            rarity: 'epic', 
+            armorTex: 'assets/equipment/armor/netherite_layer_1.png' 
+        },
+        diamond_chestplate: { 
+            id: 'diamond_chestplate', 
+            name: 'Алмазный нагрудник', 
+            icon: 'assets/equipment/items/diamond_chestplate.png', 
+            isImage: true, 
+            rarity: 'rare', 
+            armorTex: 'assets/equipment/armor/diamond_layer_1.png' 
+        },
+        iron_chestplate: { 
+            id: 'iron_chestplate', 
+            name: 'Железный нагрудник', 
+            icon: 'assets/equipment/items/iron_chestplate.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorTex: 'assets/equipment/armor/iron_layer_1.png' 
+        },
+        gold_chestplate: { 
+            id: 'gold_chestplate', 
+            name: 'Золотой нагрудник', 
+            icon: 'assets/equipment/items/golden_chestplate.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorTex: 'assets/equipment/armor/gold_layer_1.png' 
+        },
         ignitium_chestplate: { 
             id: 'ignitium_chestplate', 
             name: 'Нагрудник Игнития', 
@@ -113,29 +161,6 @@ export const EQUIPMENT_CATALOG = {
             rarity: 'mythic', 
             armorTex: 'assets/equipment/armor/cursium_armor.png' 
         },
-        netherite_chestplate: { 
-            id: 'netherite_chestplate', 
-            name: 'Незеритовый нагрудник', 
-            icon: '🛡️', 
-            rarity: 'epic', 
-            armorTex: 'assets/equipment/armor/netherite_armor.png' 
-        },
-        diamond_chestplate: { 
-            id: 'diamond_chestplate', 
-            name: 'Алмазный нагрудник', 
-            icon: '💎', 
-            rarity: 'rare', 
-            armorTex: 'assets/equipment/armor/diamond_armor.png' 
-        },
-        mekasuit_body: { 
-            id: 'mekasuit_body', 
-            name: 'MekaSuit BodyArmor', 
-            mod: 'Mekanism', 
-            icon: 'assets/equipment/items/mek_mekasuit_bodyarmor.png', 
-            isImage: true, 
-            rarity: 'legendary', 
-            armorTex: 'assets/equipment/armor/mekasuit_armor.png' 
-        },
         elytra: { 
             id: 'elytra', 
             name: 'Элитры', 
@@ -148,6 +173,38 @@ export const EQUIPMENT_CATALOG = {
     // 👖 ПОНОЖИ / НОГИ
     legs: {
         none: { id: 'none', name: 'Без поножей', icon: '🩳', rarity: 'common' },
+        netherite_leggings: { 
+            id: 'netherite_leggings', 
+            name: 'Незеритовые поножи', 
+            icon: 'assets/equipment/items/netherite_leggings.png', 
+            isImage: true, 
+            rarity: 'epic', 
+            armorLegsTex: 'assets/equipment/armor/netherite_layer_2.png' 
+        },
+        diamond_leggings: { 
+            id: 'diamond_leggings', 
+            name: 'Алмазные поножи', 
+            icon: 'assets/equipment/items/diamond_leggings.png', 
+            isImage: true, 
+            rarity: 'rare', 
+            armorLegsTex: 'assets/equipment/armor/diamond_layer_2.png' 
+        },
+        iron_leggings: { 
+            id: 'iron_leggings', 
+            name: 'Железные поножи', 
+            icon: 'assets/equipment/items/iron_leggings.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorLegsTex: 'assets/equipment/armor/iron_layer_2.png' 
+        },
+        gold_leggings: { 
+            id: 'gold_leggings', 
+            name: 'Золотые поножи', 
+            icon: 'assets/equipment/items/golden_leggings.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorLegsTex: 'assets/equipment/armor/gold_layer_2.png' 
+        },
         ignitium_leggings: { 
             id: 'ignitium_leggings', 
             name: 'Поножи Игнития', 
@@ -165,35 +222,44 @@ export const EQUIPMENT_CATALOG = {
             isImage: true, 
             rarity: 'mythic', 
             armorLegsTex: 'assets/equipment/armor/cursium_armor_legs.png' 
-        },
-        netherite_leggings: { 
-            id: 'netherite_leggings', 
-            name: 'Незеритовые поножи', 
-            icon: '👖', 
-            rarity: 'epic', 
-            armorLegsTex: 'assets/equipment/armor/netherite_armor_legs.png' 
-        },
-        diamond_leggings: { 
-            id: 'diamond_leggings', 
-            name: 'Алмазные поножи', 
-            icon: '💎', 
-            rarity: 'rare', 
-            armorLegsTex: 'assets/equipment/armor/diamond_armor_legs.png' 
-        },
-        mekasuit_pants: { 
-            id: 'mekasuit_pants', 
-            name: 'MekaSuit Pants', 
-            mod: 'Mekanism', 
-            icon: 'assets/equipment/items/mek_mekasuit_pants.png', 
-            isImage: true, 
-            rarity: 'legendary', 
-            armorLegsTex: 'assets/equipment/armor/mekasuit_armor_legs.png' 
         }
     },
 
     // 👢 БОТИНКИ / СТУПНИ
     boots: {
         none: { id: 'none', name: 'Без ботинок', icon: '🧦', rarity: 'common' },
+        netherite_boots: { 
+            id: 'netherite_boots', 
+            name: 'Незеритовые ботинки', 
+            icon: 'assets/equipment/items/netherite_boots.png', 
+            isImage: true, 
+            rarity: 'epic', 
+            armorTex: 'assets/equipment/armor/netherite_layer_1.png' 
+        },
+        diamond_boots: { 
+            id: 'diamond_boots', 
+            name: 'Алмазные ботинки', 
+            icon: 'assets/equipment/items/diamond_boots.png', 
+            isImage: true, 
+            rarity: 'rare', 
+            armorTex: 'assets/equipment/armor/diamond_layer_1.png' 
+        },
+        iron_boots: { 
+            id: 'iron_boots', 
+            name: 'Железные ботинки', 
+            icon: 'assets/equipment/items/iron_boots.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorTex: 'assets/equipment/armor/iron_layer_1.png' 
+        },
+        gold_boots: { 
+            id: 'gold_boots', 
+            name: 'Золотые ботинки', 
+            icon: 'assets/equipment/items/golden_boots.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            armorTex: 'assets/equipment/armor/gold_layer_1.png' 
+        },
         ignitium_boots: { 
             id: 'ignitium_boots', 
             name: 'Ботинки Игнития', 
@@ -211,29 +277,6 @@ export const EQUIPMENT_CATALOG = {
             isImage: true, 
             rarity: 'mythic', 
             armorTex: 'assets/equipment/armor/cursium_armor.png' 
-        },
-        netherite_boots: { 
-            id: 'netherite_boots', 
-            name: 'Незеритовые ботинки', 
-            icon: '👢', 
-            rarity: 'epic', 
-            armorTex: 'assets/equipment/armor/netherite_armor.png' 
-        },
-        diamond_boots: { 
-            id: 'diamond_boots', 
-            name: 'Алмазные ботинки', 
-            icon: '💎', 
-            rarity: 'rare', 
-            armorTex: 'assets/equipment/armor/diamond_armor.png' 
-        },
-        mekasuit_boots: { 
-            id: 'mekasuit_boots', 
-            name: 'MekaSuit Boots', 
-            mod: 'Mekanism', 
-            icon: 'assets/equipment/items/mek_mekasuit_boots.png', 
-            isImage: true, 
-            rarity: 'legendary', 
-            armorTex: 'assets/equipment/armor/mekasuit_armor.png' 
         }
     },
 
@@ -266,22 +309,20 @@ export const EQUIPMENT_CATALOG = {
         stormbringer: { id: 'stormbringer', name: 'Штормоносец', mod: 'Simply Swords', icon: 'assets/equipment/items/stormbringer.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/stormbringer.png' },
         netherite_katana: { id: 'netherite_katana', name: 'Незеритовая Катана', mod: 'Simply Swords', icon: 'assets/equipment/items/netherite_katana.png', isImage: true, rarity: 'epic', type: 'voxel_item', imgUrl: 'assets/equipment/items/netherite_katana.png' },
 
-        // 3D Voxel Инструменты из Create & Mekanism & Twilight Forest
+        // 3D Voxel Оружие и инструменты из Ваниллы и Create/Mekanism/Twilight
+        netherite_sword: { id: 'netherite_sword', name: 'Незеритовый меч', icon: 'assets/equipment/items/netherite_sword.png', isImage: true, rarity: 'epic', type: 'voxel_item', imgUrl: 'assets/equipment/items/netherite_sword.png' },
+        diamond_sword: { id: 'diamond_sword', name: 'Алмазный меч', icon: 'assets/equipment/items/diamond_sword.png', isImage: true, rarity: 'rare', type: 'voxel_item', imgUrl: 'assets/equipment/items/diamond_sword.png' },
         create_wrench: { id: 'create_wrench', name: 'Гаечный ключ Create', mod: 'Create', icon: 'assets/equipment/items/create_wrench.png', isImage: true, rarity: 'uncommon', type: 'voxel_item', imgUrl: 'assets/equipment/items/create_wrench.png' },
         atomic_disassembler: { id: 'atomic_disassembler', name: 'Атомный разборщик', mod: 'Mekanism', icon: 'assets/equipment/items/mek_atomic_disassembler.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/mek_atomic_disassembler.png' },
         tf_fiery_sword: { id: 'tf_fiery_sword', name: 'Огненный Меч', mod: 'Twilight Forest', icon: 'assets/equipment/items/tf_fiery_sword.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/tf_fiery_sword.png' },
         tf_twilight_scepter: { id: 'tf_twilight_scepter', name: 'Сумеречный Скипетр', mod: 'Twilight Forest', icon: 'assets/equipment/items/tf_twilight_scepter.png', isImage: true, rarity: 'mythic', type: 'voxel_item', imgUrl: 'assets/equipment/items/tf_twilight_scepter.png' }
     },
 
-    // 🛡️ ВТОРАЯ РУКА (Off-Hand)
+    // 🛡️ ВТОРАЯ РУКА (Off-Hand: только полноценные предметы игры)
     offHand: {
         none: { id: 'none', name: 'Пусто', icon: '✋', rarity: 'common' },
-        gauntlet_of_guard: { id: 'gauntlet_of_guard', name: 'Перчатка Стража', mod: 'Cataclysm', icon: 'assets/equipment/items/gauntlet_of_guard.png', isImage: true, rarity: 'mythic', type: 'voxel_item', imgUrl: 'assets/equipment/items/gauntlet_of_guard.png' },
-        eternal_steak: { id: 'eternal_steak', name: 'Вечный стейк', mod: 'Artifacts', icon: 'assets/equipment/items/art_eternal_steak.png', isImage: true, rarity: 'epic', type: 'voxel_item', imgUrl: 'assets/equipment/items/art_eternal_steak.png' },
-        fire_gauntlet: { id: 'fire_gauntlet', name: 'Огненная рукавица', mod: 'Artifacts', icon: 'assets/equipment/items/art_fire_gauntlet.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/art_fire_gauntlet.png' },
-        crystal_heart: { id: 'crystal_heart', name: 'Кристальное Сердце', mod: 'Artifacts', icon: 'assets/equipment/items/art_crystal_heart.png', isImage: true, rarity: 'mythic', type: 'voxel_item', imgUrl: 'assets/equipment/items/art_crystal_heart.png' },
         shield: { id: 'shield', name: 'Рыцарский Щит', icon: '🛡️', rarity: 'rare' },
-        totem_of_undying: { id: 'totem_of_undying', name: 'Тотем бессмертия', icon: '🌟', rarity: 'legendary' }
+        totem_of_undying: { id: 'totem_of_undying', name: 'Тотем бессмертия', icon: 'assets/equipment/items/totem_of_undying.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/totem_of_undying.png' }
     },
 
     // 🎒 СПИНА (Рюкзаки Sophisticated Backpacks / Крылья)
@@ -337,14 +378,14 @@ export const EQUIPMENT_PRESETS = {
         id: 'ignitium_berserk',
         name: 'Берсерк Игнития',
         icon: '🌋',
-        desc: 'Полный текстурированный сет Игнития с Адской Кузней и Перчаткой',
+        desc: 'Полный текстурированный сет Игнития с Адской Кузней',
         slots: {
             head: 'ignitium_helmet',
             chest: 'ignitium_chestplate',
             legs: 'ignitium_leggings',
             boots: 'ignitium_boots',
             mainHand: 'infernal_forge',
-            offHand: 'gauntlet_of_guard',
+            offHand: 'totem_of_undying',
             back: 'none'
         }
     },
@@ -352,30 +393,15 @@ export const EQUIPMENT_PRESETS = {
         id: 'frostfall_warrior',
         name: 'Воин Simply Swords',
         icon: '❄️',
-        desc: 'Алмазная броня с Ледяным Клинком Frostfall и Кристальным Сердцем',
+        desc: 'Алмазная броня с Ледяным Клинком Frostfall и Щитом',
         slots: {
             head: 'diamond_helmet',
             chest: 'diamond_chestplate',
             legs: 'diamond_leggings',
             boots: 'diamond_boots',
             mainHand: 'frostfall',
-            offHand: 'crystal_heart',
+            offHand: 'shield',
             back: 'backpack_diamond'
-        }
-    },
-    mekanoid_cyber: {
-        id: 'mekanoid_cyber',
-        name: 'Кибер-Меканоид',
-        icon: '🤖',
-        desc: 'Высокотехнологичный экзоскелет MekaSuit с Атомным разборщиком',
-        slots: {
-            head: 'mekasuit_helmet',
-            chest: 'mekasuit_body',
-            legs: 'mekasuit_pants',
-            boots: 'mekasuit_boots',
-            mainHand: 'atomic_disassembler',
-            offHand: 'fire_gauntlet',
-            back: 'elytra_wings'
         }
     },
     clean_skin: {
@@ -482,7 +508,7 @@ class EquipmentManager {
         this.currentEquipment.legs = pickRandom('legs', 0.15);
         this.currentEquipment.boots = pickRandom('boots', 0.15);
         this.currentEquipment.mainHand = pickRandom('mainHand', 0.05);
-        this.currentEquipment.offHand = pickRandom('offHand', 0.35);
+        this.currentEquipment.offHand = pickRandom('offHand', 0.50);
         this.currentEquipment.back = pickRandom('back', 0.45);
 
         this.saveEquipment();
@@ -670,7 +696,7 @@ class EquipmentManager {
             if (gunMesh) return gunMesh;
         }
 
-        // 2. 3D Воксельное Оружие из 2D PNG модов
+        // 2. 3D Воксельное Оружие из 2D PNG модов и ваниллы
         if (item.type === 'voxel_item' && item.imgUrl) {
             const voxelMesh = await voxelItemBuilder.createItemMesh(item.imgUrl);
             if (voxelMesh) return voxelMesh;
@@ -682,7 +708,7 @@ class EquipmentManager {
     // ── Построение 3D предметов Второй руки ──
     async buildOffHandMesh(item) {
         if (item.type === 'voxel_item' && item.imgUrl) {
-            const voxelMesh = await voxelItemBuilder.createItemMesh(item.imgUrl, { isShield: true });
+            const voxelMesh = await voxelItemBuilder.createItemMesh(item.imgUrl, { isShield: false });
             if (voxelMesh) return voxelMesh;
         }
 
@@ -695,12 +721,6 @@ class EquipmentManager {
             const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
             group.add(shieldMesh);
             group.position.set(1.4, -6.5, 0.5);
-        } else if (item.id === 'totem_of_undying') {
-            const totemGeo = new THREE.BoxGeometry(2.2, 4.0, 1.0);
-            const totemMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.2 });
-            const totemMesh = new THREE.Mesh(totemGeo, totemMat);
-            group.add(totemMesh);
-            group.position.set(1.0, -9.5, 1.0);
         }
 
         return group;
