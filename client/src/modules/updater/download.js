@@ -37,9 +37,15 @@ function downloadFile(url, dest, options = {}) {
         authToken = null,
         createDir = true,
         atomicWrite = true,
+        signal = null,
     } = options;
 
     return new Promise((resolve, reject) => {
+        if (signal && signal.aborted) {
+            reject(new Error('CANCELLED'));
+            return;
+        }
+
         // Validate URL
         let parsedUrl;
         try {
@@ -86,28 +92,60 @@ function downloadFile(url, dest, options = {}) {
         };
 
         const file = fs.createWriteStream(writePath);
-        
-        file.on('error', (err) => {
+        let settled = false;
+
+        const cleanupAndReject = (err) => {
+            if (settled) return;
+            settled = true;
+            try { file.close(); } catch {}
             safeUnlink(writePath);
             reject(err);
+        };
+
+        const onAbort = () => {
+            try { req.destroy(); } catch {}
+            cleanupAndReject(new Error('CANCELLED'));
+        };
+
+        if (signal) {
+            signal.addEventListener('abort', onAbort, { once: true });
+        }
+
+        const cleanupSignal = () => {
+            if (signal) {
+                signal.removeEventListener('abort', onAbort);
+            }
+        };
+
+        file.on('error', (err) => {
+            cleanupSignal();
+            cleanupAndReject(err);
         });
 
         const httpModule = parsedUrl.protocol === 'https:' ? https : http;
 
         const req = httpModule.request(reqOptions, (res) => {
+            if (signal && signal.aborted) {
+                cleanupSignal();
+                try { req.destroy(); } catch {}
+                cleanupAndReject(new Error('CANCELLED'));
+                return;
+            }
+
             // Handle redirects
             if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+                cleanupSignal();
                 file.close();
                 safeUnlink(writePath);
 
                 if (maxRedirects <= 0) {
-                    reject(new Error(`Too many redirects: ${url}`));
+                    cleanupAndReject(new Error(`Too many redirects: ${url}`));
                     return;
                 }
 
                 const location = res.headers.location;
                 if (!location) {
-                    reject(new Error(`Redirect without Location header: ${url}`));
+                    cleanupAndReject(new Error(`Redirect without Location header: ${url}`));
                     return;
                 }
 
@@ -115,7 +153,7 @@ function downloadFile(url, dest, options = {}) {
                 try {
                     redirectUrl = new URL(location, parsedUrl);
                 } catch {
-                    reject(new Error(`Invalid redirect URL: ${location}`));
+                    cleanupAndReject(new Error(`Invalid redirect URL: ${location}`));
                     return;
                 }
 
@@ -129,6 +167,7 @@ function downloadFile(url, dest, options = {}) {
 
             // Handle non-200 responses
             if (res.statusCode !== 200) {
+                cleanupSignal();
                 file.close();
                 
                 // Read response body for error details
@@ -147,34 +186,39 @@ function downloadFile(url, dest, options = {}) {
                             if (body.length < 200) errorMsg += `: ${body}`;
                         }
                     }
-                    reject(new Error(errorMsg));
+                    cleanupAndReject(new Error(errorMsg));
                 });
                 return;
             }
 
             // Pipe response to file
             res.on('aborted', () => {
-                safeUnlink(writePath);
-                reject(new Error(`Download aborted: ${url}`));
+                cleanupSignal();
+                cleanupAndReject(new Error(`Download aborted: ${url}`));
             });
             
             res.on('error', (err) => {
-                safeUnlink(writePath);
-                reject(err);
+                cleanupSignal();
+                cleanupAndReject(err);
             });
 
             res.pipe(file);
 
             file.on('finish', async () => {
+                cleanupSignal();
                 try {
                     file.close();
+
+                    if (signal && signal.aborted) {
+                        cleanupAndReject(new Error('CANCELLED'));
+                        return;
+                    }
 
                     // Validate size
                     if (typeof expectedSize === 'number' && expectedSize >= 0) {
                         const stats = fs.statSync(writePath);
                         if (stats.size !== expectedSize) {
-                            safeUnlink(writePath);
-                            reject(new Error(`Size mismatch: expected ${expectedSize}, got ${stats.size}`));
+                            cleanupAndReject(new Error(`Size mismatch: expected ${expectedSize}, got ${stats.size}`));
                             return;
                         }
                     }
@@ -183,8 +227,7 @@ function downloadFile(url, dest, options = {}) {
                     if (typeof expectedHash === 'string' && expectedHash.length > 0) {
                         const actualHash = await getFileHash(writePath);
                         if (actualHash !== expectedHash) {
-                            safeUnlink(writePath);
-                            reject(new Error(`Hash mismatch: expected ${expectedHash}, got ${actualHash}`));
+                            cleanupAndReject(new Error(`Hash mismatch: expected ${expectedHash}, got ${actualHash}`));
                             return;
                         }
                     }
@@ -197,31 +240,30 @@ function downloadFile(url, dest, options = {}) {
                             }
                             fs.renameSync(writePath, dest);
                         } catch (err) {
-                            safeUnlink(writePath);
-                            reject(err);
+                            cleanupAndReject(err);
                             return;
                         }
                     }
 
-                    resolve();
+                    if (!settled) {
+                        settled = true;
+                        resolve();
+                    }
                 } catch (err) {
-                    safeUnlink(writePath);
-                    reject(err);
+                    cleanupAndReject(err);
                 }
             });
         });
 
         req.on('error', (err) => {
-            file.close();
-            safeUnlink(writePath);
-            reject(err);
+            cleanupSignal();
+            cleanupAndReject(err);
         });
 
         req.on('timeout', () => {
-            req.destroy();
-            file.close();
-            safeUnlink(writePath);
-            reject(new Error(`Timeout downloading: ${url}`));
+            cleanupSignal();
+            try { req.destroy(); } catch {}
+            cleanupAndReject(new Error(`Timeout downloading: ${url}`));
         });
 
         req.end();
@@ -238,39 +280,68 @@ function downloadFile(url, dest, options = {}) {
  * @param {number} retryDelayMs - пауза между попытками в мс (default: 10000)
  */
 async function downloadWithRetry(url, dest, options = {}, maxRetries = 4, retryDelayMs = 10_000) {
+    const signal = options.signal;
     let lastError;
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        if (signal && signal.aborted) {
+            throw new Error('CANCELLED');
+        }
+
         try {
             await downloadFile(url, dest, options);
             return;
         } catch (err) {
+            if (err.message === 'CANCELLED' || signal?.aborted) {
+                throw err;
+            }
             lastError = err;
             if (attempt < maxRetries) {
-                await new Promise(r => setTimeout(r, retryDelayMs));
+                await new Promise((resolve, reject) => {
+                    const timer = setTimeout(resolve, retryDelayMs);
+                    if (signal) {
+                        signal.addEventListener('abort', () => {
+                            clearTimeout(timer);
+                            reject(new Error('CANCELLED'));
+                        }, { once: true });
+                    }
+                });
             }
         }
     }
 
     // Automatic mirror fallback if official repository failed
     try {
+        if (signal && signal.aborted) throw new Error('CANCELLED');
         const { getMirrorFallbackUrl } = require('../../main-process/constants');
         const mirrorUrl = getMirrorFallbackUrl(url);
         if (mirrorUrl && mirrorUrl !== url) {
             console.log(`[DOWNLOAD] Primary download failed for ${url} (${lastError?.message}). Retrying with mirror: ${mirrorUrl}`);
             for (let attempt = 1; attempt <= Math.min(maxRetries, 2); attempt++) {
+                if (signal && signal.aborted) throw new Error('CANCELLED');
                 try {
                     await downloadFile(mirrorUrl, dest, options);
                     console.log(`[DOWNLOAD] Successfully downloaded from mirror: ${mirrorUrl}`);
                     return;
                 } catch (err) {
+                    if (err.message === 'CANCELLED' || signal?.aborted) throw err;
                     lastError = err;
                     if (attempt < 2) {
-                        await new Promise(r => setTimeout(r, retryDelayMs));
+                        await new Promise((resolve, reject) => {
+                            const timer = setTimeout(resolve, retryDelayMs);
+                            if (signal) {
+                                signal.addEventListener('abort', () => {
+                                    clearTimeout(timer);
+                                    reject(new Error('CANCELLED'));
+                                }, { once: true });
+                            }
+                        });
                     }
                 }
             }
         }
     } catch (e) {
+        if (e.message === 'CANCELLED') throw e;
         console.warn(`[DOWNLOAD] Mirror fallback error for ${url}:`, e?.message);
     }
 

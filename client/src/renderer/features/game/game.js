@@ -261,10 +261,14 @@ export async function startLaunch() {
         const err = result.error ? result.error.toString() : 'Неизвестная ошибка';
 
         // Handle Cancellation
-        if (err === 'Запуск отменен') {
+        if (err === 'Запуск отменен' || err.includes('CANCELLED')) {
             logToConsole('[LAUNCHER] Запуск отменен пользователем.');
             showPlayScreen();
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
+            if (statusDiv) {
+                statusDiv.innerText = 'Запуск отменен';
+                statusDiv.style.color = '#ef5350';
+            }
             unlockControlsAfterLaunch();
             return;
         }
@@ -292,11 +296,48 @@ export async function startLaunch() {
 }
 
 /**
- * Отменить запуск
+ * Отменить запуск и/или закрыть игру
  */
 export async function cancelLaunch() {
-    logToConsole('[LAUNCHER] Отмена запуска...');
-    await window.api.cancelLaunch();
+    logToConsole('[LAUNCHER] Отмена запуска пользователем...');
+    
+    const statusDiv = dom.get('game-status') || dom.get('status');
+    const gameJointProgress = dom.get('game-joint-progress');
+    const gameJointBurn = dom.get('game-joint-burn');
+    const gameJointEnd = dom.get('game-joint-end');
+    const cancelBtn = dom.get('cancel-btn');
+    const retryBtn = dom.get('retry-btn');
+    const playBtn = dom.get('play-btn');
+
+    if (statusDiv) {
+        statusDiv.innerText = 'Запуск отменяется...';
+        statusDiv.style.color = '#ffaa00';
+    }
+
+    if (playBtn) {
+        playBtn.disabled = true;
+    }
+
+    try {
+        await window.api.cancelLaunch();
+    } catch (e) {
+        console.error('cancelLaunch error:', e);
+    }
+
+    showPlayScreen();
+    setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
+
+    if (statusDiv) {
+        statusDiv.innerText = 'Запуск отменен';
+        statusDiv.style.color = '#ef5350';
+    }
+    if (cancelBtn) cancelBtn.classList.add('hidden');
+    if (retryBtn) retryBtn.classList.remove('hidden');
+
+    if (playBtn) {
+        playBtn.disabled = false;
+    }
+
     unlockControlsAfterLaunch();
 }
 

@@ -192,7 +192,7 @@ async function render3dSkin(username) {
                         // Тяжелая поза минигана (стрельба от бедра)
                         player.skin.rightArm.rotation.x = -0.75 + breath;
                         player.skin.rightArm.rotation.y = -0.15;
-                        player.skin.rightArm.rotation.z = 0.10;
+                        player.skin.rightArm.rotation.z = 10.10;
                     } else if (weaponId === 'tacz_rpg7') {
                         // РПГ на плече
                         player.skin.rightArm.rotation.x = -Math.PI / 2.10 + breath;

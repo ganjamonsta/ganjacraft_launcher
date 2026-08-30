@@ -23,8 +23,14 @@ const {
  * Убедиться, что vanilla version files существуют
  * @param {string} rootPath - Корневой путь установки
  * @param {Function} sendLog - Функция логирования
+ * @param {object} [options] - Опции (signal и т.д.)
  */
-async function ensureVanillaVersionFiles(rootPath, sendLog) {
+async function ensureVanillaVersionFiles(rootPath, sendLog, options = {}) {
+    const signal = options.signal;
+    if (signal && signal.aborted) {
+        throw new Error('CANCELLED');
+    }
+
     const versionDir = path.join(rootPath, 'versions', MC_VERSION);
     const versionJsonPath = path.join(versionDir, `${MC_VERSION}.json`);
     const versionJarPath = path.join(versionDir, `${MC_VERSION}.jar`);
@@ -48,24 +54,21 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
         sendLog(`Скачивание версии Minecraft ${MC_VERSION} (json)...`);
         const tmpJson = `${versionJsonPath}.tmp`;
         try {
-            await downloadFile(VANILLA_VERSION_JSON_URL, tmpJson, { timeoutMs: 60_000 });
+            await downloadFile(VANILLA_VERSION_JSON_URL, tmpJson, { timeoutMs: 60_000, signal });
+            if (signal && signal.aborted) throw new Error('CANCELLED');
             const parsed = JSON.parse(fs.readFileSync(tmpJson, 'utf8'));
             fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
             try { fs.unlinkSync(tmpJson); } catch {}
             sendLog(`Версия ${MC_VERSION} (json) готова.`);
         } catch (e) {
             try { if (fs.existsSync(tmpJson)) fs.unlinkSync(tmpJson); } catch {}
+            if (e.message === 'CANCELLED' || signal?.aborted) throw new Error('CANCELLED');
             throw new Error(`Не удалось подготовить ${MC_VERSION}.json: ${e.message}`);
         }
-    } else {
-        // Rewrite in-place to ensure new mirror rules apply after updates
-        try {
-            const parsed = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
-            // No rewrite needed; MCLC handler patched to fallback to mirror
-            // fs.writeFileSync(versionJsonPath, JSON.stringify(parsed, null, 2), 'utf8');
-        } catch {
-            // Ignore; will be handled on next run.
-        }
+    }
+
+    if (signal && signal.aborted) {
+        throw new Error('CANCELLED');
     }
 
     // Ensure client jar exists
@@ -78,7 +81,8 @@ async function ensureVanillaVersionFiles(rootPath, sendLog) {
 
     if (needJar) {
         sendLog(`Скачивание версии Minecraft ${MC_VERSION} (jar)...`);
-        await downloadFile(VANILLA_VERSION_JAR_URL, versionJarPath, { timeoutMs: 180_000 });
+        await downloadFile(VANILLA_VERSION_JAR_URL, versionJarPath, { timeoutMs: 180_000, signal });
+        if (signal && signal.aborted) throw new Error('CANCELLED');
         if (!isZipIntact(versionJarPath)) {
             try { fs.unlinkSync(versionJarPath); } catch {}
             throw new Error(`Скачанный ${MC_VERSION}.jar поврежден (невалидный JAR/ZIP)`);
@@ -313,8 +317,14 @@ function ensureNeoForgeVersionJsonMerged(rootPath, sendDebug) {
  * Убедиться, что валидный индекс ресурсов 1.21.1 существует и не пуст
  * @param {string} rootPath - Корневой путь установки
  * @param {Function} [sendLog] - Функция логирования
+ * @param {object} [options] - Опции (signal и т.д.)
  */
-async function ensureAssetIndex(rootPath, sendLog) {
+async function ensureAssetIndex(rootPath, sendLog, options = {}) {
+    const signal = options.signal;
+    if (signal && signal.aborted) {
+        throw new Error('CANCELLED');
+    }
+
     const assetIndexDir = path.join(rootPath, 'assets', 'indexes');
     if (!fs.existsSync(assetIndexDir)) {
         fs.mkdirSync(assetIndexDir, { recursive: true });
@@ -348,15 +358,22 @@ async function ensureAssetIndex(rootPath, sendLog) {
         if (sendLog) sendLog('Загрузка индекса ресурсов Minecraft 1.21.1...');
         const assetIndexUrl = 'https://piston-meta.mojang.com/v1/packages/d1aa1019d308e98dcd0cc6ee5da5cf19569d8c81/17.json';
         const tmpFile = path.join(assetIndexDir, '17.json.tmp');
-        await downloadFile(assetIndexUrl, tmpFile, { timeoutMs: 30_000 });
-        const parsed = JSON.parse(fs.readFileSync(tmpFile, 'utf8'));
-        const jsonStr = JSON.stringify(parsed, null, 2);
-        
-        for (const f of indexFiles) {
-            fs.writeFileSync(f, jsonStr, 'utf8');
+        try {
+            await downloadFile(assetIndexUrl, tmpFile, { timeoutMs: 30_000, signal });
+            if (signal && signal.aborted) throw new Error('CANCELLED');
+            const parsed = JSON.parse(fs.readFileSync(tmpFile, 'utf8'));
+            const jsonStr = JSON.stringify(parsed, null, 2);
+            
+            for (const f of indexFiles) {
+                fs.writeFileSync(f, jsonStr, 'utf8');
+            }
+            try { fs.unlinkSync(tmpFile); } catch {}
+            if (sendLog) sendLog('Индекс ресурсов Minecraft 1.21.1 готов.');
+        } catch (e) {
+            try { if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); } catch {}
+            if (e.message === 'CANCELLED' || signal?.aborted) throw new Error('CANCELLED');
+            throw e;
         }
-        try { fs.unlinkSync(tmpFile); } catch {}
-        if (sendLog) sendLog('Индекс ресурсов Minecraft 1.21.1 готов.');
     }
 }
 
