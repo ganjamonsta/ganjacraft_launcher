@@ -244,7 +244,7 @@ export function toggleMainUIVisibility(show, config) {
             authContainer.style.transition = show
                 ? 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 50ms, opacity 0.35s ease 50ms'
                 : 'transform 0.2s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease';
-            authContainer.style.transform = show ? 'translateY(-50%)' : 'translateY(-50%) translateX(120%)';
+            authContainer.style.transform = show ? 'translate(-50%, -50%)' : 'translate(calc(-50% + 120px), -50%) scale(0.95)';
             authContainer.style.opacity = show ? '1' : '0';
             authContainer.style.pointerEvents = show ? 'auto' : 'none';
 
