@@ -40,8 +40,9 @@ class VoxelItemBuilder {
             itemGroup.name = `VOXEL_ITEM_${imgUrl}`;
 
             const pixelSize = 1.0;
-            const depth = options.depth || 0.8;
-            const scale = options.scale || (16 / Math.max(w, h));
+            const depth = options.depth || 0.55;
+            // Аутентичный масштаб предметов в руке Minecraft (0.55 от размера блока вместо 1.0)
+            const scale = options.scale || (0.55 * (16 / Math.max(w, h)));
 
             const positions = [];
             const normals = [];
@@ -111,22 +112,22 @@ class VoxelItemBuilder {
             const mesh = new THREE.Mesh(geometry, material);
             mesh.scale.set(scale, scale, scale);
 
-            if (options.isShield) {
-                // Щит / артефакт во второй руке (смотрит вперед)
-                mesh.position.set(0, 0, 0);
-                itemGroup.rotation.set(0, Math.PI / 2, 0);
-                itemGroup.position.set(1.0, -8.0, 1.2);
-            } else if (options.isBackpack) {
+            if (options.isBackpack) {
                 // Рюкзак на спине
                 mesh.position.set(0, 0, 0);
                 itemGroup.position.set(0, 0, -3.5);
+            } else if (options.isOffHand) {
+                // Предмет во второй руке (например тотем)
+                mesh.position.set(0, 0, 0);
+                itemGroup.rotation.set(-0.2, 0, 0);
+                itemGroup.position.set(0.6, -9.8, 0.6);
             } else {
                 // Оружие / меч в основной руке:
-                // Выравниваем эфес/рукоять (нижний левый угол) в центр хвата
-                mesh.position.set(-w * scale * 0.25, -h * scale * 0.25, 0);
-                // Поворот: -45° по Z выравнивает диагональный меч вертикально, затем -45° по X наклоняет вперед
-                itemGroup.rotation.set(-Math.PI / 3.5, 0, -Math.PI / 4);
-                itemGroup.position.set(-1.0, -9.5, 1.2);
+                // Эфес/рукоять (нижний левый угол) точно в кисти
+                mesh.position.set(5.5 * scale, 5.5 * scale, 0);
+                // Поворот по Z выравнивает диагональный меч, наклон по X направляет вперед
+                itemGroup.rotation.set(-Math.PI / 3.0, 0, -Math.PI / 4);
+                itemGroup.position.set(-0.8, -9.8, 0.8);
             }
 
             itemGroup.add(mesh);

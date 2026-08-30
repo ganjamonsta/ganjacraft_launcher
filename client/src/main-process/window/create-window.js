@@ -78,6 +78,14 @@ function createWindow() {
         }
     });
 
+    mainWindow.webContents.on('render-process-gone', (event, details) => {
+        console.error('[CRASH] Renderer process gone:', details);
+    });
+
+    mainWindow.webContents.on('unresponsive', () => {
+        console.warn('[WARN] Renderer process unresponsive');
+    });
+
     // Register all IPC handlers
     registerAllHandlers(mainWindow);
     

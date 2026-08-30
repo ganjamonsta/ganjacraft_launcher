@@ -134,11 +134,12 @@
 /* ── 1. Left: Player Character & Stats ── */
 .player-character-section {
     grid-column: 1;
-    width: 100%; max-width: 240px; height: 100%;
+    width: 100%; max-width: 280px; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     box-sizing: border-box;
     background: transparent; border: none; box-shadow: none;
     z-index: 10; padding: 2px 0;
+    overflow: visible;
 }
 
 /* Minecraft In-Game Overhead Nametag */
@@ -222,7 +223,7 @@
 }
 
 .skin-viewer-wrapper.frameless-skin {
-    width: 280px; flex: 1 1 auto; height: 100%; min-height: 0;
+    width: 380px; flex: 1 1 auto; height: 100%; min-height: 0; max-height: 375px;
     display: flex; align-items: center; justify-content: center;
     overflow: visible; position: relative; cursor: grab;
     background: transparent; border: none; box-shadow: none; margin: 0;
@@ -230,9 +231,10 @@
 .skin-viewer-wrapper.frameless-skin:active { cursor: grabbing; }
 
 .skin-viewer-wrapper canvas {
-    width: 280px !important; height: 100% !important; max-height: 430px !important;
+    width: 380px !important; height: 100% !important; max-height: 375px !important;
     display: block;
     filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.75));
+    overflow: visible;
 }
 
 /* Player Stats Bar */
@@ -254,25 +256,28 @@
     grid-column: 2;
     grid-row: 1;
     width: 100%; height: 100%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding-top: 52px;
     text-align: center; position: relative; z-index: 10;
-    box-sizing: border-box; padding: 0;
+    box-sizing: border-box;
     transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cyber-brand-header {
     position: relative;
     display: flex; align-items: center; justify-content: center;
-    width: 100%; max-width: 340px; height: 52px; flex-shrink: 0;
+    width: 100%; max-width: 380px; height: 56px; flex-shrink: 0;
+    padding: 0 28px;
+    box-sizing: border-box;
 }
 
 .cyber-brackets-svg { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
 
 .hero-neon-title-cyber {
     font-family: var(--gc-font-display);
-    font-size: 30px; font-weight: 900;
+    font-size: 29px; font-weight: 900;
     color: var(--gc-green);
-    letter-spacing: 2.5px;
+    letter-spacing: 3px;
     text-shadow: 0 0 10px rgba(var(--gc-green-rgb), 0.85), 0 0 26px rgba(var(--gc-green-rgb), 0.6);
     margin: 0; text-transform: uppercase; z-index: 2; pointer-events: none; line-height: 1;
     animation: hero-neon-pulse 4s ease-in-out infinite alternate;
@@ -287,15 +292,14 @@
     }
 }
 
-/* ── Launch Active State (Player Centers, Background Cards Hide cleanly) ── */
+/* ── Launch Active State (Clean background cards fade, zero GPU canvas distortion) ── */
 body.is-game-launching .hero-brand-section.center-brand,
 .is-game-launching .hero-brand-section.center-brand,
 body.is-game-launching .cyber-brand-header,
 .is-game-launching .cyber-brand-header {
-    transform: translateY(-280px) scale(0.6) !important;
-    opacity: 0 !important;
+    opacity: 0.15 !important;
     pointer-events: none !important;
-    visibility: hidden !important;
+    transition: opacity 0.3s ease !important;
 }
 
 body.is-game-launching .player-stats-bar-modern,
@@ -309,22 +313,14 @@ body.is-game-launching .play-brand-group,
     opacity: 0 !important;
     pointer-events: none !important;
     visibility: hidden !important;
-    transform: scale(0.9) !important;
-    transition: all 0.35s ease !important;
+    transition: opacity 0.3s ease !important;
 }
 
 body.is-game-launching .player-character-section,
 .is-game-launching .player-character-section {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -52%) !important;
-    width: 220px !important;
-    max-width: 220px !important;
-    height: 330px !important;
-    z-index: 95 !important;
+    opacity: 0.35 !important;
     pointer-events: none !important;
-    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: opacity 0.3s ease !important;
 }
 
 body.is-game-launching .player-nametag-wrapper,
@@ -334,21 +330,10 @@ body.is-game-launching .player-nametag-wrapper,
     visibility: hidden !important;
 }
 
-body.is-game-launching .skin-viewer-wrapper canvas,
-.is-game-launching .skin-viewer-wrapper canvas {
-    width: 220px !important;
-    max-height: 320px !important;
-    transform: scale(0.82) !important;
-    filter: drop-shadow(0 0 25px rgba(57, 255, 20, 0.5)) drop-shadow(0 15px 25px rgba(0, 0, 0, 0.8)) !important;
-    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
 body.is-game-launching .sacred-leaf-wrapper,
 .is-game-launching .sacred-leaf-wrapper {
     opacity: 0.1 !important;
-    transform: scale(0.85) !important;
-    filter: blur(3px) !important;
-    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: opacity 0.3s ease !important;
 }
 
 body.is-game-launching .launch-action-hub,

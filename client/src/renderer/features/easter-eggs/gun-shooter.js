@@ -169,10 +169,14 @@ class GunShooterEngine {
         this.currentBoss = null;
 
         // Флаги экранов
+        this.isEnabled = localStorage.getItem('ganjacraft_shooter_enabled') !== 'false';
         this.isGameLaunching = false;
         this.isActive = false;
         this.isLogModalOpen = false;
         this.isShopOpen = false;
+
+        this.damageFlashTimeout = null;
+        this.shakeTimeout = null;
 
         // UI элементы
         this.crosshairElem = null;
@@ -192,6 +196,25 @@ class GunShooterEngine {
         this.render = this.render.bind(this);
 
         this.loadProgression();
+    }
+
+    getIsEnabled() {
+        return this.isEnabled;
+    }
+
+    setIsEnabled(val) {
+        this.isEnabled = !!val;
+        try {
+            localStorage.setItem('ganjacraft_shooter_enabled', this.isEnabled ? 'true' : 'false');
+        } catch (_) {}
+        this.updateTopControlsView();
+        if (this.isGameLaunching) {
+            this.setGameLaunchingMode(true);
+        }
+    }
+
+    toggleEnabled() {
+        this.setIsEnabled(!this.isEnabled);
     }
 
     /**
@@ -269,8 +292,6 @@ class GunShooterEngine {
         document.addEventListener('pointercancel', this.handlePointerUp, { passive: true });
         window.addEventListener('keydown', this.handleKeyDown, { passive: false });
         window.addEventListener('wheel', this.handleWheel, { passive: true });
-
-        this.startLoop();
     }
 
     ensureCanvas() {
@@ -366,10 +387,12 @@ class GunShooterEngine {
         this.triggerScreenShake(6);
 
         // Вспышка экрана
-        document.body.classList.remove('player-damaged');
-        void document.body.offsetWidth;
+        if (this.damageFlashTimeout) clearTimeout(this.damageFlashTimeout);
         document.body.classList.add('player-damaged');
-        setTimeout(() => document.body.classList.remove('player-damaged'), 300);
+        this.damageFlashTimeout = setTimeout(() => {
+            document.body.classList.remove('player-damaged');
+            this.damageFlashTimeout = null;
+        }, 250);
 
         if (this.playerHp <= 0) {
             this.onPlayerDeath();
@@ -492,6 +515,9 @@ class GunShooterEngine {
                 <span>🛒</span>
                 <span>АРСЕНАЛ TACZ</span>
             </button>
+            <button class="shooter-toggle-btn ${!this.isEnabled ? 'is-disabled' : ''}" id="shooter-toggle-btn" title="Включить / Выключить мини-игру во время загрузки">
+                <span id="shooter-toggle-text">${this.isEnabled ? '🎯 ИГРА: ВКЛ' : '🎯 ИГРА: ВЫКЛ'}</span>
+            </button>
         `;
 
         document.body.appendChild(container);
@@ -500,6 +526,26 @@ class GunShooterEngine {
         const shopBtn = dom.get('shooter-shop-btn');
         if (shopBtn) {
             shopBtn.addEventListener('click', () => this.toggleShop());
+        }
+
+        const toggleBtn = dom.get('shooter-toggle-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => this.toggleEnabled());
+        }
+    }
+
+    updateTopControlsView() {
+        const toggleText = dom.get('shooter-toggle-text');
+        if (toggleText) {
+            toggleText.innerText = this.isEnabled ? '🎯 ИГРА: ВКЛ' : '🎯 ИГРА: ВЫКЛ';
+        }
+        const toggleBtn = dom.get('shooter-toggle-btn');
+        if (toggleBtn) {
+            if (this.isEnabled) {
+                toggleBtn.classList.remove('is-disabled');
+            } else {
+                toggleBtn.classList.add('is-disabled');
+            }
         }
     }
 
@@ -966,15 +1012,17 @@ class GunShooterEngine {
     }
 
     triggerScreenShake(intensity = 4) {
-        document.body.classList.remove('screen-shaking');
-        void document.body.offsetWidth;
+        if (this.shakeTimeout) clearTimeout(this.shakeTimeout);
         document.body.classList.add('screen-shaking');
-        setTimeout(() => document.body.classList.remove('screen-shaking'), 220);
+        this.shakeTimeout = setTimeout(() => {
+            document.body.classList.remove('screen-shaking');
+            this.shakeTimeout = null;
+        }, 180);
     }
 
     triggerGunRecoil(mult = 1) {
         const viewer = getSkinViewer3d();
-        if (!viewer || !viewer.playerObject) return;
+        if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) return;
 
         const rightArm = viewer.playerObject.skin.rightArm;
         if (rightArm) {
@@ -1148,10 +1196,10 @@ class GunShooterEngine {
 
     setGameLaunchingMode(isLaunching) {
         this.isGameLaunching = isLaunching;
-        this.isActive = isLaunching;
+        this.isActive = isLaunching && this.isEnabled;
         this.isFiring = false;
 
-        if (isLaunching) {
+        if (isLaunching && this.isEnabled) {
             this.updatePlayerStatsFromUpgrades();
             this.attach3DGun();
             this.startTargetSpawner(1300);
@@ -1163,11 +1211,15 @@ class GunShooterEngine {
 
             this.updateHotbarView();
             this.updateCoinsDisplay();
+            this.updateTopControlsView();
 
             this.spawnTarget();
             this.spawnTarget();
             this.spawnTarget();
+
+            this.startLoop();
         } else {
+            this.stopLoop();
             this.detach3DGun();
             if (this.targetSpawnTimer) {
                 clearInterval(this.targetSpawnTimer);
@@ -1201,7 +1253,7 @@ class GunShooterEngine {
             if (this.playerDefenseElem) this.playerDefenseElem.classList.add('hidden');
         } else {
             if (this.canvas) this.canvas.style.display = 'block';
-            if (this.isGameLaunching) {
+            if (this.isGameLaunching && this.isEnabled) {
                 if (this.crosshairElem) this.crosshairElem.classList.remove('hidden');
                 if (this.playerDefenseElem) this.playerDefenseElem.classList.remove('hidden');
             }
@@ -1213,37 +1265,52 @@ class GunShooterEngine {
         this.render();
     }
 
+    stopLoop() {
+        if (this.animId) {
+            cancelAnimationFrame(this.animId);
+            this.animId = null;
+        }
+    }
+
     render() {
-        if (this.ctx && this.isGameLaunching && !this.isLogModalOpen) {
-            this.ctx.clearRect(0, 0, this.width, this.height);
+        if (this.ctx && this.isGameLaunching && this.isEnabled && !this.isLogModalOpen) {
+            try {
+                this.ctx.clearRect(0, 0, this.width, this.height);
 
-            // Регенерация здоровья игрока
-            this.processPlayerRegen();
+                // Регенерация здоровья игрока
+                this.processPlayerRegen();
 
-            // 1. Автострельба
-            this.processAutoFire();
+                // 1. Автострельба
+                this.processAutoFire();
 
-            // 2. Обновление босса
-            this.updateAndDrawBoss();
+                // 2. Обновление босса
+                this.updateAndDrawBoss();
 
-            // 3. Мобы, летящие к центру
-            this.updateAndDrawTargets();
+                // 3. Мобы, летящие к центру
+                this.updateAndDrawTargets();
 
-            // 4. Снаряды
-            this.updateAndDrawBullets();
+                // 4. Снаряды
+                this.updateAndDrawBullets();
 
-            // 5. Монеты
-            this.updateAndDrawCoins();
+                // 5. Монеты
+                this.updateAndDrawCoins();
 
-            // 6. Вспышки и взрывы
-            this.updateAndDrawMuzzleFlashes();
-            this.updateAndDrawExplosions();
+                // 6. Вспышки и взрывы
+                this.updateAndDrawMuzzleFlashes();
+                this.updateAndDrawExplosions();
 
-            // 7. Всплывающий урон
-            this.updateAndDrawDamageNumbers();
+                // 7. Всплывающий урон
+                this.updateAndDrawDamageNumbers();
+            } catch (err) {
+                console.error('[ShooterEngine Render Error]', err);
+            }
         }
 
-        this.animId = requestAnimationFrame(this.render);
+        if (this.isGameLaunching && this.isEnabled) {
+            this.animId = requestAnimationFrame(this.render);
+        } else {
+            this.animId = null;
+        }
     }
 
     processPlayerRegen() {
@@ -1547,6 +1614,7 @@ class GunShooterEngine {
     updateAndDrawBullets() {
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const b = this.bullets[i];
+            if (!b) continue;
 
             if (b.isHoming) {
                 let target = this.currentBoss;
@@ -1576,7 +1644,7 @@ class GunShooterEngine {
 
             this.ctx.save();
             this.ctx.shadowColor = b.color;
-            this.ctx.shadowBlur = b.isPiercing ? 25 : 14;
+            this.ctx.shadowBlur = b.isPiercing ? 20 : 10;
 
             this.ctx.strokeStyle = b.color;
             this.ctx.lineWidth = b.width;
@@ -1594,15 +1662,15 @@ class GunShooterEngine {
             this.ctx.stroke();
             this.ctx.restore();
 
-            this.checkBulletCollisions(b, i);
+            const bulletConsumed = this.checkBulletCollisions(b);
 
-            if (b.distTravelled >= b.maxDist || b.x < -100 || b.x > this.width + 100 || b.y < -100 || b.y > this.height + 100) {
+            if (bulletConsumed || b.distTravelled >= b.maxDist || b.x < -100 || b.x > this.width + 100 || b.y < -100 || b.y > this.height + 100) {
                 this.bullets.splice(i, 1);
             }
         }
     }
 
-    checkBulletCollisions(bullet, bulletIndex) {
+    checkBulletCollisions(bullet) {
         if (this.currentBoss) {
             const b = this.currentBoss;
             const dx = bullet.x - b.x;
@@ -1612,10 +1680,6 @@ class GunShooterEngine {
             if (dist < b.width * 0.75) {
                 b.hp -= bullet.damage;
                 this.spawnDamageNumber(bullet.x, bullet.y, bullet.damage, bullet.isCrit, bullet.weaponId);
-
-                if (!bullet.isPiercing) {
-                    this.bullets.splice(bulletIndex, 1);
-                }
 
                 if (bullet.weaponId === 'rpg7') {
                     taczAudio.playShoot('rpg7');
@@ -1629,7 +1693,7 @@ class GunShooterEngine {
                 if (b.hp <= 0) {
                     this.onBossDefeated();
                 }
-                return;
+                return !bullet.isPiercing;
             }
         }
 
@@ -1645,10 +1709,6 @@ class GunShooterEngine {
                 t.hp -= bullet.damage;
                 this.spawnDamageNumber(t.x, t.y, bullet.damage, bullet.isCrit, bullet.weaponId);
 
-                if (!bullet.isPiercing) {
-                    this.bullets.splice(bulletIndex, 1);
-                }
-
                 if (bullet.weaponId === 'rpg7') {
                     this.createExplosion(t.x, t.y, 'tnt');
                 } else {
@@ -1660,9 +1720,11 @@ class GunShooterEngine {
                     this.onTargetDestroyed(t);
                     this.targets.splice(j, 1);
                 }
-                break;
+                return !bullet.isPiercing;
             }
         }
+
+        return false;
     }
 
     updateBossHealthHUD() {

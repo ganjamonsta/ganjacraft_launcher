@@ -100,56 +100,93 @@ async function render3dSkin(username) {
         if (!skinViewer3d) {
             skinViewer3d = new skinview3d.SkinViewer({
                 canvas: canvas3d,
-                width: 280,
-                height: 420,
+                width: 380,
+                height: 375,
                 skin: skinUrl,
                 model: 'default'
             });
 
-            skinViewer3d.camera.position.set(-6, -1, 75);
-            skinViewer3d.zoom = 0.80;
+            // Камера с запасом по горизонтали для длинных стволов (АК-47, РПГ, миниган)
+            skinViewer3d.camera.position.set(-2, 0, 78);
+            skinViewer3d.zoom = 0.70;
 
-            // По дефолту скин чуть повёрнут (полупрофиль к центру экрана)
             if (skinViewer3d.playerObject) {
-                skinViewer3d.playerObject.rotation.y = -0.45;
+                skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
+                skinViewer3d.playerObject.rotation.y = -0.32;
             }
 
-            // Тактическая плавная анимация (дыхание и боевая готовность оружия)
+            // Тактическая анимация: руки держат оружие прямо перед собой
             skinViewer3d.animation = new skinview3d.FunctionAnimation((player, progress) => {
                 const t = progress * 1.5;
                 if (!player || !player.skin) return;
 
                 // Дыхание головы
                 if (player.skin.head) {
-                    player.skin.head.rotation.y = Math.sin(t * 0.5) * 0.05;
-                    player.skin.head.rotation.x = Math.sin(t * 0.3) * 0.03;
+                    player.skin.head.rotation.y = Math.sin(t * 0.5) * 0.04;
+                    player.skin.head.rotation.x = Math.sin(t * 0.3) * 0.02;
                 }
 
-                // Боевая поза правой руки при экипированном оружии
-                const hasWeapon = equipmentManager.getSlot('mainHand') !== 'none';
+                const weaponId = equipmentManager.getSlot('mainHand');
+                const hasWeapon = weaponId !== 'none';
+                const breath = Math.sin(t * 0.8) * 0.015;
+
+                // 1. Поза правой руки
                 if (player.skin.rightArm) {
-                    if (hasWeapon) {
-                        player.skin.rightArm.rotation.x = -0.35 + Math.sin(t * 0.8) * 0.02;
-                        player.skin.rightArm.rotation.y = -0.05;
+                    if (weaponId === 'tacz_minigun') {
+                        // Тяжелая поза минигана (стрельба от бедра)
+                        player.skin.rightArm.rotation.x = -0.75 + breath;
+                        player.skin.rightArm.rotation.y = -0.15;
+                        player.skin.rightArm.rotation.z = 0.10;
+                    } else if (weaponId === 'tacz_rpg7') {
+                        // РПГ на плече
+                        player.skin.rightArm.rotation.x = -Math.PI / 2.10 + breath;
+                        player.skin.rightArm.rotation.y = -0.22;
+                        player.skin.rightArm.rotation.z = 0.10;
+                    } else if (weaponId === 'tacz_glock17') {
+                        // Одноручный хват пистолета
+                        player.skin.rightArm.rotation.x = -Math.PI / 2.20 + breath;
+                        player.skin.rightArm.rotation.y = -0.08;
                         player.skin.rightArm.rotation.z = 0.04;
+                    } else if (hasWeapon) {
+                        // АК-47 и Kriss Vector: сведенные руки в боевой хват
+                        player.skin.rightArm.rotation.x = -Math.PI / 2.15 + breath;
+                        player.skin.rightArm.rotation.y = -0.35;
+                        player.skin.rightArm.rotation.z = 0.12;
                     } else {
-                        player.skin.rightArm.rotation.x = Math.sin(t * 0.6) * 0.05;
+                        // Свободная рука
+                        player.skin.rightArm.rotation.x = Math.sin(t * 0.6) * 0.04;
                         player.skin.rightArm.rotation.y = 0;
-                        player.skin.rightArm.rotation.z = 0;
+                        player.skin.rightArm.rotation.z = 0.02;
                     }
                 }
 
-                // Поза левой руки (щит / артефакт)
-                const hasOffHand = equipmentManager.getSlot('offHand') !== 'none';
+                // 2. Поза левой руки
                 if (player.skin.leftArm) {
-                    if (hasOffHand) {
-                        player.skin.leftArm.rotation.x = -0.28 + Math.sin(t * 0.7) * 0.02;
-                        player.skin.leftArm.rotation.y = 0.15;
-                        player.skin.leftArm.rotation.z = -0.04;
-                    } else {
-                        player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.05;
+                    if (weaponId === 'tacz_minigun') {
+                        // Левая рука держит верхнюю ручку минигана
+                        player.skin.leftArm.rotation.x = -0.98 + breath;
+                        player.skin.leftArm.rotation.y = 0.50;
+                        player.skin.leftArm.rotation.z = -0.16;
+                    } else if (weaponId === 'tacz_rpg7') {
+                        // Левая рука держит переднюю ручку РПГ
+                        player.skin.leftArm.rotation.x = -Math.PI / 2.15 + breath;
+                        player.skin.leftArm.rotation.y = 0.60;
+                        player.skin.leftArm.rotation.z = -0.22;
+                    } else if (weaponId === 'tacz_glock17') {
+                        // Для Глока левая рука свободно опущена вдоль тела
+                        player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.04;
                         player.skin.leftArm.rotation.y = 0;
-                        player.skin.leftArm.rotation.z = 0;
+                        player.skin.leftArm.rotation.z = -0.02;
+                    } else if (hasWeapon) {
+                        // АК-47 и Kriss Vector: левая рука тянется через грудь и обхватывает цевье
+                        player.skin.leftArm.rotation.x = -Math.PI / 2.18 + breath;
+                        player.skin.leftArm.rotation.y = 0.65;
+                        player.skin.leftArm.rotation.z = -0.22;
+                    } else {
+                        // Свободная рука
+                        player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.04;
+                        player.skin.leftArm.rotation.y = 0;
+                        player.skin.leftArm.rotation.z = -0.02;
                     }
                 }
 
@@ -170,7 +207,8 @@ async function render3dSkin(username) {
         } else {
             await skinViewer3d.loadSkin(skinUrl);
             if (skinViewer3d.playerObject) {
-                skinViewer3d.playerObject.rotation.y = -0.45;
+                skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
+                skinViewer3d.playerObject.rotation.y = -0.32;
             }
         }
 

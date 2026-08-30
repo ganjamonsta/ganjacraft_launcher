@@ -13,6 +13,15 @@ app.setPath('userData', customUserDataPath);
 // Enable overlay scrollbars in Chromium engine
 app.commandLine.appendSwitch('enable-features', 'OverlayScrollbar');
 
+// Global crash guards
+process.on('uncaughtException', (err) => {
+    console.error('[UNCAUGHT EXCEPTION]', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('[UNHANDLED REJECTION]', reason);
+});
+
 const { createWindow, getMainWindow } = require('./main-process');
 const { autoUpdater } = require('electron-updater');
 
@@ -24,7 +33,7 @@ if (!gotTheLock) {
 } else {
     app.on('second-instance', () => {
         const win = getMainWindow() || BrowserWindow.getAllWindows()[0];
-        if (win) {
+        if (win && !win.isDestroyed()) {
             if (win.isMinimized()) win.restore();
             win.focus();
         }
@@ -38,12 +47,16 @@ if (!gotTheLock) {
         
         autoUpdater.on('update-available', (info) => {
             const win = getMainWindow();
-            if (win) win.webContents.send('update-available', info);
+            if (win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed()) {
+                try { win.webContents.send('update-available', info); } catch (_) {}
+            }
         });
         
         autoUpdater.on('update-downloaded', () => {
             const win = getMainWindow();
-            if (win) win.webContents.send('update-downloaded');
+            if (win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed()) {
+                try { win.webContents.send('update-downloaded'); } catch (_) {}
+            }
         });
 
         // Check for updates
@@ -62,3 +75,4 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+

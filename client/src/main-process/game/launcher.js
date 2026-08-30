@@ -37,12 +37,39 @@ const MCLCHandler = require('minecraft-launcher-core/components/handler');
 const originalDownloadAsync = MCLCHandler.prototype.downloadAsync;
 const { getMirrorFallbackUrl } = require('../constants');
 
+// Safe IPC helper functions to prevent crashing if renderer frame is disposed/destroyed
+function safeSend(targetWin, channel, ...args) {
+    try {
+        if (targetWin && !targetWin.isDestroyed() && targetWin.webContents && !targetWin.webContents.isDestroyed() && !targetWin.webContents.isCrashed()) {
+            targetWin.webContents.send(channel, ...args);
+        }
+    } catch (err) {
+        // Silently ignore IPC send errors on closed/disposed frames
+    }
+}
+
+function safeSenderSend(sender, channel, ...args) {
+    try {
+        if (sender && !sender.isDestroyed() && !sender.isCrashed()) {
+            sender.send(channel, ...args);
+        }
+    } catch (err) {
+        // Silently ignore IPC send errors on closed/disposed frames
+    }
+}
+
 MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry, type) {
     const fallbackUrl = getMirrorFallbackUrl(url);
     const filePath = path.join(directory, name);
     
     // Try original URL first
-    let result = await originalDownloadAsync.call(this, url, directory, name, retry, type);
+    let result = false;
+    try {
+        result = await originalDownloadAsync.call(this, url, directory, name, retry, type);
+    } catch (e) {
+        this.client.emit('debug', `[MCLC]: Download error for ${url}: ${e.message}`);
+        result = false;
+    }
     
     // Validate downloaded file integrity (0-byte or corrupted ZIP/JAR)
     if (fs.existsSync(filePath)) {
@@ -71,7 +98,13 @@ MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry
     if (!result && fallbackUrl) {
         this.client.emit('debug', `[MCLC]: Original URL failed or corrupted (${url}). Falling back to mirror: ${fallbackUrl}`);
         // Try fallback URL, without passing fallback logic further down
-        const mirrorResult = await originalDownloadAsync.call(this, fallbackUrl, directory, name, retry, type);
+        let mirrorResult = false;
+        try {
+            mirrorResult = await originalDownloadAsync.call(this, fallbackUrl, directory, name, retry, type);
+        } catch (e) {
+            this.client.emit('debug', `[MCLC]: Mirror download error for ${fallbackUrl}: ${e.message}`);
+            mirrorResult = false;
+        }
         
         // Clean up invalid file from mirror failure too
         if (fs.existsSync(filePath)) {
@@ -147,9 +180,7 @@ function createLoggers(event, rootPath, config) {
     logStream.write(`--- Log started at ${new Date().toISOString()} ---\n`);
 
     const sendLog = (msg) => {
-        if (event.sender && !event.sender.isDestroyed()) {
-            event.sender.send('log-message', msg);
-        }
+        safeSenderSend(event.sender, 'log-message', msg);
         const timestamp = new Date().toISOString();
         if (logStream && !logStream.destroyed) {
             logStream.write(`[${timestamp}] ${msg}\n`);
@@ -494,9 +525,7 @@ function ensureRequiredResourcePacks(rootPath, sendLog, sendDebug) {
  */
 async function syncMods(event, rootPath, config, sendLog, sendDebug) {
     const onSyncProgress = (p) => {
-        if (event.sender && !event.sender.isDestroyed()) {
-            event.sender.send('progress', p);
-        }
+        safeSenderSend(event.sender, 'progress', p);
     };
     
     sendDebug('Starting syncFiles...');
@@ -909,10 +938,12 @@ async function launchGame(event, options) {
             if (logStream) logStream.end();
 
             if (mainWindow && !mainWindow.isDestroyed()) {
-                if (mainWindow.isMinimized()) mainWindow.restore();
-                if (!mainWindow.isVisible()) mainWindow.show();
-                mainWindow.focus();
-                mainWindow.webContents.send('game-closed');
+                try {
+                    if (mainWindow.isMinimized()) mainWindow.restore();
+                    if (!mainWindow.isVisible()) mainWindow.show();
+                    mainWindow.focus();
+                } catch (_) {}
+                safeSend(mainWindow, 'game-closed');
             }
         });
 
@@ -951,9 +982,7 @@ async function launchGame(event, options) {
                 )) {
                     gameReadyNotified = true;
                     sendDebug('[LAUNCHER] Minecraft game window initialized and fully loaded.');
-                    if (mainWindow && !mainWindow.isDestroyed()) {
-                        mainWindow.webContents.send('game-ready');
-                    }
+                    safeSend(mainWindow, 'game-ready');
                 }
 
                 // Detect fatal Java class loading errors from stderr
@@ -966,11 +995,9 @@ async function launchGame(event, options) {
                     sendLog('[LAUNCHER] Обнаружена критическая ошибка загрузки NeoForge. Автоматическое восстановление...');
                     purgeCorruptedNeoForge(rootPath);
                     sendLog('[LAUNCHER] Повреждённые файлы удалены. Пожалуйста, нажмите «Играть» ещё раз.');
-                    if (mainWindow && !mainWindow.isDestroyed()) {
-                        mainWindow.webContents.send('launch-error', 
-                            'Обнаружена ошибка NeoForge. Лаунчер автоматически починил файлы.\n' +
-                            'Нажмите «Играть» ещё раз!');
-                    }
+                    safeSend(mainWindow, 'launch-error', 
+                        'Обнаружена ошибка NeoForge. Лаунчер автоматически починил файлы.\n' +
+                        'Нажмите «Играть» ещё раз!');
                 }
             });
             
@@ -979,9 +1006,19 @@ async function launchGame(event, options) {
                 if (text) sendLog(`[GAME ERROR] ${text}`);
             });
 
+            let lastProgressSent = 0;
+            let lastProgressPercent = -1;
+
             launcher.on('progress', (e) => {
-                if (mainWindow && !mainWindow.isDestroyed()) {
-                    mainWindow.webContents.send('progress', { task: e.task, total: e.total, type: e.type });
+                if (!e || typeof e.task !== 'number' || typeof e.total !== 'number') return;
+                const now = Date.now();
+                const percent = e.total > 0 ? Math.round((e.task / e.total) * 100) : 0;
+
+                // Throttle: Send at most once every 50ms, or when reaching 100%, or at the start
+                if (e.task === 0 || percent === 100 || (percent !== lastProgressPercent && (now - lastProgressSent >= 50))) {
+                    lastProgressSent = now;
+                    lastProgressPercent = percent;
+                    safeSend(mainWindow, 'progress', { task: e.task, total: e.total, type: e.type });
                 }
             });
 
@@ -1001,9 +1038,7 @@ async function launchGame(event, options) {
                     isGameRunning = false;
                     resolve(handleLaunchError(error, rootPath));
                 } else {
-                    if (mainWindow && !mainWindow.isDestroyed()) {
-                        mainWindow.webContents.send('log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
-                    }
+                    safeSend(mainWindow, 'log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
                 }
             });
         });

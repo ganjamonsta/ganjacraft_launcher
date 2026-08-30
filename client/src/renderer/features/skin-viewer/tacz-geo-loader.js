@@ -144,11 +144,25 @@ class TaczGeoLoader {
             }
         }
 
-        // Стандартный масштаб и поворот ствола в руке
-        rootGroup.scale.set(0.55, 0.55, 0.55);
-        // Ориентация: ствол направлен вперед (+Z), приклад назад
-        rootGroup.rotation.set(-0.1, Math.PI, 0);
-        rootGroup.position.set(-1.0, -9.6, 1.2);
+        if (gunId === 'minigun') {
+            // Миниган: идеально горизонтальный ствол при хвате от бедра
+            rootGroup.rotation.set(-Math.PI / 2 + 0.35, 0, Math.PI);
+            rootGroup.scale.set(0.60, 0.60, 0.60);
+            rootGroup.position.set(-0.6, -8.6, 1.8);
+        } else if (gunId === 'rpg7') {
+            rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
+            rootGroup.scale.set(0.65, 0.65, 0.65);
+            rootGroup.position.set(-0.8, -9.0, 2.4);
+        } else if (gunId === 'glock_17') {
+            rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
+            rootGroup.scale.set(0.72, 0.72, 0.72);
+            rootGroup.position.set(-0.5, -9.4, 1.4);
+        } else {
+            // ak47, vector45
+            rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
+            rootGroup.scale.set(0.68, 0.68, 0.68);
+            rootGroup.position.set(-0.5, -9.2, 1.5);
+        }
 
         return rootGroup;
     }

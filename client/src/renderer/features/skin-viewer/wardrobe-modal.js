@@ -80,16 +80,6 @@ function ensureWardrobeDOM() {
                         <span class="tab-label">Ботинки</span>
                         <span class="slot-active-badge" id="badge-slot-boots"></span>
                     </button>
-                    <button class="wardrobe-slot-tab" data-slot="offHand">
-                        <span class="tab-icon">🛡️</span>
-                        <span class="tab-label">Вторая рука</span>
-                        <span class="slot-active-badge" id="badge-slot-offHand"></span>
-                    </button>
-                    <button class="wardrobe-slot-tab" data-slot="back">
-                        <span class="tab-icon">🎒</span>
-                        <span class="tab-label">Спина / Рюкзак</span>
-                        <span class="slot-active-badge" id="badge-slot-back"></span>
-                    </button>
 
                     <div class="wardrobe-nav-group-title" style="margin-top:12px;">ГОТОВЫЕ СЕТЫ</div>
                     <button class="wardrobe-slot-tab preset-tab-highlight" data-slot="presets">

@@ -146,6 +146,8 @@ export function unlockControlsAfterLaunch() {
 export function setJointProgress(container, burn, endImg, percent) {
     if (!container) return;
     
+    const safePercent = Number.isFinite(percent) ? Math.max(0, Math.min(100, percent)) : 0;
+    
     // Constants for realistic smoking effect
     const MAX_WIDTH = 260; // Total width of the image in pixels
     const MIN_WIDTH = 28;  // Width at 100% progress (the filter/butt)
@@ -155,12 +157,12 @@ export function setJointProgress(container, burn, endImg, percent) {
     // Calculate current width of the container (the unsmoked part)
     // 0% progress -> MAX_WIDTH
     // 100% progress -> MIN_WIDTH
-    const currentWidthPx = MAX_WIDTH - ((MAX_WIDTH - MIN_WIDTH) * (percent / 100));
+    const currentWidthPx = MAX_WIDTH - ((MAX_WIDTH - MIN_WIDTH) * (safePercent / 100));
     
     // Calculate burn height (thickness)
-    const currentBurnHeight = START_BURN_HEIGHT - ((START_BURN_HEIGHT - END_BURN_HEIGHT) * (percent / 100));
+    const currentBurnHeight = START_BURN_HEIGHT - ((START_BURN_HEIGHT - END_BURN_HEIGHT) * (safePercent / 100));
 
-    if (percent >= 100) {
+    if (safePercent >= 100) {
         // Finished
         container.classList.add('hidden');
         if (burn) burn.classList.add('hidden');
@@ -182,7 +184,7 @@ export function setJointProgress(container, burn, endImg, percent) {
             // Vertical Trajectory: Moves down by 3px as it burns
             // 0% -> 0px offset
             // 100% -> 3px offset
-            const verticalOffset = 3 * (percent / 100);
+            const verticalOffset = 3 * (safePercent / 100);
             burn.style.top = `${verticalOffset}px`;
             
             // Update height/thickness of the burning tip
@@ -317,17 +319,22 @@ export function initProgressHandlers() {
     // Progress Handler
     if (window.api.onProgress) {
         window.api.onProgress((e) => {
-            const percent = (e.task / e.total) * 100;
-            setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, percent);
-            const statusEl = dom.get('game-status') || dom.get('status');
-            if (statusEl) {
-                if (e.currentFile) {
-                    const filename = e.currentFile.split(/[/\\]/).pop();
-                    const tag = e.sourceName ? `[${e.sourceName}] ` : '';
-                    statusEl.innerText = `${tag}${filename} (${Math.round(percent)}%)`;
-                } else {
-                    statusEl.innerText = `Загрузка ресурсов: ${Math.round(percent)}%`;
+            try {
+                if (!e || typeof e.task !== 'number' || typeof e.total !== 'number' || e.total <= 0) return;
+                const percent = Math.max(0, Math.min(100, (e.task / e.total) * 100));
+                setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, percent);
+                const statusEl = dom.get('game-status') || dom.get('status');
+                if (statusEl) {
+                    if (e.currentFile) {
+                        const filename = e.currentFile.split(/[/\\]/).pop();
+                        const tag = e.sourceName ? `[${e.sourceName}] ` : '';
+                        statusEl.innerText = `${tag}${filename} (${Math.round(percent)}%)`;
+                    } else {
+                        statusEl.innerText = `Загрузка ресурсов: ${Math.round(percent)}%`;
+                    }
                 }
+            } catch (err) {
+                console.error('[Progress handler error]', err);
             }
         });
     }

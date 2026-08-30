@@ -15,6 +15,7 @@ import { initRamSlider } from './ram-slider.js';
 import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
 import { renderChangelogList, markChangelogSeen, checkChangelogBadge } from '../changelog/changelog-manager.js';
 import { applySkinMode, getSkinViewerMode } from '../skin-viewer/index.js';
+import { gunShooter } from '../easter-eggs/index.js';
 
 // Стейт для отслеживания изменений
 let initialSettingsState = null;
@@ -50,6 +51,7 @@ export function getCurrentSettingsState() {
         effectsDensity: document.getElementById('setting-effects-density')?.value || 'low',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
+        enableMinigame: document.getElementById('setting-enable-minigame')?.checked ?? true,
         disabledMods: getDisabledMods().sort().join(',')
     };
 }
@@ -121,7 +123,8 @@ export function setupSettingsChangeListeners() {
         'setting-effects-preset',
         'setting-effects-density',
         'setting-enable-smoke',
-        'setting-enable-parallax'
+        'setting-enable-parallax',
+        'setting-enable-minigame'
     ];
     
     formControls.forEach(id => {
@@ -431,7 +434,8 @@ export function closeSettings(instant = false) {
  * Заполнить поля настроек из конфига
  */
 export function populateSettingsFields(config) {
-    currentConfig = config;
+    currentConfig = config || {};
+    initDOMRefs();
     
     const pathInput = document.getElementById('setting-path');
     const javaInput = document.getElementById('setting-java');
@@ -443,6 +447,7 @@ export function populateSettingsFields(config) {
     const densitySelect = document.getElementById('setting-effects-density');
     const smokeCheckbox = document.getElementById('setting-enable-smoke');
     const parallaxCheckbox = document.getElementById('setting-enable-parallax');
+    const minigameCheckbox = document.getElementById('setting-enable-minigame');
     
     if (pathInput) pathInput.value = config.installPath || '';
     if (javaInput) javaInput.value = config.javaPath || '';
@@ -462,6 +467,7 @@ export function populateSettingsFields(config) {
     
     if (smokeCheckbox) smokeCheckbox.checked = config.enableSmoke !== false;
     if (parallaxCheckbox) parallaxCheckbox.checked = config.enableParallax !== false;
+    if (minigameCheckbox) minigameCheckbox.checked = config.enableMinigame !== false && gunShooter.getIsEnabled();
     
     // Инициализация RAM slider (новый UI)
     initRamSlider(config);
@@ -484,6 +490,7 @@ export async function saveSettings() {
 
     const selectedPreset = document.getElementById('setting-effects-preset')?.value || 'auto';
     const selectedSkinMode = document.getElementById('setting-skin-mode')?.value || '3d';
+    const selectedMinigame = document.getElementById('setting-enable-minigame')?.checked ?? true;
 
     const newConfig = {
         ...currentConfig,

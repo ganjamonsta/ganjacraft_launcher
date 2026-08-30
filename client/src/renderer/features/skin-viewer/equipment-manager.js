@@ -1,21 +1,18 @@
 /**
  * Ganj4Craft Launcher - 3D Character Equipment & Wardrobe Engine
  * Полнофункциональный менеджер 3D экипировки персонажа:
- * 1. Оригинальные Bedrock .geo.json 3D модели оружия TACZ с точными UV-текстурами
- * 2. 3D воксельные модели мечей и инструментов из модов и ваниллы
- * 3. 3D Броня Minecraft с оригинальными текстурами layer_1 и layer_2 из официального client.jar
- * 4. Полная рандомизация экипировки и естественные боевые позы персонажа!
+ * 1. Bedrock .geo.json 3D модели оружия TACZ (АК-47, Kriss Vector, Glock 17, RPG-7, Minigun)
+ * 2. 3D Ванильная броня Minecraft (Алмазный и Незеритовый сеты layer_1 и layer_2)
+ * 3. Тактические позы удержания оружия перед собой
  */
 
 import * as THREE from 'three';
 import { taczGeoLoader } from './tacz-geo-loader.js';
-import { voxelItemBuilder } from './voxel-item-builder.js';
 import { armorMeshBuilder } from './armor-mesh-builder.js';
-import { backpackMeshBuilder } from './backpack-mesh-builder.js';
 
 const STORAGE_KEY_EQUIPMENT = 'ganjacraft_player_equipment_v1';
 
-// ── Полный каталог экипировки с официальными текстурами ──
+// ── Каталог экипировки (Ванильная броня + Оружие TACZ) ──
 export const EQUIPMENT_CATALOG = {
     // 🪖 ШЛЕМЫ / ГОЛОВА
     head: {
@@ -35,76 +32,6 @@ export const EQUIPMENT_CATALOG = {
             isImage: true, 
             rarity: 'rare', 
             armorTex: 'assets/equipment/armor/diamond_layer_1.png' 
-        },
-        iron_helmet: { 
-            id: 'iron_helmet', 
-            name: 'Железный шлем', 
-            icon: 'assets/equipment/items/iron_helmet.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorTex: 'assets/equipment/armor/iron_layer_1.png' 
-        },
-        gold_helmet: { 
-            id: 'gold_helmet', 
-            name: 'Золотой шлем', 
-            icon: 'assets/equipment/items/golden_helmet.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorTex: 'assets/equipment/armor/gold_layer_1.png' 
-        },
-        turtle_helmet: { 
-            id: 'turtle_helmet', 
-            name: 'Черепаший панцирь', 
-            icon: '🐢', 
-            rarity: 'rare', 
-            armorTex: 'assets/equipment/armor/turtle_layer_1.png' 
-        },
-        ignitium_helmet: { 
-            id: 'ignitium_helmet', 
-            name: 'Шлем Игнития', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/ignitium_helmet.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorTex: 'assets/equipment/armor/ignitium_armor.png',
-            hasHorns: true 
-        },
-        cursium_helmet: { 
-            id: 'cursium_helmet', 
-            name: 'Шлем Бездны Cursium', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/cursium_helmet.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorTex: 'assets/equipment/armor/cursium_armor.png' 
-        },
-        monstrous_helm: { 
-            id: 'monstrous_helm', 
-            name: 'Шлем Левиафана', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/monstrous_helm.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorTex: 'assets/equipment/armor/monstrous_helm.png',
-            hasHorns: true 
-        },
-        create_goggles: { 
-            id: 'create_goggles', 
-            name: 'Очки инженера', 
-            mod: 'Create', 
-            icon: 'assets/equipment/items/create_goggles.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            isCustomMesh: true 
-        },
-        twilight_crown: { 
-            id: 'twilight_crown', 
-            name: 'Корона Сумерек', 
-            mod: 'Twilight Forest', 
-            icon: 'assets/equipment/items/tf_crown_splinter.png', 
-            isImage: true, 
-            rarity: 'legendary', 
-            isCustomMesh: true 
         }
     },
 
@@ -126,47 +53,6 @@ export const EQUIPMENT_CATALOG = {
             isImage: true, 
             rarity: 'rare', 
             armorTex: 'assets/equipment/armor/diamond_layer_1.png' 
-        },
-        iron_chestplate: { 
-            id: 'iron_chestplate', 
-            name: 'Железный нагрудник', 
-            icon: 'assets/equipment/items/iron_chestplate.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorTex: 'assets/equipment/armor/iron_layer_1.png' 
-        },
-        gold_chestplate: { 
-            id: 'gold_chestplate', 
-            name: 'Золотой нагрудник', 
-            icon: 'assets/equipment/items/golden_chestplate.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorTex: 'assets/equipment/armor/gold_layer_1.png' 
-        },
-        ignitium_chestplate: { 
-            id: 'ignitium_chestplate', 
-            name: 'Нагрудник Игнития', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/ignitium_chestplate.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorTex: 'assets/equipment/armor/ignitium_armor.png' 
-        },
-        cursium_chestplate: { 
-            id: 'cursium_chestplate', 
-            name: 'Нагрудник Cursium', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/cursium_chestplate.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorTex: 'assets/equipment/armor/cursium_armor.png' 
-        },
-        elytra: { 
-            id: 'elytra', 
-            name: 'Элитры', 
-            icon: '🪽', 
-            rarity: 'legendary', 
-            isElytra: true 
         }
     },
 
@@ -188,40 +74,6 @@ export const EQUIPMENT_CATALOG = {
             isImage: true, 
             rarity: 'rare', 
             armorLegsTex: 'assets/equipment/armor/diamond_layer_2.png' 
-        },
-        iron_leggings: { 
-            id: 'iron_leggings', 
-            name: 'Железные поножи', 
-            icon: 'assets/equipment/items/iron_leggings.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorLegsTex: 'assets/equipment/armor/iron_layer_2.png' 
-        },
-        gold_leggings: { 
-            id: 'gold_leggings', 
-            name: 'Золотые поножи', 
-            icon: 'assets/equipment/items/golden_leggings.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorLegsTex: 'assets/equipment/armor/gold_layer_2.png' 
-        },
-        ignitium_leggings: { 
-            id: 'ignitium_leggings', 
-            name: 'Поножи Игнития', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/ignitium_leggings.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorLegsTex: 'assets/equipment/armor/ignitium_armor_legs.png' 
-        },
-        cursium_leggings: { 
-            id: 'cursium_leggings', 
-            name: 'Поножи Cursium', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/cursium_leggings.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorLegsTex: 'assets/equipment/armor/cursium_armor_legs.png' 
         }
     },
 
@@ -243,95 +95,27 @@ export const EQUIPMENT_CATALOG = {
             isImage: true, 
             rarity: 'rare', 
             armorTex: 'assets/equipment/armor/diamond_layer_1.png' 
-        },
-        iron_boots: { 
-            id: 'iron_boots', 
-            name: 'Железные ботинки', 
-            icon: 'assets/equipment/items/iron_boots.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorTex: 'assets/equipment/armor/iron_layer_1.png' 
-        },
-        gold_boots: { 
-            id: 'gold_boots', 
-            name: 'Золотые ботинки', 
-            icon: 'assets/equipment/items/golden_boots.png', 
-            isImage: true, 
-            rarity: 'uncommon', 
-            armorTex: 'assets/equipment/armor/gold_layer_1.png' 
-        },
-        ignitium_boots: { 
-            id: 'ignitium_boots', 
-            name: 'Ботинки Игнития', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/ignitium_boots.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorTex: 'assets/equipment/armor/ignitium_armor.png' 
-        },
-        cursium_boots: { 
-            id: 'cursium_boots', 
-            name: 'Ботинки Cursium', 
-            mod: 'Cataclysm', 
-            icon: 'assets/equipment/items/cursium_boots.png', 
-            isImage: true, 
-            rarity: 'mythic', 
-            armorTex: 'assets/equipment/armor/cursium_armor.png' 
         }
     },
 
-    // ⚔️ ОСНОВНАЯ РУКА (Реальные TACZ 3D пушки и 3D воксельное оружие)
+    // ⚔️ ОСНОВНАЯ РУКА (TACZ 3D арсенал)
     mainHand: {
         none: { id: 'none', name: 'Пустая рука', icon: '✊', rarity: 'common' },
-        
-        // TACZ Огнестрел (Реальные Bedrock .geo.json 3D модели)
-        tacz_ak47: { id: 'tacz_ak47', name: 'TACZ: AK-47', mod: 'TACZ', icon: 'assets/tacz/hud/ak47.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'ak47' },
-        tacz_deagle: { id: 'tacz_deagle', name: 'TACZ: Desert Eagle .50', mod: 'TACZ', icon: 'assets/tacz/hud/deagle.png', isImage: true, rarity: 'rare', type: 'tacz_geo', geoGunId: 'deagle' },
-        tacz_spas_12: { id: 'tacz_spas_12', name: 'TACZ: SPAS-12', mod: 'TACZ', icon: 'assets/tacz/hud/spas_12.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'spas_12' },
-        tacz_vector45: { id: 'tacz_vector45', name: 'TACZ: Vector .45 ACP', mod: 'TACZ', icon: 'assets/tacz/hud/vector45.png', isImage: true, rarity: 'legendary', type: 'tacz_geo', geoGunId: 'vector45' },
-        tacz_awp: { id: 'tacz_awp', name: 'TACZ: AWP Sniper', mod: 'TACZ', icon: 'assets/tacz/hud/ai_awp.png', isImage: true, rarity: 'legendary', type: 'tacz_geo', geoGunId: 'ai_awp' },
-        tacz_rpg7: { id: 'tacz_rpg7', name: 'TACZ: RPG-7', mod: 'TACZ', icon: 'assets/tacz/hud/rpg7.png', isImage: true, rarity: 'mythic', type: 'tacz_geo', geoGunId: 'rpg7' },
-        tacz_minigun: { id: 'tacz_minigun', name: 'TACZ: Minigun 6-Barrel', mod: 'TACZ', icon: 'assets/tacz/hud/minigun.png', isImage: true, rarity: 'mythic', type: 'tacz_geo', geoGunId: 'minigun' },
-        tacz_m4a1: { id: 'tacz_m4a1', name: 'TACZ: M4A1 Tactical', mod: 'TACZ', icon: 'assets/tacz/hud/m4a1.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'm4a1' },
-        tacz_p90: { id: 'tacz_p90', name: 'TACZ: FN P90', mod: 'TACZ', icon: 'assets/tacz/hud/p90.png', isImage: true, rarity: 'rare', type: 'tacz_geo', geoGunId: 'p90' },
-        tacz_glock17: { id: 'tacz_glock17', name: 'TACZ: Glock 17', mod: 'TACZ', icon: 'assets/tacz/hud/glock_17.png', isImage: true, rarity: 'common', type: 'tacz_geo', geoGunId: 'glock_17' },
-
-        // 3D Voxel Оружие из Cataclysm
-        infernal_forge: { id: 'infernal_forge', name: 'Адская Кузня', mod: 'Cataclysm', icon: 'assets/equipment/items/infernal_forge.png', isImage: true, rarity: 'mythic', type: 'voxel_item', imgUrl: 'assets/equipment/items/infernal_forge.png' },
-        the_incinerator: { id: 'the_incinerator', name: 'Испепелитель', mod: 'Cataclysm', icon: 'assets/equipment/items/the_incinerator.png', isImage: true, rarity: 'mythic', type: 'voxel_item', imgUrl: 'assets/equipment/items/the_incinerator.png' },
-        meat_shredder: { id: 'meat_shredder', name: 'Мясоруб', mod: 'Cataclysm', icon: 'assets/equipment/items/meat_shredder.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/meat_shredder.png' },
-        zweiender: { id: 'zweiender', name: 'Цвайендер', mod: 'Cataclysm', icon: 'assets/equipment/items/zweiender.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/zweiender.png' },
-
-        // 3D Voxel Оружие из Simply Swords
-        frostfall: { id: 'frostfall', name: 'Frostfall (Ледяной Клинок)', mod: 'Simply Swords', icon: 'assets/equipment/items/frostfall.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/frostfall.png' },
-        soulkeeper: { id: 'soulkeeper', name: 'Хранитель Душ', mod: 'Simply Swords', icon: 'assets/equipment/items/soulkeeper.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/soulkeeper.png' },
-        mjolnir: { id: 'mjolnir', name: 'Молот Мьёльнир', mod: 'Simply Swords', icon: 'assets/equipment/items/mjolnir.png', isImage: true, rarity: 'mythic', type: 'voxel_item', imgUrl: 'assets/equipment/items/mjolnir.png' },
-        stormbringer: { id: 'stormbringer', name: 'Штормоносец', mod: 'Simply Swords', icon: 'assets/equipment/items/stormbringer.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/stormbringer.png' },
-        netherite_katana: { id: 'netherite_katana', name: 'Незеритовая Катана', mod: 'Simply Swords', icon: 'assets/equipment/items/netherite_katana.png', isImage: true, rarity: 'epic', type: 'voxel_item', imgUrl: 'assets/equipment/items/netherite_katana.png' },
-
-        // 3D Voxel Оружие и инструменты из Ваниллы и Create/Mekanism/Twilight
-        netherite_sword: { id: 'netherite_sword', name: 'Незеритовый меч', icon: 'assets/equipment/items/netherite_sword.png', isImage: true, rarity: 'epic', type: 'voxel_item', imgUrl: 'assets/equipment/items/netherite_sword.png' },
-        diamond_sword: { id: 'diamond_sword', name: 'Алмазный меч', icon: 'assets/equipment/items/diamond_sword.png', isImage: true, rarity: 'rare', type: 'voxel_item', imgUrl: 'assets/equipment/items/diamond_sword.png' },
-        create_wrench: { id: 'create_wrench', name: 'Гаечный ключ Create', mod: 'Create', icon: 'assets/equipment/items/create_wrench.png', isImage: true, rarity: 'uncommon', type: 'voxel_item', imgUrl: 'assets/equipment/items/create_wrench.png' },
-        atomic_disassembler: { id: 'atomic_disassembler', name: 'Атомный разборщик', mod: 'Mekanism', icon: 'assets/equipment/items/mek_atomic_disassembler.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/mek_atomic_disassembler.png' },
-        tf_fiery_sword: { id: 'tf_fiery_sword', name: 'Огненный Меч', mod: 'Twilight Forest', icon: 'assets/equipment/items/tf_fiery_sword.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/tf_fiery_sword.png' },
-        tf_twilight_scepter: { id: 'tf_twilight_scepter', name: 'Сумеречный Скипетр', mod: 'Twilight Forest', icon: 'assets/equipment/items/tf_twilight_scepter.png', isImage: true, rarity: 'mythic', type: 'voxel_item', imgUrl: 'assets/equipment/items/tf_twilight_scepter.png' }
+        tacz_ak47: { id: 'tacz_ak47', name: 'АК-47', mod: 'TACZ', icon: 'assets/tacz/hud/ak47.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'ak47' },
+        tacz_vector45: { id: 'tacz_vector45', name: 'Kriss Vector .45', mod: 'TACZ', icon: 'assets/tacz/hud/vector45.png', isImage: true, rarity: 'legendary', type: 'tacz_geo', geoGunId: 'vector45' },
+        tacz_glock17: { id: 'tacz_glock17', name: 'Glock 17', mod: 'TACZ', icon: 'assets/tacz/hud/glock_17.png', isImage: true, rarity: 'common', type: 'tacz_geo', geoGunId: 'glock_17' },
+        tacz_rpg7: { id: 'tacz_rpg7', name: 'РПГ-7', mod: 'TACZ', icon: 'assets/tacz/hud/rpg7.png', isImage: true, rarity: 'mythic', type: 'tacz_geo', geoGunId: 'rpg7' },
+        tacz_minigun: { id: 'tacz_minigun', name: 'Миниган M134', mod: 'TACZ', icon: 'assets/tacz/hud/minigun.png', isImage: true, rarity: 'mythic', type: 'tacz_geo', geoGunId: 'minigun' }
     },
 
-    // 🛡️ ВТОРАЯ РУКА (Off-Hand: только полноценные предметы игры)
+    // 🔮 ВТОРАЯ РУКА (Пусто)
     offHand: {
-        none: { id: 'none', name: 'Пусто', icon: '✋', rarity: 'common' },
-        shield: { id: 'shield', name: 'Рыцарский Щит', icon: '🛡️', rarity: 'rare' },
-        totem_of_undying: { id: 'totem_of_undying', name: 'Тотем бессмертия', icon: 'assets/equipment/items/totem_of_undying.png', isImage: true, rarity: 'legendary', type: 'voxel_item', imgUrl: 'assets/equipment/items/totem_of_undying.png' }
+        none: { id: 'none', name: 'Пусто', icon: '✋', rarity: 'common' }
     },
 
-    // 🎒 СПИНА (Рюкзаки Sophisticated Backpacks / Крылья)
+    // 🎒 СПИНА (Пусто)
     back: {
-        none: { id: 'none', name: 'Пусто', icon: '🚫', rarity: 'common' },
-        backpack_netherite: { id: 'backpack_netherite', name: 'Рюкзак (Незерит)', mod: 'Sophisticated Backpacks', icon: '🎒', rarity: 'epic', color: '#2c282e', accent: '#eab308' },
-        backpack_diamond: { id: 'backpack_diamond', name: 'Рюкзак (Алмаз)', mod: 'Sophisticated Backpacks', icon: '🎒', rarity: 'rare', color: '#164e63', accent: '#2cd8d5' },
-        backpack_gold: { id: 'backpack_gold', name: 'Рюкзак (Золото)', mod: 'Sophisticated Backpacks', icon: '🎒', rarity: 'uncommon', color: '#ca8a04', accent: '#fef08a' },
-        elytra_wings: { id: 'elytra_wings', name: 'Крылья Элитры', icon: '🪽', rarity: 'legendary' }
+        none: { id: 'none', name: 'Пусто', icon: '🚫', rarity: 'common' }
     }
 };
 
@@ -341,67 +125,82 @@ export const EQUIPMENT_PRESETS = {
         id: 'random',
         name: '🎲 Случайный Лут',
         icon: '🎲',
-        desc: 'Случайная комбинация реального оружия TACZ, брони и предметов из модов',
+        desc: 'Случайная комбинация оружия TACZ и ванильной брони',
         slots: {}
     },
     tacz_specops: {
         id: 'tacz_specops',
-        name: 'Спецназ TACZ',
+        name: 'Штурмовик АК-47',
         icon: '🔫',
-        desc: 'Штурмовик с реальным 3D автоматом AK-47, незеритовой броней и рюкзаком',
+        desc: 'Незеритовая броня и автомат АК-47',
         slots: {
-            head: 'create_goggles',
+            head: 'netherite_helmet',
             chest: 'netherite_chestplate',
             legs: 'netherite_leggings',
             boots: 'netherite_boots',
             mainHand: 'tacz_ak47',
             offHand: 'none',
-            back: 'backpack_netherite'
-        }
-    },
-    tacz_sniper: {
-        id: 'tacz_sniper',
-        name: 'Снайпер AWP',
-        icon: '🎯',
-        desc: 'Крупнокалиберная 3D снайперка AWP в сете Игнития',
-        slots: {
-            head: 'monstrous_helm',
-            chest: 'ignitium_chestplate',
-            legs: 'ignitium_leggings',
-            boots: 'ignitium_boots',
-            mainHand: 'tacz_awp',
-            offHand: 'none',
-            back: 'backpack_diamond'
-        }
-    },
-    ignitium_berserk: {
-        id: 'ignitium_berserk',
-        name: 'Берсерк Игнития',
-        icon: '🌋',
-        desc: 'Полный текстурированный сет Игнития с Адской Кузней',
-        slots: {
-            head: 'ignitium_helmet',
-            chest: 'ignitium_chestplate',
-            legs: 'ignitium_leggings',
-            boots: 'ignitium_boots',
-            mainHand: 'infernal_forge',
-            offHand: 'totem_of_undying',
             back: 'none'
         }
     },
-    frostfall_warrior: {
-        id: 'frostfall_warrior',
-        name: 'Воин Simply Swords',
-        icon: '❄️',
-        desc: 'Алмазная броня с Ледяным Клинком Frostfall и Щитом',
+    tacz_vector: {
+        id: 'tacz_vector',
+        name: 'Оперативник Vector',
+        icon: '⚡',
+        desc: 'Алмазная броня с пистолетом-пулеметом Kriss Vector',
         slots: {
             head: 'diamond_helmet',
             chest: 'diamond_chestplate',
             legs: 'diamond_leggings',
             boots: 'diamond_boots',
-            mainHand: 'frostfall',
-            offHand: 'shield',
-            back: 'backpack_diamond'
+            mainHand: 'tacz_vector45',
+            offHand: 'none',
+            back: 'none'
+        }
+    },
+    tacz_heavy: {
+        id: 'tacz_heavy',
+        name: 'Джаггернаут Миниган',
+        icon: '🔥',
+        desc: 'Незеритовый комплект с тяжелым шестиствольным миниганом',
+        slots: {
+            head: 'netherite_helmet',
+            chest: 'netherite_chestplate',
+            legs: 'netherite_leggings',
+            boots: 'netherite_boots',
+            mainHand: 'tacz_minigun',
+            offHand: 'none',
+            back: 'none'
+        }
+    },
+    tacz_rpg: {
+        id: 'tacz_rpg',
+        name: 'Гранатометчик РПГ-7',
+        icon: '💥',
+        desc: 'Незеритовая броня с реактивным гранатометом РПГ-7',
+        slots: {
+            head: 'netherite_helmet',
+            chest: 'netherite_chestplate',
+            legs: 'netherite_leggings',
+            boots: 'netherite_boots',
+            mainHand: 'tacz_rpg7',
+            offHand: 'none',
+            back: 'none'
+        }
+    },
+    tacz_hitman: {
+        id: 'tacz_hitman',
+        name: 'Агент Glock 17',
+        icon: '🎯',
+        desc: 'Алмазный сет со скорострельным пистолетом Glock 17',
+        slots: {
+            head: 'diamond_helmet',
+            chest: 'diamond_chestplate',
+            legs: 'diamond_leggings',
+            boots: 'diamond_boots',
+            mainHand: 'tacz_glock17',
+            offHand: 'none',
+            back: 'none'
         }
     },
     clean_skin: {
@@ -447,6 +246,12 @@ class EquipmentManager {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 this.currentEquipment = { ...this.currentEquipment, ...parsed };
+                // Очищаем устаревшие ID
+                ['head', 'chest', 'legs', 'boots', 'mainHand', 'offHand', 'back'].forEach(slot => {
+                    if (EQUIPMENT_CATALOG[slot] && !EQUIPMENT_CATALOG[slot][this.currentEquipment[slot]]) {
+                        this.currentEquipment[slot] = 'none';
+                    }
+                });
             }
         } catch (e) {
             console.debug('[EquipmentManager] Load error', e);
@@ -491,11 +296,13 @@ class EquipmentManager {
     }
 
     /**
-     * Рандомизация экипировки персонажа из полного пула предметов
+     * Рандомизация экипировки персонажа
      */
     randomizeEquipment() {
         const pickRandom = (slotName, allowNoneChance = 0.25) => {
-            const keys = Object.keys(EQUIPMENT_CATALOG[slotName]);
+            const catalog = EQUIPMENT_CATALOG[slotName];
+            if (!catalog) return 'none';
+            const keys = Object.keys(catalog);
             if (Math.random() < allowNoneChance && keys.includes('none')) {
                 return 'none';
             }
@@ -508,8 +315,8 @@ class EquipmentManager {
         this.currentEquipment.legs = pickRandom('legs', 0.15);
         this.currentEquipment.boots = pickRandom('boots', 0.15);
         this.currentEquipment.mainHand = pickRandom('mainHand', 0.05);
-        this.currentEquipment.offHand = pickRandom('offHand', 0.50);
-        this.currentEquipment.back = pickRandom('back', 0.45);
+        this.currentEquipment.offHand = 'none';
+        this.currentEquipment.back = 'none';
 
         this.saveEquipment();
         this.notifyListeners();
@@ -538,15 +345,8 @@ class EquipmentManager {
         // 1. Голова / Шлем
         if (this.currentEquipment.head !== 'none') {
             const item = EQUIPMENT_CATALOG.head[this.currentEquipment.head];
-            if (item && skin.head) {
-                let mesh = null;
-                if (item.armorTex) {
-                    mesh = armorMeshBuilder.buildHelmet(item.armorTex, item);
-                } else if (item.id === 'create_goggles') {
-                    mesh = this.buildCreateGoggles();
-                } else if (item.id === 'twilight_crown') {
-                    mesh = this.buildTwilightCrown();
-                }
+            if (item && item.armorTex && skin.head) {
+                const mesh = armorMeshBuilder.buildHelmet(item.armorTex, item);
                 if (mesh) {
                     skin.head.add(mesh);
                     this.activeAttachedObjects.set('head', mesh);
@@ -557,11 +357,8 @@ class EquipmentManager {
         // 2. Нагрудник / Броня
         if (this.currentEquipment.chest !== 'none') {
             const item = EQUIPMENT_CATALOG.chest[this.currentEquipment.chest];
-            if (item && skin.body) {
-                let mesh = null;
-                if (item.armorTex) {
-                    mesh = armorMeshBuilder.buildChestplate(item.armorTex, skin, item);
-                }
+            if (item && item.armorTex && skin.body) {
+                const mesh = armorMeshBuilder.buildChestplate(item.armorTex, skin, item);
                 if (mesh) {
                     skin.body.add(mesh);
                     this.activeAttachedObjects.set('chest', mesh);
@@ -585,7 +382,7 @@ class EquipmentManager {
             }
         }
 
-        // 5. Основная рука (Реальные TACZ 3D пушки или 3D воксельное оружие)
+        // 5. Основная рука (TACZ 3D оружие)
         if (this.currentEquipment.mainHand !== 'none') {
             const item = EQUIPMENT_CATALOG.mainHand[this.currentEquipment.mainHand];
             if (item && skin.rightArm) {
@@ -596,161 +393,57 @@ class EquipmentManager {
                 }
             }
         }
-
-        // 6. Вторая рука
-        if (this.currentEquipment.offHand !== 'none') {
-            const item = EQUIPMENT_CATALOG.offHand[this.currentEquipment.offHand];
-            if (item && skin.leftArm) {
-                const offMesh = await this.buildOffHandMesh(item);
-                if (offMesh && skin.leftArm) {
-                    skin.leftArm.add(offMesh);
-                    this.activeAttachedObjects.set('offHand', offMesh);
-                }
-            }
-        }
-
-        // 7. Спина (Рюкзак / Крылья)
-        if (this.currentEquipment.back !== 'none') {
-            const item = EQUIPMENT_CATALOG.back[this.currentEquipment.back];
-            if (item && skin.body) {
-                const backMesh = this.buildBackMesh(item);
-                if (backMesh) {
-                    skin.body.add(backMesh);
-                    this.activeAttachedObjects.set('back', backMesh);
-                }
-            }
-        }
     }
 
     clearAllEquipment(skin) {
         if (!skin) return;
         const parts = [skin.head, skin.body, skin.rightArm, skin.leftArm, skin.rightLeg, skin.leftLeg];
 
+        const disposeMesh = (obj) => {
+            if (!obj) return;
+            if (obj.geometry) {
+                try { obj.geometry.dispose(); } catch (_) {}
+            }
+            if (obj.material) {
+                try {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(m => m.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                } catch (_) {}
+            }
+            if (obj.children && obj.children.length > 0) {
+                for (let c = obj.children.length - 1; c >= 0; c--) {
+                    disposeMesh(obj.children[c]);
+                }
+            }
+        };
+
         parts.forEach(part => {
             if (!part) return;
             for (let i = part.children.length - 1; i >= 0; i--) {
                 const child = part.children[i];
-                if (child.name && (
+                if (child && child.name && (
                     child.name.startsWith('EQ_') || 
                     child.name.startsWith('ARMOR_') || 
                     child.name.startsWith('TACZ_') || 
                     child.name.startsWith('VOXEL_')
                 )) {
                     part.remove(child);
+                    disposeMesh(child);
                 }
             }
         });
         this.activeAttachedObjects.clear();
     }
 
-    // ── Построение Очков Create ──
-    buildCreateGoggles() {
-        const group = new THREE.Group();
-        group.name = 'ARMOR_HELMET_create_goggles';
-
-        const frameGeo = new THREE.BoxGeometry(8.6, 2.8, 1.2);
-        const frameMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.5 });
-        const frameMesh = new THREE.Mesh(frameGeo, frameMat);
-        frameMesh.position.set(0, 4, 4.4);
-        group.add(frameMesh);
-
-        const lensGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.6, 12);
-        const lensMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.85 });
-        
-        const lensL = new THREE.Mesh(lensGeo, lensMat);
-        lensL.rotation.x = Math.PI / 2;
-        lensL.position.set(-2.2, 4, 4.8);
-        group.add(lensL);
-
-        const lensR = new THREE.Mesh(lensGeo, lensMat);
-        lensR.rotation.x = Math.PI / 2;
-        lensR.position.set(2.2, 4, 4.8);
-        group.add(lensR);
-        return group;
-    }
-
-    // ── Построение Короны Сумерек ──
-    buildTwilightCrown() {
-        const group = new THREE.Group();
-        group.name = 'ARMOR_HELMET_twilight_crown';
-
-        const crownGeo = new THREE.BoxGeometry(8.8, 2.2, 8.8);
-        const crownMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.25, metalness: 0.9 });
-        const crownMesh = new THREE.Mesh(crownGeo, crownMat);
-        crownMesh.position.set(0, 7.5, 0);
-        group.add(crownMesh);
-
-        const rubyGeo = new THREE.BoxGeometry(1.2, 1.2, 0.4);
-        const rubyMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
-        const ruby = new THREE.Mesh(rubyGeo, rubyMat);
-        ruby.position.set(0, 7.5, 4.5);
-        group.add(ruby);
-        return group;
-    }
-
-    // ── Построение 3D Оружия (TACZ Geo & Voxel Items) ──
+    // ── Построение 3D Оружия (TACZ Geo) ──
     async buildWeaponMesh(item) {
-        // 1. Реальное 3D Оружие TACZ из .geo.json
         if (item.type === 'tacz_geo' && item.geoGunId) {
-            const gunMesh = await taczGeoLoader.loadGunModel(item.geoGunId);
-            if (gunMesh) return gunMesh;
+            return await taczGeoLoader.loadGunModel(item.geoGunId);
         }
-
-        // 2. 3D Воксельное Оружие из 2D PNG модов и ваниллы
-        if (item.type === 'voxel_item' && item.imgUrl) {
-            const voxelMesh = await voxelItemBuilder.createItemMesh(item.imgUrl);
-            if (voxelMesh) return voxelMesh;
-        }
-
         return null;
-    }
-
-    // ── Построение 3D предметов Второй руки ──
-    async buildOffHandMesh(item) {
-        if (item.type === 'voxel_item' && item.imgUrl) {
-            const voxelMesh = await voxelItemBuilder.createItemMesh(item.imgUrl, { isShield: false });
-            if (voxelMesh) return voxelMesh;
-        }
-
-        const group = new THREE.Group();
-        group.name = `EQ_OFFHAND_${item.id}`;
-
-        if (item.id === 'shield') {
-            const shieldGeo = new THREE.BoxGeometry(1.2, 11.0, 7.0);
-            const shieldMat = new THREE.MeshStandardMaterial({ color: 0x854d0e, roughness: 0.5, metalness: 0.2 });
-            const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
-            group.add(shieldMesh);
-            group.position.set(1.4, -6.5, 0.5);
-        }
-
-        return group;
-    }
-
-    // ── Построение 3D Рюкзаков / Спины ──
-    buildBackMesh(item) {
-        if (item.id && item.id.includes('backpack')) {
-            return backpackMeshBuilder.buildBackpack(item);
-        }
-
-        const group = new THREE.Group();
-        group.name = `EQ_BACK_${item.id}`;
-
-        if (item.id.includes('elytra')) {
-            const elytraMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5, side: THREE.DoubleSide });
-            const wingGeo = new THREE.PlaneGeometry(6, 16);
-            
-            const wingL = new THREE.Mesh(wingGeo, elytraMat);
-            wingL.rotation.set(0.3, 0.4, -0.4);
-            wingL.position.set(-3, 0, -2.5);
-            group.add(wingL);
-
-            const wingR = new THREE.Mesh(wingGeo, elytraMat);
-            wingR.rotation.set(0.3, -0.4, 0.4);
-            wingR.position.set(3, 0, -2.5);
-            group.add(wingR);
-        }
-
-        return group;
     }
 }
 

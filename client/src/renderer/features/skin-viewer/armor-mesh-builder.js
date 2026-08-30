@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 /**
  * ArmorMeshBuilder
- * Полноценный 3D билдер брони Minecraft с математически точной UV-разверткой (как в skinview3d и Minecraft Java Edition).
+ * Полноценный 3D билдер ванильной брони Minecraft с математически точной UV-разверткой (Java Edition).
  */
 
 function setMinecraftUVs(box, u, v, width, height, depth, textureWidth = 64, textureHeight = 32) {
@@ -87,22 +87,6 @@ class ArmorMeshBuilder {
         overlayMesh.position.set(0, 4.0, 0);
         group.add(overlayMesh);
 
-        // 3D Рога для сетов Cataclysm (Игнитий / Левиафан)
-        if (options.hasHorns) {
-            const hornGeo = new THREE.ConeGeometry(1.0, 4.2, 4);
-            const hornMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.3, metalness: 0.6 });
-
-            const hornL = new THREE.Mesh(hornGeo, hornMat);
-            hornL.rotation.set(-0.2, 0, -0.5);
-            hornL.position.set(-4.5, 8.2, -0.5);
-            group.add(hornL);
-
-            const hornR = new THREE.Mesh(hornGeo, hornMat);
-            hornR.rotation.set(-0.2, 0, 0.5);
-            hornR.position.set(4.5, 8.2, -0.5);
-            group.add(hornR);
-        }
-
         return group;
     }
 
@@ -186,24 +170,26 @@ class ArmorMeshBuilder {
         const mat = this.createMaterial(textureUrl);
 
         // Правый ботинок (Boot Layer 1: u=0, v=16, w=4, h=12, d=4)
-        const bootGeoR = new THREE.BoxGeometry(4.8, 5.2, 4.8);
+        // Бокс во всю длину ноги с центром в y = -6.0. В layer_1.png текстура ботинок расположена
+        // строго в нижней части, поэтому ложится на ступни со 100% пиксельной точностью Minecraft.
+        const bootGeoR = new THREE.BoxGeometry(4.8, 12.2, 4.8);
         setMinecraftUVs(bootGeoR, 0, 16, 4, 12, 4, 64, 32);
 
         if (skin.rightLeg) {
             const bootR = new THREE.Mesh(bootGeoR, mat);
             bootR.name = `ARMOR_BOOTS_R_${options.id || 'custom'}`;
-            bootR.position.set(0, -9.5, 0);
+            bootR.position.set(0, -6.0, 0);
             skin.rightLeg.add(bootR);
         }
 
         // Левый ботинок (Boot Layer 1: u=0, v=16, w=4, h=12, d=4)
-        const bootGeoL = new THREE.BoxGeometry(4.8, 5.2, 4.8);
+        const bootGeoL = new THREE.BoxGeometry(4.8, 12.2, 4.8);
         setMinecraftUVs(bootGeoL, 0, 16, 4, 12, 4, 64, 32);
 
         if (skin.leftLeg) {
             const bootL = new THREE.Mesh(bootGeoL, mat);
             bootL.name = `ARMOR_BOOTS_L_${options.id || 'custom'}`;
-            bootL.position.set(0, -9.5, 0);
+            bootL.position.set(0, -6.0, 0);
             skin.leftLeg.add(bootL);
         }
     }
