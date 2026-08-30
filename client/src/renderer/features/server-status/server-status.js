@@ -121,6 +121,7 @@ export async function updateServerStatus() {
             }
         }
 
+        const liveCard = document.querySelector('.server-live-card-modern');
         const bottomCount = dom.get('bottom-player-count');
         const liveStatusText = dom.get('live-status-text');
         const livePlayerCount = dom.get('live-player-count');
@@ -144,8 +145,12 @@ export async function updateServerStatus() {
                 livePlayerCount.textContent = `${onlineCount} / ${maxCount}`;
             }
 
-            if (livePlayersContainer) {
-                if (Array.isArray(list) && list.length > 0) {
+            if (Array.isArray(list) && list.length > 0) {
+                if (liveCard) {
+                    liveCard.classList.add('has-players');
+                    liveCard.classList.remove('empty-card');
+                }
+                if (livePlayersContainer) {
                     livePlayersContainer.innerHTML = list.map(p => {
                         const name = typeof p === 'string' ? p : (p?.name_clean || p?.name_raw || 'Игрок');
                         const avatarUrl = `https://launcher.ganj4craft.ru/api/skins/${encodeURIComponent(name)}.png`;
@@ -158,25 +163,15 @@ export async function updateServerStatus() {
                             </div>
                         `;
                     }).join('');
-                } else {
-                    livePlayersContainer.innerHTML = `
-                        <div class="live-empty-state-modern">
-                            <div class="empty-state-hexagon-icon">
-                                <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M20 3 L36 12 L36 28 L20 37 L4 28 L4 12 Z" stroke="#39ff14" stroke-width="1.8" fill="rgba(57, 255, 20, 0.05)" />
-                                    <path d="M20 30 L20 18" stroke="#39ff14" stroke-width="1.8" stroke-linecap="round"/>
-                                    <path d="M20 18 Q14 14 12 8 Q20 12 20 18 Z" stroke="#39ff14" stroke-width="1.4" fill="rgba(57, 255, 20, 0.25)"/>
-                                    <path d="M20 18 Q26 14 28 8 Q20 12 20 18 Z" stroke="#39ff14" stroke-width="1.4" fill="rgba(57, 255, 20, 0.25)"/>
-                                    <path d="M20 14 Q20 6 20 5 Q20 6 20 14" stroke="#39ff14" stroke-width="1.5" stroke-linecap="round"/>
-                                    <circle cx="20" cy="5" r="1.5" fill="#39ff14"/>
-                                </svg>
-                            </div>
-                            <div class="empty-state-text-wrap">
-                                <div class="empty-title">Сервер свободен</div>
-                                <div class="empty-sub"><span class="dot-green">•</span> Будь первым!</div>
-                            </div>
-                        </div>
-                    `;
+                }
+            } else {
+                // Нет игроков в онлайне — минималистичный режим без фона и заглушек
+                if (liveCard) {
+                    liveCard.classList.remove('has-players');
+                    liveCard.classList.add('empty-card');
+                }
+                if (livePlayersContainer) {
+                    livePlayersContainer.innerHTML = '';
                 }
             }
 
@@ -193,6 +188,10 @@ export async function updateServerStatus() {
             indicator.className = 'status-indicator offline';
             indicator.title = 'Сервер недоступен';
 
+            if (liveCard) {
+                liveCard.classList.remove('has-players');
+                liveCard.classList.add('empty-card');
+            }
             if (liveStatusText) {
                 liveStatusText.textContent = 'ОФФЛАЙН';
             }
@@ -200,20 +199,7 @@ export async function updateServerStatus() {
                 livePlayerCount.textContent = '0 / 0';
             }
             if (livePlayersContainer) {
-                livePlayersContainer.innerHTML = `
-                    <div class="live-empty-state-modern offline">
-                        <div class="empty-state-hexagon-icon offline-hex">
-                            <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M20 3 L36 12 L36 28 L20 37 L4 28 L4 12 Z" stroke="#ef4444" stroke-width="1.8" fill="rgba(239, 68, 68, 0.05)" />
-                                <path d="M14 14 L26 26M26 14 L14 26" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                        </div>
-                        <div class="empty-state-text-wrap">
-                            <div class="empty-title">Сервер оффлайн</div>
-                            <div class="empty-sub">Техработы</div>
-                        </div>
-                    </div>
-                `;
+                livePlayersContainer.innerHTML = '';
             }
 
             // Убираем тултип если есть

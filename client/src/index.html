@@ -696,8 +696,8 @@
 
                 <!-- 3. Right: Live Server Online Hub -->
                 <div class="launch-action-hub">
-                    <div class="server-live-card-modern">
-                        <!-- Top: Live status dot + big player count -->
+                    <div class="server-live-card-modern empty-card">
+                        <!-- Top: Live status dot + player count -->
                         <div class="server-live-top-row">
                             <div class="server-live-status-pill">
                                 <span class="status-indicator-dot online"></span>
@@ -706,30 +706,11 @@
                             <div class="server-live-count-large" id="live-player-count">0 / 1337</div>
                         </div>
 
-                        <!-- Clean divider -->
+                        <!-- Clean divider (visible when players online) -->
                         <div class="server-card-divider"></div>
 
-                        <!-- Bottom: Hexagon sprout badge & text / Player list -->
-                        <div class="server-players-live-list" id="live-players-container">
-                            <div class="live-empty-state-modern">
-                                <div class="empty-state-hexagon-icon">
-                                    <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <!-- Hexagon Border -->
-                                        <path d="M20 3 L36 12 L36 28 L20 37 L4 28 L4 12 Z" stroke="#39ff14" stroke-width="1.8" fill="rgba(57, 255, 20, 0.05)" />
-                                        <!-- Sprout / Plant -->
-                                        <path d="M20 30 L20 18" stroke="#39ff14" stroke-width="1.8" stroke-linecap="round"/>
-                                        <path d="M20 18 Q14 14 12 8 Q20 12 20 18 Z" stroke="#39ff14" stroke-width="1.4" fill="rgba(57, 255, 20, 0.25)"/>
-                                        <path d="M20 18 Q26 14 28 8 Q20 12 20 18 Z" stroke="#39ff14" stroke-width="1.4" fill="rgba(57, 255, 20, 0.25)"/>
-                                        <path d="M20 14 Q20 6 20 5 Q20 6 20 14" stroke="#39ff14" stroke-width="1.5" stroke-linecap="round"/>
-                                        <circle cx="20" cy="5" r="1.5" fill="#39ff14"/>
-                                    </svg>
-                                </div>
-                                <div class="empty-state-text-wrap">
-                                    <div class="empty-title">Сервер свободен</div>
-                                    <div class="empty-sub"><span class="dot-green">•</span> Будь первым!</div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Player list (populated with avatar badges when players online) -->
+                        <div class="server-players-live-list" id="live-players-container"></div>
                     </div>
                 </div>
             </div>
