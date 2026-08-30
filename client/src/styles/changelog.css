@@ -17,6 +17,12 @@
 .changelog-admin-note.launcher-note .admin-note-header { color: var(--gc-purple-pastel); }
 
 /* ── Group Labels & Dots ── */
+.group-label-activity { color: #ffab40; }
+.group-label-activity .title-dot { background: #ff9100; box-shadow: 0 0 10px #ff9100; }
+.group-label-skill { color: #ffd54f; }
+.group-label-skill .title-dot { background: #ffca28; box-shadow: 0 0 10px #ffca28; }
+.group-label-quest { color: #4fc3f7; }
+.group-label-quest .title-dot { background: #29b6f6; box-shadow: 0 0 10px #29b6f6; }
 .group-label-server { color: #69f0ae; }
 .group-label-server .title-dot { background: var(--gc-green); box-shadow: 0 0 8px var(--gc-green); }
 .group-label-client { color: var(--gc-blue-light); }
@@ -78,8 +84,11 @@
 .changelog-badge-ver { font-size: var(--gc-font-xs); font-weight: 600; color: #90caf9; background: rgba(var(--gc-blue-rgb), 0.12); border: 1px solid rgba(var(--gc-blue-rgb), 0.3); padding: 2px 6px; border-radius: var(--gc-radius-xs); }
 .changelog-header-pills { display: flex; align-items: center; gap: 6px; }
 
-/* Pills (Add/Update/Remove/Script/Config/Misc) */
+/* Pills (Activity/Skill/Quest/Add/Update/Remove/Script/Config/Misc) */
 .changelog-pill { font-size: var(--gc-font-sm); font-weight: 600; padding: 3px 9px; border-radius: var(--gc-radius-xl); letter-spacing: 0.3px; }
+.changelog-pill.pill-activity { background: rgba(255, 152, 0, 0.18); color: #ffb74d; border: 1px solid rgba(255, 152, 0, 0.45); }
+.changelog-pill.pill-skill { background: rgba(255, 202, 40, 0.18); color: #ffe082; border: 1px solid rgba(255, 202, 40, 0.45); }
+.changelog-pill.pill-quest { background: rgba(41, 182, 246, 0.18); color: #81d4fa; border: 1px solid rgba(41, 182, 246, 0.45); }
 .changelog-pill.pill-add { background: rgba(var(--gc-accent-rgb), 0.15); color: #69f0ae; border: 1px solid rgba(var(--gc-accent-rgb), 0.4); }
 .changelog-pill.pill-update { background: rgba(var(--gc-blue-rgb), 0.15); color: var(--gc-blue-light); border: 1px solid rgba(var(--gc-blue-rgb), 0.4); }
 .changelog-pill.pill-remove { background: rgba(244, 67, 54, 0.15); color: #ff8a80; border: 1px solid rgba(244, 67, 54, 0.4); }
@@ -94,7 +103,18 @@
 .changelog-admin-note { background: linear-gradient(135deg, rgba(var(--gc-green-rgb), 0.06) 0%, rgba(20, 26, 20, 0.45) 100%); border-left: 3px solid var(--gc-green); border-radius: 0 var(--gc-radius-lg) var(--gc-radius-lg) 0; padding: 12px 16px; margin-bottom: 4px; border-top: 1px solid rgba(var(--gc-green-rgb), 0.15); border-right: 1px solid rgba(var(--gc-green-rgb), 0.15); border-bottom: 1px solid rgba(var(--gc-green-rgb), 0.15); }
 .admin-note-header { display: flex; align-items: center; gap: 6px; font-size: var(--gc-font-sm); font-weight: 700; color: var(--gc-green); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
 .admin-note-header .note-icon { font-size: var(--gc-font-lg); }
-.admin-note-body { font-size: var(--gc-font-lg); color: var(--gc-text-primary); line-height: 1.5; white-space: pre-wrap; }
+.admin-note-body { font-size: var(--gc-font-lg); color: var(--gc-text-primary); line-height: 1.6; white-space: pre-wrap; }
+
+/* Patch Note Tag Badges */
+.patch-tag { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; vertical-align: baseline; margin-right: 4px; }
+.patch-tag-new { color: #00e676; background: rgba(0, 230, 118, 0.15); border: 1px solid rgba(0, 230, 118, 0.45); box-shadow: 0 0 8px rgba(0, 230, 118, 0.2); }
+.patch-tag-buff { color: #00e5ff; background: rgba(0, 229, 255, 0.15); border: 1px solid rgba(0, 229, 255, 0.45); box-shadow: 0 0 8px rgba(0, 229, 255, 0.2); }
+.patch-tag-nerf { color: #ff5252; background: rgba(255, 82, 82, 0.15); border: 1px solid rgba(255, 82, 82, 0.45); box-shadow: 0 0 8px rgba(255, 82, 82, 0.2); }
+.patch-tag-fix { color: #ffd740; background: rgba(255, 215, 64, 0.15); border: 1px solid rgba(255, 215, 64, 0.45); box-shadow: 0 0 8px rgba(255, 215, 64, 0.2); }
+.patch-tag-csc { color: #e040fb; background: rgba(224, 64, 251, 0.15); border: 1px solid rgba(224, 64, 251, 0.45); box-shadow: 0 0 8px rgba(224, 64, 251, 0.2); }
+.patch-tag-boss { color: #ff6e40; background: rgba(255, 110, 64, 0.15); border: 1px solid rgba(255, 110, 64, 0.45); box-shadow: 0 0 8px rgba(255, 110, 64, 0.2); }
+.patch-tag-event { color: #ff4081; background: rgba(255, 64, 129, 0.15); border: 1px solid rgba(255, 64, 129, 0.45); box-shadow: 0 0 8px rgba(255, 64, 129, 0.2); }
+.patch-tag-balance { color: #1de9b6; background: rgba(29, 233, 182, 0.15); border: 1px solid rgba(29, 233, 182, 0.45); box-shadow: 0 0 8px rgba(29, 233, 182, 0.2); }
 
 /* ── News Content ── */
 .changelog-news-content { padding: 16px 20px; display: flex; flex-direction: column; gap: var(--gc-gap-md); }
@@ -116,11 +136,20 @@
 
 .changelog-mod-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--gc-border-light); border-radius: var(--gc-radius-lg); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: var(--gc-gap-md); transition: all 0.2s var(--gc-ease-decelerate); box-sizing: border-box; }
 .changelog-mod-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(var(--gc-green-rgb), 0.45); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(var(--gc-green-rgb), 0.12); }
+.changelog-mod-card.card-activity { border-color: rgba(255, 152, 0, 0.25); background: linear-gradient(135deg, rgba(255, 152, 0, 0.04) 0%, rgba(20, 24, 30, 0.7) 100%); }
+.changelog-mod-card.card-activity:hover { border-color: rgba(255, 171, 64, 0.6); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(255, 152, 0, 0.2); }
+.changelog-mod-card.card-skill { border-color: rgba(255, 202, 40, 0.25); background: linear-gradient(135deg, rgba(255, 202, 40, 0.04) 0%, rgba(20, 24, 30, 0.7) 100%); }
+.changelog-mod-card.card-skill:hover { border-color: rgba(255, 215, 64, 0.6); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(255, 202, 40, 0.2); }
+.changelog-mod-card.card-quest { border-color: rgba(41, 182, 246, 0.25); background: linear-gradient(135deg, rgba(41, 182, 246, 0.04) 0%, rgba(20, 24, 30, 0.7) 100%); }
+.changelog-mod-card.card-quest:hover { border-color: rgba(79, 195, 247, 0.6); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(41, 182, 246, 0.2); }
 .changelog-mod-card.card-script:hover { border-color: rgba(255, 202, 40, 0.5); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(255, 202, 40, 0.15); }
 .changelog-mod-card.card-config:hover { border-color: rgba(149, 117, 205, 0.5); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(149, 117, 205, 0.15); }
 
 .mod-card-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
 .mod-type-icon { width: 28px; height: 28px; border-radius: var(--gc-radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--gc-font-md); font-weight: 700; flex-shrink: 0; }
+.icon-activity { background: rgba(255, 152, 0, 0.18); color: #ffb74d; border: 1px solid rgba(255, 152, 0, 0.35); font-size: 14px; }
+.icon-skill { background: rgba(255, 202, 40, 0.18); color: #ffe082; border: 1px solid rgba(255, 202, 40, 0.35); font-size: 14px; }
+.icon-quest { background: rgba(41, 182, 246, 0.18); color: #81d4fa; border: 1px solid rgba(41, 182, 246, 0.35); font-size: 14px; }
 .icon-add { background: rgba(var(--gc-accent-rgb), 0.18); color: #69f0ae; border: 1px solid rgba(var(--gc-accent-rgb), 0.35); }
 .icon-update { background: rgba(var(--gc-blue-rgb), 0.18); color: var(--gc-blue-light); border: 1px solid rgba(var(--gc-blue-rgb), 0.35); }
 .icon-remove { background: rgba(244, 67, 54, 0.18); color: #ff8a80; border: 1px solid rgba(244, 67, 54, 0.35); }
@@ -128,6 +157,12 @@
 .icon-config { background: rgba(149, 117, 205, 0.18); color: #d1c4e9; border: 1px solid rgba(149, 117, 205, 0.35); }
 
 .mod-info-block { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.activity-badge-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.activity-category-badge { font-size: 10px; font-weight: 700; color: #ffb74d; background: rgba(255, 152, 0, 0.12); border: 1px solid rgba(255, 152, 0, 0.3); padding: 1px 6px; border-radius: var(--gc-radius-xs); letter-spacing: 0.3px; text-transform: uppercase; }
+.activity-action-tag { font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: var(--gc-radius-xs); letter-spacing: 0.3px; }
+.activity-action-tag.action-add { color: #69f0ae; background: rgba(var(--gc-accent-rgb), 0.15); border: 1px solid rgba(var(--gc-accent-rgb), 0.35); }
+.activity-action-tag.action-update { color: #80d8ff; background: rgba(var(--gc-blue-rgb), 0.15); border: 1px solid rgba(var(--gc-blue-rgb), 0.35); }
+.activity-action-tag.action-remove { color: #ff8a80; background: rgba(244, 67, 54, 0.15); border: 1px solid rgba(244, 67, 54, 0.35); }
 .mod-main-name { font-size: var(--gc-font-lg); font-weight: 700; color: #f5f5f5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.2px; }
 .mod-sub-filename { font-size: 10.5px; color: var(--gc-text-dim); font-family: var(--gc-font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 

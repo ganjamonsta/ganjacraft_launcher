@@ -418,7 +418,64 @@ function renderLauncherCardHtml(rel, isLatest) {
 }
 
 /**
- * Рендер карточки обновления сборки (чётко разделено по группам: Клиент, Сервер, KubeJS, Конфиги)
+ * Форматирование текста заметки разработчика с цветными бейджами тегов ([BUFF], [NERF], [NEW], [FIX], [CSC], [BOSS] и т.д.)
+ */
+export function formatAdminNoteText(rawText) {
+    if (!rawText) return '';
+    let escaped = escapeHtml(rawText);
+
+    const tagMap = [
+        { regex: /\[(NEW|НОВОЕ)\]/gi, class: 'patch-tag-new', label: 'НОВОЕ' },
+        { regex: /\[(BUFF|БАФФ|UP)\]/gi, class: 'patch-tag-buff', label: 'БАФФ' },
+        { regex: /\[(NERF|НЕРФ|DOWN)\]/gi, class: 'patch-tag-nerf', label: 'НЕРФ' },
+        { regex: /\[(FIX|ФИКС|ИСПРАВЛЕНИЕ)\]/gi, class: 'patch-tag-fix', label: 'ФИКС' },
+        { regex: /\[(CSC)\]/gi, class: 'patch-tag-csc', label: 'CSC' },
+        { regex: /\[(BOSS|БОСС|БОССЫ)\]/gi, class: 'patch-tag-boss', label: 'БОСС' },
+        { regex: /\[(EVENT|ИВЕНТ|СОБЫТИЕ)\]/gi, class: 'patch-tag-event', label: 'ИВЕНТ' },
+        { regex: /\[(BALANCE|БАЛАНС)\]/gi, class: 'patch-tag-balance', label: 'БАЛАНС' },
+    ];
+
+    tagMap.forEach(({ regex, class: cls, label }) => {
+        escaped = escaped.replace(regex, `<span class="patch-tag ${cls}">${label}</span>`);
+    });
+
+    return escaped;
+}
+
+/**
+ * Рендер карточки отдельной активности (CSC, Боссы, Баунти, Казино, Наноброня и др.)
+ */
+function renderActivityCard(item) {
+    const icon = item.icon || '⚔️';
+    const categoryName = item.category_name || 'Активность';
+    const label = item.label || item.name || '';
+    const filename = item.path || item.name || '';
+    const action = item.action || 'update';
+
+    let actionClass = 'action-update';
+    let actionLabel = 'ОБНОВЛЕНО';
+    if (action === 'add') { actionClass = 'action-add'; actionLabel = 'НОВОЕ'; }
+    if (action === 'remove') { actionClass = 'action-remove'; actionLabel = 'УДАЛЕНО'; }
+
+    return `
+        <div class="changelog-mod-card card-activity ${actionClass}" title="${escapeHtml(filename)}">
+            <div class="mod-card-left">
+                <div class="mod-type-icon icon-activity">${escapeHtml(icon)}</div>
+                <div class="mod-info-block">
+                    <div class="activity-badge-row">
+                        <span class="activity-category-badge">${escapeHtml(categoryName)}</span>
+                        <span class="activity-action-tag ${actionClass}">${escapeHtml(actionLabel)}</span>
+                    </div>
+                    <span class="mod-main-name">${escapeHtml(label)}</span>
+                    <span class="mod-sub-filename">${escapeHtml(filename)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Рендер карточки обновления сборки (чётко разделено по группам: Активности, Клиент, Сервер, KubeJS, Конфиги)
  */
 function renderPackCardHtml(item, isLatest) {
     const summary = item.summary || {};
@@ -428,10 +485,17 @@ function renderPackCardHtml(item, isLatest) {
     const allAdded = summary.mods_added || [];
     const allUpdated = summary.mods_updated || [];
     const allRemoved = summary.mods_removed || [];
+    const activitiesList = summary.activities_list || [];
+    const skillsList = summary.skills_list || [];
+    const questsList = summary.quests_list || [];
+    const serverScriptsList = summary.server_scripts_list || [];
     const configsList = summary.configs_list || [];
     const scriptsList = summary.scripts_list || [];
     const resourcepacksList = summary.resourcepacks_list || [];
 
+    const activitiesCount = summary.activities_count || activitiesList.length;
+    const skillsCount = summary.skills_count || skillsList.length;
+    const questsCount = summary.quests_count || questsList.length;
     const configsCount = summary.configs_count || configsList.length;
     const scriptsCount = summary.scripts_count || scriptsList.length;
     const packsCount = summary.resourcepacks_count || resourcepacksList.length;
@@ -465,10 +529,12 @@ function renderPackCardHtml(item, isLatest) {
     const totalUpdated = allUpdated.length;
     const totalRemoved = allRemoved.length;
 
+    if (activitiesCount > 0) summaryPills.push(`<span class="changelog-pill pill-activity">⚔️ ${activitiesCount}</span>`);
+    if (skillsCount > 0) summaryPills.push(`<span class="changelog-pill pill-skill">⭐ ${skillsCount}</span>`);
+    if (questsCount > 0) summaryPills.push(`<span class="changelog-pill pill-quest">📜 ${questsCount}</span>`);
     if (totalAdded > 0) summaryPills.push(`<span class="changelog-pill pill-add">➕ ${totalAdded}</span>`);
     if (totalUpdated > 0) summaryPills.push(`<span class="changelog-pill pill-update">🔄 ${totalUpdated}</span>`);
     if (totalRemoved > 0) summaryPills.push(`<span class="changelog-pill pill-remove">➖ ${totalRemoved}</span>`);
-    if (scriptsCount > 0) summaryPills.push(`<span class="changelog-pill pill-script">📜 ${scriptsCount}</span>`);
     if (configsCount > 0) summaryPills.push(`<span class="changelog-pill pill-config">⚙️ ${configsCount}</span>`);
 
     const headerHtml = `
@@ -501,12 +567,57 @@ function renderPackCardHtml(item, isLatest) {
                     <span class="note-icon">💬</span>
                     <span class="note-title">Патчноут сборки</span>
                 </div>
-                <div class="admin-note-body">${escapeHtml(item.custom_note)}</div>
+                <div class="admin-note-body">${formatAdminNoteText(item.custom_note)}</div>
             </div>
         `;
     }
 
-    // 1. ГРУППА: СЕРВЕРНАЯ ЧАСТЬ И ГЕЙМПЛЕЙНЫЕ МОДЫ
+    // 1. ГРУППА: ВНУТРИИГРОВЫЕ АКТИВНОСТИ И РЕЖИМЫ (CSC, Air Combat, Crysis, GunGame, Боссы, Казино...)
+    if (activitiesList.length > 0) {
+        sectionsHtml += `
+            <div class="changelog-group">
+                <div class="changelog-section-title group-label-activity">
+                    <span class="title-dot dot-activity"></span>
+                    <span>⚔️ Внутриигровые активности и режимы (${activitiesList.length})</span>
+                </div>
+                <div class="changelog-mods-grid">
+                    ${activitiesList.map(a => renderActivityCard(a)).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 2. ГРУППА: ДРЕВО НАВЫКОВ И ПРОКАЧКИ (Puffish Skills)
+    if (skillsList.length > 0) {
+        sectionsHtml += `
+            <div class="changelog-group">
+                <div class="changelog-section-title group-label-skill">
+                    <span class="title-dot dot-skill"></span>
+                    <span>⭐ Древо навыков и прокачка (${skillsList.length})</span>
+                </div>
+                <div class="changelog-mods-grid">
+                    ${skillsList.map(s => renderActivityCard(s)).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 3. ГРУППА: КВЕСТОВЫЕ ЦЕПОЧКИ И ЗАДАНИЯ (FTB Quests)
+    if (questsList.length > 0) {
+        sectionsHtml += `
+            <div class="changelog-group">
+                <div class="changelog-section-title group-label-quest">
+                    <span class="title-dot dot-quest"></span>
+                    <span>📜 Квестовые цепочки и задания (${questsList.length})</span>
+                </div>
+                <div class="changelog-mods-grid">
+                    ${questsList.map(q => renderActivityCard(q)).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 4. ГРУППА: СЕРВЕРНАЯ ЧАСТЬ И ГЕЙМПЛЕЙНЫЕ МОДЫ
     const hasServerMods = serverAdded.length > 0 || serverUpdated.length > 0 || serverRemoved.length > 0;
     if (hasServerMods) {
         sectionsHtml += `
@@ -524,7 +635,7 @@ function renderPackCardHtml(item, isLatest) {
         `;
     }
 
-    // 2. ГРУППА: КЛИЕНТСКИЕ МОДЫ И ГРАФИКА
+    // 5. ГРУППА: КЛИЕНТСКИЕ МОДЫ И ГРАФИКА
     const hasClientMods = clientAdded.length > 0 || clientUpdated.length > 0 || clientRemoved.length > 0 || packsCount > 0;
     if (hasClientMods) {
         sectionsHtml += `
@@ -553,19 +664,23 @@ function renderPackCardHtml(item, isLatest) {
         `;
     }
 
-    // 3. ГРУППА: БАЛАНС И СКРИПТЫ KUBEJS
-    if (scriptsList.length > 0) {
+    // 6. ГРУППА: БАЛАНС, КРАФТЫ И ДРУГИЕ СКРИПТЫ KUBEJS
+    const otherScripts = scriptsList.filter(s => {
+        const cat = s.category || '';
+        return !cat.startsWith('activity_') && !cat.startsWith('skill_') && cat !== 'skills' && !cat.startsWith('quest_') && cat !== 'quests';
+    });
+    if (otherScripts.length > 0) {
         sectionsHtml += `
             <div class="changelog-group">
                 <div class="changelog-section-title group-label-script">
                     <span class="title-dot dot-script"></span>
-                    <span>📜 Баланс и скрипты KubeJS (${scriptsList.length})</span>
+                    <span>🛠️ Баланс, крафты и серверные скрипты (${otherScripts.length})</span>
                 </div>
                 <div class="changelog-mods-grid">
-                    ${scriptsList.map(s => `
+                    ${otherScripts.map(s => `
                         <div class="changelog-mod-card card-script" title="${escapeHtml(s.path || s.name)}">
                             <div class="mod-card-left">
-                                <div class="mod-type-icon icon-script">📜</div>
+                                <div class="mod-type-icon icon-script">${escapeHtml(s.icon || '🛠️')}</div>
                                 <div class="mod-info-block">
                                     <span class="mod-main-name">${escapeHtml(s.label || s.name)}</span>
                                     <span class="mod-sub-filename">${escapeHtml(s.path || s.name)}</span>
@@ -576,7 +691,7 @@ function renderPackCardHtml(item, isLatest) {
                 </div>
             </div>
         `;
-    } else if (scriptsCount > 0) {
+    } else if (scriptsCount > 0 && activitiesList.length === 0) {
         sectionsHtml += `
             <div class="changelog-group">
                 <div class="changelog-section-title group-label-script">
@@ -590,7 +705,7 @@ function renderPackCardHtml(item, isLatest) {
         `;
     }
 
-    // 4. ГРУППА: КОНФИГУРАЦИИ СЕРВЕРА
+    // 5. ГРУППА: КОНФИГУРАЦИИ СЕРВЕРА
     if (configsList.length > 0) {
         sectionsHtml += `
             <div class="changelog-group">
@@ -627,7 +742,7 @@ function renderPackCardHtml(item, isLatest) {
         `;
     }
 
-    if (!hasServerMods && !hasClientMods && scriptsCount === 0 && configsCount === 0 && !item.custom_note) {
+    if (activitiesList.length === 0 && !hasServerMods && !hasClientMods && otherScripts.length === 0 && configsCount === 0 && !item.custom_note) {
         sectionsHtml += '<div class="changelog-item-empty">Мелкие системные исправления сборки</div>';
     }
 
