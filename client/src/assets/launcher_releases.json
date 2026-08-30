@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.0.183",
+    "date": "2026-08-30T10:34:42.239Z",
+    "timestamp": 1788086082,
+    "title": "Релиз v1.0.183",
+    "description": "Обновлённый визуально понятный апдейтер лаунчера.",
+    "changes": [
+      "✨ Add dashboard styles and launcher updater module to improve UI and game management capabilities",
+      "✨ Новый апдейтер",
+      "✨ Implement initial core UI styling and architecture for GanjaCraft launcher modules",
+      "✨ Heroic wide combat stance for legs",
+      "✨ Expand render area to 480x400 and adjust zoom for long weapon barrels",
+      "✨ Implement Bedrock geometry loader for TACZ weapon models in 3D skin viewer",
+      "✨ Level minigun barrel horizontally at hip height"
+    ]
+  },
+  {
     "version": "1.0.182",
     "date": "2026-08-30T10:17:36.579Z",
     "timestamp": 1788085056,
