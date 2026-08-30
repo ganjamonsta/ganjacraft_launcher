@@ -359,22 +359,27 @@ class EquipmentManager {
     }
 
     /**
-     * Применение 3D экипировки к модели Three.js SkinViewer
+     * Применение 3D экипировки к модели Three.js SkinViewer / BedrockPlayerRig
      */
     async applyToViewer(viewer) {
-        if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) return;
+        if (!viewer || !viewer.playerObject) return;
 
         console.log('[EQUIPMENT] applyToViewer called with equipment:', this.currentEquipment);
         const skin = viewer.playerObject.skin;
-        this.clearAllEquipment(skin);
+        const rig = viewer.bedrockRig;
+        this.clearAllEquipment(skin, rig);
 
         // 1. Голова / Шлем
         if (this.currentEquipment.head !== 'none') {
             const item = EQUIPMENT_CATALOG.head[this.currentEquipment.head];
-            if (item && item.armorTex && skin.head) {
+            if (item && item.armorTex) {
                 const mesh = armorMeshBuilder.buildHelmet(item.armorTex, item);
                 if (mesh) {
-                    skin.head.add(mesh);
+                    if (rig && rig.sockets && rig.sockets.head) {
+                        rig.sockets.head.add(mesh);
+                    } else if (skin && skin.head) {
+                        skin.head.add(mesh);
+                    }
                     this.activeAttachedObjects.set('head', mesh);
                 }
             }
@@ -383,11 +388,13 @@ class EquipmentManager {
         // 2. Нагрудник / Броня
         if (this.currentEquipment.chest !== 'none') {
             const item = EQUIPMENT_CATALOG.chest[this.currentEquipment.chest];
-            if (item && item.armorTex && skin.body) {
-                const mesh = armorMeshBuilder.buildChestplate(item.armorTex, skin, item);
-                if (mesh) {
-                    skin.body.add(mesh);
-                    this.activeAttachedObjects.set('chest', mesh);
+            if (item && item.armorTex) {
+                if (skin && skin.body) {
+                    const mesh = armorMeshBuilder.buildChestplate(item.armorTex, skin, item);
+                    if (mesh) {
+                        skin.body.add(mesh);
+                        this.activeAttachedObjects.set('chest', mesh);
+                    }
                 }
             }
         }
@@ -395,7 +402,7 @@ class EquipmentManager {
         // 3. Поножи
         if (this.currentEquipment.legs !== 'none') {
             const item = EQUIPMENT_CATALOG.legs[this.currentEquipment.legs];
-            if (item && item.armorLegsTex) {
+            if (item && item.armorLegsTex && skin) {
                 armorMeshBuilder.buildLeggings(item.armorLegsTex, skin, item);
             }
         }
@@ -403,31 +410,32 @@ class EquipmentManager {
         // 4. Ботинки
         if (this.currentEquipment.boots !== 'none') {
             const item = EQUIPMENT_CATALOG.boots[this.currentEquipment.boots];
-            if (item && item.armorTex) {
+            if (item && item.armorTex && skin) {
                 armorMeshBuilder.buildBoots(item.armorTex, skin, item);
             }
         }
 
-        // 5. Основная рука (TACZ 3D оружие)
+        // 5. Основная рука (TACZ 3D оружие / Мечи)
         if (this.currentEquipment.mainHand !== 'none') {
             const item = EQUIPMENT_CATALOG.mainHand[this.currentEquipment.mainHand];
-            if (item && skin.rightArm) {
+            if (item) {
                 console.log('[EQUIPMENT] Building weapon mesh for:', item.id, item.geoGunId);
                 const weaponMesh = await this.buildWeaponMesh(item);
-                if (weaponMesh && skin.rightArm) {
-                    skin.rightArm.add(weaponMesh);
+                if (weaponMesh) {
+                    if (rig && rig.sockets && rig.sockets.mainHand) {
+                        rig.sockets.mainHand.add(weaponMesh);
+                    } else if (skin && skin.rightArm) {
+                        skin.rightArm.add(weaponMesh);
+                    }
                     this.activeAttachedObjects.set('mainHand', weaponMesh);
-                    console.log('[EQUIPMENT] Weapon mesh attached to rightArm successfully');
+                    console.log('[EQUIPMENT] Weapon mesh attached successfully');
                 }
             }
         }
         console.log('[EQUIPMENT] applyToViewer completed successfully');
     }
 
-    clearAllEquipment(skin) {
-        if (!skin) return;
-        const parts = [skin.head, skin.body, skin.rightArm, skin.leftArm, skin.rightLeg, skin.leftLeg];
-
+    clearAllEquipment(skin, rig = null) {
         const disposeMesh = (obj) => {
             if (!obj) return;
             if (obj.geometry) {
@@ -449,21 +457,36 @@ class EquipmentManager {
             }
         };
 
-        parts.forEach(part => {
-            if (!part) return;
-            for (let i = part.children.length - 1; i >= 0; i--) {
-                const child = part.children[i];
-                if (child && child.name && (
-                    child.name.startsWith('EQ_') || 
-                    child.name.startsWith('ARMOR_') || 
-                    child.name.startsWith('TACZ_') || 
-                    child.name.startsWith('VOXEL_')
-                )) {
-                    part.remove(child);
+        if (skin) {
+            const parts = [skin.head, skin.body, skin.rightArm, skin.leftArm, skin.rightLeg, skin.leftLeg];
+            parts.forEach(part => {
+                if (!part) return;
+                for (let i = part.children.length - 1; i >= 0; i--) {
+                    const child = part.children[i];
+                    if (child && child.name && (
+                        child.name.startsWith('EQ_') || 
+                        child.name.startsWith('ARMOR_') || 
+                        child.name.startsWith('TACZ_') || 
+                        child.name.startsWith('VOXEL_')
+                    )) {
+                        part.remove(child);
+                        disposeMesh(child);
+                    }
+                }
+            });
+        }
+
+        if (rig && rig.sockets) {
+            Object.values(rig.sockets).forEach(socket => {
+                if (!socket) return;
+                for (let i = socket.children.length - 1; i >= 0; i--) {
+                    const child = socket.children[i];
+                    socket.remove(child);
                     disposeMesh(child);
                 }
-            }
-        });
+            });
+        }
+
         this.activeAttachedObjects.clear();
     }
 
