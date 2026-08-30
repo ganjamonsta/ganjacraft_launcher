@@ -12,7 +12,13 @@ import { gunShooter } from '../easter-eggs/index.js';
 /**
  * Заблокировать кнопки настроек и шапки при запуске
  */
+let isGameLaunching = false;
+
 export function lockControlsForLaunch() {
+    isGameLaunching = true;
+    document.body.classList.add('is-game-launching');
+    const stepPlay = dom.get('step-play');
+    if (stepPlay) stepPlay.classList.add('is-game-launching');
     try {
         closeSettings();
     } catch (e) {
@@ -23,6 +29,8 @@ export function lockControlsForLaunch() {
     const btnChangelog = dom.get('btn-changelog');
     const titleBtn = dom.get('title-bar-title');
     const settingsTabsBar = dom.get('settings-tabs-bar');
+    const playBtn = dom.get('play-btn');
+    const popCounter = dom.get('particle-pop-counter');
     
     if (btnSettings) {
         btnSettings.classList.add('disabled-launch');
@@ -40,15 +48,37 @@ export function lockControlsForLaunch() {
     if (settingsTabsBar) {
         settingsTabsBar.classList.add('hidden');
     }
+    if (popCounter) {
+        popCounter.classList.add('hidden');
+    }
+
+    // Трансформируем круглую кнопку Play в кнопку Cancel
+    if (playBtn) {
+        playBtn.classList.add('is-cancelling-btn');
+        playBtn.setAttribute('title', 'Отменить запуск');
+        playBtn.innerHTML = `
+            <span class="play-btn-glow-ring cancel-glow"></span>
+            <svg class="play-btn-cancel-icon" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2.6" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        `;
+    }
 }
 
 /**
  * Разблокировать кнопки настроек и шапки после завершения/отмены запуска
  */
 export function unlockControlsAfterLaunch() {
+    isGameLaunching = false;
+    document.body.classList.remove('is-game-launching');
+    const stepPlay = dom.get('step-play');
+    if (stepPlay) stepPlay.classList.remove('is-game-launching');
     const btnSettings = dom.get('btn-settings');
     const btnChangelog = dom.get('btn-changelog');
     const titleBtn = dom.get('title-bar-title');
+    const playBtn = dom.get('play-btn');
+    const popCounter = dom.get('particle-pop-counter');
     
     if (btnSettings) {
         btnSettings.classList.remove('disabled-launch');
@@ -62,6 +92,21 @@ export function unlockControlsAfterLaunch() {
     }
     if (titleBtn) {
         titleBtn.classList.remove('disabled-launch');
+    }
+    if (popCounter) {
+        popCounter.classList.remove('hidden');
+    }
+
+    // Возвращаем круглую кнопку в режим Play
+    if (playBtn) {
+        playBtn.classList.remove('is-cancelling-btn');
+        playBtn.setAttribute('title', 'Играть');
+        playBtn.innerHTML = `
+            <span class="play-btn-glow-ring"></span>
+            <svg class="play-btn-triangle-icon" viewBox="0 0 24 24" fill="#ffffff">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        `;
     }
 }
 
@@ -325,11 +370,15 @@ export function initGameButtons() {
     
     if (playBtn) {
         playBtn.addEventListener('click', () => {
-            if (stepProgress) {
-                stepProgress.classList.remove('hidden');
-                stepProgress.classList.add('fade-in');
+            if (isGameLaunching) {
+                cancelLaunch();
+            } else {
+                if (stepProgress) {
+                    stepProgress.classList.remove('hidden');
+                    stepProgress.classList.add('fade-in');
+                }
+                startLaunch();
             }
-            startLaunch();
         });
     }
     

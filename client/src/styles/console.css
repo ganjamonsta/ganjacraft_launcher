@@ -6,14 +6,14 @@
 /* ── Floating Progress HUD Container ── */
 #step-progress {
     position: fixed;
-    top: 50px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
     width: auto;
-    min-width: 360px;
-    max-width: 480px;
+    min-width: 340px;
+    max-width: 440px;
     z-index: 95;
-    pointer-events: none;
+    pointer-events: auto;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -24,22 +24,50 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    background: rgba(10, 18, 13, 0.92);
+    gap: 4px;
+    background: rgba(10, 18, 13, 0.94);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(57, 255, 20, 0.4);
-    border-radius: 18px;
-    padding: 10px 18px 12px 18px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 22px rgba(57, 255, 20, 0.25);
+    border-radius: 20px;
+    padding: 8px 16px 10px 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 20px rgba(57, 255, 20, 0.25);
     box-sizing: border-box;
     pointer-events: auto;
-    animation: fadeInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideUpProgress 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-15px); }
+@keyframes slideUpProgress {
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+.launch-progress-top-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.launch-kills-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 0, 85, 0.15);
+    border: 1px solid rgba(255, 0, 85, 0.4);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #ff3366;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.launch-kills-badge strong {
+    color: #fff;
+    font-size: 12px;
 }
 
 /* ── Progress Header ── */

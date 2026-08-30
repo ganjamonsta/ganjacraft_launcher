@@ -287,6 +287,25 @@
     }
 }
 
+/* ── Launch Active State (Logo slides up to clear the shooting range) ── */
+body.is-game-launching .hero-brand-section.center-brand,
+.is-game-launching .hero-brand-section.center-brand,
+body.is-game-launching .cyber-brand-header,
+.is-game-launching .cyber-brand-header {
+    transform: translateY(-280px) scale(0.6) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+body.is-game-launching .sacred-leaf-wrapper,
+.is-game-launching .sacred-leaf-wrapper {
+    opacity: 0.12 !important;
+    transform: scale(0.85) !important;
+    filter: blur(2px) !important;
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
 /* ── 3. Dynamic Play & Leaf Group ── */
 /* DEFAULT / 0 PLAYERS (empty-card): Placed in Right Column with Leaf + Play Button together */
 .play-brand-group {
@@ -418,6 +437,31 @@
 .magnetic-play-btn-circle:active {
     filter: brightness(0.95);
     box-shadow: 0 0 20px rgba(var(--gc-green-rgb), 0.5), 0 4px 12px rgba(0, 0, 0, 0.9), inset 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+.magnetic-play-btn-circle.is-cancelling-btn {
+    border-color: #ff4d4d !important;
+    background: radial-gradient(circle at 40% 40%, #2a1215 0%, #14080a 100%) !important;
+    box-shadow: 0 0 26px rgba(255, 77, 77, 0.55), 0 10px 24px rgba(0, 0, 0, 0.8), inset 0 0 14px rgba(255, 77, 77, 0.25) !important;
+}
+
+.magnetic-play-btn-circle.is-cancelling-btn:hover {
+    filter: brightness(1.2);
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 40px rgba(255, 77, 77, 0.9), 0 14px 30px rgba(0, 0, 0, 0.85), inset 0 0 18px rgba(255, 77, 77, 0.4) !important;
+}
+
+.play-btn-glow-ring.cancel-glow {
+    background: radial-gradient(circle, rgba(255, 77, 77, 0.4) 0%, transparent 70%) !important;
+}
+
+.play-btn-cancel-icon {
+    position: relative;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 0 8px rgba(255, 77, 77, 0.8));
+    pointer-events: none;
 }
 
 .play-btn-glow-ring {

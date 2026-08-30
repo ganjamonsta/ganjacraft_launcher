@@ -726,18 +726,18 @@
             </div>
         </div>
 
-        <!-- Step 4: Progress & Live Launch Console Hub -->
+        <!-- Step 4: Progress & Live Launch Cyber Bar -->
         <div id="step-progress" class="hidden">
             <div class="launch-progress-layout">
-                <!-- Top Launch Status Header -->
-                <div class="launch-progress-header">
-                    <div class="launch-title-badge">
-                        <span class="launch-brand-text">GANJ4CRAFT</span>
-                        <span class="launch-sub-text">ЗАПУСК КЛИЕНТА</span>
-                    </div>
+                <div class="launch-progress-top-row">
                     <div class="launch-status-pill">
                         <span class="status-indicator online pulse-green"></span>
                         <span id="game-status" class="launch-status-text">Инициализация запуска...</span>
+                    </div>
+                    <div class="launch-kills-badge">
+                        <span>🎯</span>
+                        <span>ФРАГИ:</span>
+                        <strong id="gun-kills-count">0</strong>
                     </div>
                 </div>
 
@@ -755,44 +755,10 @@
                     </div>
                 </div>
 
-                <!-- Integrated Live Terminal / Launch Console -->
-                <div class="launch-console-card">
-                    <div class="launch-console-header">
-                        <div class="console-header-left">
-                            <span class="console-pulse-indicator"></span>
-                            <span class="console-header-title">КОНСОЛЬ ЗАПУСКА & ЛОГИ ИГРЫ</span>
-                        </div>
-                        <div class="console-header-actions">
-                            <button id="btn-copy-console" class="console-action-btn" title="Копировать все логи в буфер обмена">
-                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                </svg>
-                                <span>Копировать</span>
-                            </button>
-                            <button id="btn-clear-console" class="console-action-btn" title="Очистить экран консоли">
-                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                </svg>
-                                <span>Очистить</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="console-output" class="launch-console-body">
-                        <div class="console-log-line log-system">Ожидание логов запуска игры...</div>
-                    </div>
-                </div>
-
-                <!-- Footer Controls Bar -->
-                <div id="progress-controls" class="launch-controls-bar">
-                    <button id="retry-btn" class="unified-btn unified-btn-warning hidden">
-                        <span>🔄 Повторить запуск</span>
-                    </button>
-                    <button id="cancel-btn" class="unified-btn unified-btn-danger">
-                        <span>✕ Отмена</span>
-                    </button>
-                </div>
+                <!-- Hidden console/retry elements retained for compatibility -->
+                <div id="console-output" style="display:none;"></div>
+                <button id="retry-btn" class="hidden" style="display:none;"></button>
+                <button id="cancel-btn" class="hidden" style="display:none;"></button>
             </div>
         </div>
     </div>

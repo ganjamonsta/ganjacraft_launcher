@@ -107,24 +107,10 @@ class GunShooterEngine {
     }
 
     /**
-     * Обеспечить HUD плашку тира
+     * Обеспечить HUD плашку тира (интегрирована в прогресс-бар)
      */
     ensureHUD() {
-        if (this.hudElem) return;
-
-        const hud = document.createElement('div');
-        hud.id = 'gun-shooter-hud';
-        hud.className = 'gun-shooter-hud hidden';
-        hud.innerHTML = `
-            <div class="hud-badge-icon">🎯</div>
-            <div class="hud-badge-text">
-                <div class="hud-badge-title">ТИР В ЛАУНЧЕРЕ</div>
-                <div class="hud-badge-desc">Уничтожено мишеней: <strong id="gun-kills-count">0</strong></div>
-            </div>
-        `;
-
-        document.body.appendChild(hud);
-        this.hudElem = hud;
+        // Счётчик фрагов интегрирован в нижний Cyber Bar (#gun-kills-count)
     }
 
     /**
