@@ -155,7 +155,9 @@ export function toggleMainUIVisibility(show, config) {
     const authContainer = document.querySelector('.auth-container');
     const playerSection = document.querySelector('.player-character-section');
     const centerBrand = document.querySelector('.hero-brand-section');
+    const playBrandGroup = document.querySelector('.play-brand-group');
     const launchHub = document.querySelector('.launch-action-hub');
+    const appVersion = document.getElementById('app-version');
 
     // 1. Top Server status widget
     if (serverWidget) {
@@ -165,6 +167,15 @@ export function toggleMainUIVisibility(show, config) {
         serverWidget.style.transform = show ? 'none' : 'translateY(-150%)';
         serverWidget.style.opacity = show ? '1' : '0';
         serverWidget.style.pointerEvents = show ? 'auto' : 'none';
+    }
+
+    // 2. Fixed App Version Tag in bottom-right
+    if (appVersion) {
+        appVersion.style.transition = show
+            ? 'transform 0.35s ease 80ms, opacity 0.35s ease 80ms'
+            : 'transform 0.15s ease, opacity 0.15s ease';
+        appVersion.style.transform = show ? 'none' : 'translateY(150%)';
+        appVersion.style.opacity = show ? '1' : '0';
     }
 
     if (isPlayingStep) {
@@ -188,7 +199,7 @@ export function toggleMainUIVisibility(show, config) {
             }
         }
 
-        // Анимируем центральный логотип
+        // Анимируем центральный заголовок
         if (centerBrand) {
             centerBrand.style.transition = show
                 ? 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 70ms, opacity 0.4s ease 70ms'
@@ -197,7 +208,17 @@ export function toggleMainUIVisibility(show, config) {
             centerBrand.style.opacity = show ? '1' : '0';
         }
 
-        // Анимируем правую кнопку запуска
+        // Анимируем блок логотипа и кнопки Play
+        if (playBrandGroup) {
+            playBrandGroup.style.transition = show
+                ? 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 80ms, opacity 0.4s ease 80ms'
+                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.15s ease';
+            playBrandGroup.style.transform = show ? 'none' : 'scale(0.8) translateY(40px)';
+            playBrandGroup.style.opacity = show ? '1' : '0';
+            playBrandGroup.style.pointerEvents = show ? 'auto' : 'none';
+        }
+
+        // Анимируем правую панель со статусом сервера
         if (launchHub) {
             launchHub.style.transition = show
                 ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 60ms, opacity 0.35s ease 60ms'
