@@ -70,7 +70,7 @@ class TaczGeoLoader {
             rootGroup.add(mesh);
 
             if (gunId === 'minigun') {
-                rootGroup.rotation.set(-Math.PI / 2 + 0.60, -0.05, Math.PI);
+                rootGroup.rotation.set(-Math.PI / 2 - 0.95, 0, Math.PI);
                 rootGroup.scale.set(0.58, 0.58, 0.58);
                 rootGroup.position.set(-0.5, -9.6, 0.8);
             } else if (gunId === 'rpg7') {
