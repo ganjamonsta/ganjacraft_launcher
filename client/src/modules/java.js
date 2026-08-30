@@ -167,7 +167,14 @@ function getJavaVersionInfo(javaCommandOrPath, { timeoutMs = 5000 } = {}) {
     });
 }
 
-async function checkAndDownloadJava(dataDir, sendLog) {
+async function checkAndDownloadJava(dataDir, sendLog, options = {}) {
+    const signal = options.signal;
+    const activeChildProcesses = options.activeChildProcesses;
+
+    if (signal && signal.aborted) {
+        throw new Error('CANCELLED');
+    }
+
     const runtimeDir = path.join(dataDir, 'runtime');
     const javaDir = path.join(runtimeDir, 'java');
     
@@ -189,6 +196,10 @@ async function checkAndDownloadJava(dataDir, sendLog) {
         sendLog(`Локальная Java найдена (Java ${info ? info.major : '?'}), но для NeoForge 1.21.1 требуется Java 21. Скачивание актуальной Java 21...`);
     }
 
+    if (signal && signal.aborted) {
+        throw new Error('CANCELLED');
+    }
+
     // 2. Check for System Java (must be Java 21 or 22 for NeoForge 1.21.1 compatibility)
     try {
         const systemJava = await checkSystemJava();
@@ -202,6 +213,10 @@ async function checkAndDownloadJava(dataDir, sendLog) {
         // Ignore error, proceed to download
     }
 
+    if (signal && signal.aborted) {
+        throw new Error('CANCELLED');
+    }
+
     // 3. Download if not found (or system Java is too old)
     sendLog(`Подходящая Java не найдена. Скачивание JRE ${REQUIRED_JAVA_MAJOR}...`);
     
@@ -212,10 +227,12 @@ async function checkAndDownloadJava(dataDir, sendLog) {
     const url = isWin ? JAVA_URL_WIN : JAVA_URL_LINUX;
 
     try {
-        await downloadFile(url, zipPath);
+        await downloadFile(url, zipPath, { signal });
+        if (signal && signal.aborted) throw new Error('CANCELLED');
         sendLog('Java скачана. Распаковка...');
 
-        await extractZip(zipPath, runtimeDir);
+        await extractZip(zipPath, runtimeDir, options);
+        if (signal && signal.aborted) throw new Error('CANCELLED');
         sendLog('Распаковка завершена.');
 
         // Find the extracted folder (it usually has a versioned name)
@@ -233,6 +250,7 @@ async function checkAndDownloadJava(dataDir, sendLog) {
             // Retry loop for rename (sometimes antivirus or file locks delay it)
             let retries = 3;
             while (retries > 0) {
+                if (signal && signal.aborted) throw new Error('CANCELLED');
                 try {
                     fs.renameSync(fullExtractedPath, javaDir);
                     break;
@@ -259,9 +277,13 @@ async function checkAndDownloadJava(dataDir, sendLog) {
             throw new Error('Не удалось найти бинарник Java после распаковки.');
         }
     } catch (e) {
+        if (e.message === 'CANCELLED' || signal?.aborted) {
+            if (fs.existsSync(zipPath)) try { fs.unlinkSync(zipPath); } catch {}
+            throw new Error('CANCELLED');
+        }
         sendLog('Ошибка при установке Java: ' + e.message);
         // Cleanup on failure
-        if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+        if (fs.existsSync(zipPath)) try { fs.unlinkSync(zipPath); } catch {}
         throw e;
     }
 }
@@ -282,35 +304,70 @@ function checkSystemJava() {
     });
 }
 
-function extractZip(zipPath, destDir) {
+function extractZip(zipPath, destDir, options = {}) {
+    const signal = options.signal;
+    const activeChildProcesses = options.activeChildProcesses;
+
     return new Promise((resolve, reject) => {
+        if (signal && signal.aborted) {
+            return reject(new Error('CANCELLED'));
+        }
+
+        let child;
         if (process.platform === 'win32') {
             // Use PowerShell to unzip
-            const powershell = spawn('powershell.exe', [
+            child = spawn('powershell.exe', [
                 '-NoProfile',
                 '-Command',
                 `Expand-Archive -Path "${zipPath}" -DestinationPath "${destDir}" -Force`
             ]);
-            
-            powershell.on('close', (code) => {
-                if (code === 0) resolve();
-                else reject(new Error(`PowerShell extraction failed with code ${code}`));
-            });
-            
-            powershell.on('error', (err) => {
-                reject(err);
-            });
         } else {
             // Use tar on Linux/macOS
-            const tar = spawn('tar', ['-xzf', zipPath, '-C', destDir]);
-            tar.on('close', (code) => {
-                if (code === 0) resolve();
-                else reject(new Error(`Tar extraction failed with code ${code}`));
-            });
-            tar.on('error', (err) => {
-                reject(err);
-            });
+            child = spawn('tar', ['-xzf', zipPath, '-C', destDir]);
         }
+
+        if (activeChildProcesses && child) {
+            activeChildProcesses.add(child);
+        }
+
+        const onAbort = () => {
+            if (child && child.pid) {
+                if (process.platform === 'win32') {
+                    try {
+                        require('child_process').execSync(`taskkill /F /T /PID ${child.pid}`, { stdio: 'ignore' });
+                    } catch {}
+                }
+                try { child.kill('SIGKILL'); } catch {}
+            }
+            reject(new Error('CANCELLED'));
+        };
+
+        if (signal) {
+            signal.addEventListener('abort', onAbort, { once: true });
+        }
+
+        const cleanup = () => {
+            if (activeChildProcesses && child) {
+                activeChildProcesses.delete(child);
+            }
+            if (signal) {
+                signal.removeEventListener('abort', onAbort);
+            }
+        };
+
+        child.on('close', (code) => {
+            cleanup();
+            if (signal && signal.aborted) {
+                return reject(new Error('CANCELLED'));
+            }
+            if (code === 0) resolve();
+            else reject(new Error(`Extraction failed with code ${code}`));
+        });
+
+        child.on('error', (err) => {
+            cleanup();
+            reject(err);
+        });
     });
 }
 

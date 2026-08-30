@@ -72,16 +72,40 @@ function getSourceInfo(url) {
  * @param {string[]} disabledMods - Список путей отключённых модов
  * @param {function} checkCancelled - Функция проверки отмены
  */
-async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMods = [], checkCancelled = () => false) {
+/**
+ * Синхронизация файлов с манифестом сервера
+ * @param {string} rootPath - Путь к папке игры
+ * @param {string} manifestUrl - URL манифеста
+ * @param {function} sendLog - Callback для логирования
+ * @param {function} onProgress - Callback для прогресса {task, total, type}
+ * @param {string[]} disabledMods - Список путей отключённых модов
+ * @param {function} checkCancelled - Функция проверки отмены
+ * @param {object} options - Дополнительные опции (signal и т.д.)
+ */
+async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMods = [], checkCancelled = () => false, options = {}) {
+    const signal = options.signal;
+    const isCancelled = () => checkCancelled() || Boolean(signal && signal.aborted);
+
+    if (isCancelled()) {
+        throw new Error('CANCELLED');
+    }
+
     sendLog('Проверка обновлений...');
     
     // 1. Скачиваем манифест
     const manifestPath = path.join(rootPath, 'manifest.json');
     try {
-        await downloadWithRetry(manifestUrl, manifestPath, { timeoutMs: 15_000 });
+        await downloadWithRetry(manifestUrl, manifestPath, { timeoutMs: 15_000, signal });
     } catch (e) {
+        if (e.message === 'CANCELLED' || isCancelled()) {
+            throw new Error('CANCELLED');
+        }
         sendLog('Ошибка загрузки манифеста: ' + e.message);
         throw e;
+    }
+
+    if (isCancelled()) {
+        throw new Error('CANCELLED');
     }
 
     // 2. Парсим манифест
@@ -104,7 +128,7 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         .filter(f => f && f.hash && typeof f.path === 'string' && f.path.endsWith('.jar'))
         .map(f => f.hash);
 
-    if (jarHashes.length > 0) {
+    if (jarHashes.length > 0 && !isCancelled()) {
         sendLog('Поиск модов на Modrinth CDN...');
         try {
             const modrinthMap = await resolveModrinthUrls(jarHashes);
@@ -119,6 +143,10 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         } catch (mErr) {
             sendLog(`Предупреждение Modrinth CDN: ${mErr.message}`);
         }
+    }
+
+    if (isCancelled()) {
+        throw new Error('CANCELLED');
     }
 
     // 2.6. Подсчет статистики источников
@@ -141,7 +169,8 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     
     async function processFile(file) {
         // Проверка отмены
-        if (checkCancelled()) {
+        if (isCancelled()) {
+            queue.length = 0;
             throw new Error('CANCELLED');
         }
 
@@ -206,6 +235,11 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
             }
         }
 
+        if (isCancelled()) {
+            queue.length = 0;
+            throw new Error('CANCELLED');
+        }
+
         // Скачиваем если нужно
         if (needDownload) {
             const src = getSourceInfo(file.url);
@@ -214,6 +248,7 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
             await downloadWithRetry(file.url, localPath, {
                 expectedHash: file.hash,
                 expectedSize: typeof file.size === 'number' ? file.size : null,
+                signal,
             }, 4, 1500);
             downloaded++;
         }
@@ -238,11 +273,18 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
     for (let i = 0; i < CONCURRENCY; i++) {
         workers.push((async () => {
             while (queue.length > 0) {
+                if (isCancelled()) {
+                    queue.length = 0;
+                    throw new Error('CANCELLED');
+                }
                 const file = queue.shift();
                 try {
                     await processFile(file);
                 } catch (err) {
-                    if (err.message === 'CANCELLED') throw err;
+                    if (err.message === 'CANCELLED' || isCancelled()) {
+                        queue.length = 0;
+                        throw err;
+                    }
                     sendLog(`Предупреждение: не удалось сразу скачать ${file?.path || 'unknown'}, отложено для повтора...`);
                     failedFiles.push(file);
                 }
@@ -252,15 +294,20 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
 
     await Promise.all(workers);
 
+    if (isCancelled()) {
+        throw new Error('CANCELLED');
+    }
+
     // Повторный проход для файлов, упавших во время параллельного скачивания
     if (failedFiles.length > 0) {
         sendLog(`Повторная попытка скачивания для ${failedFiles.length} файлов...`);
         const finalFailures = [];
         for (const file of failedFiles) {
+            if (isCancelled()) throw new Error('CANCELLED');
             try {
                 await processFile(file);
             } catch (err) {
-                if (err.message === 'CANCELLED') throw err;
+                if (err.message === 'CANCELLED' || isCancelled()) throw err;
                 sendLog(`Ошибка обработки ${file?.path || 'unknown'}: ${err.message}`);
                 finalFailures.push(file);
             }
@@ -268,6 +315,10 @@ async function syncFiles(rootPath, manifestUrl, sendLog, onProgress, disabledMod
         if (finalFailures.length > 0) {
             throw new Error(`Не удалось скачать ${finalFailures.length} файлов из манифеста после повторов.`);
         }
+    }
+
+    if (isCancelled()) {
+        throw new Error('CANCELLED');
     }
 
     sendLog('Все файлы проверены.');

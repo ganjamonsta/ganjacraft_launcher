@@ -31,19 +31,64 @@ const {
 const launcher = new Client();
 let isGameRunning = false;
 let isLaunchCancelled = false;
+let currentGameProcess = null;
+const activeChildProcesses = new Set();
+let launchAbortController = null;
+let currentSendLog = null;
+let currentSendDebug = null;
 
-// Monkey-patch MCLC Handler to support fallback to VPS mirror on download failure
+/**
+ * Принудительно завершить дерево процессов (PID)
+ */
+function killProcessTree(procOrPid, sendDebug) {
+    if (!procOrPid) return;
+    const pid = typeof procOrPid === 'number' ? procOrPid : procOrPid.pid;
+    if (!pid) return;
+
+    if (sendDebug) sendDebug(`Killing process tree for PID: ${pid}`);
+
+    if (process.platform === 'win32') {
+        try {
+            require('child_process').execSync(`taskkill /F /T /PID ${pid}`, { stdio: 'ignore' });
+        } catch (e) {
+            if (sendDebug) sendDebug(`taskkill notice: ${e.message}`);
+        }
+    } else {
+        try {
+            process.kill(-pid, 'SIGKILL');
+        } catch {
+            try {
+                if (typeof procOrPid === 'object' && procOrPid.kill) {
+                    procOrPid.kill('SIGKILL');
+                } else {
+                    process.kill(pid, 'SIGKILL');
+                }
+            } catch (e) {
+                if (sendDebug) sendDebug(`SIGKILL notice: ${e.message}`);
+            }
+        }
+    }
+}
+
+// Monkey-patch MCLC Handler to check cancellation and support fallback to VPS mirror on download failure
 const MCLCHandler = require('minecraft-launcher-core/components/handler');
 const originalDownloadAsync = MCLCHandler.prototype.downloadAsync;
 const { getMirrorFallbackUrl } = require('../constants');
 
 MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry, type) {
+    if (isLaunchCancelled) {
+        throw new Error('CANCELLED');
+    }
     const fallbackUrl = getMirrorFallbackUrl(url);
     const filePath = path.join(directory, name);
     
     // Try original URL first
     let result = await originalDownloadAsync.call(this, url, directory, name, retry, type);
     
+    if (isLaunchCancelled) {
+        throw new Error('CANCELLED');
+    }
+
     // Validate downloaded file integrity (0-byte or corrupted ZIP/JAR)
     if (fs.existsSync(filePath)) {
         let isInvalid = false;
@@ -69,10 +114,13 @@ MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry
     
     // MCLC resolves with `false` on 404/invalid, or `undefined` on error
     if (!result && fallbackUrl) {
+        if (isLaunchCancelled) throw new Error('CANCELLED');
         this.client.emit('debug', `[MCLC]: Original URL failed or corrupted (${url}). Falling back to mirror: ${fallbackUrl}`);
         // Try fallback URL, without passing fallback logic further down
         const mirrorResult = await originalDownloadAsync.call(this, fallbackUrl, directory, name, retry, type);
         
+        if (isLaunchCancelled) throw new Error('CANCELLED');
+
         // Clean up invalid file from mirror failure too
         if (fs.existsSync(filePath)) {
             let isInvalid = false;
@@ -100,6 +148,29 @@ MCLCHandler.prototype.downloadAsync = async function(url, directory, name, retry
     return result;
 };
 
+// Monkey-patch MCLC startMinecraft to capture and cancel process spawning
+const originalStartMinecraft = Client.prototype.startMinecraft;
+Client.prototype.startMinecraft = function(launchArguments) {
+    if (isLaunchCancelled) {
+        this.emit('debug', '[MCLC]: Launch was cancelled before startMinecraft, aborting process spawn.');
+        const err = new Error('CANCELLED');
+        this.emit('error', err);
+        throw err;
+    }
+
+    const minecraft = originalStartMinecraft.call(this, launchArguments);
+    currentGameProcess = minecraft;
+
+    if (isLaunchCancelled) {
+        this.emit('debug', '[MCLC]: Launch cancelled right after spawn, killing Minecraft process.');
+        killProcessTree(minecraft);
+        currentGameProcess = null;
+        throw new Error('CANCELLED');
+    }
+
+    return minecraft;
+};
+
 /**
  * Проверить, запущена ли игра
  */
@@ -108,15 +179,42 @@ function getIsGameRunning() {
 }
 
 /**
- * Отменить запуск
+ * Отменить запуск и принудительно закрыть игру
  */
 function cancelLaunch() {
-    if (isGameRunning) {
-        isLaunchCancelled = true;
-        isGameRunning = false;
-        return true;
+    isLaunchCancelled = true;
+    isGameRunning = false;
+
+    if (currentSendLog) {
+        currentSendLog('[LAUNCHER] Отмена запуска и завершение процессов...');
     }
-    return false;
+
+    // 1. Аборт сетевых запросов и загрузок
+    if (launchAbortController) {
+        try {
+            launchAbortController.abort();
+        } catch {}
+    }
+
+    // 2. Убийство активных вспомогательных подпроцессов (установщик Forge, распаковка Java и др.)
+    for (const proc of activeChildProcesses) {
+        killProcessTree(proc, currentSendDebug);
+    }
+    activeChildProcesses.clear();
+
+    // 3. Убийство процесса игры Minecraft (если был запущен или запускается)
+    if (currentGameProcess) {
+        if (currentSendLog) {
+            currentSendLog(`[LAUNCHER] Принудительное закрытие процесса игры (PID: ${currentGameProcess.pid})...`);
+        }
+        killProcessTree(currentGameProcess, currentSendDebug);
+        currentGameProcess = null;
+    }
+
+    // 4. Остановка отслеживания модов
+    stopModWatcher();
+
+    return true;
 }
 
 /**
@@ -291,13 +389,16 @@ function stopModWatcher() {
 /**
  * Применить дефолтные настройки модов для свежих установок
  */
-async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug) {
+async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug, options = {}) {
     if (config.modsDefaultsApplied === true) return config;
+    const signal = options.signal;
+    if (signal && signal.aborted) throw new Error('CANCELLED');
     
     sendLog('[SETUP] Применяю дефолтные настройки модов...');
     try {
         const manifestPath = path.join(rootPath, 'manifest.json');
-        await downloadWithRetry(MANIFEST_URL, manifestPath, { timeoutMs: 15_000 });
+        await downloadWithRetry(MANIFEST_URL, manifestPath, { timeoutMs: 15_000, signal });
+        if (signal && signal.aborted) throw new Error('CANCELLED');
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
         const defaults = computeDefaultDisabledModsFromManifest(manifest);
 
@@ -313,6 +414,7 @@ async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug) {
             sendDebug('Default disabled optional mods: none matched.');
         }
     } catch (e) {
+        if (e.message === 'CANCELLED' || signal?.aborted) throw new Error('CANCELLED');
         sendLog('[SETUP] Не удалось применить дефолтные моды (продолжаю запуск).');
         sendDebug(`Default mods apply failed: ${e.stack || e.message}`);
     }
@@ -323,7 +425,10 @@ async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug) {
 /**
  * Подготовить и проверить Java
  */
-async function prepareJava(config, rootPath, sendLog, sendDebug) {
+async function prepareJava(config, rootPath, sendLog, sendDebug, options = {}) {
+    const signal = options.signal;
+    if (signal && signal.aborted) throw new Error('CANCELLED');
+
     let javaPath = config.javaPath ? resolveJavaPath(config.javaPath) : null;
     
     if (javaPath) {
@@ -348,7 +453,7 @@ async function prepareJava(config, rootPath, sendLog, sendDebug) {
     } else {
         // Auto-download Java if not set
         sendDebug('Checking/Downloading Java...');
-        const downloadedJava = await checkAndDownloadJava(rootPath, sendLog);
+        const downloadedJava = await checkAndDownloadJava(rootPath, sendLog, options);
         if (downloadedJava) {
             javaPath = downloadedJava;
             sendDebug(`Java downloaded/found at: ${javaPath}`);
@@ -370,7 +475,10 @@ async function prepareJava(config, rootPath, sendLog, sendDebug) {
 /**
  * Подготовить Forge installer
  */
-async function prepareForge(rootPath, sendLog, sendDebug) {
+async function prepareForge(rootPath, sendLog, sendDebug, options = {}) {
+    const signal = options.signal;
+    if (signal && signal.aborted) throw new Error('CANCELLED');
+
     const forgeInstallerPath = path.join(rootPath, `neoforge-${NEOFORGE_VERSION}-installer.jar`);
     let needForge = !fs.existsSync(forgeInstallerPath);
     
@@ -386,7 +494,8 @@ async function prepareForge(rootPath, sendLog, sendDebug) {
     if (needForge) {
         sendLog('Скачивание установщика Forge...');
         sendDebug(`Downloading Forge from ${NEOFORGE_INSTALLER_URL}`);
-        await downloadWithRetry(NEOFORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000 });
+        await downloadWithRetry(NEOFORGE_INSTALLER_URL, forgeInstallerPath, { timeoutMs: 120_000, signal });
+        if (signal && signal.aborted) throw new Error('CANCELLED');
         if (!(await isZipIntact(forgeInstallerPath))) {
             try { fs.unlinkSync(forgeInstallerPath); } catch {}
             throw new Error('Downloaded Forge installer is not a valid JAR/ZIP (truncated or HTML response)');
@@ -402,13 +511,17 @@ async function prepareForge(rootPath, sendLog, sendDebug) {
 /**
  * Подготовить Authlib Injector
  */
-async function prepareAuthlib(rootPath, sendLog, sendDebug) {
+async function prepareAuthlib(rootPath, sendLog, sendDebug, options = {}) {
+    const signal = options.signal;
+    if (signal && signal.aborted) throw new Error('CANCELLED');
+
     const authlibPath = path.join(rootPath, 'authlib-injector.jar');
     
     if (!fs.existsSync(authlibPath) || !(await isZipIntact(authlibPath))) {
         sendLog('Скачивание Authlib Injector...');
         sendDebug(`Downloading Authlib from ${AUTHLIB_INJECTOR_URL}`);
-        await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath, { timeoutMs: 60_000 });
+        await downloadFile(AUTHLIB_INJECTOR_URL, authlibPath, { timeoutMs: 60_000, signal });
+        if (signal && signal.aborted) throw new Error('CANCELLED');
         if (!(await isZipIntact(authlibPath))) {
             try { fs.unlinkSync(authlibPath); } catch {}
             throw new Error('Downloaded authlib-injector is not a valid JAR/ZIP');
@@ -492,7 +605,7 @@ function ensureRequiredResourcePacks(rootPath, sendLog, sendDebug) {
 /**
  * Синхронизация модов
  */
-async function syncMods(event, rootPath, config, sendLog, sendDebug) {
+async function syncMods(event, rootPath, config, sendLog, sendDebug, options = {}) {
     const onSyncProgress = (p) => {
         if (event.sender && !event.sender.isDestroyed()) {
             event.sender.send('progress', p);
@@ -500,7 +613,7 @@ async function syncMods(event, rootPath, config, sendLog, sendDebug) {
     };
     
     sendDebug('Starting syncFiles...');
-    await syncFiles(rootPath, MANIFEST_URL, sendLog, onSyncProgress, config.disabledMods, () => isLaunchCancelled);
+    await syncFiles(rootPath, MANIFEST_URL, sendLog, onSyncProgress, config.disabledMods, () => isLaunchCancelled, options);
     sendDebug('syncFiles completed.');
 
     // Copy custom client configs from client_config/ to config/ if present
@@ -654,6 +767,10 @@ async function launchGame(event, options) {
     
     isGameRunning = true;
     isLaunchCancelled = false;
+    currentGameProcess = null;
+    activeChildProcesses.clear();
+    launchAbortController = new AbortController();
+    const signal = launchAbortController.signal;
 
     let config = loadConfig();
     const rootPath = config.installPath;
@@ -663,53 +780,80 @@ async function launchGame(event, options) {
     }
 
     const { logStream, sendLog, sendDebug } = createLoggers(event, rootPath, config);
+    currentSendLog = sendLog;
+    currentSendDebug = sendDebug;
+
+    const checkCancelled = () => {
+        if (isLaunchCancelled || signal.aborted) {
+            throw new Error('CANCELLED');
+        }
+    };
 
     sendLog('Запуск с конфигурацией: ' + JSON.stringify(config));
 
     try {
+        checkCancelled();
+
         // Apply default mod settings for fresh installs
-        config = await applyDefaultModSettings(config, rootPath, sendLog, sendDebug);
+        config = await applyDefaultModSettings(config, rootPath, sendLog, sendDebug, { signal });
+        checkCancelled();
 
         // Preload vanilla version files
         sendDebug('Starting ensureVanillaVersionFiles...');
-        await ensureVanillaVersionFiles(rootPath, sendLog);
+        await ensureVanillaVersionFiles(rootPath, sendLog, { signal });
         sendDebug('ensureVanillaVersionFiles completed.');
+        checkCancelled();
 
         // Prepare Java
         let javaPath;
         try {
-            javaPath = await prepareJava(config, rootPath, sendLog, sendDebug);
+            javaPath = await prepareJava(config, rootPath, sendLog, sendDebug, { signal, activeChildProcesses });
         } catch (e) {
+            if (e.message === 'CANCELLED' || isLaunchCancelled) {
+                isGameRunning = false;
+                return { success: false, error: "Запуск отменен" };
+            }
             sendLog(`[ОШИБКА] ${e.message}`);
             isGameRunning = false;
             return { success: false, error: e.message };
         }
+        checkCancelled();
 
         // Prepare Forge
         let forgeInstallerPath;
         try {
-            forgeInstallerPath = await prepareForge(rootPath, sendLog, sendDebug);
+            forgeInstallerPath = await prepareForge(rootPath, sendLog, sendDebug, { signal });
         } catch (e) {
+            if (e.message === 'CANCELLED' || isLaunchCancelled) {
+                isGameRunning = false;
+                return { success: false, error: "Запуск отменен" };
+            }
             sendDebug(`Forge download failed: ${e.stack}`);
             isGameRunning = false;
             return { success: false, error: "Не удалось скачать Forge: " + e.message };
         }
+        checkCancelled();
 
         // Prepare Authlib Injector
         let authlibPath;
         try {
-            authlibPath = await prepareAuthlib(rootPath, sendLog, sendDebug);
+            authlibPath = await prepareAuthlib(rootPath, sendLog, sendDebug, { signal });
         } catch (e) {
+            if (e.message === 'CANCELLED' || isLaunchCancelled) {
+                isGameRunning = false;
+                return { success: false, error: "Запуск отменен" };
+            }
             sendDebug(`Authlib download failed: ${e.stack}`);
             isGameRunning = false;
             return { success: false, error: "Не удалось скачать Authlib Injector: " + e.message };
         }
+        checkCancelled();
 
         // Sync mods
         try {
-            await syncMods(event, rootPath, config, sendLog, sendDebug);
+            await syncMods(event, rootPath, config, sendLog, sendDebug, { signal });
         } catch (e) {
-            if (e.message === 'CANCELLED') {
+            if (e.message === 'CANCELLED' || isLaunchCancelled) {
                 sendLog('Запуск отменен пользователем.');
                 isGameRunning = false;
                 return { success: false, error: "Запуск отменен" };
@@ -717,11 +861,7 @@ async function launchGame(event, options) {
             sendLog('ВНИМАНИЕ: Ошибка синхронизации модов. Игра может работать нестабильно.');
             sendDebug(`Sync error: ${e.stack}`);
         }
-
-        if (isLaunchCancelled) {
-            isGameRunning = false;
-            return { success: false, error: "Запуск отменен" };
-        }
+        checkCancelled();
 
         // Authentication (Yggdrasil with Offline Fallback)
         sendLog('Авторизация игрока...');
@@ -756,10 +896,14 @@ async function launchGame(event, options) {
                     }
                 }
                 sendDebug(`Authenticating user: ${options.username} (v${CLIENT_VERSION}, hash: ${manifestHash.slice(0, 8)}...)`);
-                authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token, 2, CLIENT_VERSION, manifestHash);
+                authSession = await authenticateYggdrasil(YGGDRASIL_AUTH_URL, options.username, options.token, 2, CLIENT_VERSION, manifestHash, { signal });
                 sendLog(`Авторизация успешна. UUID: ${authSession.uuid}`);
                 sendDebug(`Auth success. UUID: ${authSession.uuid}, Name: ${authSession.name}`);
             } catch (e) {
+                if (e.message === 'CANCELLED' || isLaunchCancelled) {
+                    isGameRunning = false;
+                    return { success: false, error: "Запуск отменен" };
+                }
                 sendDebug(`Yggdrasil auth failed: ${e.message}`);
                 sendLog(`🛑 Ошибка авторизации: ${e.message}`);
                 isGameRunning = false;
@@ -770,6 +914,7 @@ async function launchGame(event, options) {
             sendLog(`Запуск в офлайн-режиме под ником ${playerNick}...`);
             authSession = makeOfflineSession(playerNick);
         }
+        checkCancelled();
 
         // Ensure launcher_profiles.json exists (required by NeoForge installer)
         const profilesPath = path.join(rootPath, 'launcher_profiles.json');
@@ -799,6 +944,7 @@ async function launchGame(event, options) {
         const neoforgeJsonPath = path.join(rootPath, 'versions', neoforgeVerId, `${neoforgeVerId}.json`);
 
         if (!fs.existsSync(neoforgeJsonPath)) {
+            checkCancelled();
             sendLog(`Первичная установка NeoForge ${NEOFORGE_VERSION} (~15-30 сек)...`);
             sendDebug(`Running NeoForge installer headless: ${forgeInstallerPath}`);
             try {
@@ -808,28 +954,53 @@ async function launchGame(event, options) {
                     : (javaPath || 'java');
 
                 await new Promise((resolve, reject) => {
+                    if (signal.aborted || isLaunchCancelled) return reject(new Error('CANCELLED'));
                     const proc = execFile(javaBin, ['-jar', forgeInstallerPath, '--installClient', rootPath], { cwd: rootPath });
+                    activeChildProcesses.add(proc);
+
+                    const onAbort = () => {
+                        killProcessTree(proc, sendDebug);
+                        reject(new Error('CANCELLED'));
+                    };
+
+                    signal.addEventListener('abort', onAbort, { once: true });
+
                     let stderr = '';
                     let stdout = '';
                     proc.stdout?.on('data', d => { stdout += d.toString(); });
                     proc.stderr?.on('data', d => { stderr += d.toString(); });
                     proc.on('close', code => {
+                        activeChildProcesses.delete(proc);
+                        signal.removeEventListener('abort', onAbort);
                         sendDebug(`NeoForge installer exit code: ${code}`);
+                        if (signal.aborted || isLaunchCancelled) {
+                            return reject(new Error('CANCELLED'));
+                        }
                         if (code === 0 || fs.existsSync(neoforgeJsonPath)) {
                             resolve();
                         } else {
                             reject(new Error(`Код завершения установщика: ${code}.\n${stderr || stdout}`));
                         }
                     });
-                    proc.on('error', err => reject(err));
+                    proc.on('error', err => {
+                        activeChildProcesses.delete(proc);
+                        signal.removeEventListener('abort', onAbort);
+                        reject(err);
+                    });
                 });
                 sendLog(`✓ NeoForge ${NEOFORGE_VERSION} успешно установлен.`);
             } catch (e) {
+                if (e.message === 'CANCELLED' || isLaunchCancelled) {
+                    isGameRunning = false;
+                    return { success: false, error: "Запуск отменен" };
+                }
                 sendDebug(`NeoForge install error: ${e.stack || e.message}`);
                 isGameRunning = false;
                 return { success: false, error: `Не удалось установить NeoForge ${NEOFORGE_VERSION}:\n${e.message}` };
             }
         }
+
+        checkCancelled();
 
         // Ensure NeoForge version JSON is merged with vanilla 1.21.1 libraries BEFORE passing it to MCLC
         ensureNeoForgeVersionJsonMerged(rootPath, sendDebug);
@@ -844,11 +1015,14 @@ async function launchGame(event, options) {
             sendDebug(`Library verification failed: ${e.message}`);
         }
 
+        checkCancelled();
+
         // Prefetch Yggdrasil metadata for authlib-injector (bypass Localtunnel reminder)
         let authlibPrefetched = null;
         if (authlibPath && !authSession.isOffline) {
             try {
                 const metaRes = await fetch(`${BASE_URL}/api/yggdrasil`, {
+                    signal,
                     headers: {
                         'bypass-tunnel-reminder': 'true',
                         'User-Agent': 'localtunnel',
@@ -860,12 +1034,17 @@ async function launchGame(event, options) {
                 authlibPrefetched = Buffer.from(compactJson, 'utf8').toString('base64');
                 sendDebug(`Prefetched Yggdrasil metadata (${compactJson.length} chars)`);
             } catch (e) {
+                if (e.name === 'AbortError' || isLaunchCancelled) throw new Error('CANCELLED');
                 sendDebug(`Failed to prefetch Yggdrasil metadata: ${e.message}`);
             }
         }
 
+        checkCancelled();
+
         // Ensure real Minecraft 1.21.1 asset index (17.json) exists and is populated
-        await ensureAssetIndex(rootPath, sendLog);
+        await ensureAssetIndex(rootPath, sendLog, { signal });
+
+        checkCancelled();
 
         // Build launch options
         const opts = buildLaunchOptions(config, rootPath, javaPath, forgeInstallerPath, authlibPath, authSession, authlibPrefetched);
@@ -880,6 +1059,8 @@ async function launchGame(event, options) {
             return { success: false, error: e.message };
         }
 
+        checkCancelled();
+
         // Preflight checks
         try {
             sendDebug('Preflight: checking NeoForge library writability...');
@@ -891,6 +1072,8 @@ async function launchGame(event, options) {
             return { success: false, error: e.message };
         }
 
+        checkCancelled();
+
         sendLog('Запуск ядра Minecraft...');
         sendDebug('Launching MCLC with options: ' + JSON.stringify(opts, null, 2));
         
@@ -901,6 +1084,7 @@ async function launchGame(event, options) {
 
         // Register fresh listeners
         launcher.once('close', (code) => {
+            currentGameProcess = null;
             isGameRunning = false;
             stopModWatcher();
             sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
@@ -987,7 +1171,19 @@ async function launchGame(event, options) {
 
             launcher.launch(opts).then((proc) => {
                 if (proc) {
+                    currentGameProcess = proc;
                     sendDebug(`Game process spawned with PID: ${proc.pid}`);
+                    if (isLaunchCancelled || signal.aborted) {
+                        sendDebug('[LAUNCHER] Launch was cancelled, terminating spawned game process immediately.');
+                        killProcessTree(proc, sendDebug);
+                        currentGameProcess = null;
+                        if (!hasResolved) {
+                            hasResolved = true;
+                            isGameRunning = false;
+                            resolve({ success: false, error: "Запуск отменен" });
+                        }
+                        return;
+                    }
                     startModWatcher(rootPath, config, proc, sendLog);
                 }
                 if (!hasResolved) {
@@ -996,13 +1192,25 @@ async function launchGame(event, options) {
                 }
             }).catch(error => {
                 sendDebug(`Launcher promise rejected: ${error.stack}`);
+                if (currentGameProcess) {
+                    killProcessTree(currentGameProcess, sendDebug);
+                    currentGameProcess = null;
+                }
                 if (!hasResolved) {
                     hasResolved = true;
                     isGameRunning = false;
-                    resolve(handleLaunchError(error, rootPath));
+                    if (error.message === 'CANCELLED' || isLaunchCancelled || signal.aborted) {
+                        resolve({ success: false, error: "Запуск отменен" });
+                    } else {
+                        resolve(handleLaunchError(error, rootPath));
+                    }
                 } else {
                     if (mainWindow && !mainWindow.isDestroyed()) {
-                        mainWindow.webContents.send('log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
+                        if (error.message === 'CANCELLED' || isLaunchCancelled || signal.aborted) {
+                            mainWindow.webContents.send('log-message', '[LAUNCHER] Запуск отменен пользователем.');
+                        } else {
+                            mainWindow.webContents.send('log-message', `[ОШИБКА] Игра вылетела: ${error.message}`);
+                        }
                     }
                 }
             });
@@ -1010,7 +1218,19 @@ async function launchGame(event, options) {
         
     } catch (e) {
         sendDebug(`Launcher exception: ${e.stack}`);
+        if (currentGameProcess) {
+            killProcessTree(currentGameProcess, sendDebug);
+            currentGameProcess = null;
+        }
+        for (const proc of activeChildProcesses) {
+            killProcessTree(proc, sendDebug);
+        }
+        activeChildProcesses.clear();
+
         isGameRunning = false;
+        if (e.message === 'CANCELLED' || isLaunchCancelled || signal.aborted) {
+            return { success: false, error: "Запуск отменен" };
+        }
         return { success: false, error: e.message };
     }
 }

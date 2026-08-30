@@ -1,8 +1,13 @@
 const https = require('https');
 const http = require('http');
 
-function authenticateYggdrasilOnce(authUrl, username, token, clientVersion = null, manifestHash = null) {
+function authenticateYggdrasilOnce(authUrl, username, token, clientVersion = null, manifestHash = null, options = {}) {
+    const signal = options.signal;
     return new Promise((resolve, reject) => {
+        if (signal && signal.aborted) {
+            return reject(new Error('CANCELLED'));
+        }
+
         // Use Node's built-in crypto.randomUUID (available in Node 16+)
         const clientToken = require('crypto').randomUUID();
         
@@ -32,6 +37,9 @@ function authenticateYggdrasilOnce(authUrl, username, token, clientVersion = nul
             let body = '';
             res.on('data', chunk => body += chunk);
             res.on('end', () => {
+                if (signal && signal.aborted) {
+                    return reject(new Error('CANCELLED'));
+                }
                 if (res.statusCode === 200) {
                     try {
                         const response = JSON.parse(body);
@@ -61,6 +69,15 @@ function authenticateYggdrasilOnce(authUrl, username, token, clientVersion = nul
             });
         });
 
+        const onAbort = () => {
+            try { req.destroy(); } catch {}
+            reject(new Error('CANCELLED'));
+        };
+
+        if (signal) {
+            signal.addEventListener('abort', onAbort, { once: true });
+        }
+
         req.setTimeout(25_000, () => {
             req.destroy(new Error('Auth request timeout (25s)'));
         });
@@ -71,18 +88,33 @@ function authenticateYggdrasilOnce(authUrl, username, token, clientVersion = nul
     });
 }
 
-async function authenticateYggdrasil(authUrl, username, token, retries = 2, clientVersion = null, manifestHash = null) {
+async function authenticateYggdrasil(authUrl, username, token, retries = 2, clientVersion = null, manifestHash = null, options = {}) {
+    const signal = options.signal;
     const candidateUrls = Array.from(new Set([authUrl].filter(Boolean)));
 
     let lastError;
     for (const url of candidateUrls) {
         for (let i = 1; i <= retries; i++) {
+            if (signal && signal.aborted) {
+                throw new Error('CANCELLED');
+            }
             try {
-                return await authenticateYggdrasilOnce(url, username, token, clientVersion, manifestHash);
+                return await authenticateYggdrasilOnce(url, username, token, clientVersion, manifestHash, options);
             } catch (e) {
+                if (e.message === 'CANCELLED' || signal?.aborted) {
+                    throw e;
+                }
                 lastError = e;
                 if (i < retries) {
-                    await new Promise(r => setTimeout(r, 1000));
+                    await new Promise((resolve, reject) => {
+                        const timer = setTimeout(resolve, 1000);
+                        if (signal) {
+                            signal.addEventListener('abort', () => {
+                                clearTimeout(timer);
+                                reject(new Error('CANCELLED'));
+                            }, { once: true });
+                        }
+                    });
                 }
             }
         }
