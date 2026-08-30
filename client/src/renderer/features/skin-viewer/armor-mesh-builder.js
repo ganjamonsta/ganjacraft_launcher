@@ -2,9 +2,41 @@ import * as THREE from 'three';
 
 /**
  * ArmorMeshBuilder
- * Строит 3D меши брони Minecraft (шлем, нагрудник, поножи, ботинки)
- * с точным позиционированием под скелет skinview3d и наложением текстур (NearestFilter).
+ * Полноценный 3D билдер брони Minecraft с математически точной UV-разверткой (как в skinview3d и Minecraft Java Edition).
  */
+
+function setMinecraftUVs(box, u, v, width, height, depth, textureWidth = 64, textureHeight = 32) {
+    const toFaceVertices = (x1, y1, x2, y2) => [
+        new THREE.Vector2(x1 / textureWidth, 1.0 - y2 / textureHeight),
+        new THREE.Vector2(x2 / textureWidth, 1.0 - y2 / textureHeight),
+        new THREE.Vector2(x2 / textureWidth, 1.0 - y1 / textureHeight),
+        new THREE.Vector2(x1 / textureWidth, 1.0 - y1 / textureHeight),
+    ];
+
+    const top = toFaceVertices(u + depth, v, u + width + depth, v + depth);
+    const bottom = toFaceVertices(u + width + depth, v, u + width * 2 + depth, v + depth);
+    const left = toFaceVertices(u, v + depth, u + depth, v + depth + height);
+    const front = toFaceVertices(u + depth, v + depth, u + width + depth, v + depth + height);
+    const right = toFaceVertices(u + width + depth, v + depth, u + width + depth * 2, v + height + depth);
+    const back = toFaceVertices(u + width + depth * 2, v + depth, u + width * 2 + depth * 2, v + height + depth);
+
+    const uvRight = [right[3], right[2], right[0], right[1]];
+    const uvLeft = [left[3], left[2], left[0], left[1]];
+    const uvTop = [top[3], top[2], top[0], top[1]];
+    const uvBottom = [bottom[0], bottom[1], bottom[3], bottom[2]];
+    const uvFront = [front[3], front[2], front[0], front[1]];
+    const uvBack = [back[3], back[2], back[0], back[1]];
+
+    const newUVData = [];
+    for (const uvArray of [uvRight, uvLeft, uvTop, uvBottom, uvFront, uvBack]) {
+        for (const uv of uvArray) {
+            newUVData.push(uv.x, uv.y);
+        }
+    }
+    const uvAttr = box.attributes.uv;
+    uvAttr.set(new Float32Array(newUVData));
+    uvAttr.needsUpdate = true;
+}
 
 class ArmorMeshBuilder {
     constructor() {
@@ -30,37 +62,9 @@ class ArmorMeshBuilder {
             map: texture,
             transparent: true,
             alphaTest: 0.15,
-            roughness: 0.4,
-            metalness: 0.3
+            roughness: 0.45,
+            metalness: 0.25
         });
-    }
-
-    setBoxUV(geometry, uvsMap, texW = 64, texH = 32) {
-        const uvAttr = geometry.attributes.uv;
-        if (!uvAttr) return;
-        const uvs = uvAttr.array;
-
-        // Порядок граней BoxGeometry: 0: East(+X), 1: West(-X), 2: Up(+Y), 3: Down(-Y), 4: South(+Z), 5: North(-Z)
-        const faceOrder = ['east', 'west', 'up', 'down', 'south', 'north'];
-
-        faceOrder.forEach((faceName, idx) => {
-            const data = uvsMap[faceName];
-            if (data) {
-                const [u, v, uw, uh] = data;
-                const u0 = u / texW;
-                const v0 = 1.0 - (v + uh) / texH;
-                const u1 = (u + uw) / texW;
-                const v1 = 1.0 - v / texH;
-
-                const base = idx * 8;
-                uvs[base + 0] = u0; uvs[base + 1] = v1;
-                uvs[base + 2] = u1; uvs[base + 3] = v1;
-                uvs[base + 4] = u0; uvs[base + 5] = v0;
-                uvs[base + 6] = u1; uvs[base + 7] = v0;
-            }
-        });
-
-        uvAttr.needsUpdate = true;
     }
 
     // ── 🪖 ШЛЕМ ──
@@ -69,37 +73,21 @@ class ArmorMeshBuilder {
         group.name = `ARMOR_HELMET_${options.id || 'custom'}`;
         const mat = this.createMaterial(textureUrl);
 
-        // Основной шлем (точно поверх головы headMesh y=4)
+        // Основной слой шлема (Head Layer 1: u=0, v=0, w=8, h=8, d=8)
         const helmGeo = new THREE.BoxGeometry(8.9, 8.9, 8.9);
-        this.setBoxUV(helmGeo, {
-            east: [0, 8, 8, 8],
-            south: [8, 8, 8, 8],
-            west: [16, 8, 8, 8],
-            north: [24, 8, 8, 8],
-            up: [8, 0, 8, 8],
-            down: [16, 0, 8, 8]
-        });
-
+        setMinecraftUVs(helmGeo, 0, 0, 8, 8, 8, 64, 32);
         const helmMesh = new THREE.Mesh(helmGeo, mat);
         helmMesh.position.set(0, 4.0, 0);
         group.add(helmMesh);
 
-        // Внешний слой налобника / забрала (Overlay)
+        // Внешний слой налобника / забрала (Head Overlay Layer 2: u=32, v=0, w=8, h=8, d=8)
         const overlayGeo = new THREE.BoxGeometry(9.4, 9.4, 9.4);
-        this.setBoxUV(overlayGeo, {
-            east: [32, 8, 8, 8],
-            south: [40, 8, 8, 8],
-            west: [48, 8, 8, 8],
-            north: [56, 8, 8, 8],
-            up: [40, 0, 8, 8],
-            down: [48, 0, 8, 8]
-        });
-
+        setMinecraftUVs(overlayGeo, 32, 0, 8, 8, 8, 64, 32);
         const overlayMesh = new THREE.Mesh(overlayGeo, mat);
         overlayMesh.position.set(0, 4.0, 0);
         group.add(overlayMesh);
 
-        // Дополнительные 3D рога для Cataclysm Игнития / Левиафана
+        // 3D Рога для сетов Cataclysm (Игнитий / Левиафан)
         if (options.hasHorns) {
             const hornGeo = new THREE.ConeGeometry(1.0, 4.2, 4);
             const hornMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.3, metalness: 0.6 });
@@ -124,41 +112,30 @@ class ArmorMeshBuilder {
         group.name = `ARMOR_CHEST_${options.id || 'custom'}`;
         const mat = this.createMaterial(textureUrl);
 
-        // Торс нагрудника (поверх bodyMesh y=0 в skin.body)
+        // Торс нагрудника (Body Layer 1: u=16, v=16, w=8, h=12, d=4)
         const bodyGeo = new THREE.BoxGeometry(8.9, 12.5, 4.8);
-        this.setBoxUV(bodyGeo, {
-            east: [16, 20, 4, 12],
-            south: [20, 20, 8, 12],
-            west: [28, 20, 4, 12],
-            north: [32, 20, 8, 12],
-            up: [20, 16, 8, 4],
-            down: [28, 16, 8, 4]
-        });
-
+        setMinecraftUVs(bodyGeo, 16, 16, 8, 12, 4, 64, 32);
         const bodyMesh = new THREE.Mesh(bodyGeo, mat);
         bodyMesh.position.set(0, 0, 0);
         group.add(bodyMesh);
 
-        // Наплечники: в skinview3d rightArmPivot x=-1, y=-4; leftArmPivot x=1, y=-4
-        const pauldronGeo = new THREE.BoxGeometry(4.8, 12.5, 4.8);
-        this.setBoxUV(pauldronGeo, {
-            east: [40, 20, 4, 12],
-            south: [44, 20, 4, 12],
-            west: [48, 20, 4, 12],
-            north: [52, 20, 4, 12],
-            up: [44, 16, 4, 4],
-            down: [48, 16, 4, 4]
-        });
+        // Наплечник правый (Right Arm Layer 1: u=40, v=16, w=4, h=12, d=4)
+        const pauldronGeoR = new THREE.BoxGeometry(4.8, 12.5, 4.8);
+        setMinecraftUVs(pauldronGeoR, 40, 16, 4, 12, 4, 64, 32);
 
         if (skin.rightArm) {
-            const pauldronR = new THREE.Mesh(pauldronGeo, mat);
+            const pauldronR = new THREE.Mesh(pauldronGeoR, mat);
             pauldronR.name = `ARMOR_PAULDRON_R_${options.id || 'custom'}`;
             pauldronR.position.set(-1.0, -4.0, 0);
             skin.rightArm.add(pauldronR);
         }
 
+        // Наплечник левый (Left Arm Layer 1: u=40, v=16 mirrored в 64x32)
+        const pauldronGeoL = new THREE.BoxGeometry(4.8, 12.5, 4.8);
+        setMinecraftUVs(pauldronGeoL, 40, 16, 4, 12, 4, 64, 32);
+
         if (skin.leftArm) {
-            const pauldronL = new THREE.Mesh(pauldronGeo, mat);
+            const pauldronL = new THREE.Mesh(pauldronGeoL, mat);
             pauldronL.name = `ARMOR_PAULDRON_L_${options.id || 'custom'}`;
             pauldronL.position.set(1.0, -4.0, 0);
             skin.leftArm.add(pauldronL);
@@ -171,43 +148,33 @@ class ArmorMeshBuilder {
     buildLeggings(textureUrl, skin, options = {}) {
         const mat = this.createMaterial(textureUrl);
 
-        // Пояс на торсе
+        // Пояс на теле (Body Layer 2: u=16, v=16, w=8, h=12, d=4)
         if (skin.body) {
-            const beltGeo = new THREE.BoxGeometry(8.6, 4.8, 4.6);
-            this.setBoxUV(beltGeo, {
-                east: [16, 20, 4, 6],
-                south: [20, 20, 8, 6],
-                west: [28, 20, 4, 6],
-                north: [32, 20, 8, 6],
-                up: [20, 16, 8, 4],
-                down: [28, 16, 8, 4]
-            });
+            const beltGeo = new THREE.BoxGeometry(8.6, 5.0, 4.6);
+            setMinecraftUVs(beltGeo, 16, 16, 8, 12, 4, 64, 32);
             const beltMesh = new THREE.Mesh(beltGeo, mat);
             beltMesh.name = `ARMOR_BELT_${options.id || 'custom'}`;
             beltMesh.position.set(0, -3.8, 0);
             skin.body.add(beltMesh);
         }
 
-        // Штанины: в skinview3d rightLegPivot y=-6, leftLegPivot y=-6
-        const legGeo = new THREE.BoxGeometry(4.6, 12.2, 4.6);
-        this.setBoxUV(legGeo, {
-            east: [0, 20, 4, 12],
-            south: [4, 20, 4, 12],
-            west: [8, 20, 4, 12],
-            north: [12, 20, 4, 12],
-            up: [4, 16, 4, 4],
-            down: [8, 16, 4, 4]
-        });
+        // Правая штанина (Leg Layer 2: u=0, v=16, w=4, h=12, d=4)
+        const legGeoR = new THREE.BoxGeometry(4.6, 12.2, 4.6);
+        setMinecraftUVs(legGeoR, 0, 16, 4, 12, 4, 64, 32);
 
         if (skin.rightLeg) {
-            const legR = new THREE.Mesh(legGeo, mat);
+            const legR = new THREE.Mesh(legGeoR, mat);
             legR.name = `ARMOR_LEGS_R_${options.id || 'custom'}`;
             legR.position.set(0, -6.0, 0);
             skin.rightLeg.add(legR);
         }
 
+        // Левая штанина (Leg Layer 2: u=0, v=16, w=4, h=12, d=4)
+        const legGeoL = new THREE.BoxGeometry(4.6, 12.2, 4.6);
+        setMinecraftUVs(legGeoL, 0, 16, 4, 12, 4, 64, 32);
+
         if (skin.leftLeg) {
-            const legL = new THREE.Mesh(legGeo, mat);
+            const legL = new THREE.Mesh(legGeoL, mat);
             legL.name = `ARMOR_LEGS_L_${options.id || 'custom'}`;
             legL.position.set(0, -6.0, 0);
             skin.leftLeg.add(legL);
@@ -218,26 +185,23 @@ class ArmorMeshBuilder {
     buildBoots(textureUrl, skin, options = {}) {
         const mat = this.createMaterial(textureUrl);
 
-        // Ботинки на нижнюю часть ног (y=-9.5)
-        const bootGeo = new THREE.BoxGeometry(4.8, 5.2, 4.8);
-        this.setBoxUV(bootGeo, {
-            east: [0, 26, 4, 6],
-            south: [4, 26, 4, 6],
-            west: [8, 26, 4, 6],
-            north: [12, 26, 4, 6],
-            up: [4, 16, 4, 4],
-            down: [8, 16, 4, 4]
-        });
+        // Правый ботинок (Boot Layer 1: u=0, v=16, w=4, h=12, d=4)
+        const bootGeoR = new THREE.BoxGeometry(4.8, 5.2, 4.8);
+        setMinecraftUVs(bootGeoR, 0, 16, 4, 12, 4, 64, 32);
 
         if (skin.rightLeg) {
-            const bootR = new THREE.Mesh(bootGeo, mat);
+            const bootR = new THREE.Mesh(bootGeoR, mat);
             bootR.name = `ARMOR_BOOTS_R_${options.id || 'custom'}`;
             bootR.position.set(0, -9.5, 0);
             skin.rightLeg.add(bootR);
         }
 
+        // Левый ботинок (Boot Layer 1: u=0, v=16, w=4, h=12, d=4)
+        const bootGeoL = new THREE.BoxGeometry(4.8, 5.2, 4.8);
+        setMinecraftUVs(bootGeoL, 0, 16, 4, 12, 4, 64, 32);
+
         if (skin.leftLeg) {
-            const bootL = new THREE.Mesh(bootGeo, mat);
+            const bootL = new THREE.Mesh(bootGeoL, mat);
             bootL.name = `ARMOR_BOOTS_L_${options.id || 'custom'}`;
             bootL.position.set(0, -9.5, 0);
             skin.leftLeg.add(bootL);

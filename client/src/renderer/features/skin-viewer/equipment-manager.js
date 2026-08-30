@@ -690,17 +690,17 @@ class EquipmentManager {
         group.name = `EQ_OFFHAND_${item.id}`;
 
         if (item.id === 'shield') {
-            const shieldGeo = new THREE.BoxGeometry(1.2, 16, 10);
-            const shieldMat = new THREE.MeshStandardMaterial({ color: 0x164e63, roughness: 0.3, metalness: 0.6 });
+            const shieldGeo = new THREE.BoxGeometry(1.2, 11.0, 7.0);
+            const shieldMat = new THREE.MeshStandardMaterial({ color: 0x854d0e, roughness: 0.5, metalness: 0.2 });
             const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
             group.add(shieldMesh);
-            group.position.set(2.5, -6, 0);
+            group.position.set(1.4, -6.5, 0.5);
         } else if (item.id === 'totem_of_undying') {
-            const totemGeo = new THREE.BoxGeometry(2.4, 4.8, 1.2);
+            const totemGeo = new THREE.BoxGeometry(2.2, 4.0, 1.0);
             const totemMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.2 });
             const totemMesh = new THREE.Mesh(totemGeo, totemMat);
             group.add(totemMesh);
-            group.position.set(0, -8, 1.2);
+            group.position.set(1.0, -9.5, 1.0);
         }
 
         return group;
