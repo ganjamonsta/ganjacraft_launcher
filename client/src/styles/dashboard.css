@@ -107,8 +107,26 @@
     padding: 0;
 }
 
+/* ── Skin Off Mode Layout ── */
+.main-dashboard-layout.layout-skin-off {
+    grid-template-columns: 240px 1fr 240px;
+    justify-content: space-between;
+}
+
+.main-dashboard-layout.layout-skin-off .hero-brand-section.center-brand {
+    grid-column: 2;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 380px;
+}
+
+.main-dashboard-layout.layout-skin-off .launch-action-hub {
+    grid-column: 3;
+}
+
 /* ── 1. Left: Player Character & Stats ── */
 .player-character-section {
+    grid-column: 1;
     width: 100%; max-width: 240px; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     box-sizing: border-box;
@@ -226,6 +244,7 @@
 
 /* ── 2. Center: Brand, Sacred Geometry Leaf, Play Button ── */
 .hero-brand-section.center-brand {
+    grid-column: 2;
     width: 100%; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     text-align: center; position: relative; z-index: 10;
@@ -328,6 +347,7 @@
 
 /* ── 3. Right: Server Status Hub ── */
 .launch-action-hub {
+    grid-column: 3;
     width: 100%; max-width: 240px; height: 100%;
     display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-end;
     box-sizing: border-box; z-index: 10; padding: 2px 0 4px 0;
@@ -464,21 +484,64 @@
     gap: 6px;
     width: 100%;
     flex: 1 1 auto;
-    max-height: 250px;
+    max-height: 380px;
     overflow-y: auto;
     padding-right: 2px;
 }
 
 .live-player-item {
-    display: flex; align-items: center; gap: 6px; padding: 5px 8px;
-    border-radius: var(--gc-radius-sm); background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--gc-border-light); transition: all 0.2s ease; box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--gc-radius-sm);
+    background: rgba(18, 24, 28, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+    cursor: default;
 }
-.live-player-item:hover { background: rgba(var(--gc-green-rgb), 0.1); border-color: rgba(var(--gc-green-rgb), 0.3); transform: translateX(2px); }
 
-.live-player-avatar-wrap { width: 20px; height: 20px; border-radius: var(--gc-radius-xs); overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; border: 1px solid var(--gc-border-default); flex-shrink: 0; }
-.live-player-avatar { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
-.live-player-name { font-size: 11.5px; font-weight: 700; color: #f8fafc; letter-spacing: 0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live-player-item:hover {
+    background: rgba(var(--gc-green-rgb), 0.12);
+    border-color: rgba(var(--gc-green-rgb), 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 10px rgba(var(--gc-green-rgb), 0.15);
+    transform: translateX(-3px);
+}
+
+.live-player-avatar-wrap {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--gc-radius-xs);
+    overflow: hidden;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+}
+
+.live-player-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: pixelated;
+}
+
+.live-player-name {
+    font-family: var(--gc-font-minecraft, 'Minecraft', monospace);
+    font-size: 12px;
+    font-weight: 600;
+    color: #f8fafc;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 1.5px 1.5px 0px rgba(0, 0, 0, 0.85);
+}
 
 /* Logout Button */
 .logout-btn-container { width: 100%; max-width: 230px; margin-top: 12px; }
