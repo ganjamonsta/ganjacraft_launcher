@@ -23,6 +23,13 @@ export function getSkinViewerMode() {
 }
 
 /**
+ * Получить экземпляр SkinViewer3D
+ */
+export function getSkinViewer3d() {
+    return skinViewer3d;
+}
+
+/**
  * Инициализировать или обновить скин игрока
  * @param {string} username 
  */

@@ -1,0 +1,792 @@
+/**
+ * Ganj4Craft Launcher - Easter Eggs & Hacker Console Styles
+ * Стили для псевдо-консоли RCON, веб-камеры с мемом, мини-игры лопания частиц и 420 Rave
+ */
+
+/* ==========================================================================
+   1. ПСЕВДО-КОНСОЛЬ RCON / ЧИТ-ТЕРМИНАЛ
+   ========================================================================== */
+
+.pseudo-console-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 8, 6, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pseudo-console-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.pseudo-console-window {
+    width: 720px;
+    max-width: 90vw;
+    height: 480px;
+    max-height: 85vh;
+    background: rgba(10, 16, 12, 0.94);
+    border: 1px solid rgba(57, 255, 20, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8),
+                0 0 25px rgba(57, 255, 20, 0.2),
+                inset 0 0 15px rgba(57, 255, 20, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    animation: consolePop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes consolePop {
+    from {
+        transform: scale(0.95) translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.pseudo-console-header {
+    height: 38px;
+    background: rgba(16, 26, 20, 0.85);
+    border-bottom: 1px solid rgba(57, 255, 20, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    user-select: none;
+}
+
+.pseudo-console-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #39ff14;
+    letter-spacing: 0.5px;
+}
+
+.terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.terminal-dot.green { background: #39ff14; box-shadow: 0 0 6px #39ff14; }
+.terminal-dot.yellow { background: #f1c40f; }
+.terminal-dot.red { background: #ff4757; }
+
+.pseudo-console-close {
+    background: transparent;
+    border: none;
+    color: #718096;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.pseudo-console-close:hover {
+    color: #ff4757;
+    background: rgba(255, 71, 87, 0.15);
+}
+
+.pseudo-console-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #d1fae5;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pseudo-console-body::-webkit-scrollbar {
+    width: 6px;
+}
+.pseudo-console-body::-webkit-scrollbar-thumb {
+    background: rgba(57, 255, 20, 0.2);
+    border-radius: 3px;
+}
+
+.console-line.system {
+    color: #6ee7b7;
+    font-weight: 600;
+}
+
+.console-line.tip {
+    color: #a7f3d0;
+    background: rgba(57, 255, 20, 0.08);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border-left: 2px solid #39ff14;
+    margin: 4px 0;
+}
+
+.console-line.user-cmd {
+    color: #fff;
+    margin-top: 4px;
+}
+
+.prompt-echo {
+    color: #39ff14;
+    font-weight: bold;
+}
+
+.cmd-echo {
+    color: #5eead4;
+    font-weight: bold;
+}
+
+.console-line.success {
+    color: #4ade80;
+}
+
+.console-line.warning {
+    color: #fde047;
+}
+
+.console-line.error {
+    color: #f87171;
+}
+
+.console-line.info {
+    color: #93c5fd;
+}
+
+.cmd-highlight {
+    color: #39ff14;
+    background: rgba(57, 255, 20, 0.15);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.help-box {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(57, 255, 20, 0.2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 4px 0;
+}
+
+.help-title {
+    color: #39ff14;
+    font-weight: bold;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.help-item {
+    display: flex;
+    gap: 10px;
+    margin: 3px 0;
+}
+
+.cmd-col {
+    color: #a6ff00;
+    font-weight: 600;
+    min-width: 220px;
+}
+
+.desc-col {
+    color: #94a3b8;
+}
+
+.pseudo-console-input-row {
+    height: 44px;
+    background: rgba(8, 14, 10, 0.95);
+    border-top: 1px solid rgba(57, 255, 20, 0.25);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 10px;
+}
+
+.pseudo-prompt {
+    color: #39ff14;
+    font-weight: bold;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.pseudo-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #39ff14;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pseudo-input::placeholder {
+    color: rgba(57, 255, 20, 0.35);
+}
+
+/* ==========================================================================
+   2. МИНИ-ИГРА ЛОПАНИЯ ЧАСТИЦ (HARVEST POPPER)
+   ========================================================================== */
+
+.particle-pop-counter {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(10, 20, 14, 0.88);
+    border: 1px solid rgba(57, 255, 20, 0.35);
+    border-radius: 30px;
+    padding: 6px 18px 6px 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(57, 255, 20, 0.2);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+    transition: transform 0.15s ease, border-color 0.2s ease, opacity 0.25s ease;
+    animation: popCounterSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.particle-pop-counter.active-pop {
+    transform: translateX(-50%) scale(1.08);
+    border-color: #39ff14;
+    box-shadow: 0 0 24px rgba(57, 255, 20, 0.5);
+}
+
+@keyframes popCounterSlideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.pop-counter-icon {
+    font-size: 18px;
+    filter: drop-shadow(0 0 6px #39ff14);
+}
+
+.pop-counter-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.pop-counter-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: #6ee7b7;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.pop-counter-value {
+    font-size: 16px;
+    font-weight: 900;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    line-height: 1;
+}
+
+.pop-counter-combo {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    animation: pulseCombo 0.4s infinite alternate;
+}
+
+@keyframes pulseCombo {
+    from { transform: scale(0.95); }
+    to { transform: scale(1.1); }
+}
+
+.pop-spark {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #39ff14;
+    box-shadow: 0 0 8px #39ff14, 0 0 14px #a6ff00;
+    pointer-events: none;
+    z-index: 999;
+    animation: sparkFly 0.45s ease-out forwards;
+}
+
+@keyframes sparkFly {
+    0% {
+        transform: translate(0, 0) scale(1.4);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) scale(0.1);
+        opacity: 0;
+    }
+}
+
+.pop-floating-score {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    font-weight: 900;
+    color: #39ff14;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.9), 0 0 12px #39ff14;
+    font-family: 'Outfit', sans-serif;
+    pointer-events: none;
+    z-index: 1000;
+    animation: floatUpScore 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes floatUpScore {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -20%) scale(0.8);
+    }
+    50% {
+        transform: translate(-50%, -60%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -100%) scale(1);
+    }
+}
+
+.leaf-combo-hit {
+    transform: scale(1.18) rotate(5deg) !important;
+    filter: drop-shadow(0 0 20px #39ff14) !important;
+    transition: transform 0.1s ease !important;
+}
+
+/* ==========================================================================
+   3. ВЕБ-КАМЕРА С МЕМОМ ("АДМИН У МЕНЯ КРАФТ НЕ РАБОТАЕТ")
+   ========================================================================== */
+
+.meme-webcam-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.meme-webcam-modal.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.webcam-window-frame {
+    width: 440px;
+    max-width: 90vw;
+    background: #111;
+    border: 2px solid rgba(57, 255, 20, 0.5);
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(57, 255, 20, 0.3);
+    overflow: hidden;
+    animation: webcamEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes webcamEnter {
+    from { transform: scale(0.85) rotate(-2deg); opacity: 0; }
+    to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.webcam-header-bar {
+    height: 36px;
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+}
+
+.webcam-status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #eee;
+    letter-spacing: 0.5px;
+}
+
+.rec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff4757;
+    box-shadow: 0 0 8px #ff4757;
+    animation: recBlink 1s infinite;
+}
+
+@keyframes recBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+
+.webcam-close-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+}
+.webcam-close-btn:hover {
+    color: #ff4757;
+}
+
+.webcam-screen-content {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    background: #000;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.webcam-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.crt-scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+    background-size: 100% 3px, 4px 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.crt-vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+    z-index: 3;
+}
+
+.webcam-timestamp {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #39ff14;
+    font-size: 11px;
+    font-family: monospace;
+    padding: 2px 6px;
+    border-radius: 4px;
+    z-index: 4;
+}
+
+.webcam-glitch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    animation: glitch 0.3s infinite;
+}
+
+.chaos-icons {
+    font-size: 48px;
+    animation: spinChaos 1.5s infinite linear;
+}
+
+@keyframes spinChaos {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.3) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.chaos-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #ff00ff;
+    text-shadow: 2px 2px #00ffff, -2px -2px #ffff00;
+    margin-top: 10px;
+}
+
+.chaos-sub {
+    font-size: 13px;
+    font-weight: 700;
+    color: #39ff14;
+    margin-top: 6px;
+}
+
+.webcam-footer-bar {
+    height: 38px;
+    background: #161616;
+    border-top: 1px solid #282828;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #a6ff00;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   4. РЕЙВ & ХАОС АНИМАЦИИ
+   ========================================================================== */
+
+@keyframes rainbow-hue {
+    0% { filter: hue-rotate(0deg) saturate(1.8); }
+    100% { filter: hue-rotate(360deg) saturate(1.8); }
+}
+
+@keyframes screen-shake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-6px, -4px); }
+    20% { transform: translate(6px, 4px); }
+    30% { transform: translate(-4px, 6px); }
+    40% { transform: translate(4px, -6px); }
+    50% { transform: translate(-6px, 2px); }
+    60% { transform: translate(6px, -2px); }
+    70% { transform: translate(-2px, 6px); }
+    80% { transform: translate(2px, -6px); }
+    90% { transform: translate(-4px, -2px); }
+}
+
+.easter-egg-rainbow {
+    animation: rainbow-hue 1.5s linear infinite !important;
+}
+
+.easter-egg-shake {
+    animation: screen-shake 0.4s ease-in-out infinite !important;
+}
+
+/* ==========================================================================
+   5. 420 BLAZE IT & RAVE OVERLAY
+   ========================================================================== */
+
+.blaze-rave-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, rgba(57, 255, 20, 0.15) 0%, rgba(0, 0, 0, 0.6) 80%);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.blaze-rave-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.blaze-rave-overlay.rave-pulse {
+    background: radial-gradient(circle at center, rgba(57, 255, 20, 0.4) 0%, rgba(0, 0, 0, 0.4) 80%);
+}
+
+.rave-center-badge {
+    text-align: center;
+    background: rgba(10, 20, 14, 0.9);
+    border: 2px solid #39ff14;
+    border-radius: 20px;
+    padding: 24px 40px;
+    box-shadow: 0 0 50px rgba(57, 255, 20, 0.6), inset 0 0 20px rgba(57, 255, 20, 0.2);
+    animation: raveBadgePulse 0.5s infinite alternate ease-in-out;
+}
+
+@keyframes raveBadgePulse {
+    from { transform: scale(0.95); }
+    to { transform: scale(1.05); }
+}
+
+.rave-badge-top {
+    font-size: 16px;
+    font-weight: 800;
+    color: #a6ff00;
+    letter-spacing: 2px;
+}
+
+.rave-badge-title {
+    font-size: 42px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14;
+    font-family: 'Outfit', sans-serif;
+    margin: 6px 0;
+}
+
+.rave-badge-sub {
+    font-size: 12px;
+    color: #888;
+}
+
+.brand-rave-active {
+    animation: rainbow-hue 0.8s linear infinite !important;
+    text-shadow: 0 0 25px #39ff14, 0 0 50px #39ff14 !important;
+}
+
+/* ==========================================================================
+   6. ФЕЙКОВЫЙ БАН-ЭКРАН
+   ========================================================================== */
+
+.fake-ban-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fake-ban-modal {
+    width: 500px;
+    background: #151515;
+    border: 2px solid #ff4757;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255, 71, 87, 0.5);
+}
+
+.ban-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #ff4757;
+    margin-bottom: 12px;
+}
+
+.ban-reason {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.ban-duration {
+    font-size: 14px;
+    color: #f1c40f;
+    margin-bottom: 16px;
+}
+
+.ban-footer {
+    font-size: 12px;
+    color: #666;
+}
+
+/* ==========================================================================
+   7. СТИЛИ РАНГА И АНИМАЦИИ СКИНА
+   ========================================================================== */
+
+.op-glow-badge {
+    background: linear-gradient(135deg, #ffd700, #ff8c00) !important;
+    color: #000 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.8) !important;
+    border: 1px solid #fff !important;
+    animation: goldGlow 1s infinite alternate !important;
+}
+
+@keyframes goldGlow {
+    from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
+    to { box-shadow: 0 0 22px rgba(255, 215, 0, 1); }
+}
+
+.rank-creative {
+    background: linear-gradient(135deg, #00f2fe, #4facfe) !important;
+    color: #000 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 14px rgba(0, 242, 254, 0.8) !important;
+}
+
+.creative-levitation {
+    filter: drop-shadow(0 15px 25px rgba(0, 242, 254, 0.4)) !important;
+}
+
+.skin-2d-flip {
+    animation: spin2D 0.6s ease-in-out;
+}
+
+@keyframes spin2D {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.craft-repaired-toast {
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(16, 32, 22, 0.95);
+    border: 1px solid #39ff14;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(57, 255, 20, 0.3);
+    z-index: 10002;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.craft-repaired-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}

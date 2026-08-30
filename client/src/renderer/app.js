@@ -14,7 +14,7 @@ import {
     createDirectionalBurst, 
     createSideBurst
 } from './ui/effects/index.js';
-import { initEasterEgg } from './ui/effects/easter-egg.js';
+import { initAllEasterEggs } from './features/easter-eggs/index.js';
 
 // === Feature Imports ===
 import { 
@@ -266,9 +266,9 @@ async function init() {
     setCurrentConfig(currentConfig);
     
     updateLoaderStatus(25, 'Инициализация графических эффектов...');
-    // 2. Init visual effects
+    // 2. Init visual effects & Easter Eggs
     await initAllEffects(currentConfig);
-    initEasterEgg();
+    initAllEasterEggs();
     
     updateLoaderStatus(45, 'Подготовка интерфейса и настроек...');
     // 3. Init UI handlers & Pre-populate settings fields
