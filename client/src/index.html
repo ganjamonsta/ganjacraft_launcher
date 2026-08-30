@@ -539,108 +539,134 @@
         <!-- Step 3: Ready to Play (Main Hero Dashboard) -->
         <div id="step-play" class="hidden">
             <div class="main-dashboard-layout">
-                <!-- 1. Left: Player Character & Stats (Frameless) -->
+                <!-- 1. Left: Player Character & Stats -->
                 <div class="player-character-section">
-                    <div class="player-skin-header">
-                        <div class="player-identity-badge">
-                            <span class="player-username-title" id="player-display-name">OPERATOR</span>
-                            <span class="player-rank-pill" id="player-rank-badge">Игрок</span>
-                        </div>
-                    </div>
-
                     <div id="skin-viewer-container" class="skin-viewer-wrapper frameless-skin">
                         <canvas id="skin-canvas-3d" width="220" height="330"></canvas>
                         <canvas id="skin-canvas-2d" width="220" height="330" style="display:none;"></canvas>
                     </div>
 
-                    <div class="player-stats-bar frameless-stats clean-stats">
-                        <div class="player-stat-col">
-                            <div class="stat-label">EMC</div>
-                            <div class="stat-icon-wrap stat-icon-coins">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="9"/>
-                                    <path d="M12 7v10M15 9.5c0-1.5-1.5-2-3-2s-3 .5-3 2 1.5 2 3 2 3 .5 3 2-1.5 2-3 2-3-.5-3-2"/>
+                    <div class="player-stats-bar-modern">
+                        <div class="stat-col-modern">
+                            <div class="stat-meta-row">
+                                <svg class="stat-icon-svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"/>
                                 </svg>
+                                <span class="stat-label-text">EMC</span>
                             </div>
-                            <div id="stat-coins" class="stat-value">—</div>
+                            <div id="stat-coins" class="stat-value-text">0</div>
                         </div>
 
-                        <div class="player-stat-col">
-                            <div class="stat-label">Play Time</div>
-                            <div class="stat-icon-wrap stat-icon-playtime">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <div class="stat-divider-line"></div>
+
+                        <div class="stat-col-modern">
+                            <div class="stat-meta-row">
+                                <svg class="stat-icon-svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"/>
                                     <polyline points="12 6 12 12 16 14"/>
                                 </svg>
+                                <span class="stat-label-text">PLAY TIME</span>
                             </div>
-                            <div id="stat-playtime" class="stat-value">—</div>
+                            <div id="stat-playtime" class="stat-value-text">0 ч</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. Center: Glowing Neon Constellation Brand & Logo + Magnetic Play Button -->
+                <!-- 2. Center: Cyber Header, Sacred Geometry Leaf, Version & Play Button -->
                 <div class="hero-brand-section center-brand">
-                    <h2 class="hero-neon-title">GANJ4CRAFT</h2>
-                    <div class="neon-leaf-wrapper center-leaf">
-                        <svg class="neon-constellation-leaf" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Cyber Header with Brackets -->
+                    <div class="cyber-brand-header">
+                        <svg class="cyber-brackets-svg" viewBox="0 0 320 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Left HUD bracket -->
+                            <path d="M70 12 L35 12 L16 27 L35 42 L70 42" stroke="#39ff14" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+                            <line x1="45" y1="12" x2="60" y2="12" stroke="#39ff14" stroke-width="2.5"/>
+                            <circle cx="26" cy="27" r="2" fill="#39ff14"/>
+                            <!-- Right HUD bracket -->
+                            <path d="M250 12 L285 12 L304 27 L285 42 L250 42" stroke="#39ff14" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+                            <line x1="260" y1="42" x2="275" y2="42" stroke="#39ff14" stroke-width="2.5"/>
+                            <circle cx="294" cy="27" r="2" fill="#39ff14"/>
+                        </svg>
+                        <h2 class="hero-neon-title-cyber">GANJ4CRAFT</h2>
+                    </div>
+
+                    <!-- Sacred Geometry + Glowing Leaf Emblem -->
+                    <div class="sacred-leaf-wrapper">
+                        <svg class="sacred-geometry-leaf" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <defs>
-                                <filter id="glow-neon-green" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feGaussianBlur stdDeviation="5" result="blur" />
+                                <filter id="sacred-leaf-glow" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feGaussianBlur stdDeviation="4" result="blur" />
                                     <feMerge>
                                         <feMergeNode in="blur" />
                                         <feMergeNode in="SourceGraphic" />
                                     </feMerge>
                                 </filter>
-                                <linearGradient id="neon-leaf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#39ff14" />
-                                    <stop offset="50%" stop-color="#00e676" />
-                                    <stop offset="100%" stop-color="#00e5ff" />
+                                <linearGradient id="leaf-grad-vivid" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#84ff00" />
+                                    <stop offset="40%" stop-color="#39ff14" />
+                                    <stop offset="100%" stop-color="#00c853" />
                                 </linearGradient>
                             </defs>
-                            <!-- Stem & Central Rib -->
-                            <path d="M150 280 L150 20" stroke="url(#neon-leaf-grad)" stroke-width="2.5" filter="url(#glow-neon-green)" class="leaf-line" />
-                            <!-- Central Leaf Blade -->
-                            <path d="M150 20 Q120 70 150 160 Q180 70 150 20 Z" stroke="#39ff14" stroke-width="2" fill="rgba(57,255,20,0.04)" filter="url(#glow-neon-green)" class="leaf-pulse" />
-                            <!-- Upper Left Leaf Blade -->
-                            <path d="M150 160 Q70 100 50 60 Q105 110 150 160 Z" stroke="#00e676" stroke-width="1.8" fill="rgba(0,230,118,0.04)" class="leaf-pulse" />
-                            <!-- Upper Right Leaf Blade -->
-                            <path d="M150 160 Q230 100 250 60 Q195 110 150 160 Z" stroke="#00e676" stroke-width="1.8" fill="rgba(0,230,118,0.04)" class="leaf-pulse" />
-                            <!-- Mid Left Leaf Blade -->
-                            <path d="M150 180 Q40 160 20 130 Q90 170 150 180 Z" stroke="#00e5ff" stroke-width="1.8" fill="rgba(0,229,255,0.04)" class="leaf-pulse" />
-                            <!-- Mid Right Leaf Blade -->
-                            <path d="M150 180 Q260 160 280 130 Q210 170 150 180 Z" stroke="#00e5ff" stroke-width="1.8" fill="rgba(0,229,255,0.04)" class="leaf-pulse" />
-                            <!-- Lower Left Leaf Blade -->
-                            <path d="M150 200 Q70 210 45 220 Q100 220 150 200 Z" stroke="#39ff14" stroke-width="1.5" class="leaf-pulse" />
-                            <!-- Lower Right Leaf Blade -->
-                            <path d="M150 200 Q230 210 255 220 Q200 220 150 200 Z" stroke="#39ff14" stroke-width="1.5" class="leaf-pulse" />
-                            
-                            <!-- Constellation Network Connections -->
-                            <line x1="150" y1="20" x2="50" y2="60" stroke="rgba(57,255,20,0.35)" stroke-dasharray="3 3" />
-                            <line x1="150" y1="20" x2="250" y2="60" stroke="rgba(57,255,20,0.35)" stroke-dasharray="3 3" />
-                            <line x1="50" y1="60" x2="20" y2="130" stroke="rgba(0,230,118,0.35)" stroke-dasharray="3 3" />
-                            <line x1="250" y1="60" x2="280" y2="130" stroke="rgba(0,230,118,0.35)" stroke-dasharray="3 3" />
-                            <line x1="20" y1="130" x2="45" y2="220" stroke="rgba(0,229,255,0.35)" stroke-dasharray="3 3" />
-                            <line x1="280" y1="130" x2="255" y2="220" stroke="rgba(0,229,255,0.35)" stroke-dasharray="3 3" />
-                            <line x1="45" y1="220" x2="150" y2="280" stroke="rgba(57,255,20,0.35)" stroke-dasharray="3 3" />
-                            <line x1="255" y1="220" x2="150" y2="280" stroke="rgba(57,255,20,0.35)" stroke-dasharray="3 3" />
 
-                            <!-- Glowing Constellation Nodes -->
-                            <circle cx="150" cy="20" r="4.5" fill="#ffffff" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="50" cy="60" r="3.5" fill="#39ff14" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="250" cy="60" r="3.5" fill="#39ff14" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="20" cy="130" r="3.5" fill="#00e676" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="280" cy="130" r="3.5" fill="#00e676" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="45" cy="220" r="3.5" fill="#00e5ff" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="255" cy="220" r="3.5" fill="#00e5ff" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="150" cy="160" r="4.5" fill="#ffffff" filter="url(#glow-neon-green)" class="constellation-dot" />
-                            <circle cx="150" cy="280" r="4" fill="#39ff14" filter="url(#glow-neon-green)" class="constellation-dot" />
+                            <!-- Sacred Geometry Wireframe Grid -->
+                            <g class="geometry-wireframe" stroke="#39ff14" opacity="0.25" stroke-width="1">
+                                <!-- Outer Circle -->
+                                <circle cx="100" cy="100" r="75" stroke-dasharray="4 4" />
+                                <!-- Upward Triangle -->
+                                <polygon points="100,25 165,138 35,138" />
+                                <!-- Downward Triangle -->
+                                <polygon points="100,175 165,62 35,62" />
+                                <!-- Inner Hexagon -->
+                                <polygon points="100,38 154,69 154,131 100,162 46,131 46,69" stroke-dasharray="2 3" opacity="0.4" />
+                                <!-- Horizontal & Vertical Grid Lines -->
+                                <line x1="100" y1="15" x2="100" y2="185" stroke-dasharray="2 4" />
+                                <line x1="15" y1="100" x2="185" y2="100" stroke-dasharray="2 4" />
+                            </g>
+
+                            <!-- High Detail 7-blade Cannabis Leaf -->
+                            <g class="cannabis-leaf-group" filter="url(#sacred-leaf-glow)">
+                                <!-- Central Blade (Tallest) -->
+                                <path d="M100 155 Q82 95 100 24 Q118 95 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.2" />
+                                <line x1="100" y1="26" x2="100" y2="155" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+
+                                <!-- Upper Left Blade -->
+                                <path d="M100 155 Q56 100 42 58 Q74 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                <line x1="44" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+
+                                <!-- Upper Right Blade -->
+                                <path d="M100 155 Q144 100 158 58 Q126 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                <line x1="156" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+
+                                <!-- Mid Left Blade -->
+                                <path d="M100 155 Q34 136 22 108 Q64 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
+                                <line x1="24" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+
+                                <!-- Mid Right Blade -->
+                                <path d="M100 155 Q166 136 178 108 Q136 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
+                                <line x1="176" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+
+                                <!-- Lower Left Blade (Smallest) -->
+                                <path d="M100 155 Q52 165 38 158 Q72 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
+
+                                <!-- Lower Right Blade (Smallest) -->
+                                <path d="M100 155 Q148 165 162 158 Q128 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
+
+                                <!-- Leaf Stem -->
+                                <path d="M100 155 L100 178" stroke="#39ff14" stroke-width="2.5" stroke-linecap="round" />
+                            </g>
                         </svg>
                     </div>
+
+                    <!-- Version Tag -->
+                    <div class="center-brand-version" id="brand-version-tag">v1.0.181</div>
+
+                    <!-- Circular Magnetic Play Button with Glowing Ring and White Arrow -->
                     <div class="play-btn-container">
-                        <button id="play-btn" class="magnetic-play-btn" aria-label="Играть" title="Играть">
-                            <span class="play-btn-glow"></span>
-                            <svg class="play-btn-icon" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M8 5.14v13.72a1 1 0 001.53.85l11-6.86a1 1 0 000-1.7l-11-6.86A1 1 0 008 5.14z"/>
+                        <button id="play-btn" class="magnetic-play-btn-circle" aria-label="Играть" title="Играть">
+                            <span class="play-btn-glow-ring"></span>
+                            <svg class="play-btn-triangle-icon" viewBox="0 0 24 24" fill="#ffffff">
+                                <path d="M8 5v14l11-7z"/>
                             </svg>
                         </button>
                     </div>
@@ -648,19 +674,38 @@
 
                 <!-- 3. Right: Live Server Online Hub -->
                 <div class="launch-action-hub">
-                    <!-- Live Server Online Card -->
-                    <div class="server-live-card">
-                        <div class="server-live-header">
-                            <div class="server-live-status">
-                                <span class="status-indicator online"></span>
-                                <span class="server-live-title" id="live-status-text">СЕРВЕР В СЕТИ</span>
+                    <div class="server-live-card-modern">
+                        <!-- Top: Live status dot + big player count -->
+                        <div class="server-live-top-row">
+                            <div class="server-live-status-pill">
+                                <span class="status-indicator-dot online"></span>
+                                <span class="server-live-status-text" id="live-status-text">СЕРВЕР В СЕТИ</span>
                             </div>
-                            <span class="server-live-count" id="live-player-count">0 / 1337</span>
+                            <div class="server-live-count-large" id="live-player-count">0 / 1337</div>
                         </div>
+
+                        <!-- Clean divider -->
+                        <div class="server-card-divider"></div>
+
+                        <!-- Bottom: Hexagon sprout badge & text / Player list -->
                         <div class="server-players-live-list" id="live-players-container">
-                            <div class="live-empty-state">
-                                <span class="live-empty-icon">🎮</span>
-                                <span>Сервер свободен • Будь первым!</span>
+                            <div class="live-empty-state-modern">
+                                <div class="empty-state-hexagon-icon">
+                                    <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Hexagon Border -->
+                                        <path d="M20 3 L36 12 L36 28 L20 37 L4 28 L4 12 Z" stroke="#39ff14" stroke-width="1.8" fill="rgba(57, 255, 20, 0.05)" />
+                                        <!-- Sprout / Plant -->
+                                        <path d="M20 30 L20 18" stroke="#39ff14" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M20 18 Q14 14 12 8 Q20 12 20 18 Z" stroke="#39ff14" stroke-width="1.4" fill="rgba(57, 255, 20, 0.25)"/>
+                                        <path d="M20 18 Q26 14 28 8 Q20 12 20 18 Z" stroke="#39ff14" stroke-width="1.4" fill="rgba(57, 255, 20, 0.25)"/>
+                                        <path d="M20 14 Q20 6 20 5 Q20 6 20 14" stroke="#39ff14" stroke-width="1.5" stroke-linecap="round"/>
+                                        <circle cx="20" cy="5" r="1.5" fill="#39ff14"/>
+                                    </svg>
+                                </div>
+                                <div class="empty-state-text-wrap">
+                                    <div class="empty-title">Сервер свободен</div>
+                                    <div class="empty-sub"><span class="dot-green">•</span> Будь первым!</div>
+                                </div>
                             </div>
                         </div>
                     </div>

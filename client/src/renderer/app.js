@@ -249,6 +249,8 @@ async function displayVersion() {
         const ver = await window.api.getAppVersion();
         const vDiv = dom.get('app-version');
         if (vDiv) vDiv.innerText = `v${ver}`;
+        const bDiv = dom.get('brand-version-tag');
+        if (bDiv) bDiv.innerText = `v${ver}`;
     } catch (e) { 
         console.error('Failed to get version', e); 
     }
