@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.0.186",
+    "date": "2026-08-30T13:52:28.383Z",
+    "timestamp": 1788097948,
+    "title": "Обновление лаунчера v1.0.186",
+    "description": "Implement game launcher logic in main process",
+    "changes": [
+      "✨ Implement game launcher logic in main process",
+      "✨ Implement win32-specific window title and icon customization via PowerShell API",
+      "✨ Add constants module for main process configuration and server URLs",
+      "• Initial feature release",
+      "✨ Implement unified design system with new global stylesheets and settings architecture",
+      "✨ Implement changelog manager and stylesheet for launcher updates UI",
+      "✨ Implement changelog manager and define UI styles for release feed, badges, and patch notes"
+    ]
+  },
+  {
     "version": "1.0.185",
     "date": "2026-08-30T12:40:49.070Z",
     "timestamp": 1788093649,

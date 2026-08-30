@@ -1,6 +1,6 @@
 {
   "name": "ganjacraft-launcher-client",
-  "version": "1.0.185",
+  "version": "1.0.186",
   "description": "Official Launcher for Ganj4Craft Server",
   "main": "src/main.js",
   "scripts": {
