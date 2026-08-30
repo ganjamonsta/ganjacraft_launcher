@@ -127,6 +127,15 @@ class GunShooterEngine {
         const rightArm = viewer.playerObject.skin.rightArm;
         if (!rightArm || this.isGunAttached) return;
 
+        // Сохраняем исходное правильное положение руки (чтобы не потерять плечевой сустав)
+        if (!this.defaultRightArmPos) {
+            this.defaultRightArmPos = {
+                x: rightArm.position.x !== 0 ? rightArm.position.x : -5,
+                y: rightArm.position.y !== 0 ? rightArm.position.y : 22,
+                z: rightArm.position.z || 0
+            };
+        }
+
         // Создаем 3D модель кибер-бластера из вокселей Three.js
         const gunGroup = new THREE.Group();
         gunGroup.name = 'CyberBlaster';
@@ -201,7 +210,15 @@ class GunShooterEngine {
             const head = viewer.playerObject.skin.head;
             if (rightArm) {
                 rightArm.rotation.set(0, 0, 0);
-                rightArm.position.set(0, 0, 0);
+                if (this.defaultRightArmPos) {
+                    rightArm.position.set(
+                        this.defaultRightArmPos.x,
+                        this.defaultRightArmPos.y,
+                        this.defaultRightArmPos.z
+                    );
+                } else {
+                    rightArm.position.set(-5, 22, 0);
+                }
             }
             if (head) {
                 head.rotation.set(0, 0, 0);
@@ -276,10 +293,10 @@ class GunShooterEngine {
     handleClick(e) {
         if (!this.isGameLaunching) return;
 
-        // Пропускаем клики по интерактивным элементам форм
+        // Пропускаем клики по интерактивным элементам форм и окну логов
         const tag = e.target.tagName;
         if (['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A'].includes(tag)) return;
-        if (e.target.closest('button, input, select, textarea, a, .interactive-card, .pseudo-console-window, .custom-modal, .webcam-window-frame')) return;
+        if (e.target.closest('button, input, select, textarea, a, .launch-log-modal, .launch-console-body, .console-log-line, .interactive-card, .pseudo-console-window, .custom-modal, .webcam-window-frame, #title-bar, #step-progress')) return;
 
         this.fireShot(e.clientX, e.clientY);
     }
@@ -351,12 +368,13 @@ class GunShooterEngine {
 
         const rightArm = viewer.playerObject.skin.rightArm;
         if (rightArm) {
+            const baseZ = this.defaultRightArmPos ? this.defaultRightArmPos.z : 0;
             rightArm.rotation.x += 0.3; // Отдача вверх
-            rightArm.position.z -= 3.5; // Отдача назад
+            rightArm.position.z = baseZ - 3.5; // Отдача назад
 
             setTimeout(() => {
                 if (rightArm) {
-                    rightArm.position.z = 0;
+                    rightArm.position.z = baseZ;
                 }
             }, 100);
         }

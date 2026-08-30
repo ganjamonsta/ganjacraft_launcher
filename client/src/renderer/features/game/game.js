@@ -14,6 +14,28 @@ import { gunShooter } from '../easter-eggs/index.js';
  */
 let isGameLaunching = false;
 
+export function isGameLaunchingActive() {
+    return isGameLaunching;
+}
+
+export function toggleLaunchLogModal() {
+    const modal = dom.get('launch-log-modal');
+    if (!modal) return;
+
+    if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        // Скрываем прицел тира, но 3D-персонажа оставляем стоять слева
+        if (gunShooter.crosshairElem) gunShooter.crosshairElem.classList.add('hidden');
+        const output = dom.get('console-output');
+        if (output) output.scrollTop = output.scrollHeight;
+    } else {
+        modal.classList.add('hidden');
+        if (gunShooter.crosshairElem && isGameLaunching) {
+            gunShooter.crosshairElem.classList.remove('hidden');
+        }
+    }
+}
+
 export function lockControlsForLaunch() {
     isGameLaunching = true;
     document.body.classList.add('is-game-launching');
@@ -33,9 +55,10 @@ export function lockControlsForLaunch() {
     const popCounter = dom.get('particle-pop-counter');
     
     if (btnSettings) {
-        btnSettings.classList.add('disabled-launch');
-        btnSettings.setAttribute('disabled', 'true');
-        btnSettings.setAttribute('title', 'Настройки недоступны во время запуска');
+        btnSettings.classList.remove('disabled-launch');
+        btnSettings.removeAttribute('disabled');
+        btnSettings.classList.add('active-log-btn');
+        btnSettings.setAttribute('title', 'Логи запуска и консоль игры');
     }
     if (btnChangelog) {
         btnChangelog.classList.add('disabled-launch');
@@ -74,6 +97,9 @@ export function unlockControlsAfterLaunch() {
     document.body.classList.remove('is-game-launching');
     const stepPlay = dom.get('step-play');
     if (stepPlay) stepPlay.classList.remove('is-game-launching');
+    const modal = dom.get('launch-log-modal');
+    if (modal) modal.classList.add('hidden');
+
     const btnSettings = dom.get('btn-settings');
     const btnChangelog = dom.get('btn-changelog');
     const titleBtn = dom.get('title-bar-title');
@@ -82,6 +108,7 @@ export function unlockControlsAfterLaunch() {
     
     if (btnSettings) {
         btnSettings.classList.remove('disabled-launch');
+        btnSettings.classList.remove('active-log-btn');
         btnSettings.removeAttribute('disabled');
         btnSettings.setAttribute('title', 'Настройки');
     }
@@ -403,5 +430,12 @@ export function initGameButtons() {
     
     if (retryBtn) {
         retryBtn.addEventListener('click', startLaunch);
+    }
+
+    const btnCloseLog = dom.get('btn-close-log-modal');
+    if (btnCloseLog) {
+        btnCloseLog.addEventListener('click', () => {
+            toggleLaunchLogModal();
+        });
     }
 }

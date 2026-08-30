@@ -59,7 +59,9 @@ import {
 
 import { 
     initProgressHandlers, 
-    initGameButtons 
+    initGameButtons,
+    isGameLaunchingActive,
+    toggleLaunchLogModal
 } from './features/game/index.js';
 
 import { 
@@ -172,6 +174,12 @@ function initSettingsButton() {
     if (btnSettings) {
         btnSettings.addEventListener('click', async () => {
             if (isSettingsAnimating()) return;
+
+            // Во время запуска игры кнопка настроек открывает/закрывает окно логов (не наслаиваясь на тир)
+            if (isGameLaunchingActive()) {
+                toggleLaunchLogModal();
+                return;
+            }
 
             // Если панель открыта на любой вкладке — сразу закрываем её
             if (settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing')) {

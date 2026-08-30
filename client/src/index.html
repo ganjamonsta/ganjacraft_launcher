@@ -755,13 +755,51 @@
                     </div>
                 </div>
 
-                <!-- Hidden console/retry elements retained for compatibility -->
-                <div id="console-output" style="display:none;"></div>
+                <!-- Hidden retry and cancel elements retained for compatibility -->
                 <button id="retry-btn" class="hidden" style="display:none;"></button>
                 <button id="cancel-btn" class="hidden" style="display:none;"></button>
             </div>
         </div>
     </div>
+
+    <!-- Dedicated Fullscreen Cyber Launch Log Modal -->
+    <div id="launch-log-modal" class="launch-log-modal hidden">
+        <div class="launch-log-backdrop"></div>
+        <div class="launch-log-card">
+            <div class="launch-log-header">
+                <div class="launch-log-header-left">
+                    <span class="launch-log-indicator pulse-green"></span>
+                    <span class="launch-log-title">ЛОГИ ЗАПУСКА & КОНСОЛЬ ИГРЫ</span>
+                </div>
+                <div class="launch-log-header-actions">
+                    <button id="btn-copy-console" class="console-action-btn" title="Копировать логи в буфер">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        <span>Копировать</span>
+                    </button>
+                    <button id="btn-clear-console" class="console-action-btn" title="Очистить лог">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        <span>Очистить</span>
+                    </button>
+                    <button id="btn-close-log-modal" class="console-close-btn" title="Закрыть консоль (Вернуться к игре)">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="console-output" class="launch-console-body">
+                <div class="console-log-line log-system">Ожидание логов запуска игры...</div>
+            </div>
+        </div>
+    </div>
+
     <!-- App Version Fixed in Bottom-Right Corner -->
     <div id="app-version" class="app-version-fixed">v1.0.181</div>
 

@@ -55,10 +55,13 @@ class ParticlePopperGame {
      * Обработка клика по экрану для поиска и взрыва частицы
      */
     handleScreenClick(e) {
-        // Игнорируем клики по кнопкам, инпутам и интерактивным элементам UI
+        // Если идёт запуск игры или открыты логи — отключаем лопание частиц полностью
+        if (document.body.classList.contains('is-game-launching')) return;
+
+        // Игнорируем клики по кнопкам, инпутам, выделению текста и любым интерактивным элементам UI
         const tag = e.target.tagName;
-        if (['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A'].includes(tag)) return;
-        if (e.target.closest('button, input, select, textarea, a, .interactive-card, .pseudo-console-window, .custom-modal')) return;
+        if (['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A', 'SPAN', 'P', 'H1', 'H2', 'H3'].includes(tag)) return;
+        if (e.target.closest('button, input, select, textarea, a, .launch-log-modal, .launch-console-body, .console-log-line, .custom-modal, .step-settings, .interactive-card, .pseudo-console-window, #step-settings, #title-bar, #step-progress')) return;
 
         const clickX = e.clientX;
         const clickY = e.clientY;

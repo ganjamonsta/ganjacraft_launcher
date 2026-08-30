@@ -7,5 +7,7 @@ export {
     startLaunch,
     cancelLaunch,
     initProgressHandlers,
-    initGameButtons
+    initGameButtons,
+    isGameLaunchingActive,
+    toggleLaunchLogModal
 } from './game.js';
