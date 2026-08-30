@@ -790,3 +790,127 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* ==========================================================================
+   8. ШУТЕР-МИНИ-ИГРА (GUN SHOOTER & CROSSHAIR)
+   ========================================================================== */
+
+.gun-crosshair {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    margin-left: -16px;
+    margin-top: -16px;
+    pointer-events: none;
+    z-index: 1000;
+    transition: transform 0.04s linear;
+}
+
+.crosshair-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 1.5px solid rgba(57, 255, 20, 0.6);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+}
+
+.crosshair-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    margin-top: -2px;
+    background: #39ff14;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #39ff14;
+}
+
+.crosshair-bracket {
+    position: absolute;
+    background: #39ff14;
+    box-shadow: 0 0 4px #39ff14;
+}
+
+.crosshair-bracket.top {
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 5px;
+    margin-left: -1px;
+}
+
+.crosshair-bracket.bottom {
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    height: 5px;
+    margin-left: -1px;
+}
+
+.crosshair-bracket.left {
+    top: 50%;
+    left: 0;
+    width: 5px;
+    height: 2px;
+    margin-top: -1px;
+}
+
+.crosshair-bracket.right {
+    top: 50%;
+    right: 0;
+    width: 5px;
+    height: 2px;
+    margin-top: -1px;
+}
+
+.gun-shooter-hud {
+    position: fixed;
+    top: 52px;
+    right: 28px;
+    z-index: 105;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(10, 20, 14, 0.9);
+    border: 1px solid rgba(57, 255, 20, 0.4);
+    border-radius: 12px;
+    padding: 8px 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 15px rgba(57, 255, 20, 0.2);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+    animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hud-badge-icon {
+    font-size: 22px;
+    filter: drop-shadow(0 0 8px #39ff14);
+}
+
+.hud-badge-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: #6ee7b7;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.hud-badge-desc {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.hud-badge-desc strong {
+    color: #39ff14;
+    font-size: 16px;
+    font-weight: 900;
+}

@@ -66,8 +66,7 @@ class SkinTricksEngine {
         const player = viewer.playerObject;
         const startRotY = player.rotation.y;
         const targetRotY = startRotY + Math.PI * 2;
-        const startPosY = player.position.y;
-        const jumpHeight = 12;
+        const jumpHeightPx = 24; // Прыжок в DOM-пространстве (без обрезки WebGL)
 
         const startTime = performance.now();
         const duration = 600; // ms
@@ -80,15 +79,19 @@ class SkinTricksEngine {
             const easeProgress = 1 - Math.pow(1 - progress, 3);
             player.rotation.y = startRotY + (targetRotY - startRotY) * easeProgress;
 
-            // Parabolic jump up and down
+            // Parabolic jump up and down in DOM space
             const jumpProgress = Math.sin(progress * Math.PI);
-            player.position.y = startPosY + jumpProgress * jumpHeight;
+            if (container) {
+                container.style.transform = `translate3d(0, -${jumpProgress * jumpHeightPx}px, 0)`;
+            }
 
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
                 player.rotation.y = startRotY;
-                player.position.y = startPosY;
+                if (container && !this.isCreativeFloating) {
+                    container.style.transform = '';
+                }
                 this.isSpinning = false;
             }
         };
@@ -116,6 +119,7 @@ class SkinTricksEngine {
         if (this.floatAnimId) return;
 
         const startTime = performance.now();
+        const container = dom.get('skin-viewer-container');
 
         const loop = (currentTime) => {
             if (!this.isCreativeFloating) return;
@@ -123,9 +127,12 @@ class SkinTricksEngine {
             const viewer = getSkinViewer3d();
             if (viewer && viewer.playerObject && !this.isSpinning) {
                 const elapsed = (currentTime - startTime) / 1000;
-                // Плавное парение вверх-вниз
-                viewer.playerObject.position.y = Math.sin(elapsed * 2.5) * 4 + 8;
-                // Легкое покачивание плеч
+                // Плавное парение вверх-вниз в DOM пространстве
+                const floatOffset = Math.sin(elapsed * 2.5) * 6 + 10;
+                if (container) {
+                    container.style.transform = `translate3d(0, -${floatOffset}px, 0)`;
+                }
+                // Легкое покачивание плеч в 3D
                 viewer.playerObject.rotation.z = Math.sin(elapsed * 1.5) * 0.04;
             }
 
@@ -139,6 +146,11 @@ class SkinTricksEngine {
         if (this.floatAnimId) {
             cancelAnimationFrame(this.floatAnimId);
             this.floatAnimId = null;
+        }
+
+        const container = dom.get('skin-viewer-container');
+        if (container) {
+            container.style.transform = '';
         }
 
         const viewer = getSkinViewer3d();

@@ -7,6 +7,7 @@ import { dom } from '../../utils/dom.js';
 import { logToConsole } from '../console/index.js';
 import { getCurrentUsername, getAuthToken } from '../auth/index.js';
 import { getCurrentConfig, settingsChanged, saveSettings, closeSettings } from '../settings/index.js';
+import { gunShooter } from '../easter-eggs/index.js';
 
 /**
  * Заблокировать кнопки настроек и шапки при запуске
@@ -137,6 +138,7 @@ function showPlayScreen() {
         stepPlay.classList.add('fade-in');
     }
     unlockControlsAfterLaunch();
+    gunShooter.setGameLaunchingMode(false);
 }
 
 /**
@@ -144,6 +146,7 @@ function showPlayScreen() {
  */
 export async function startLaunch() {
     lockControlsForLaunch();
+    gunShooter.setGameLaunchingMode(true);
 
     const statusDiv = dom.get('game-status') || dom.get('status');
     const consoleOutput = dom.get('console-output');

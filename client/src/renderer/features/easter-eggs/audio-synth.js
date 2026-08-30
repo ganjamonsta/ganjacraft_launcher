@@ -236,6 +236,95 @@ class AudioSynthEngine {
             console.debug('[AudioSynth] Jump error', e);
         }
     }
+
+    /**
+     * Выстрел из плазмогана / лазера (Sci-Fi Laser Blast)
+     */
+    playLaserShot() {
+        const ctx = this.getContext();
+        if (!ctx) return;
+
+        try {
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sawtooth';
+            // Быстрый питч-дроп с 920Hz до 120Hz для сочного щелчка
+            osc.frequency.setValueAtTime(950, now);
+            osc.frequency.exponentialRampToValueAtTime(110, now + 0.12);
+
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } catch (e) {
+            console.debug('[AudioSynth] Laser error', e);
+        }
+    }
+
+    /**
+     * Взрыв / Уничтожение мишени (Target Explosion)
+     */
+    playTargetHit() {
+        const ctx = this.getContext();
+        if (!ctx) return;
+
+        try {
+            const now = ctx.currentTime;
+            // Шум / хруст взрыва
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(60, now + 0.18);
+
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.22);
+        } catch (e) {
+            console.debug('[AudioSynth] Hit error', e);
+        }
+    }
+
+    /**
+     * Хедшот / Критический урон (Headshot Bell)
+     */
+    playHeadshot() {
+        const ctx = this.getContext();
+        if (!ctx) return;
+
+        try {
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1760, now); // A6
+            osc.frequency.exponentialRampToValueAtTime(2200, now + 0.05);
+
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.26);
+        } catch (e) {
+            console.debug('[AudioSynth] Headshot error', e);
+        }
+    }
 }
 
 export const audioSynth = new AudioSynthEngine();

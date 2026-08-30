@@ -105,8 +105,8 @@ async function render3dSkin(username) {
                 model: 'default'
             });
 
-            skinViewer3d.camera.position.set(0, 0, 70);
-            skinViewer3d.zoom = 0.98;
+            skinViewer3d.camera.position.set(0, -1, 70);
+            skinViewer3d.zoom = 0.90;
 
             // По дефолту скин чуть повёрнут (полупрофиль к центру экрана)
             if (skinViewer3d.playerObject) {

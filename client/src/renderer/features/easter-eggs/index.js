@@ -1,14 +1,10 @@
-/**
- * Ganj4Craft Launcher - Easter Eggs Central Index
- * Единая точка управления всеми секретами, чит-консолью и интерактивом
- */
-
 import { pseudoConsole } from './pseudo-console.js';
 import { particlePopper } from './particle-pop.js';
 import { skinTricks } from './skin-tricks.js';
 import { initBlazeRave, triggerBlazeRave, isBlazeRaveActive } from './blaze-rave.js';
 import { triggerMemeWebcam, tryTriggerSettingsEasterEgg, isMemeWebcamActive } from './meme-webcam.js';
 import { audioSynth } from './audio-synth.js';
+import { gunShooter } from './gun-shooter.js';
 
 export { pseudoConsole } from './pseudo-console.js';
 export { particlePopper } from './particle-pop.js';
@@ -16,6 +12,7 @@ export { skinTricks } from './skin-tricks.js';
 export { triggerBlazeRave, isBlazeRaveActive } from './blaze-rave.js';
 export { triggerMemeWebcam, tryTriggerSettingsEasterEgg, isMemeWebcamActive } from './meme-webcam.js';
 export { audioSynth } from './audio-synth.js';
+export { gunShooter } from './gun-shooter.js';
 
 let secretKeyword = '';
 let secretKeyTimeout = null;
@@ -32,6 +29,9 @@ export function initAllEasterEggs() {
 
     // 3. 420 Rave Mode
     initBlazeRave();
+
+    // 4. Шутер мини-игра (3D боевая стойка, прицеливание и стрельба)
+    gunShooter.init();
 
     // 4. Горячая клавиша открытия псевдо-консоли (~ / ё / F12 / ввод "admin"/"op"/"hack")
     document.addEventListener('keydown', (e) => {
