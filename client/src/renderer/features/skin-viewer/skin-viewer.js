@@ -187,10 +187,10 @@ async function render3dSkin(username) {
                 // 1. Поза правой руки (основной хват)
                 if (player.skin.rightArm) {
                     if (weaponId === 'tacz_minigun') {
-                        // Тяжелая поза минигана (стрельба от бедра)
-                        player.skin.rightArm.rotation.x = -0.75 + breath;
+                        // Тяжелая поза минигана (горизонтальная стрельба от бедра)
+                        player.skin.rightArm.rotation.x = -0.62 + breath;
                         player.skin.rightArm.rotation.y = -0.15;
-                        player.skin.rightArm.rotation.z = 0.10;
+                        player.skin.rightArm.rotation.z = 0.08;
                     } else if (weaponId === 'tacz_rpg7') {
                         // РПГ на плече
                         player.skin.rightArm.rotation.x = -Math.PI / 2.10 + breath;
@@ -218,9 +218,9 @@ async function render3dSkin(username) {
                 if (player.skin.leftArm) {
                     if (weaponId === 'tacz_minigun') {
                         // Левая рука крепко держит верхнюю рукоять минигана сверху
-                        player.skin.leftArm.rotation.x = -1.18 + breath;
-                        player.skin.leftArm.rotation.y = 0.85;
-                        player.skin.leftArm.rotation.z = -0.30;
+                        player.skin.leftArm.rotation.x = -1.02 + breath;
+                        player.skin.leftArm.rotation.y = 0.88;
+                        player.skin.leftArm.rotation.z = -0.25;
                     } else if (weaponId === 'tacz_rpg7') {
                         // Левая рука держит переднюю ручку РПГ
                         player.skin.leftArm.rotation.x = -1.28 + breath;
