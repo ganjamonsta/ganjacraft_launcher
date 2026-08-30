@@ -31,7 +31,7 @@ class GunShooterEngine {
         this.score = 0;
         this.kills = 0;
         this.isGameLaunching = false;
-        this.isActive = true;
+        this.isActive = false;
 
         this.crosshairElem = null;
         this.hudElem = null;
@@ -54,11 +54,7 @@ class GunShooterEngine {
         window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
         document.addEventListener('pointerdown', this.handleClick, { passive: false });
 
-        this.attach3DGun();
         this.startLoop();
-
-        // Запуск спавна мишеней (фоновый режим)
-        this.startTargetSpawner(4000);
     }
 
     /**
@@ -149,45 +145,45 @@ class GunShooterEngine {
         const gunGroup = new THREE.Group();
         gunGroup.name = 'CyberBlaster';
 
-        // 1. Корпус пушки (темно-серый матовый металл)
-        const bodyGeo = new THREE.BoxGeometry(2.4, 3.8, 8.5);
-        const bodyMat = new THREE.MeshBasicMaterial({ color: 0x1a221c });
-        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-        bodyMesh.position.set(0, 0, 3);
-        gunGroup.add(bodyMesh);
-
-        // 2. Неоновый ствол (зеленая плазменная трубка)
-        const barrelGeo = new THREE.BoxGeometry(1.5, 1.5, 7.5);
-        const barrelMat = new THREE.MeshBasicMaterial({ color: 0x39ff14 });
-        const barrelMesh = new THREE.Mesh(barrelGeo, barrelMat);
-        barrelMesh.position.set(0, 0.8, 6.5);
-        gunGroup.add(barrelMesh);
-
-        // 3. Верхний оптический прицел
-        const scopeGeo = new THREE.BoxGeometry(1.2, 1.2, 3.5);
-        const scopeMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-        const scopeMesh = new THREE.Mesh(scopeGeo, scopeMat);
-        scopeMesh.position.set(0, 2.8, 2.5);
-        gunGroup.add(scopeMesh);
-
-        // 4. Светящийся кончик дула (Muzzle emitter)
-        const muzzleGeo = new THREE.BoxGeometry(1.8, 1.8, 1.2);
-        const muzzleMat = new THREE.MeshBasicMaterial({ color: 0xa6ff00 });
-        const muzzleMesh = new THREE.Mesh(muzzleGeo, muzzleMat);
-        muzzleMesh.position.set(0, 0.8, 10.5);
-        gunGroup.add(muzzleMesh);
-
-        // 5. Рукоять
-        const gripGeo = new THREE.BoxGeometry(2.0, 4.0, 2.4);
-        const gripMat = new THREE.MeshBasicMaterial({ color: 0x0d1410 });
+        // 1. Рукоять (внутри кисти руки)
+        const gripGeo = new THREE.BoxGeometry(1.6, 3.2, 2.0);
+        const gripMat = new THREE.MeshBasicMaterial({ color: 0x111813 });
         const gripMesh = new THREE.Mesh(gripGeo, gripMat);
-        gripMesh.position.set(0, -2.5, 0.5);
-        gripMesh.rotation.x = -0.2;
+        gripMesh.position.set(0, -0.8, 0);
         gunGroup.add(gripMesh);
 
-        // Позиционируем бластер в кисти правой руки (внизу руки)
-        gunGroup.position.set(-0.2, -10.5, 1.5);
-        gunGroup.scale.set(0.85, 0.85, 0.85);
+        // 2. Ствольная коробка / Корпус (матовый кибер-металл)
+        const bodyGeo = new THREE.BoxGeometry(2.0, 2.4, 5.5);
+        const bodyMat = new THREE.MeshBasicMaterial({ color: 0x1f2922 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.set(0, 1.2, 1.8);
+        gunGroup.add(bodyMesh);
+
+        // 3. Неоновый плазменный ствол (зеленый лазерный канал)
+        const barrelGeo = new THREE.BoxGeometry(1.3, 1.3, 5.5);
+        const barrelMat = new THREE.MeshBasicMaterial({ color: 0x39ff14 });
+        const barrelMesh = new THREE.Mesh(barrelGeo, barrelMat);
+        barrelMesh.position.set(0, 1.4, 6.5);
+        gunGroup.add(barrelMesh);
+
+        // 4. Оптический голографический прицел (сверху)
+        const scopeGeo = new THREE.BoxGeometry(1.0, 1.0, 2.2);
+        const scopeMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+        const scopeMesh = new THREE.Mesh(scopeGeo, scopeMat);
+        scopeMesh.position.set(0, 2.8, 0.8);
+        gunGroup.add(scopeMesh);
+
+        // 5. Светящийся кончик дула (Muzzle Emitter)
+        const muzzleGeo = new THREE.BoxGeometry(1.6, 1.6, 0.9);
+        const muzzleMat = new THREE.MeshBasicMaterial({ color: 0xa6ff00 });
+        const muzzleMesh = new THREE.Mesh(muzzleGeo, muzzleMat);
+        muzzleMesh.position.set(0, 1.4, 9.4);
+        gunGroup.add(muzzleMesh);
+
+        // Позиционируем и ориентируем пушку строго вперед из кулака
+        gunGroup.position.set(-0.1, -10.0, 0.4);
+        gunGroup.rotation.set(Math.PI / 2, 0, 0);
+        gunGroup.scale.set(0.75, 0.75, 0.75);
 
         rightArm.add(gunGroup);
 
@@ -198,13 +194,47 @@ class GunShooterEngine {
         // Поднимаем руку в боевую стойку
         rightArm.rotation.x = -Math.PI / 2;
 
-        console.log('🔫 3D CyberBlaster successfully equipped on player model!');
+        console.log('🔫 3D CyberBlaster armed for game launch!');
     }
 
     /**
-     * Движение мыши — прицеливание рукой и головой 3D персонажа
+     * Снять оружие и вернуть персонажа в спокойную позу
+     */
+    detach3DGun() {
+        if (this.gunMesh) {
+            if (this.gunMesh.parent) {
+                this.gunMesh.parent.remove(this.gunMesh);
+            }
+            this.gunMesh = null;
+        }
+        this.isGunAttached = false;
+
+        const viewer = getSkinViewer3d();
+        if (viewer && viewer.playerObject && viewer.playerObject.skin) {
+            const rightArm = viewer.playerObject.skin.rightArm;
+            const head = viewer.playerObject.skin.head;
+            if (rightArm) {
+                rightArm.rotation.set(0, 0, 0);
+                rightArm.position.set(0, 0, 0);
+            }
+            if (head) {
+                head.rotation.set(0, 0, 0);
+            }
+            viewer.playerObject.rotation.y = -0.45;
+        }
+    }
+
+    /**
+     * Движение мыши — прицеливание всего тела, руки и головы 3D персонажа (только при запуске)
      */
     handleMouseMove(e) {
+        if (!this.isGameLaunching) {
+            if (this.crosshairElem && !this.crosshairElem.classList.contains('hidden')) {
+                this.crosshairElem.classList.add('hidden');
+            }
+            return;
+        }
+
         this.mousePos.x = e.clientX;
         this.mousePos.y = e.clientY;
 
@@ -221,29 +251,33 @@ class GunShooterEngine {
         if (!skinCanvas) return;
 
         const rect = skinCanvas.getBoundingClientRect();
-        const originX = rect.left + rect.width * 0.65;
+        const originX = rect.left + rect.width * 0.45;
         const originY = rect.top + rect.height * 0.38;
 
         const deltaX = (e.clientX - originX) / (window.innerWidth / 2);
         const deltaY = (e.clientY - originY) / (window.innerHeight / 2);
 
+        // 1. Поворот ВСЕГО ТЕЛА персонажа в сторону прицеливания
+        const targetBodyRotY = -0.45 + Math.max(-0.6, Math.min(0.65, deltaX * 0.75));
+        viewer.playerObject.rotation.y += (targetBodyRotY - viewer.playerObject.rotation.y) * 0.18;
+
         const rightArm = viewer.playerObject.skin.rightArm;
         const head = viewer.playerObject.skin.head;
 
+        // 2. Прицеливание руки с пушкой
         if (rightArm) {
-            // Прицеливание руки по вертикали (наклоны вверх/вниз)
-            const targetRotX = -Math.PI / 2 + Math.max(-0.6, Math.min(0.6, deltaY * 0.8));
-            // Прицеливание руки по горизонтали (повороты влево/вправо)
-            const targetRotY = Math.max(-0.7, Math.min(0.7, deltaX * 0.9));
-            const targetRotZ = Math.max(-0.3, Math.min(0.3, deltaY * 0.4));
+            const targetRotX = -Math.PI / 2 + Math.max(-0.6, Math.min(0.6, deltaY * 0.75));
+            const targetRotY = Math.max(-0.4, Math.min(0.4, deltaX * 0.45));
+            const targetRotZ = Math.max(-0.2, Math.min(0.2, deltaY * 0.3));
 
             rightArm.rotation.x += (targetRotX - rightArm.rotation.x) * 0.25;
             rightArm.rotation.y += (targetRotY - rightArm.rotation.y) * 0.25;
             rightArm.rotation.z += (targetRotZ - rightArm.rotation.z) * 0.25;
         }
 
+        // 3. Поворот головы к цели
         if (head) {
-            const headRotY = Math.max(-0.6, Math.min(0.6, deltaX * 0.7));
+            const headRotY = Math.max(-0.6, Math.min(0.6, deltaX * 0.6));
             const headRotX = Math.max(-0.4, Math.min(0.4, deltaY * 0.5));
             head.rotation.y += (headRotY - head.rotation.y) * 0.2;
             head.rotation.x += (headRotX - head.rotation.x) * 0.2;
@@ -251,9 +285,11 @@ class GunShooterEngine {
     }
 
     /**
-     * Обработка клика — ВЫСТРЕЛ ИЗ БЛАСТЕРА!
+     * Обработка клика — ВЫСТРЕЛ ИЗ БЛАСТЕРА (только при запуске)
      */
     handleClick(e) {
+        if (!this.isGameLaunching) return;
+
         // Пропускаем клики по интерактивным элементам форм
         const tag = e.target.tagName;
         if (['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A'].includes(tag)) return;
@@ -343,17 +379,19 @@ class GunShooterEngine {
     /**
      * Спавн летающих мишеней (Криперы, Дроны, Бочки)
      */
-    startTargetSpawner(intervalMs = 4000) {
+    startTargetSpawner(intervalMs = 1500) {
         if (this.targetSpawnTimer) clearInterval(this.targetSpawnTimer);
 
         this.targetSpawnTimer = setInterval(() => {
-            if (this.targets.length < 6) {
+            if (this.isGameLaunching && this.targets.length < 6) {
                 this.spawnTarget();
             }
         }, intervalMs);
     }
 
     spawnTarget() {
+        if (!this.isGameLaunching) return;
+
         const types = ['creeper', 'drone', 'tnt', 'lucky_block'];
         const type = types[Math.floor(Math.random() * types.length)];
 
@@ -382,23 +420,44 @@ class GunShooterEngine {
     }
 
     /**
-     * Включение режима повышенной боеготовности при запуске игры
+     * Включение / отключение режима тира при запуске игры
      */
     setGameLaunchingMode(isLaunching) {
         this.isGameLaunching = isLaunching;
+        this.isActive = isLaunching;
 
         if (isLaunching) {
-            // Увеличиваем спавн мишеней во время загрузки (каждые 1.5 сек)
-            this.startTargetSpawner(1600);
+            this.attach3DGun();
+            this.startTargetSpawner(1500);
             if (this.hudElem) {
                 this.hudElem.classList.remove('hidden');
             }
-            // Сразу спавним пару целей для затравки
+            if (this.crosshairElem) {
+                this.crosshairElem.classList.remove('hidden');
+            }
+            // Сразу спавним цели для стрельбы во время ожидания
             this.spawnTarget();
             this.spawnTarget();
             this.spawnTarget();
         } else {
-            this.startTargetSpawner(4000);
+            this.detach3DGun();
+            if (this.targetSpawnTimer) {
+                clearInterval(this.targetSpawnTimer);
+                this.targetSpawnTimer = null;
+            }
+            this.targets = [];
+            this.bullets = [];
+            this.explosions = [];
+            this.muzzleFlashes = [];
+            if (this.hudElem) {
+                this.hudElem.classList.add('hidden');
+            }
+            if (this.crosshairElem) {
+                this.crosshairElem.classList.add('hidden');
+            }
+            if (this.ctx) {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+            }
         }
     }
 

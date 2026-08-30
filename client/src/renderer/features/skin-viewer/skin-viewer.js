@@ -99,14 +99,14 @@ async function render3dSkin(username) {
         if (!skinViewer3d) {
             skinViewer3d = new skinview3d.SkinViewer({
                 canvas: canvas3d,
-                width: 230,
+                width: 280,
                 height: 420,
                 skin: skinUrl,
                 model: 'default'
             });
 
-            skinViewer3d.camera.position.set(0, -1, 70);
-            skinViewer3d.zoom = 0.90;
+            skinViewer3d.camera.position.set(-6, -1, 75);
+            skinViewer3d.zoom = 0.80;
 
             // По дефолту скин чуть повёрнут (полупрофиль к центру экрана)
             if (skinViewer3d.playerObject) {
