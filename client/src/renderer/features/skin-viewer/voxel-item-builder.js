@@ -121,9 +121,11 @@ class VoxelItemBuilder {
                 mesh.position.set(0, 0, 0);
                 itemGroup.position.set(0, 0, -3.5);
             } else {
-                // Оружие / меч в основной руке: клинок направлен вперед и вверх
-                mesh.position.set(-w * scale * 0.2, h * scale * 0.2, 0);
-                itemGroup.rotation.set(-Math.PI / 3.2, 0, 0);
+                // Оружие / меч в основной руке:
+                // Выравниваем эфес/рукоять (нижний левый угол) в центр хвата
+                mesh.position.set(-w * scale * 0.25, -h * scale * 0.25, 0);
+                // Поворот: -45° по Z выравнивает диагональный меч вертикально, затем -45° по X наклоняет вперед
+                itemGroup.rotation.set(-Math.PI / 3.5, 0, -Math.PI / 4);
                 itemGroup.position.set(-1.0, -9.5, 1.2);
             }
 

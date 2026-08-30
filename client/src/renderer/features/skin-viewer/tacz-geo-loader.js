@@ -144,10 +144,10 @@ class TaczGeoLoader {
         }
 
         // Стандартный масштаб и поворот ствола в руке
-        rootGroup.scale.set(0.65, 0.65, 0.65);
-        // Ориентация: приклад к плечу, ствол вперед
-        rootGroup.rotation.set(-Math.PI / 2, 0, 0);
-        rootGroup.position.set(0, -9.5, 1.5);
+        rootGroup.scale.set(0.60, 0.60, 0.60);
+        // Ориентация: ствол направлен вперед (+Z), приклад назад
+        rootGroup.rotation.set(-0.2, Math.PI, 0);
+        rootGroup.position.set(-1.0, -9.5, 1.2);
 
         return rootGroup;
     }
