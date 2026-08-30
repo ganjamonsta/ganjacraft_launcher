@@ -542,8 +542,8 @@
                 <!-- 1. Left: Player Character & Stats -->
                 <div class="player-character-section">
                     <div id="skin-viewer-container" class="skin-viewer-wrapper frameless-skin">
-                        <canvas id="skin-canvas-3d" width="240" height="360"></canvas>
-                        <canvas id="skin-canvas-2d" width="240" height="360" style="display:none;"></canvas>
+                        <canvas id="skin-canvas-3d" width="220" height="350"></canvas>
+                        <canvas id="skin-canvas-2d" width="220" height="350" style="display:none;"></canvas>
                     </div>
 
                     <div class="player-stats-bar-modern">
@@ -591,75 +591,77 @@
                         <h2 class="hero-neon-title-cyber">GANJ4CRAFT</h2>
                     </div>
 
-                    <!-- Sacred Geometry + Glowing Leaf Emblem -->
-                    <div class="sacred-leaf-wrapper">
-                        <svg class="sacred-geometry-leaf" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <filter id="sacred-leaf-glow" x="-30%" y="-30%" width="160%" height="160%">
-                                    <feGaussianBlur stdDeviation="4" result="blur" />
-                                    <feMerge>
-                                        <feMergeNode in="blur" />
-                                        <feMergeNode in="SourceGraphic" />
-                                    </feMerge>
-                                </filter>
-                                <linearGradient id="leaf-grad-vivid" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#84ff00" />
-                                    <stop offset="40%" stop-color="#39ff14" />
-                                    <stop offset="100%" stop-color="#00c853" />
-                                </linearGradient>
-                            </defs>
+                    <!-- Middle: Sacred Geometry + Glowing Leaf Emblem & Version -->
+                    <div class="center-brand-middle">
+                        <div class="sacred-leaf-wrapper">
+                            <svg class="sacred-geometry-leaf" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <filter id="sacred-leaf-glow" x="-30%" y="-30%" width="160%" height="160%">
+                                        <feGaussianBlur stdDeviation="4" result="blur" />
+                                        <feMerge>
+                                            <feMergeNode in="blur" />
+                                            <feMergeNode in="SourceGraphic" />
+                                        </feMerge>
+                                    </filter>
+                                    <linearGradient id="leaf-grad-vivid" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#84ff00" />
+                                        <stop offset="40%" stop-color="#39ff14" />
+                                        <stop offset="100%" stop-color="#00c853" />
+                                    </linearGradient>
+                                </defs>
 
-                            <!-- Sacred Geometry Wireframe Grid -->
-                            <g class="geometry-wireframe" stroke="#39ff14" opacity="0.25" stroke-width="1">
-                                <!-- Outer Circle -->
-                                <circle cx="100" cy="100" r="75" stroke-dasharray="4 4" />
-                                <!-- Upward Triangle -->
-                                <polygon points="100,25 165,138 35,138" />
-                                <!-- Downward Triangle -->
-                                <polygon points="100,175 165,62 35,62" />
-                                <!-- Inner Hexagon -->
-                                <polygon points="100,38 154,69 154,131 100,162 46,131 46,69" stroke-dasharray="2 3" opacity="0.4" />
-                                <!-- Horizontal & Vertical Grid Lines -->
-                                <line x1="100" y1="15" x2="100" y2="185" stroke-dasharray="2 4" />
-                                <line x1="15" y1="100" x2="185" y2="100" stroke-dasharray="2 4" />
-                            </g>
+                                <!-- Sacred Geometry Wireframe Grid -->
+                                <g class="geometry-wireframe" stroke="#39ff14" opacity="0.25" stroke-width="1">
+                                    <!-- Outer Circle -->
+                                    <circle cx="100" cy="100" r="75" stroke-dasharray="4 4" />
+                                    <!-- Upward Triangle -->
+                                    <polygon points="100,25 165,138 35,138" />
+                                    <!-- Downward Triangle -->
+                                    <polygon points="100,175 165,62 35,62" />
+                                    <!-- Inner Hexagon -->
+                                    <polygon points="100,38 154,69 154,131 100,162 46,131 46,69" stroke-dasharray="2 3" opacity="0.4" />
+                                    <!-- Horizontal & Vertical Grid Lines -->
+                                    <line x1="100" y1="15" x2="100" y2="185" stroke-dasharray="2 4" />
+                                    <line x1="15" y1="100" x2="185" y2="100" stroke-dasharray="2 4" />
+                                </g>
 
-                            <!-- High Detail 7-blade Cannabis Leaf -->
-                            <g class="cannabis-leaf-group" filter="url(#sacred-leaf-glow)">
-                                <!-- Central Blade (Tallest) -->
-                                <path d="M100 155 Q82 95 100 24 Q118 95 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.2" />
-                                <line x1="100" y1="26" x2="100" y2="155" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+                                <!-- High Detail 7-blade Cannabis Leaf -->
+                                <g class="cannabis-leaf-group" filter="url(#sacred-leaf-glow)">
+                                    <!-- Central Blade (Tallest) -->
+                                    <path d="M100 155 Q82 95 100 24 Q118 95 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.2" />
+                                    <line x1="100" y1="26" x2="100" y2="155" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
 
-                                <!-- Upper Left Blade -->
-                                <path d="M100 155 Q56 100 42 58 Q74 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
-                                <line x1="44" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+                                    <!-- Upper Left Blade -->
+                                    <path d="M100 155 Q56 100 42 58 Q74 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                    <line x1="44" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
 
-                                <!-- Upper Right Blade -->
-                                <path d="M100 155 Q144 100 158 58 Q126 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
-                                <line x1="156" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+                                    <!-- Upper Right Blade -->
+                                    <path d="M100 155 Q144 100 158 58 Q126 110 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                    <line x1="156" y1="60" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
 
-                                <!-- Mid Left Blade -->
-                                <path d="M100 155 Q34 136 22 108 Q64 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
-                                <line x1="24" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+                                    <!-- Mid Left Blade -->
+                                    <path d="M100 155 Q34 136 22 108 Q64 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
+                                    <line x1="24" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
 
-                                <!-- Mid Right Blade -->
-                                <path d="M100 155 Q166 136 178 108 Q136 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
-                                <line x1="176" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+                                    <!-- Mid Right Blade -->
+                                    <path d="M100 155 Q166 136 178 108 Q136 142 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1" />
+                                    <line x1="176" y1="110" x2="100" y2="155" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
 
-                                <!-- Lower Left Blade (Smallest) -->
-                                <path d="M100 155 Q52 165 38 158 Q72 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
+                                    <!-- Lower Left Blade (Smallest) -->
+                                    <path d="M100 155 Q52 165 38 158 Q72 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
 
-                                <!-- Lower Right Blade (Smallest) -->
-                                <path d="M100 155 Q148 165 162 158 Q128 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
+                                    <!-- Lower Right Blade (Smallest) -->
+                                    <path d="M100 155 Q148 165 162 158 Q128 168 100 155 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" />
 
-                                <!-- Leaf Stem -->
-                                <path d="M100 155 L100 178" stroke="#39ff14" stroke-width="2.5" stroke-linecap="round" />
-                            </g>
-                        </svg>
+                                    <!-- Leaf Stem -->
+                                    <path d="M100 155 L100 178" stroke="#39ff14" stroke-width="2.5" stroke-linecap="round" />
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- Version Tag -->
+                        <div class="center-brand-version" id="brand-version-tag">v1.0.181</div>
                     </div>
-
-                    <!-- Version Tag -->
-                    <div class="center-brand-version" id="brand-version-tag">v1.0.181</div>
 
                     <!-- Circular Magnetic Play Button with Glowing Ring and White Arrow -->
                     <div class="play-btn-container">
@@ -782,6 +784,10 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- App Version in Bottom Corner -->
+    <div id="app-version">v1.0.181</div>
     </div>
 
     <!-- Custom Confirmation Modal -->
