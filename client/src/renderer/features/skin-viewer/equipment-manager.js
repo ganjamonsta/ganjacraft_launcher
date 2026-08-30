@@ -339,6 +339,7 @@ class EquipmentManager {
     async applyToViewer(viewer) {
         if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) return;
 
+        console.log('[EQUIPMENT] applyToViewer called with equipment:', this.currentEquipment);
         const skin = viewer.playerObject.skin;
         this.clearAllEquipment(skin);
 
@@ -386,13 +387,16 @@ class EquipmentManager {
         if (this.currentEquipment.mainHand !== 'none') {
             const item = EQUIPMENT_CATALOG.mainHand[this.currentEquipment.mainHand];
             if (item && skin.rightArm) {
+                console.log('[EQUIPMENT] Building weapon mesh for:', item.id, item.geoGunId);
                 const weaponMesh = await this.buildWeaponMesh(item);
                 if (weaponMesh && skin.rightArm) {
                     skin.rightArm.add(weaponMesh);
                     this.activeAttachedObjects.set('mainHand', weaponMesh);
+                    console.log('[EQUIPMENT] Weapon mesh attached to rightArm successfully');
                 }
             }
         }
+        console.log('[EQUIPMENT] applyToViewer completed successfully');
     }
 
     clearAllEquipment(skin) {

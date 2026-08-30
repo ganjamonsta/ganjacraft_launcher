@@ -38,10 +38,13 @@ export async function initSkinViewer(username) {
     if (!username) return;
     currentUsername = username;
 
+    console.log('[SKIN-VIEWER] initSkinViewer called for:', username);
     // Восстанавливаем сохраненный режим
     currentMode = localStorage.getItem(STORAGE_KEY_MODE) || '3d';
+    console.log('[SKIN-VIEWER] Current skin mode:', currentMode);
     await applySkinMode(currentMode);
     setupMouseTracking();
+    console.log('[SKIN-VIEWER] initSkinViewer completed for:', username);
 }
 
 /**
@@ -51,6 +54,7 @@ export async function initSkinViewer(username) {
 export async function applySkinMode(mode) {
     currentMode = mode || '3d';
     localStorage.setItem(STORAGE_KEY_MODE, currentMode);
+    console.log('[SKIN-VIEWER] applySkinMode:', currentMode);
 
     const layout = document.querySelector('.main-dashboard-layout');
     const playerSection = document.querySelector('.player-character-section');
@@ -66,8 +70,10 @@ export async function applySkinMode(mode) {
 
     if (currentUsername) {
         if (currentMode === '3d') {
+            console.log('[SKIN-VIEWER] Calling render3dSkin for:', currentUsername);
             await render3dSkin(currentUsername);
         } else {
+            console.log('[SKIN-VIEWER] Calling render2dSkin for:', currentUsername);
             await render2dSkin(currentUsername);
         }
     }
@@ -88,7 +94,10 @@ export async function setSkinViewerMode(mode) {
 async function render3dSkin(username) {
     const canvas3d = dom.get('skin-canvas-3d');
     const canvas2d = dom.get('skin-canvas-2d');
-    if (!canvas3d) return;
+    if (!canvas3d) {
+        console.warn('[SKIN-VIEWER] canvas3d element not found in DOM');
+        return;
+    }
 
     if (canvas2d) canvas2d.style.display = 'none';
     canvas3d.style.display = 'block';
@@ -98,6 +107,7 @@ async function render3dSkin(username) {
 
     try {
         if (!skinViewer3d) {
+            console.log('[SKIN-VIEWER] Creating new skinview3d.SkinViewer instance...');
             skinViewer3d = new skinview3d.SkinViewer({
                 canvas: canvas3d,
                 width: 380,
@@ -105,6 +115,7 @@ async function render3dSkin(username) {
                 skin: skinUrl,
                 model: 'default'
             });
+            console.log('[SKIN-VIEWER] skinview3d.SkinViewer created successfully');
 
             // Камера с запасом по горизонтали для длинных стволов (АК-47, РПГ, миниган)
             skinViewer3d.camera.position.set(-2, 0, 78);

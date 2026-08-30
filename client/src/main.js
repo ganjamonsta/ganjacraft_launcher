@@ -10,8 +10,11 @@ if (!fs.existsSync(customUserDataPath)) {
 }
 app.setPath('userData', customUserDataPath);
 
-// Enable overlay scrollbars in Chromium engine
+// Enable overlay scrollbars in Chromium engine & disable WinOcclusion crash bug
 app.commandLine.appendSwitch('enable-features', 'OverlayScrollbar');
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+app.commandLine.appendSwitch('disable-gpu-process-crash-limit');
+app.commandLine.appendSwitch('enable-logging');
 
 // Global crash guards
 process.on('uncaughtException', (err) => {

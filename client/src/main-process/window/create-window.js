@@ -42,12 +42,16 @@ function createWindow() {
     // Абсолютный путь = другой origin = потеря данных
     mainWindow.loadFile('src/index.html');
     
-    // Block DevTools and fullscreen hotkeys
+    // В режиме разработки автоматически открываем DevTools и разрешаем F12
+    if (!app.isPackaged) {
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
+    }
+
+    // Block DevTools and fullscreen hotkeys in production
     mainWindow.webContents.on('before-input-event', (event, input) => {
         const key = input && input.key;
         
-        // Block DevTools: F12, Ctrl+Shift+I
-        if (key === 'F12' || (input.control && input.shift && key.toLowerCase() === 'i')) {
+        if (app.isPackaged && (key === 'F12' || (input.control && input.shift && key.toLowerCase() === 'i'))) {
             event.preventDefault();
             return;
         }
@@ -76,6 +80,16 @@ function createWindow() {
         } catch (err) {
             console.error('[DEBUG] Failed to flush storage:', err);
         }
+    });
+
+    // Forward all renderer console messages to terminal output
+    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+        const lvl = level === 3 ? 'ERROR' : (level === 2 ? 'WARN' : 'LOG');
+        console.log(`[RENDERER ${lvl}] ${message} (${sourceId}:${line})`);
+    });
+
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+        console.error(`[LOAD ERROR] ${errorCode}: ${errorDescription} (${validatedURL})`);
     });
 
     mainWindow.webContents.on('render-process-gone', (event, details) => {

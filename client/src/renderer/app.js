@@ -3,6 +3,14 @@
  * Точка входа для renderer process
  */
 
+window.onerror = (message, source, lineno, colno, error) => {
+    console.error('[UNCAUGHT RENDERER ERROR]', message, `at ${source}:${lineno}:${colno}`, error);
+};
+
+window.onunhandledrejection = (event) => {
+    console.error('[UNHANDLED PROMISE REJECTION]', event.reason);
+};
+
 // === Core Imports ===
 import { dom } from './utils/dom.js';
 
@@ -267,17 +275,19 @@ async function displayVersion() {
 
 // === Main Initialization ===
 async function init() {
-    logToConsole('[LAUNCHER] Client initializing...');
+    console.log('[INIT STEP 0] Launcher client initializing...');
     updateLoaderStatus(10, 'Загрузка конфигурации...');
     
     // 1. Load config
     currentConfig = await window.api.loadConfig();
     setCurrentConfig(currentConfig);
+    console.log('[INIT STEP 1] Config loaded successfully');
     
     updateLoaderStatus(25, 'Инициализация графических эффектов...');
     // 2. Init visual effects & Easter Eggs
     await initAllEffects(currentConfig);
     initAllEasterEggs();
+    console.log('[INIT STEP 2] Visual effects and easter eggs initialized');
     
     updateLoaderStatus(45, 'Подготовка интерфейса и настроек...');
     // 3. Init UI handlers & Pre-populate settings fields
@@ -299,9 +309,11 @@ async function init() {
     
     // Предзаполнение всех полей настроек и RAM слайдера в DOM
     populateSettingsFields(currentConfig);
+    console.log('[INIT STEP 3] UI handlers and settings fields populated');
     
     // Display version
     await displayVersion();
+    console.log('[INIT STEP 4] Version displayed');
     
     updateLoaderStatus(65, 'Проверка авторизации...');
     // Mock auth: seed localStorage before checking saved auth
@@ -313,19 +325,24 @@ async function init() {
     }
 
     // 4. Check saved auth
+    console.log('[INIT STEP 5] Checking saved auth...');
     await checkSavedAuth();
+    console.log('[INIT STEP 5] Saved auth check completed');
     
     updateLoaderStatus(80, 'Загрузка манифеста модов...');
     // 5. Предзагрузка модов в память для мгновенного открытия в настройках
+    console.log('[INIT STEP 6] Loading mods list...');
     await loadModsList(currentConfig.disabledMods || [], currentConfig);
     
     // Предзагрузка конфигураций
+    console.log('[INIT STEP 7] Loading configs list...');
     await loadConfigsList();
 
     captureInitialSettingsState();
 
     updateLoaderStatus(90, 'Загрузка новостей и сервера...');
     // 6. Load news, changelog and start status checker
+    console.log('[INIT STEP 8] Loading news, changelog and server status...');
     await Promise.allSettled([
         loadNews(),
         loadChangelogHistory(),
@@ -334,19 +351,10 @@ async function init() {
             setTimeout(resolve, 150);
         })
     ]);
+    console.log('[INIT STEP 8] News, changelog and status loaded');
     
-    updateLoaderStatus(98, 'Прогрев графического движка...');
-    // 7. Прогрев GPU-слоев и макета настроек в фоновом режиме
-    const settingsScreen = dom.get('step-settings');
-    if (settingsScreen) {
-        settingsScreen.style.visibility = 'hidden';
-        settingsScreen.classList.remove('hidden');
-        void settingsScreen.offsetWidth; // Принудительный расчет макета Chromium
-        settingsScreen.classList.add('hidden');
-        settingsScreen.style.visibility = '';
-    }
-
     updateLoaderStatus(100, 'Готово!');
+    console.log('[INIT COMPLETE] Launcher initialization complete!');
     logToConsole('[LAUNCHER] Initialization complete. All modules pre-loaded.');
     
     // Smoothly fade out splash loading screen

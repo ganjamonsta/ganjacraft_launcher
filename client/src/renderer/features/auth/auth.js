@@ -240,6 +240,7 @@ export async function loadPlayerStats(username) {
 }
 
 function showPlayScreen() {
+    console.log('[AUTH] showPlayScreen() entered for user:', currentUsername);
     hideLoadingStep();
     const stepPlay = dom.get('step-play');
     
@@ -250,12 +251,16 @@ function showPlayScreen() {
     
     // Инициализируем 3D/2D скин игрока
     if (currentUsername) {
+        console.log('[AUTH] Calling initSkinViewer for:', currentUsername);
         initSkinViewer(currentUsername);
+        console.log('[AUTH] Calling loadPlayerStats for:', currentUsername);
         loadPlayerStats(currentUsername);
     }
 
     // Инициализируем магнитную физику для кнопки «ИГРАТЬ»
+    console.log('[AUTH] Calling initMagneticPlayButton()');
     initMagneticPlayButton();
+    console.log('[AUTH] showPlayScreen() completed');
 }
 
 /**

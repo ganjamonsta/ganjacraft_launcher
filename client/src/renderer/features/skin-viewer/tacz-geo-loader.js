@@ -2,7 +2,8 @@ import * as THREE from 'three';
 
 /**
  * TACZ & Bedrock Geometry 3D Loader
- * Парсит оригинальные .geo.json модели TACZ и накладывает аутентичные UV-текстуры.
+ * Парсит оригинальные .geo.json модели TACZ и компилирует всю геометрию
+ * в единый оптимизированный THREE.BufferGeometry (1 Draw Call вместо 1000+).
  */
 
 class TaczGeoLoader {
@@ -63,7 +64,7 @@ class TaczGeoLoader {
     }
 
     /**
-     * Парсер Bedrock 1.12.0 minecraft:geometry в Three.js
+     * Парсер Bedrock 1.12.0 minecraft:geometry в единый оптимизированный Three.js Mesh
      */
     parseBedrockGeo(geoJson, material, gunId) {
         const rootGroup = new THREE.Group();
@@ -78,74 +79,181 @@ class TaczGeoLoader {
         const texH = desc.texture_height || 64;
         const bones = geo.bones || [];
 
-        // Карта костей
         const boneMap = new Map();
-        const boneGroups = new Map();
+        bones.forEach(b => boneMap.set(b.name, b));
 
-        // 1. Создаем Three.js группы для всех костей (исключая руки от первого лица)
-        for (const bone of bones) {
-            const bName = (bone.name || '').toLowerCase();
-            // Исключаем кости рук от первого лица
-            if (bName.includes('lefthand') || bName.includes('righthand') || bName === 'camera' || bName === 'crosshair') {
-                continue;
+        const boneWorldMatrices = new Map();
+
+        const getBoneMatrix = (boneName) => {
+            if (boneWorldMatrices.has(boneName)) {
+                return boneWorldMatrices.get(boneName);
+            }
+            const bone = boneMap.get(boneName);
+            if (!bone) {
+                const idMat = new THREE.Matrix4();
+                boneWorldMatrices.set(boneName, idMat);
+                return idMat;
             }
 
-            const bGroup = new THREE.Group();
-            bGroup.name = bone.name;
+            const bName = (bone.name || '').toLowerCase();
+            if (bName.includes('lefthand') || bName.includes('righthand') || bName === 'camera' || bName === 'crosshair') {
+                return null;
+            }
 
             const pivot = bone.pivot || [0, 0, 0];
-            bGroup.position.set(-pivot[0], pivot[1], pivot[2]);
+            const rot = bone.rotation || [0, 0, 0];
 
-            if (bone.rotation) {
-                bGroup.rotation.set(
-                    THREE.MathUtils.degToRad(-bone.rotation[0]),
-                    THREE.MathUtils.degToRad(-bone.rotation[1]),
-                    THREE.MathUtils.degToRad(bone.rotation[2]),
-                    'ZYX'
-                );
-            }
+            const mTranslateToPivot = new THREE.Matrix4().makeTranslation(-pivot[0], pivot[1], pivot[2]);
+            const mRot = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(
+                THREE.MathUtils.degToRad(-rot[0]),
+                THREE.MathUtils.degToRad(-rot[1]),
+                THREE.MathUtils.degToRad(rot[2]),
+                'ZYX'
+            ));
+            const mTranslateFromPivot = new THREE.Matrix4().makeTranslation(pivot[0], -pivot[1], -pivot[2]);
 
-            boneMap.set(bone.name, bone);
-            boneGroups.set(bone.name, bGroup);
-        }
+            const localMat = new THREE.Matrix4();
+            localMat.multiply(mTranslateToPivot);
+            localMat.multiply(mRot);
+            localMat.multiply(mTranslateFromPivot);
 
-        // 2. Выстраиваем иерархию и строим кубы
-        for (const bone of bones) {
-            const bGroup = boneGroups.get(bone.name);
-            if (!bGroup) continue;
-
-            const parentGroup = bone.parent ? boneGroups.get(bone.parent) : null;
-            if (parentGroup) {
-                const parentBone = boneMap.get(bone.parent);
-                const pPivot = parentBone && parentBone.pivot ? parentBone.pivot : [0, 0, 0];
-                const curPivot = bone.pivot || [0, 0, 0];
-                // Относительная позиция к родителю
-                bGroup.position.set(
-                    -(curPivot[0] - pPivot[0]),
-                    curPivot[1] - pPivot[1],
-                    curPivot[2] - pPivot[2]
-                );
-                parentGroup.add(bGroup);
-            } else {
-                bGroup.position.set(0, 0, 0);
-                rootGroup.add(bGroup);
-            }
-
-            // Рендерим кубы этой кости
-            if (bone.cubes && Array.isArray(bone.cubes)) {
-                const bonePivot = bone.pivot || [0, 0, 0];
-
-                for (const cube of bone.cubes) {
-                    const mesh = this.createCubeMesh(cube, bonePivot, texW, texH, material);
-                    if (mesh) {
-                        bGroup.add(mesh);
-                    }
+            if (bone.parent && boneMap.has(bone.parent)) {
+                const parentMat = getBoneMatrix(bone.parent);
+                if (parentMat) {
+                    const combined = new THREE.Matrix4();
+                    combined.multiplyMatrices(parentMat, localMat);
+                    boneWorldMatrices.set(boneName, combined);
+                    return combined;
                 }
             }
+
+            boneWorldMatrices.set(boneName, localMat);
+            return localMat;
+        };
+
+        const positions = [];
+        const normals = [];
+        const uvs = [];
+
+        for (const bone of bones) {
+            const boneMat = getBoneMatrix(bone.name);
+            if (!boneMat) continue;
+
+            const cubes = bone.cubes || [];
+            for (const cube of cubes) {
+                const origin = cube.origin || [0, 0, 0];
+                const size = cube.size || [1, 1, 1];
+                const inflate = cube.inflate || 0;
+
+                const minX = - (origin[0] + size[0] + inflate);
+                const maxX = - (origin[0] - inflate);
+                const minY = origin[1] - inflate;
+                const maxY = origin[1] + size[1] + inflate;
+                const minZ = origin[2] - inflate;
+                const maxZ = origin[2] + size[2] + inflate;
+
+                const corners = [
+                    new THREE.Vector3(minX, minY, minZ),
+                    new THREE.Vector3(minX, minY, maxZ),
+                    new THREE.Vector3(minX, maxY, minZ),
+                    new THREE.Vector3(minX, maxY, maxZ),
+                    new THREE.Vector3(maxX, minY, minZ),
+                    new THREE.Vector3(maxX, minY, maxZ),
+                    new THREE.Vector3(maxX, maxY, minZ),
+                    new THREE.Vector3(maxX, maxY, maxZ),
+                ];
+
+                let cubeMat = boneMat;
+                if (cube.rotation && cube.pivot) {
+                    const cPivot = cube.pivot;
+                    const cRot = cube.rotation;
+                    const cTransTo = new THREE.Matrix4().makeTranslation(-cPivot[0], cPivot[1], cPivot[2]);
+                    const cRotM = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(
+                        THREE.MathUtils.degToRad(-cRot[0]),
+                        THREE.MathUtils.degToRad(-cRot[1]),
+                        THREE.MathUtils.degToRad(cRot[2]),
+                        'ZYX'
+                    ));
+                    const cTransFrom = new THREE.Matrix4().makeTranslation(cPivot[0], -cPivot[1], -cPivot[2]);
+                    const cLocal = new THREE.Matrix4().multiply(cTransTo).multiply(cRotM).multiply(cTransFrom);
+                    cubeMat = new THREE.Matrix4().multiplyMatrices(boneMat, cLocal);
+                }
+
+                corners.forEach(p => p.applyMatrix4(cubeMat));
+
+                const faces = [
+                    { idxs: [5, 4, 6, 7], norm: [1, 0, 0], face: 'east' },
+                    { idxs: [0, 1, 3, 2], norm: [-1, 0, 0], face: 'west' },
+                    { idxs: [3, 7, 6, 2], norm: [0, 1, 0], face: 'up' },
+                    { idxs: [0, 4, 5, 1], norm: [0, -1, 0], face: 'down' },
+                    { idxs: [1, 5, 7, 3], norm: [0, 0, 1], face: 'south' },
+                    { idxs: [4, 0, 2, 6], norm: [0, 0, -1], face: 'north' }
+                ];
+
+                const uv = cube.uv;
+                const dx = size[0];
+                const dy = size[1];
+                const dz = size[2];
+
+                faces.forEach((f, fIdx) => {
+                    let u0 = 0, v0 = 0, u1 = 0, v1 = 0;
+
+                    if (uv && typeof uv === 'object' && !Array.isArray(uv)) {
+                        const fData = uv[f.face];
+                        if (fData && fData.uv) {
+                            const fu = fData.uv[0];
+                            const fv = fData.uv[1];
+                            const fuw = fData.uv_size ? fData.uv_size[0] : 1;
+                            const fuh = fData.uv_size ? fData.uv_size[1] : 1;
+                            u0 = fu / texW;
+                            v0 = 1.0 - (fv + fuh) / texH;
+                            u1 = (fu + fuw) / texW;
+                            v1 = 1.0 - fv / texH;
+                        }
+                    } else if (Array.isArray(uv)) {
+                        const bu = uv[0];
+                        const bv = uv[1];
+                        let fx = 0, fy = 0, fw = 0, fh = 0;
+                        if (fIdx === 0) { fx = bu; fy = bv + dz; fw = dz; fh = dy; }
+                        else if (fIdx === 1) { fx = bu + dz + dx; fy = bv + dz; fw = dz; fh = dy; }
+                        else if (fIdx === 2) { fx = bu + dz; fy = bv; fw = dx; fh = dz; }
+                        else if (fIdx === 3) { fx = bu + dz + dx; fy = bv; fw = dx; fh = dz; }
+                        else if (fIdx === 4) { fx = bu + dz + dz; fy = bv + dz; fw = dx; fh = dy; }
+                        else if (fIdx === 5) { fx = bu + dz * 2 + dx; fy = bv + dz; fw = dx; fh = dy; }
+
+                        u0 = fx / texW;
+                        v0 = 1.0 - (fy + fh) / texH;
+                        u1 = (fx + fw) / texW;
+                        v1 = 1.0 - fy / texH;
+                    }
+
+                    const vA = corners[f.idxs[0]];
+                    const vB = corners[f.idxs[1]];
+                    const vC = corners[f.idxs[2]];
+                    const vD = corners[f.idxs[3]];
+
+                    // Triangle 1: A, B, C
+                    positions.push(vA.x, vA.y, vA.z, vB.x, vB.y, vB.z, vC.x, vC.y, vC.z);
+                    normals.push(f.norm[0], f.norm[1], f.norm[2], f.norm[0], f.norm[1], f.norm[2], f.norm[0], f.norm[1], f.norm[2]);
+                    uvs.push(u0, v0, u1, v0, u1, v1);
+
+                    // Triangle 2: A, C, D
+                    positions.push(vA.x, vA.y, vA.z, vC.x, vC.y, vC.z, vD.x, vD.y, vD.z);
+                    normals.push(f.norm[0], f.norm[1], f.norm[2], f.norm[0], f.norm[1], f.norm[2], f.norm[0], f.norm[1], f.norm[2]);
+                    uvs.push(u0, v0, u1, v1, u0, v1);
+                });
+            }
         }
 
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+
+        const mesh = new THREE.Mesh(geometry, material);
+        rootGroup.add(mesh);
+
         if (gunId === 'minigun') {
-            // Миниган: идеально горизонтальный ствол при хвате от бедра
             rootGroup.rotation.set(-Math.PI / 2 + 0.35, 0, Math.PI);
             rootGroup.scale.set(0.60, 0.60, 0.60);
             rootGroup.position.set(-0.6, -8.6, 1.8);
@@ -158,141 +266,12 @@ class TaczGeoLoader {
             rootGroup.scale.set(0.72, 0.72, 0.72);
             rootGroup.position.set(-0.5, -9.4, 1.4);
         } else {
-            // ak47, vector45
             rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
             rootGroup.scale.set(0.68, 0.68, 0.68);
             rootGroup.position.set(-0.5, -9.2, 1.5);
         }
 
         return rootGroup;
-    }
-
-    /**
-     * Создание куба с точной UV-разверткой Bedrock
-     */
-    createCubeMesh(cube, bonePivot, texW, texH, material) {
-        const origin = cube.origin || [0, 0, 0];
-        const size = cube.size || [1, 1, 1];
-        const inflate = cube.inflate || 0;
-
-        const w = size[0] + inflate * 2;
-        const h = size[1] + inflate * 2;
-        const d = size[2] + inflate * 2;
-
-        if (w <= 0 || h <= 0 || d <= 0) return null;
-
-        const geometry = new THREE.BoxGeometry(w, h, d);
-        this.applyBedrockUVs(geometry, cube, texW, texH);
-
-        const mesh = new THREE.Mesh(geometry, material);
-
-        // Центр куба относительно кости
-        const cx = -(origin[0] + size[0] / 2 - bonePivot[0]);
-        const cy = origin[1] + size[1] / 2 - bonePivot[1];
-        const cz = origin[2] + size[2] / 2 - bonePivot[2];
-
-        if (cube.rotation && cube.pivot) {
-            const cubePivotGroup = new THREE.Group();
-            const cp = cube.pivot;
-            cubePivotGroup.position.set(
-                -(cp[0] - bonePivot[0]),
-                cp[1] - bonePivot[1],
-                cp[2] - bonePivot[2]
-            );
-            cubePivotGroup.rotation.set(
-                THREE.MathUtils.degToRad(-cube.rotation[0]),
-                THREE.MathUtils.degToRad(-cube.rotation[1]),
-                THREE.MathUtils.degToRad(cube.rotation[2]),
-                'ZYX'
-            );
-
-            mesh.position.set(
-                -(origin[0] + size[0] / 2 - cp[0]),
-                origin[1] + size[1] / 2 - cp[1],
-                origin[2] + size[2] / 2 - cp[2]
-            );
-
-            cubePivotGroup.add(mesh);
-            return cubePivotGroup;
-        } else {
-            mesh.position.set(cx, cy, cz);
-            return mesh;
-        }
-    }
-
-    /**
-     * Преобразование Bedrock UV карты в Three.js UV буфер
-     */
-    applyBedrockUVs(geometry, cube, texW, texH) {
-        const uvAttr = geometry.attributes.uv;
-        if (!uvAttr) return;
-
-        const uvs = uvAttr.array;
-        const size = cube.size || [1, 1, 1];
-        const uv = cube.uv;
-
-        // Порядок граней BoxGeometry в Three.js:
-        // 0: East (+X), 1: West (-X), 2: Up (+Y), 3: Down (-Y), 4: South (+Z), 5: North (-Z)
-        const faceOrder = ['east', 'west', 'up', 'down', 'south', 'north'];
-
-        if (uv && typeof uv === 'object' && !Array.isArray(uv)) {
-            // Per-face UV
-            faceOrder.forEach((faceName, faceIdx) => {
-                const fData = uv[faceName];
-                if (fData && fData.uv) {
-                    const u = fData.uv[0];
-                    const v = fData.uv[1];
-                    const uw = fData.uv_size ? fData.uv_size[0] : size[0];
-                    const uh = fData.uv_size ? fData.uv_size[1] : size[1];
-
-                    const u0 = u / texW;
-                    const v0 = 1.0 - (v + uh) / texH;
-                    const u1 = (u + uw) / texW;
-                    const v1 = 1.0 - v / texH;
-
-                    const base = faceIdx * 8;
-                    uvs[base + 0] = u0; uvs[base + 1] = v1;
-                    uvs[base + 2] = u1; uvs[base + 3] = v1;
-                    uvs[base + 4] = u0; uvs[base + 5] = v0;
-                    uvs[base + 6] = u1; uvs[base + 7] = v0;
-                }
-            });
-        } else if (Array.isArray(uv)) {
-            // Standard Box UV: [u, v]
-            const u = uv[0];
-            const v = uv[1];
-            const dx = size[0];
-            const dy = size[1];
-            const dz = size[2];
-
-            const setFace = (faceIdx, fx, fy, fw, fh) => {
-                const u0 = fx / texW;
-                const v0 = 1.0 - (fy + fh) / texH;
-                const u1 = (fx + fw) / texW;
-                const v1 = 1.0 - fy / texH;
-
-                const base = faceIdx * 8;
-                uvs[base + 0] = u0; uvs[base + 1] = v1;
-                uvs[base + 2] = u1; uvs[base + 3] = v1;
-                uvs[base + 4] = u0; uvs[base + 5] = v0;
-                uvs[base + 6] = u1; uvs[base + 7] = v0;
-            };
-
-            // East (+X)
-            setFace(0, u, v + dz, dz, dy);
-            // West (-X)
-            setFace(1, u + dz + dx, v + dz, dz, dy);
-            // Up (+Y)
-            setFace(2, u + dz, v, dx, dz);
-            // Down (-Y)
-            setFace(3, u + dz + dx, v, dx, dz);
-            // South (+Z)
-            setFace(4, u + dz, v + dz, dx, dy);
-            // North (-Z)
-            setFace(5, u + dz * 2 + dx, v + dz, dx, dy);
-        }
-
-        uvAttr.needsUpdate = true;
     }
 }
 
