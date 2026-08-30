@@ -602,6 +602,37 @@ class AudioSynthEngine {
             console.debug('[AudioSynth] UpgradePurchased error', e);
         }
     }
+
+    /**
+     * Озвучка надевания снаряжения / экипировки (Armor / Weapon Equip)
+     */
+    playEquip() {
+        const ctx = this.getContext();
+        if (!ctx) return;
+
+        try {
+            const now = ctx.currentTime;
+            // Металлический лязг надевания брони / затвора
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.04);
+            osc.frequency.exponentialRampToValueAtTime(440, now + 0.1);
+
+            gain.gain.setValueAtTime(0.22, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.14);
+        } catch (e) {
+            console.debug('[AudioSynth] Equip error', e);
+        }
+    }
 }
 
 export const audioSynth = new AudioSynthEngine();
