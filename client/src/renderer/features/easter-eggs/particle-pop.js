@@ -24,9 +24,6 @@ class ParticlePopperGame {
     init() {
         // Слушаем клики по всему экрану
         document.addEventListener('pointerdown', (e) => this.handleScreenClick(e), { passive: false });
-
-        // Слушаем клики по священному листку
-        this.initSacredLeafCombo();
     }
 
     /**
@@ -224,49 +221,6 @@ class ParticlePopperGame {
         document.body.appendChild(floater);
 
         setTimeout(() => floater.remove(), 750);
-    }
-
-    /**
-     * Секретный комбо-клик по центральной эмблеме Sacred Leaf
-     */
-    initSacredLeafCombo() {
-        const leafWrapper = document.querySelector('.sacred-leaf-wrapper') || document.querySelector('.sacred-geometry-leaf');
-        if (!leafWrapper) return;
-
-        leafWrapper.style.cursor = 'pointer';
-        leafWrapper.setAttribute('title', 'Ganj4Craft Sacred Leaf Emblem');
-
-        leafWrapper.addEventListener('click', (e) => {
-            this.leafClickCount++;
-            audioSynth.playPop(1.1 + this.leafClickCount * 0.2);
-
-            // Пульсация листка
-            leafWrapper.classList.add('leaf-combo-hit');
-            setTimeout(() => leafWrapper.classList.remove('leaf-combo-hit'), 150);
-
-            // Искры вокруг листка
-            const rect = leafWrapper.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            this.spawnSparks(centerX + (Math.random() - 0.5) * 40, centerY + (Math.random() - 0.5) * 40);
-
-            if (this.leafClickTimer) clearTimeout(this.leafClickTimer);
-            this.leafClickTimer = setTimeout(() => {
-                this.leafClickCount = 0;
-            }, 1800);
-
-            // При 5 быстрых кликах — мощный залп бошек / листьев!
-            if (this.leafClickCount >= 5) {
-                this.leafClickCount = 0;
-                audioSynth.playBassDrop();
-                audioSynth.playCoin();
-                createSnowBurst();
-                createSideBurst('left');
-                createSideBurst('right');
-
-                this.spawnFloatingScore(centerX, centerY - 40, '🔥 420 SACRED BLAZE! 🌿');
-            }
-        });
     }
 }
 

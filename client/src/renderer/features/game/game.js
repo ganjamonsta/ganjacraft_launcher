@@ -24,15 +24,12 @@ export function toggleLaunchLogModal() {
 
     if (modal.classList.contains('hidden')) {
         modal.classList.remove('hidden');
-        // Скрываем прицел тира, но 3D-персонажа оставляем стоять слева
-        if (gunShooter.crosshairElem) gunShooter.crosshairElem.classList.add('hidden');
+        gunShooter.setLogModalOpen(true); // Скрываем и очищаем летающие мишени и прицел
         const output = dom.get('console-output');
         if (output) output.scrollTop = output.scrollHeight;
     } else {
         modal.classList.add('hidden');
-        if (gunShooter.crosshairElem && isGameLaunching) {
-            gunShooter.crosshairElem.classList.remove('hidden');
-        }
+        gunShooter.setLogModalOpen(false); // Возобновляем тир при закрытии консоли
     }
 }
 

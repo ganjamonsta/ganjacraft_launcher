@@ -466,6 +466,38 @@ class GunShooterEngine {
     }
 
     /**
+     * Пауза/скрытие мишеней и прицела во время открытого окна логов
+     */
+    setLogModalOpen(isOpen) {
+        this.isLogModalOpen = isOpen;
+        if (isOpen) {
+            if (this.targetSpawnTimer) {
+                clearInterval(this.targetSpawnTimer);
+                this.targetSpawnTimer = null;
+            }
+            this.targets = [];
+            this.bullets = [];
+            this.explosions = [];
+            this.muzzleFlashes = [];
+            if (this.crosshairElem) {
+                this.crosshairElem.classList.add('hidden');
+            }
+            if (this.ctx) {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+            }
+        } else {
+            if (this.isGameLaunching) {
+                this.startTargetSpawner(1500);
+                if (this.crosshairElem) {
+                    this.crosshairElem.classList.remove('hidden');
+                }
+                this.spawnTarget();
+                this.spawnTarget();
+            }
+        }
+    }
+
+    /**
      * Главный цикл рендера (Canvas 2D)
      */
     startLoop() {

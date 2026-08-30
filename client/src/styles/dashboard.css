@@ -306,6 +306,14 @@ body.is-game-launching .sacred-leaf-wrapper,
     transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+body.is-game-launching .launch-action-hub,
+.is-game-launching .launch-action-hub {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transition: opacity 0.3s ease !important;
+}
+
 /* ── 3. Dynamic Play & Leaf Group ── */
 /* DEFAULT / 0 PLAYERS (empty-card): Placed in Right Column with Leaf + Play Button together */
 .play-brand-group {
@@ -323,11 +331,18 @@ body.is-game-launching .sacred-leaf-wrapper,
     width: 190px; height: 190px;
     display: flex; align-items: center; justify-content: center;
     margin: auto 0;
-    pointer-events: none;
+    pointer-events: none !important;
+    cursor: default !important;
+    user-select: none !important;
 }
 
-.play-brand-group .sacred-geometry-leaf { width: 100%; height: 100%; overflow: visible; }
-.play-brand-group .geometry-wireframe { transform-origin: 100px 100px; animation: sacred-grid-spin 60s linear infinite; }
+.play-brand-group .sacred-geometry-leaf {
+    width: 100%; height: 100%;
+    overflow: visible;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+.play-brand-group .geometry-wireframe { transform-origin: 100px 100px; animation: sacred-grid-spin 60s linear infinite; pointer-events: none !important; }
 
 @keyframes sacred-grid-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
