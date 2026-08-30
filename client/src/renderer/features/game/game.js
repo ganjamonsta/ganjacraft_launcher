@@ -325,7 +325,6 @@ export function initGameButtons() {
     
     if (playBtn) {
         playBtn.addEventListener('click', () => {
-            if (stepPlay) stepPlay.classList.add('hidden');
             if (stepProgress) {
                 stepProgress.classList.remove('hidden');
                 stepProgress.classList.add('fade-in');
