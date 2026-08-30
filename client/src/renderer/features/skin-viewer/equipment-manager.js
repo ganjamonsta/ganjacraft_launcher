@@ -2,14 +2,15 @@
  * Ganj4Craft Launcher - 3D Character Equipment & Wardrobe Engine
  * Полнофункциональный менеджер 3D экипировки персонажа:
  * 1. Оригинальные Bedrock .geo.json 3D модели оружия TACZ с точными UV-текстурами
- * 2. 3D воксельные модели мечей, инструментов и артефактов из модов (Cataclysm, Simply Swords, Mekanism, Create, Twilight Forest, Artifacts)
- * 3. 3D броня, шлемы, рюкзаки Sophisticated Backpacks
- * 4. Полная рандомизация экипировки при каждом показе модели игрока!
+ * 2. 3D воксельные модели мечей, инструментов и артефактов из модов
+ * 3. 3D Броня Minecraft с точным наложением оригинальных текстур слоев 1 и 2
+ * 4. Полная рандомизация экипировки и боевые позы персонажа!
  */
 
 import * as THREE from 'three';
 import { taczGeoLoader } from './tacz-geo-loader.js';
 import { voxelItemBuilder } from './voxel-item-builder.js';
+import { armorMeshBuilder } from './armor-mesh-builder.js';
 
 const STORAGE_KEY_EQUIPMENT = 'ganjacraft_player_equipment_v1';
 
@@ -18,52 +19,228 @@ export const EQUIPMENT_CATALOG = {
     // 🪖 ШЛЕМЫ / ГОЛОВА
     head: {
         none: { id: 'none', name: 'Без шлема', icon: '👤', rarity: 'common' },
-        ignitium_helmet: { id: 'ignitium_helmet', name: 'Шлем Игнития', mod: 'Cataclysm', icon: 'assets/equipment/items/ignitium_helmet.png', isImage: true, rarity: 'mythic', color: '#b91c1c', accent: '#f97316' },
-        cursium_helmet: { id: 'cursium_helmet', name: 'Шлем Бездны Cursium', mod: 'Cataclysm', icon: 'assets/equipment/items/cursium_helmet.png', isImage: true, rarity: 'mythic', color: '#4c1d95', accent: '#a855f7' },
-        monstrous_helm: { id: 'monstrous_helm', name: 'Шлем Левиафана', mod: 'Cataclysm', icon: 'assets/equipment/items/monstrous_helm.png', isImage: true, rarity: 'mythic', color: '#1e293b', accent: '#f59e0b' },
-        create_goggles: { id: 'create_goggles', name: 'Очки инженера', mod: 'Create', icon: 'assets/equipment/items/create_goggles.png', isImage: true, rarity: 'uncommon', color: '#d97706', accent: '#38bdf8' },
-        mekasuit_helmet: { id: 'mekasuit_helmet', name: 'MekaSuit Helmet', mod: 'Mekanism', icon: 'assets/equipment/items/mek_mekasuit_helmet.png', isImage: true, rarity: 'legendary', color: '#0f172a', accent: '#00f2fe' },
-        twilight_crown: { id: 'twilight_crown', name: 'Корона Сумерек', mod: 'Twilight Forest', icon: 'assets/equipment/items/tf_crown_splinter.png', isImage: true, rarity: 'legendary', color: '#eab308', accent: '#ef4444' },
-        netherite_helmet: { id: 'netherite_helmet', name: 'Незеритовый шлем', icon: '🪖', rarity: 'epic', color: '#2b272c', accent: '#70646c' },
-        diamond_helmet: { id: 'diamond_helmet', name: 'Алмазный шлем', icon: '💎', rarity: 'rare', color: '#2cd8d5', accent: '#6ffffb' }
+        ignitium_helmet: { 
+            id: 'ignitium_helmet', 
+            name: 'Шлем Игнития', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/ignitium_helmet.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorTex: 'assets/equipment/armor/ignitium_armor.png',
+            hasHorns: true 
+        },
+        cursium_helmet: { 
+            id: 'cursium_helmet', 
+            name: 'Шлем Бездны Cursium', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/cursium_helmet.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorTex: 'assets/equipment/armor/cursium_armor.png' 
+        },
+        monstrous_helm: { 
+            id: 'monstrous_helm', 
+            name: 'Шлем Левиафана', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/monstrous_helm.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorTex: 'assets/equipment/armor/monstrous_helm.png',
+            hasHorns: true 
+        },
+        netherite_helmet: { 
+            id: 'netherite_helmet', 
+            name: 'Незеритовый шлем', 
+            icon: '🪖', 
+            rarity: 'epic', 
+            armorTex: 'assets/equipment/armor/netherite_armor.png' 
+        },
+        diamond_helmet: { 
+            id: 'diamond_helmet', 
+            name: 'Алмазный шлем', 
+            icon: '💎', 
+            rarity: 'rare', 
+            armorTex: 'assets/equipment/armor/diamond_armor.png' 
+        },
+        mekasuit_helmet: { 
+            id: 'mekasuit_helmet', 
+            name: 'MekaSuit Helmet', 
+            mod: 'Mekanism', 
+            icon: 'assets/equipment/items/mek_mekasuit_helmet.png', 
+            isImage: true, 
+            rarity: 'legendary', 
+            armorTex: 'assets/equipment/armor/mekasuit_armor.png' 
+        },
+        create_goggles: { 
+            id: 'create_goggles', 
+            name: 'Очки инженера', 
+            mod: 'Create', 
+            icon: 'assets/equipment/items/create_goggles.png', 
+            isImage: true, 
+            rarity: 'uncommon', 
+            isCustomMesh: true 
+        },
+        twilight_crown: { 
+            id: 'twilight_crown', 
+            name: 'Корона Сумерек', 
+            mod: 'Twilight Forest', 
+            icon: 'assets/equipment/items/tf_crown_splinter.png', 
+            isImage: true, 
+            rarity: 'legendary', 
+            isCustomMesh: true 
+        }
     },
 
     // 🎽 НАГРУДНИК / ТЕЛО
     chest: {
         none: { id: 'none', name: 'Без брони', icon: '👕', rarity: 'common' },
-        ignitium_chestplate: { id: 'ignitium_chestplate', name: 'Нагрудник Игнития', mod: 'Cataclysm', icon: 'assets/equipment/items/ignitium_chestplate.png', isImage: true, rarity: 'mythic', color: '#b91c1c', accent: '#f97316' },
-        cursium_chestplate: { id: 'cursium_chestplate', name: 'Нагрудник Cursium', mod: 'Cataclysm', icon: 'assets/equipment/items/cursium_chestplate.png', isImage: true, rarity: 'mythic', color: '#4c1d95', accent: '#a855f7' },
-        mekasuit_body: { id: 'mekasuit_body', name: 'MekaSuit BodyArmor', mod: 'Mekanism', icon: 'assets/equipment/items/mek_mekasuit_bodyarmor.png', isImage: true, rarity: 'legendary', color: '#0f172a', accent: '#00f2fe' },
-        netherite_chestplate: { id: 'netherite_chestplate', name: 'Незеритовый нагрудник', icon: '🛡️', rarity: 'epic', color: '#2b272c', accent: '#70646c' },
-        diamond_chestplate: { id: 'diamond_chestplate', name: 'Алмазный нагрудник', icon: '💎', rarity: 'rare', color: '#2cd8d5', accent: '#6ffffb' },
-        elytra: { id: 'elytra', name: 'Элитры', icon: '🪽', rarity: 'legendary', color: '#555a6d', accent: '#8890a6' }
+        ignitium_chestplate: { 
+            id: 'ignitium_chestplate', 
+            name: 'Нагрудник Игнития', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/ignitium_chestplate.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorTex: 'assets/equipment/armor/ignitium_armor.png' 
+        },
+        cursium_chestplate: { 
+            id: 'cursium_chestplate', 
+            name: 'Нагрудник Cursium', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/cursium_chestplate.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorTex: 'assets/equipment/armor/cursium_armor.png' 
+        },
+        netherite_chestplate: { 
+            id: 'netherite_chestplate', 
+            name: 'Незеритовый нагрудник', 
+            icon: '🛡️', 
+            rarity: 'epic', 
+            armorTex: 'assets/equipment/armor/netherite_armor.png' 
+        },
+        diamond_chestplate: { 
+            id: 'diamond_chestplate', 
+            name: 'Алмазный нагрудник', 
+            icon: '💎', 
+            rarity: 'rare', 
+            armorTex: 'assets/equipment/armor/diamond_armor.png' 
+        },
+        mekasuit_body: { 
+            id: 'mekasuit_body', 
+            name: 'MekaSuit BodyArmor', 
+            mod: 'Mekanism', 
+            icon: 'assets/equipment/items/mek_mekasuit_bodyarmor.png', 
+            isImage: true, 
+            rarity: 'legendary', 
+            armorTex: 'assets/equipment/armor/mekasuit_armor.png' 
+        },
+        elytra: { 
+            id: 'elytra', 
+            name: 'Элитры', 
+            icon: '🪽', 
+            rarity: 'legendary', 
+            isElytra: true 
+        }
     },
 
     // 👖 ПОНОЖИ / НОГИ
     legs: {
         none: { id: 'none', name: 'Без поножей', icon: '🩳', rarity: 'common' },
-        ignitium_leggings: { id: 'ignitium_leggings', name: 'Поножи Игнития', mod: 'Cataclysm', icon: 'assets/equipment/items/ignitium_leggings.png', isImage: true, rarity: 'mythic', color: '#b91c1c', accent: '#f97316' },
-        cursium_leggings: { id: 'cursium_leggings', name: 'Поножи Cursium', mod: 'Cataclysm', icon: 'assets/equipment/items/cursium_leggings.png', isImage: true, rarity: 'mythic', color: '#4c1d95', accent: '#a855f7' },
-        mekasuit_pants: { id: 'mekasuit_pants', name: 'MekaSuit Pants', mod: 'Mekanism', icon: 'assets/equipment/items/mek_mekasuit_pants.png', isImage: true, rarity: 'legendary', color: '#0f172a', accent: '#00f2fe' },
-        netherite_leggings: { id: 'netherite_leggings', name: 'Незеритовые поножи', icon: '👖', rarity: 'epic', color: '#2b272c', accent: '#70646c' },
-        diamond_leggings: { id: 'diamond_leggings', name: 'Алмазные поножи', icon: '💎', rarity: 'rare', color: '#2cd8d5', accent: '#6ffffb' }
+        ignitium_leggings: { 
+            id: 'ignitium_leggings', 
+            name: 'Поножи Игнития', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/ignitium_leggings.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorLegsTex: 'assets/equipment/armor/ignitium_armor_legs.png' 
+        },
+        cursium_leggings: { 
+            id: 'cursium_leggings', 
+            name: 'Поножи Cursium', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/cursium_leggings.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorLegsTex: 'assets/equipment/armor/cursium_armor_legs.png' 
+        },
+        netherite_leggings: { 
+            id: 'netherite_leggings', 
+            name: 'Незеритовые поножи', 
+            icon: '👖', 
+            rarity: 'epic', 
+            armorLegsTex: 'assets/equipment/armor/netherite_armor_legs.png' 
+        },
+        diamond_leggings: { 
+            id: 'diamond_leggings', 
+            name: 'Алмазные поножи', 
+            icon: '💎', 
+            rarity: 'rare', 
+            armorLegsTex: 'assets/equipment/armor/diamond_armor_legs.png' 
+        },
+        mekasuit_pants: { 
+            id: 'mekasuit_pants', 
+            name: 'MekaSuit Pants', 
+            mod: 'Mekanism', 
+            icon: 'assets/equipment/items/mek_mekasuit_pants.png', 
+            isImage: true, 
+            rarity: 'legendary', 
+            armorLegsTex: 'assets/equipment/armor/mekasuit_armor_legs.png' 
+        }
     },
 
     // 👢 БОТИНКИ / СТУПНИ
     boots: {
         none: { id: 'none', name: 'Без ботинок', icon: '🧦', rarity: 'common' },
-        ignitium_boots: { id: 'ignitium_boots', name: 'Ботинки Игнития', mod: 'Cataclysm', icon: 'assets/equipment/items/ignitium_boots.png', isImage: true, rarity: 'mythic', color: '#b91c1c', accent: '#f97316' },
-        cursium_boots: { id: 'cursium_boots', name: 'Ботинки Cursium', mod: 'Cataclysm', icon: 'assets/equipment/items/cursium_boots.png', isImage: true, rarity: 'mythic', color: '#4c1d95', accent: '#a855f7' },
-        mekasuit_boots: { id: 'mekasuit_boots', name: 'MekaSuit Boots', mod: 'Mekanism', icon: 'assets/equipment/items/mek_mekasuit_boots.png', isImage: true, rarity: 'legendary', color: '#0f172a', accent: '#00f2fe' },
-        netherite_boots: { id: 'netherite_boots', name: 'Незеритовые ботинки', icon: '👢', rarity: 'epic', color: '#2b272c', accent: '#70646c' },
-        diamond_boots: { id: 'diamond_boots', name: 'Алмазные ботинки', icon: '💎', rarity: 'rare', color: '#2cd8d5', accent: '#6ffffb' }
+        ignitium_boots: { 
+            id: 'ignitium_boots', 
+            name: 'Ботинки Игнития', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/ignitium_boots.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorTex: 'assets/equipment/armor/ignitium_armor.png' 
+        },
+        cursium_boots: { 
+            id: 'cursium_boots', 
+            name: 'Ботинки Cursium', 
+            mod: 'Cataclysm', 
+            icon: 'assets/equipment/items/cursium_boots.png', 
+            isImage: true, 
+            rarity: 'mythic', 
+            armorTex: 'assets/equipment/armor/cursium_armor.png' 
+        },
+        netherite_boots: { 
+            id: 'netherite_boots', 
+            name: 'Незеритовые ботинки', 
+            icon: '👢', 
+            rarity: 'epic', 
+            armorTex: 'assets/equipment/armor/netherite_armor.png' 
+        },
+        diamond_boots: { 
+            id: 'diamond_boots', 
+            name: 'Алмазные ботинки', 
+            icon: '💎', 
+            rarity: 'rare', 
+            armorTex: 'assets/equipment/armor/diamond_armor.png' 
+        },
+        mekasuit_boots: { 
+            id: 'mekasuit_boots', 
+            name: 'MekaSuit Boots', 
+            mod: 'Mekanism', 
+            icon: 'assets/equipment/items/mek_mekasuit_boots.png', 
+            isImage: true, 
+            rarity: 'legendary', 
+            armorTex: 'assets/equipment/armor/mekasuit_armor.png' 
+        }
     },
 
-    // ⚔️ ОСНОВНАЯ РУКА (Реальные TACZ 3D пушки и 3D воксельное оружие модов)
+    // ⚔️ ОСНОВНАЯ РУКА (Реальные TACZ 3D пушки и 3D воксельное оружие)
     mainHand: {
         none: { id: 'none', name: 'Пустая рука', icon: '✊', rarity: 'common' },
         
-        // TACZ Огнестрел (Реальные .geo.json 3D модели)
+        // TACZ Огнестрел (Реальные Bedrock .geo.json 3D модели)
         tacz_ak47: { id: 'tacz_ak47', name: 'TACZ: AK-47', mod: 'TACZ', icon: 'assets/tacz/hud/ak47.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'ak47' },
         tacz_deagle: { id: 'tacz_deagle', name: 'TACZ: Desert Eagle .50', mod: 'TACZ', icon: 'assets/tacz/hud/deagle.png', isImage: true, rarity: 'rare', type: 'tacz_geo', geoGunId: 'deagle' },
         tacz_spas_12: { id: 'tacz_spas_12', name: 'TACZ: SPAS-12', mod: 'TACZ', icon: 'assets/tacz/hud/spas_12.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'spas_12' },
@@ -122,14 +299,14 @@ export const EQUIPMENT_PRESETS = {
         id: 'random',
         name: '🎲 Случайный Лут',
         icon: '🎲',
-        desc: 'Рандомная комбинация реального оружия TACZ, брони и предметов из модов',
+        desc: 'Случайная комбинация реального оружия TACZ, брони и предметов из модов',
         slots: {}
     },
     tacz_specops: {
         id: 'tacz_specops',
         name: 'Спецназ TACZ',
         icon: '🔫',
-        desc: 'Тактический штурмовик с реальным 3D автоматом AK-47 и рюкзаком',
+        desc: 'Штурмовик с реальным 3D автоматом AK-47, незеритовой броней и рюкзаком',
         slots: {
             head: 'create_goggles',
             chest: 'netherite_chestplate',
@@ -144,12 +321,12 @@ export const EQUIPMENT_PRESETS = {
         id: 'tacz_sniper',
         name: 'Снайпер AWP',
         icon: '🎯',
-        desc: 'Крупнокалиберная винтовка AWP и Deagle в экипировке Незерита',
+        desc: 'Крупнокалиберная 3D снайперка AWP в сете Игнития',
         slots: {
             head: 'monstrous_helm',
-            chest: 'netherite_chestplate',
-            legs: 'netherite_leggings',
-            boots: 'netherite_boots',
+            chest: 'ignitium_chestplate',
+            legs: 'ignitium_leggings',
+            boots: 'ignitium_boots',
             mainHand: 'tacz_awp',
             offHand: 'none',
             back: 'backpack_diamond'
@@ -159,7 +336,7 @@ export const EQUIPMENT_PRESETS = {
         id: 'ignitium_berserk',
         name: 'Берсерк Игнития',
         icon: '🌋',
-        desc: 'Сет из Cataclysm с Адской Кузней и Перчаткой Стража',
+        desc: 'Полный текстурированный сет Игнития с Адской Кузней и Перчаткой',
         slots: {
             head: 'ignitium_helmet',
             chest: 'ignitium_chestplate',
@@ -174,7 +351,7 @@ export const EQUIPMENT_PRESETS = {
         id: 'frostfall_warrior',
         name: 'Воин Simply Swords',
         icon: '❄️',
-        desc: 'Ледяной меч Frostfall и Кристальное Сердце',
+        desc: 'Алмазная броня с Ледяным Клинком Frostfall и Кристальным Сердцем',
         slots: {
             head: 'diamond_helmet',
             chest: 'diamond_chestplate',
@@ -189,7 +366,7 @@ export const EQUIPMENT_PRESETS = {
         id: 'mekanoid_cyber',
         name: 'Кибер-Меканоид',
         icon: '🤖',
-        desc: 'Высокотехнологичный экзоскелет MekaSuit с дезинтегратором',
+        desc: 'Высокотехнологичный экзоскелет MekaSuit с Атомным разборщиком',
         slots: {
             head: 'mekasuit_helmet',
             chest: 'mekasuit_body',
@@ -233,7 +410,6 @@ class EquipmentManager {
         };
 
         this.listeners = new Set();
-        this.materialsCache = new Map();
         this.activeAttachedObjects = new Map();
         this.loadEquipment();
     }
@@ -300,13 +476,13 @@ class EquipmentManager {
             return nonNone[Math.floor(Math.random() * nonNone.length)] || 'none';
         };
 
-        this.currentEquipment.head = pickRandom('head', 0.3);
+        this.currentEquipment.head = pickRandom('head', 0.25);
         this.currentEquipment.chest = pickRandom('chest', 0.15);
         this.currentEquipment.legs = pickRandom('legs', 0.15);
         this.currentEquipment.boots = pickRandom('boots', 0.15);
         this.currentEquipment.mainHand = pickRandom('mainHand', 0.05);
-        this.currentEquipment.offHand = pickRandom('offHand', 0.4);
-        this.currentEquipment.back = pickRandom('back', 0.5);
+        this.currentEquipment.offHand = pickRandom('offHand', 0.35);
+        this.currentEquipment.back = pickRandom('back', 0.45);
 
         this.saveEquipment();
         this.notifyListeners();
@@ -336,7 +512,14 @@ class EquipmentManager {
         if (this.currentEquipment.head !== 'none') {
             const item = EQUIPMENT_CATALOG.head[this.currentEquipment.head];
             if (item && skin.head) {
-                const mesh = this.buildHelmetMesh(item);
+                let mesh = null;
+                if (item.armorTex) {
+                    mesh = armorMeshBuilder.buildHelmet(item.armorTex, item);
+                } else if (item.id === 'create_goggles') {
+                    mesh = this.buildCreateGoggles();
+                } else if (item.id === 'twilight_crown') {
+                    mesh = this.buildTwilightCrown();
+                }
                 if (mesh) {
                     skin.head.add(mesh);
                     this.activeAttachedObjects.set('head', mesh);
@@ -348,7 +531,10 @@ class EquipmentManager {
         if (this.currentEquipment.chest !== 'none') {
             const item = EQUIPMENT_CATALOG.chest[this.currentEquipment.chest];
             if (item && skin.body) {
-                const mesh = this.buildChestplateMesh(item, skin);
+                let mesh = null;
+                if (item.armorTex) {
+                    mesh = armorMeshBuilder.buildChestplate(item.armorTex, skin, item);
+                }
                 if (mesh) {
                     skin.body.add(mesh);
                     this.activeAttachedObjects.set('chest', mesh);
@@ -359,20 +545,20 @@ class EquipmentManager {
         // 3. Поножи
         if (this.currentEquipment.legs !== 'none') {
             const item = EQUIPMENT_CATALOG.legs[this.currentEquipment.legs];
-            if (item) {
-                this.buildLeggingsMeshes(item, skin);
+            if (item && item.armorLegsTex) {
+                armorMeshBuilder.buildLeggings(item.armorLegsTex, skin, item);
             }
         }
 
         // 4. Ботинки
         if (this.currentEquipment.boots !== 'none') {
             const item = EQUIPMENT_CATALOG.boots[this.currentEquipment.boots];
-            if (item) {
-                this.buildBootsMeshes(item, skin);
+            if (item && item.armorTex) {
+                armorMeshBuilder.buildBoots(item.armorTex, skin, item);
             }
         }
 
-        // 5. Основная рука (Реальные TACZ 3D пушки или 3D воксельные мечи)
+        // 5. Основная рука (Реальные TACZ 3D пушки или 3D воксельное оружие)
         if (this.currentEquipment.mainHand !== 'none') {
             const item = EQUIPMENT_CATALOG.mainHand[this.currentEquipment.mainHand];
             if (item && skin.rightArm) {
@@ -417,7 +603,12 @@ class EquipmentManager {
             if (!part) return;
             for (let i = part.children.length - 1; i >= 0; i--) {
                 const child = part.children[i];
-                if (child.name && (child.name.startsWith('EQ_') || child.name.startsWith('TACZ_') || child.name.startsWith('VOXEL_'))) {
+                if (child.name && (
+                    child.name.startsWith('EQ_') || 
+                    child.name.startsWith('ARMOR_') || 
+                    child.name.startsWith('TACZ_') || 
+                    child.name.startsWith('VOXEL_')
+                )) {
                     part.remove(child);
                 }
             }
@@ -425,161 +616,49 @@ class EquipmentManager {
         this.activeAttachedObjects.clear();
     }
 
-    // ── Построение 3D Шлемов ──
-    buildHelmetMesh(item) {
+    // ── Построение Очков Create ──
+    buildCreateGoggles() {
         const group = new THREE.Group();
-        group.name = `EQ_HEAD_${item.id}`;
+        group.name = 'ARMOR_HELMET_create_goggles';
 
-        const baseColor = new THREE.Color(item.color || '#2b272c');
-        const accentColor = new THREE.Color(item.accent || '#70646c');
+        const frameGeo = new THREE.BoxGeometry(8.6, 2.8, 1.2);
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.5 });
+        const frameMesh = new THREE.Mesh(frameGeo, frameMat);
+        frameMesh.position.set(0, 4, 4.4);
+        group.add(frameMesh);
 
-        const matBase = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.35, metalness: 0.7 });
-        const matAccent = new THREE.MeshStandardMaterial({ color: accentColor, roughness: 0.25, metalness: 0.9 });
+        const lensGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.6, 12);
+        const lensMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.85 });
+        
+        const lensL = new THREE.Mesh(lensGeo, lensMat);
+        lensL.rotation.x = Math.PI / 2;
+        lensL.position.set(-2.2, 4, 4.8);
+        group.add(lensL);
 
-        if (item.id === 'create_goggles') {
-            // Очки инженера Create
-            const frameGeo = new THREE.BoxGeometry(8.6, 2.8, 1.2);
-            const frameMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.5 });
-            const frameMesh = new THREE.Mesh(frameGeo, frameMat);
-            frameMesh.position.set(0, 4, 4.4);
-            group.add(frameMesh);
-
-            const lensGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.6, 12);
-            const lensMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.85 });
-            
-            const lensL = new THREE.Mesh(lensGeo, lensMat);
-            lensL.rotation.x = Math.PI / 2;
-            lensL.position.set(-2.2, 4, 4.8);
-            group.add(lensL);
-
-            const lensR = new THREE.Mesh(lensGeo, lensMat);
-            lensR.rotation.x = Math.PI / 2;
-            lensR.position.set(2.2, 4, 4.8);
-            group.add(lensR);
-            return group;
-        }
-
-        if (item.id === 'twilight_crown') {
-            // Корона Сумерек
-            const crownGeo = new THREE.BoxGeometry(8.8, 2.2, 8.8);
-            const crownMesh = new THREE.Mesh(crownGeo, matAccent);
-            crownMesh.position.set(0, 7.5, 0);
-            group.add(crownMesh);
-
-            const rubyGeo = new THREE.BoxGeometry(1.2, 1.2, 0.4);
-            const rubyMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
-            const ruby = new THREE.Mesh(rubyGeo, rubyMat);
-            ruby.position.set(0, 7.5, 4.5);
-            group.add(ruby);
-            return group;
-        }
-
-        // Стандартный шлем
-        const helmGeo = new THREE.BoxGeometry(8.9, 8.9, 8.9);
-        const helmMesh = new THREE.Mesh(helmGeo, matBase);
-        helmMesh.position.set(0, 4.2, 0);
-        group.add(helmMesh);
-
-        // Инфернальные рога для Игнития / Левиафана
-        if (item.id.includes('ignitium') || item.id.includes('monstrous')) {
-            const hornGeo = new THREE.ConeGeometry(1.2, 4.5, 4);
-            const hornL = new THREE.Mesh(hornGeo, matAccent);
-            hornL.rotation.set(0.3, 0, -0.6);
-            hornL.position.set(-4.8, 8.5, -0.5);
-            group.add(hornL);
-
-            const hornR = new THREE.Mesh(hornGeo, matAccent);
-            hornR.rotation.set(0.3, 0, 0.6);
-            hornR.position.set(4.8, 8.5, -0.5);
-            group.add(hornR);
-        }
-
+        const lensR = new THREE.Mesh(lensGeo, lensMat);
+        lensR.rotation.x = Math.PI / 2;
+        lensR.position.set(2.2, 4, 4.8);
+        group.add(lensR);
         return group;
     }
 
-    // ── Построение 3D Нагрудников ──
-    buildChestplateMesh(item, skin) {
+    // ── Построение Короны Сумерек ──
+    buildTwilightCrown() {
         const group = new THREE.Group();
-        group.name = `EQ_CHEST_${item.id}`;
+        group.name = 'ARMOR_HELMET_twilight_crown';
 
-        const baseColor = new THREE.Color(item.color || '#2b272c');
-        const accentColor = new THREE.Color(item.accent || '#70646c');
+        const crownGeo = new THREE.BoxGeometry(8.8, 2.2, 8.8);
+        const crownMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.25, metalness: 0.9 });
+        const crownMesh = new THREE.Mesh(crownGeo, crownMat);
+        crownMesh.position.set(0, 7.5, 0);
+        group.add(crownMesh);
 
-        const matBase = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.35, metalness: 0.7 });
-        const matAccent = new THREE.MeshStandardMaterial({ color: accentColor, roughness: 0.2, metalness: 0.9 });
-
-        // Корпус брони
-        const chestGeo = new THREE.BoxGeometry(8.8, 12.4, 4.8);
-        const chestMesh = new THREE.Mesh(chestGeo, matBase);
-        chestMesh.position.set(0, 0, 0);
-        group.add(chestMesh);
-
-        // Эмблема / Реактор
-        const emblemGeo = new THREE.BoxGeometry(3.0, 3.0, 0.4);
-        const emblemMesh = new THREE.Mesh(emblemGeo, matAccent);
-        emblemMesh.position.set(0, 2, 2.5);
-        group.add(emblemMesh);
-
-        // Массивные наплечники
-        if (skin.rightArm && skin.leftArm) {
-            const pauldronGeo = new THREE.BoxGeometry(5.0, 4.5, 5.0);
-            
-            const pauldronR = new THREE.Mesh(pauldronGeo, matAccent);
-            pauldronR.name = `EQ_PAULDRON_R_${item.id}`;
-            pauldronR.position.set(0, 1.5, 0);
-            skin.rightArm.add(pauldronR);
-
-            const pauldronL = new THREE.Mesh(pauldronGeo, matAccent);
-            pauldronL.name = `EQ_PAULDRON_L_${item.id}`;
-            pauldronL.position.set(0, 1.5, 0);
-            skin.leftArm.add(pauldronL);
-        }
-
+        const rubyGeo = new THREE.BoxGeometry(1.2, 1.2, 0.4);
+        const rubyMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+        const ruby = new THREE.Mesh(rubyGeo, rubyMat);
+        ruby.position.set(0, 7.5, 4.5);
+        group.add(ruby);
         return group;
-    }
-
-    // ── Построение 3D Поножей ──
-    buildLeggingsMeshes(item, skin) {
-        const baseColor = new THREE.Color(item.color || '#2b272c');
-        const mat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.4, metalness: 0.6 });
-
-        if (skin.rightLeg) {
-            const legGeo = new THREE.BoxGeometry(4.6, 9.0, 4.6);
-            const legR = new THREE.Mesh(legGeo, mat);
-            legR.name = `EQ_LEGS_R_${item.id}`;
-            legR.position.set(0, -4.5, 0);
-            skin.rightLeg.add(legR);
-        }
-
-        if (skin.leftLeg) {
-            const legGeo = new THREE.BoxGeometry(4.6, 9.0, 4.6);
-            const legL = new THREE.Mesh(legGeo, mat);
-            legL.name = `EQ_LEGS_L_${item.id}`;
-            legL.position.set(0, -4.5, 0);
-            skin.leftLeg.add(legL);
-        }
-    }
-
-    // ── Построение 3D Ботинок ──
-    buildBootsMeshes(item, skin) {
-        const baseColor = new THREE.Color(item.color || '#2b272c');
-        const mat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.3, metalness: 0.8 });
-
-        if (skin.rightLeg) {
-            const bootGeo = new THREE.BoxGeometry(4.8, 3.8, 5.2);
-            const bootR = new THREE.Mesh(bootGeo, mat);
-            bootR.name = `EQ_BOOTS_R_${item.id}`;
-            bootR.position.set(0, -10.2, 0.2);
-            skin.rightLeg.add(bootR);
-        }
-
-        if (skin.leftLeg) {
-            const bootGeo = new THREE.BoxGeometry(4.8, 3.8, 5.2);
-            const bootL = new THREE.Mesh(bootGeo, mat);
-            bootL.name = `EQ_BOOTS_L_${item.id}`;
-            bootL.position.set(0, -10.2, 0.2);
-            skin.leftLeg.add(bootL);
-        }
     }
 
     // ── Построение 3D Оружия (TACZ Geo & Voxel Items) ──
@@ -596,25 +675,7 @@ class EquipmentManager {
             if (voxelMesh) return voxelMesh;
         }
 
-        // 3. Фолбэк на классический меч
-        const group = new THREE.Group();
-        group.name = `EQ_WEAPON_${item.id}`;
-
-        const bladeGeo = new THREE.BoxGeometry(0.8, 14, 1.8);
-        const bladeMat = new THREE.MeshStandardMaterial({ color: 0x2cd8d5, metalness: 0.8, roughness: 0.2 });
-        const blade = new THREE.Mesh(bladeGeo, bladeMat);
-        blade.position.set(0, 5, 0);
-        group.add(blade);
-
-        const guardGeo = new THREE.BoxGeometry(1.6, 0.8, 4.5);
-        const guardMat = new THREE.MeshStandardMaterial({ color: 0xca8a04 });
-        const guard = new THREE.Mesh(guardGeo, guardMat);
-        guard.position.set(0, -2, 0);
-        group.add(guard);
-
-        group.rotation.set(-Math.PI / 4, Math.PI / 4, 0);
-        group.position.set(0, -9.5, 1.5);
-        return group;
+        return null;
     }
 
     // ── Построение 3D предметов Второй руки ──

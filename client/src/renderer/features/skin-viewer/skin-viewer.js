@@ -114,10 +114,43 @@ async function render3dSkin(username) {
                 skinViewer3d.playerObject.rotation.y = -0.45;
             }
 
-            // Плавная анимация покоя (дыхание и легкое покачивание рук)
-            const idleAnim = new skinview3d.IdleAnimation();
-            idleAnim.speed = 0.7;
-            skinViewer3d.animation = idleAnim;
+            // Тактическая плавная анимация (дыхание и боевая готовность оружия)
+            skinViewer3d.animation = (player, progress) => {
+                const t = progress * 1.5;
+                // Дыхание головы
+                if (player.skin.head) {
+                    player.skin.head.rotation.y = Math.sin(t * 0.5) * 0.05;
+                    player.skin.head.rotation.x = Math.sin(t * 0.3) * 0.03;
+                }
+
+                // Боевая поза правой руки при экипированном оружии
+                const hasWeapon = equipmentManager.getSlot('mainHand') !== 'none';
+                if (player.skin.rightArm) {
+                    if (hasWeapon) {
+                        player.skin.rightArm.rotation.x = -Math.PI / 3.3 + Math.sin(t * 0.8) * 0.02;
+                        player.skin.rightArm.rotation.y = -0.15;
+                        player.skin.rightArm.rotation.z = 0.08;
+                    } else {
+                        player.skin.rightArm.rotation.x = Math.sin(t * 0.6) * 0.08;
+                        player.skin.rightArm.rotation.y = 0;
+                        player.skin.rightArm.rotation.z = 0;
+                    }
+                }
+
+                // Поза левой руки (щит / артефакт)
+                const hasOffHand = equipmentManager.getSlot('offHand') !== 'none';
+                if (player.skin.leftArm) {
+                    if (hasOffHand) {
+                        player.skin.leftArm.rotation.x = -Math.PI / 4.0 + Math.sin(t * 0.7) * 0.02;
+                        player.skin.leftArm.rotation.y = 0.30;
+                        player.skin.leftArm.rotation.z = -0.08;
+                    } else {
+                        player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.08;
+                        player.skin.leftArm.rotation.y = 0;
+                        player.skin.leftArm.rotation.z = 0;
+                    }
+                }
+            };
 
             // Управление вращением
             if (skinViewer3d.controls) {
