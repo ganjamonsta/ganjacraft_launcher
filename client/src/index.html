@@ -616,7 +616,7 @@
                         <h2 class="hero-neon-title-cyber">GANJ4CRAFT</h2>
                     </div>
 
-                    <!-- Middle: Sacred Geometry + Glowing Leaf Emblem & Version -->
+                    <!-- Middle: Sacred Geometry + Glowing Leaf Emblem -->
                     <div class="center-brand-middle">
                         <div class="sacred-leaf-wrapper">
                             <svg class="sacred-geometry-leaf" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -690,23 +690,10 @@
                                 </g>
                             </svg>
                         </div>
-
-                        <!-- Version Tag -->
-                        <div class="center-brand-version" id="brand-version-tag">v1.0.181</div>
-                    </div>
-
-                    <!-- Circular Magnetic Play Button with Glowing Ring and White Arrow -->
-                    <div class="play-btn-container">
-                        <button id="play-btn" class="magnetic-play-btn-circle" aria-label="Играть" title="Играть">
-                            <span class="play-btn-glow-ring"></span>
-                            <svg class="play-btn-triangle-icon" viewBox="0 0 24 24" fill="#ffffff">
-                                <path d="M8 5v14l11-7z"/>
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
-                <!-- 3. Right: Live Server Online Hub -->
+                <!-- 3. Right: Live Server Online Hub & Play Button -->
                 <div class="launch-action-hub">
                     <div class="server-live-card-modern empty-card">
                         <!-- Top: Live status dot + player count -->
@@ -723,6 +710,16 @@
 
                         <!-- Player list (populated with avatar badges when players online) -->
                         <div class="server-players-live-list" id="live-players-container"></div>
+                    </div>
+
+                    <!-- Circular Magnetic Play Button (Bottom Right Corner) -->
+                    <div class="play-btn-container right-bottom-play-container">
+                        <button id="play-btn" class="magnetic-play-btn-circle" aria-label="Играть" title="Играть">
+                            <span class="play-btn-glow-ring"></span>
+                            <svg class="play-btn-triangle-icon" viewBox="0 0 24 24" fill="#ffffff">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -798,7 +795,8 @@
             </div>
         </div>
     </div>
-    </div>
+    <!-- App Version Fixed in Bottom-Right Corner -->
+    <div id="app-version" class="app-version-fixed">v1.0.181</div>
 
     <!-- Custom Confirmation Modal -->
     <div id="confirm-modal" class="custom-modal hidden">

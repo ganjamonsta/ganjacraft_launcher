@@ -105,19 +105,26 @@
     gap: 18px;
     box-sizing: border-box;
     padding: 0;
+    position: relative;
 }
 
-/* ── Skin Off Mode Layout ── */
+/* ── Skin Off Mode Layout (Большое лого влево к краю для баланса) ── */
 .main-dashboard-layout.layout-skin-off {
-    grid-template-columns: 240px 1fr 240px;
+    grid-template-columns: 280px 1fr 240px;
     justify-content: space-between;
 }
 
 .main-dashboard-layout.layout-skin-off .hero-brand-section.center-brand {
-    grid-column: 2;
-    margin: 0 auto;
+    grid-column: 1;
     width: 100%;
-    max-width: 380px;
+    max-width: 280px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 0 6px 0;
+    text-align: center;
 }
 
 .main-dashboard-layout.layout-skin-off .launch-action-hub {
@@ -242,7 +249,7 @@
 .stat-value-text { font-family: var(--gc-font-display); font-size: 17px; font-weight: 800; color: var(--gc-text-white); letter-spacing: 0.4px; line-height: 1.1; }
 .stat-divider-line { width: 1px; height: 26px; background: var(--gc-border-medium); margin: 0 2px; }
 
-/* ── 2. Center: Brand, Sacred Geometry Leaf, Play Button ── */
+/* ── 2. Center: Brand Header & Magnetic Play Button ── */
 .hero-brand-section.center-brand {
     grid-column: 2;
     width: 100%; height: 100%;
@@ -299,6 +306,21 @@
 .play-btn-container {
     width: 100%; display: flex; justify-content: center;
     align-items: center; height: 96px; flex-shrink: 0; margin-bottom: 2px;
+}
+
+.play-btn-container.play-btn-main-center {
+    margin: auto 0;
+    height: auto;
+}
+
+.play-btn-main-center .magnetic-play-btn-circle {
+    width: 96px;
+    height: 96px;
+}
+
+.play-btn-main-center .play-btn-triangle-icon {
+    width: 36px;
+    height: 36px;
 }
 
 .magnetic-play-btn-circle {
@@ -461,6 +483,33 @@
     display: none !important;
 }
 
+/* ── Empty Server Sacred Geometry Leaf Emblem (Right Column) ── */
+.server-empty-emblem-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: auto;
+    flex: 1 1 auto;
+    pointer-events: none;
+    padding-top: 14px;
+}
+
+.server-empty-emblem-wrap .sacred-leaf-wrapper {
+    width: 195px;
+    height: 195px;
+}
+
+.server-live-card-modern.has-players .server-empty-emblem-wrap {
+    display: none !important;
+}
+
+.server-live-card-modern.empty-card .server-empty-emblem-wrap,
+.server-live-card-modern:not(.has-players) .server-empty-emblem-wrap {
+    display: flex !important;
+}
+
 /* ── Live Players List (When Players ARE Online) ── */
 .server-live-card-modern.has-players {
     background: transparent !important;
@@ -566,3 +615,20 @@
 .bottom-server-name { color: var(--gc-text-secondary); font-weight: 600; }
 .bottom-online-status { color: var(--gc-green); font-weight: 700; text-shadow: 0 0 8px rgba(var(--gc-green-rgb), 0.4); }
 .bottom-version { color: rgba(255, 255, 255, 0.3); font-family: monospace; }
+
+/* ── Fixed Bottom-Right Version Tag ── */
+.app-version-fixed,
+#app-version {
+    position: absolute;
+    bottom: 8px;
+    right: 14px;
+    font-family: var(--gc-font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.8px;
+    z-index: var(--gc-z-ui);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+}
