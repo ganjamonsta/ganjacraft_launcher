@@ -173,20 +173,20 @@
 .minecraft-nametag {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(0, 0, 0, 0.45);
-    padding: 3px 8px;
-    border-radius: 2px;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.52);
+    padding: 4px 12px;
+    border-radius: 3px;
     font-family: var(--gc-font-minecraft, 'Minecraft', 'Pixelify Sans', 'Minecraftia', monospace);
-    font-size: 13.5px;
-    line-height: 1.2;
+    font-size: 17.5px;
+    line-height: 1.25;
     -webkit-font-smoothing: none;
     image-rendering: pixelated;
     font-smooth: never;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     pointer-events: none;
     user-select: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .minecraft-nametag .minecraft-rank-badge,
