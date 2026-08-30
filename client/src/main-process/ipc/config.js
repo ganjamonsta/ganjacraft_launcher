@@ -11,6 +11,7 @@ const { loadConfig, saveConfig } = require('../../modules/config');
 const { resolveJavaPath } = require('../../modules/java');
 const { MANIFEST_URL, MANIFEST_HISTORY_URL } = require('../constants');
 const ConfigParser = require('../config-parser');
+const { discordRpc } = require('../discord/rpc');
 
 /**
  * Зарегистрировать обработчики конфигурации
@@ -21,7 +22,23 @@ function registerConfigHandlers(mainWindow) {
     ipcMain.handle('load-config', () => loadConfig());
     
     // Save config
-    ipcMain.handle('save-config', (event, config) => saveConfig(config));
+    ipcMain.handle('save-config', (event, config) => {
+        if (config && typeof config.enableDiscordRpc === 'boolean') {
+            discordRpc.setEnabled(config.enableDiscordRpc);
+        }
+        return saveConfig(config);
+    });
+
+    // Discord Rich Presence Handlers
+    ipcMain.handle('set-discord-rpc-enabled', (event, enabled) => {
+        discordRpc.setEnabled(enabled);
+        return true;
+    });
+
+    ipcMain.handle('update-discord-activity', (event, data) => {
+        discordRpc.setLauncherActivity(data || {});
+        return true;
+    });
     
     // Get game configs
     ipcMain.handle('get-game-configs', async () => {

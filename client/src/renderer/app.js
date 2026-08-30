@@ -183,6 +183,9 @@ function initSettingsButton() {
             
             // Открываем панель на вкладке 'general'
             openSettings('general');
+            try {
+                window.api.updateDiscordActivity({ username: getCurrentUsername(), viewName: 'Настройки' });
+            } catch (_) {}
             
             // Hide easter egg after animation if active
             if (isSettingsEasterEggActive()) {
@@ -202,6 +205,9 @@ function initSettingsButton() {
             toggleMainUIVisibility(true, currentConfig);
             closeSettings();
             cancelPendingConfigs();
+            try {
+                window.api.updateDiscordActivity({ username: getCurrentUsername(), viewName: 'Главное меню' });
+            } catch (_) {}
             
             const saveBtn = dom.get('save-settings');
             if (saveBtn) saveBtn.classList.remove('visible');
@@ -309,6 +315,13 @@ async function init() {
     console.log('[INIT STEP 5] Checking saved auth...');
     await checkSavedAuth();
     console.log('[INIT STEP 5] Saved auth check completed');
+    
+    try {
+        const username = getCurrentUsername();
+        if (username) {
+            window.api.updateDiscordActivity({ username, viewName: 'Главное меню' });
+        }
+    } catch (_) {}
     
     updateLoaderStatus(80, 'Загрузка манифеста модов...');
     // 5. Предзагрузка модов в память для мгновенного открытия в настройках

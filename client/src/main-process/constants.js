@@ -27,6 +27,11 @@ const API_BASES = [
     'https://launcher.ganj4craft.ru/api',
 ];
 const BASE_URL = 'https://launcher.ganj4craft.ru';
+const SITE_URL = 'https://ganj4craft.ru';
+
+// Discord Rich Presence Application ID
+const DISCORD_CLIENT_ID = '1345077465352634408';
+
 
 const MIRROR_BASE = `${BASE_URL}/mirror`;
 const FILES_BASE = `${BASE_URL}/files`;
@@ -137,7 +142,9 @@ module.exports = {
 
     // URLs
     BASE_URL,
+    SITE_URL,
     API_BASE,
+    DISCORD_CLIENT_ID,
     MANIFEST_URL,
     MANIFEST_HISTORY_URL,
     NEOFORGE_INSTALLER_URL,

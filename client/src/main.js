@@ -22,7 +22,8 @@ process.on('unhandledRejection', (reason) => {
     console.error('[UNHANDLED REJECTION]', reason);
 });
 
-const { createWindow, getMainWindow } = require('./main-process');
+const { createWindow, getMainWindow, discordRpc } = require('./main-process');
+const { loadConfig } = require('./modules/config');
 const { autoUpdater } = require('electron-updater');
 
 // Single Instance Lock
@@ -41,6 +42,14 @@ if (!gotTheLock) {
 
     app.whenReady().then(() => {
         createWindow();
+
+        // Initialize Discord Rich Presence
+        try {
+            const config = loadConfig();
+            discordRpc.init({ enabled: config.enableDiscordRpc !== false });
+        } catch (e) {
+            console.warn('[MAIN] Failed to init Discord RPC:', e.message);
+        }
 
         // Setup Auto-Updater
         autoUpdater.autoDownload = false;
@@ -78,8 +87,17 @@ if (!gotTheLock) {
 }
 
 app.on('window-all-closed', () => {
+    try {
+        discordRpc.destroy();
+    } catch (_) {}
     if (process.platform !== 'darwin') {
         app.quit();
     }
+});
+
+app.on('will-quit', () => {
+    try {
+        discordRpc.destroy();
+    } catch (_) {}
 });
 

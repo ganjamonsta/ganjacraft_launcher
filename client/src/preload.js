@@ -180,6 +180,10 @@ contextBridge.exposeInMainWorld('api', {
     openFolder: (path) => ipcRenderer.invoke('open-folder', path),
     openUrl: (url) => ipcRenderer.invoke('open-url', url),
     
+    // Discord Rich Presence
+    setDiscordRpcEnabled: (enabled) => ipcRenderer.invoke('set-discord-rpc-enabled', enabled),
+    updateDiscordActivity: (data) => ipcRenderer.invoke('update-discord-activity', data),
+
     // Advanced
     reinstallClient: () => ipcRenderer.invoke('reinstall-client'),
 

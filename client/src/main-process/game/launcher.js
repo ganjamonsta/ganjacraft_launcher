@@ -26,6 +26,7 @@ const {
     DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS,
     JVM_OPTIMIZATION_ARGS,
 } = require('../constants');
+const { discordRpc } = require('../discord/rpc');
 
 // Global state
 const launcher = new Client();
@@ -1119,6 +1120,11 @@ async function launchGame(event, options) {
             sendLog(`[LAUNCHER] Игра закрылась с кодом ${code}`);
             sendDebug(`Game closed with code ${code}`);
             
+            // Switch Discord RPC back to Launcher status
+            try {
+                discordRpc.setLauncherActivity({ username: authSession?.name || options?.username });
+            } catch (_) {}
+
             if (logStream) logStream.end();
 
             if (mainWindow && !mainWindow.isDestroyed()) {
@@ -1139,6 +1145,15 @@ async function launchGame(event, options) {
                     hasResolved = true;
                     sendLog('[LAUNCHER] Процесс игры запускается...');
                     sendDebug('Game process arguments generated.');
+
+                    // Update Discord RPC status to In Game
+                    try {
+                        discordRpc.setGameActivity({
+                            username: authSession?.name || options?.username,
+                            startTime: Math.floor(Date.now() / 1000)
+                        });
+                    } catch (_) {}
+
                     resolve({ success: true });
                 }
             };

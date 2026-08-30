@@ -7,6 +7,7 @@ const constants = require('./constants');
 const { createWindow, getMainWindow } = require('./window');
 const { registerAllHandlers } = require('./ipc');
 const game = require('./game');
+const { discordRpc } = require('./discord/rpc');
 
 module.exports = {
     constants,
@@ -14,4 +15,5 @@ module.exports = {
     getMainWindow,
     registerAllHandlers,
     game,
+    discordRpc,
 };

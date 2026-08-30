@@ -41,6 +41,7 @@ function getDefaultConfig() {
         effectsDensity: 'low', // 'low' | 'medium' | 'high'
         enableSmoke: true, // Default smoke effect
         enableParallax: true, // Default parallax background
+        enableDiscordRpc: true, // Discord Rich Presence integration
 
         // Mods
         disabledMods: [] // List of paths to skip
@@ -87,6 +88,9 @@ function normalizeLoadedConfig(config) {
     }
     if (!Object.prototype.hasOwnProperty.call(merged, 'effectsDensity')) {
         merged.effectsDensity = 'low';
+    }
+    if (!Object.prototype.hasOwnProperty.call(merged, 'enableDiscordRpc')) {
+        merged.enableDiscordRpc = true;
     }
 
     return merged;

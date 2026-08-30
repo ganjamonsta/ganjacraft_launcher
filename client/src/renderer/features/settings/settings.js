@@ -52,6 +52,7 @@ export function getCurrentSettingsState() {
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
         enableMinigame: document.getElementById('setting-enable-minigame')?.checked ?? true,
+        enableDiscordRpc: document.getElementById('setting-enable-discord-rpc')?.checked ?? true,
         disabledMods: getDisabledMods().sort().join(',')
     };
 }
@@ -124,7 +125,8 @@ export function setupSettingsChangeListeners() {
         'setting-effects-density',
         'setting-enable-smoke',
         'setting-enable-parallax',
-        'setting-enable-minigame'
+        'setting-enable-minigame',
+        'setting-enable-discord-rpc'
     ];
     
     formControls.forEach(id => {
@@ -451,6 +453,7 @@ export function populateSettingsFields(config) {
     const smokeCheckbox = document.getElementById('setting-enable-smoke');
     const parallaxCheckbox = document.getElementById('setting-enable-parallax');
     const minigameCheckbox = document.getElementById('setting-enable-minigame');
+    const discordRpcCheckbox = document.getElementById('setting-enable-discord-rpc');
     
     if (pathInput) pathInput.value = config.installPath || '';
     if (javaInput) javaInput.value = config.javaPath || '';
@@ -471,6 +474,7 @@ export function populateSettingsFields(config) {
     if (smokeCheckbox) smokeCheckbox.checked = config.enableSmoke !== false;
     if (parallaxCheckbox) parallaxCheckbox.checked = config.enableParallax !== false;
     if (minigameCheckbox) minigameCheckbox.checked = config.enableMinigame !== false && gunShooter.getIsEnabled();
+    if (discordRpcCheckbox) discordRpcCheckbox.checked = config.enableDiscordRpc !== false;
     
     // Инициализация RAM slider (новый UI)
     initRamSlider(config);
@@ -494,6 +498,7 @@ export async function saveSettings() {
     const selectedPreset = document.getElementById('setting-effects-preset')?.value || 'auto';
     const selectedSkinMode = document.getElementById('setting-skin-mode')?.value || '3d';
     const selectedMinigame = document.getElementById('setting-enable-minigame')?.checked ?? true;
+    const selectedDiscordRpc = document.getElementById('setting-enable-discord-rpc')?.checked ?? true;
 
     const newConfig = {
         ...currentConfig,
@@ -509,6 +514,7 @@ export async function saveSettings() {
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
         enableMinigame: selectedMinigame,
+        enableDiscordRpc: selectedDiscordRpc,
         disabledMods: getDisabledMods(),
         modsDefaultsApplied: true,
     };
