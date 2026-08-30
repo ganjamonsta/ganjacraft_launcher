@@ -24,11 +24,13 @@ export function toggleLaunchLogModal() {
 
     if (modal.classList.contains('hidden')) {
         modal.classList.remove('hidden');
+        document.body.classList.add('log-modal-open');
         gunShooter.setLogModalOpen(true); // Скрываем и очищаем летающие мишени и прицел
         const output = dom.get('console-output');
         if (output) output.scrollTop = output.scrollHeight;
     } else {
         modal.classList.add('hidden');
+        document.body.classList.remove('log-modal-open');
         gunShooter.setLogModalOpen(false); // Возобновляем тир при закрытии консоли
     }
 }

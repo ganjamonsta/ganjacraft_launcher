@@ -73,12 +73,35 @@ export function copyConsoleLogs() {
         showNotification('Консоль пуста', 'info', 'Консоль', 2000);
         return;
     }
-    navigator.clipboard.writeText(text).then(() => {
+
+    const doSuccess = () => {
         showNotification('Логи запуска скопированы в буфер обмена', 'success', 'Консоль', 3000);
-    }).catch(err => {
-        console.error('Failed to copy logs', err);
-        showNotification('Не удалось скопировать логи', 'error', 'Ошибка', 3000);
-    });
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(doSuccess).catch(() => {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+
+    function fallbackCopy(str) {
+        const ta = document.createElement('textarea');
+        ta.value = str;
+        ta.style.position = 'fixed';
+        ta.style.top = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            doSuccess();
+        } catch (e) {
+            console.error('Failed to copy', e);
+            showNotification('Не удалось скопировать логи', 'error', 'Ошибка', 3000);
+        }
+        document.body.removeChild(ta);
+    }
 }
 
 /**
@@ -88,10 +111,10 @@ export function initConsoleActions() {
     const btnClear = dom.get('btn-clear-console');
     const btnCopy = dom.get('btn-copy-console');
     if (btnClear) {
-        btnClear.addEventListener('click', clearConsole);
+        btnClear.onclick = clearConsole;
     }
     if (btnCopy) {
-        btnCopy.addEventListener('click', copyConsoleLogs);
+        btnCopy.onclick = copyConsoleLogs;
     }
 }
 

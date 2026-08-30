@@ -225,12 +225,13 @@
     bottom: 74px;
     width: auto;
     height: auto;
-    z-index: 90;
+    z-index: 300 !important;
     display: flex;
     align-items: stretch;
     justify-content: stretch;
     box-sizing: border-box;
     padding: 0;
+    pointer-events: auto !important;
     animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -244,7 +245,7 @@
 
 .launch-log-card {
     position: relative;
-    z-index: 2;
+    z-index: 301 !important;
     width: 100%;
     height: 100%;
     background: rgba(8, 14, 10, 0.96);
@@ -256,6 +257,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    pointer-events: auto !important;
 }
 
 .launch-log-header {
@@ -266,6 +268,7 @@
     background: linear-gradient(180deg, rgba(20, 30, 24, 0.9) 0%, rgba(12, 18, 14, 0.95) 100%);
     border-bottom: 1px solid rgba(57, 255, 20, 0.2);
     flex-shrink: 0;
+    pointer-events: auto !important;
 }
 
 .launch-log-header-left {
@@ -295,6 +298,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    pointer-events: auto !important;
+    z-index: 310 !important;
 }
 
 .console-action-btn {
@@ -308,16 +313,22 @@
     font-size: 10.5px;
     font-weight: 700;
     padding: 3px 8px;
-    cursor: pointer;
+    cursor: pointer !important;
     text-transform: uppercase;
     letter-spacing: 0.3px;
+    pointer-events: auto !important;
+    user-select: none;
     transition: all 0.2s ease;
 }
 
 .console-action-btn:hover {
-    background: rgba(57, 255, 20, 0.15);
-    border-color: rgba(57, 255, 20, 0.4);
-    color: var(--gc-green);
+    background: rgba(57, 255, 20, 0.2) !important;
+    border-color: rgba(57, 255, 20, 0.5) !important;
+    color: var(--gc-green) !important;
+}
+
+.console-action-btn:active {
+    transform: translateY(1px);
 }
 
 .console-close-btn {
@@ -330,14 +341,20 @@
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: #cbd5e1;
-    cursor: pointer;
+    cursor: pointer !important;
+    pointer-events: auto !important;
     transition: all 0.2s ease;
 }
 
 .console-close-btn:hover {
-    background: rgba(255, 77, 77, 0.25);
-    border-color: rgba(255, 77, 77, 0.5);
-    color: #ff6b6b;
+    background: rgba(255, 77, 77, 0.3) !important;
+    border-color: rgba(255, 77, 77, 0.6) !important;
+    color: #ff6b6b !important;
+}
+
+/* Hide frag counter when viewing launch logs */
+body.log-modal-open .launch-kills-badge {
+    display: none !important;
 }
 
 .launch-console-body {

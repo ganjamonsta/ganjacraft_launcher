@@ -231,7 +231,7 @@ class GunShooterEngine {
      * Движение мыши — прицеливание всего тела, руки и головы 3D персонажа (только при запуске)
      */
     handleMouseMove(e) {
-        if (!this.isGameLaunching) {
+        if (!this.isGameLaunching || this.isLogModalOpen) {
             if (this.crosshairElem && !this.crosshairElem.classList.contains('hidden')) {
                 this.crosshairElem.classList.add('hidden');
             }
@@ -291,7 +291,7 @@ class GunShooterEngine {
      * Обработка клика — ВЫСТРЕЛ ИЗ БЛАСТЕРА (только при запуске)
      */
     handleClick(e) {
-        if (!this.isGameLaunching) return;
+        if (!this.isGameLaunching || this.isLogModalOpen) return;
 
         // Пропускаем клики по интерактивным элементам форм и окну логов
         const tag = e.target.tagName;
@@ -470,6 +470,8 @@ class GunShooterEngine {
      */
     setLogModalOpen(isOpen) {
         this.isLogModalOpen = isOpen;
+        const viewer = getSkinViewer3d();
+
         if (isOpen) {
             if (this.targetSpawnTimer) {
                 clearInterval(this.targetSpawnTimer);
@@ -482,11 +484,40 @@ class GunShooterEngine {
             if (this.crosshairElem) {
                 this.crosshairElem.classList.add('hidden');
             }
+            if (this.canvas) {
+                this.canvas.style.display = 'none';
+            }
             if (this.ctx) {
                 this.ctx.clearRect(0, 0, this.width, this.height);
             }
+
+            // Опускаем руку в спокойную позу, чтобы не дергалась
+            if (viewer && viewer.playerObject && viewer.playerObject.skin) {
+                const rightArm = viewer.playerObject.skin.rightArm;
+                const head = viewer.playerObject.skin.head;
+                if (rightArm) {
+                    rightArm.rotation.set(0, 0, 0);
+                    if (this.defaultRightArmPos) {
+                        rightArm.position.set(
+                            this.defaultRightArmPos.x,
+                            this.defaultRightArmPos.y,
+                            this.defaultRightArmPos.z
+                        );
+                    }
+                }
+                if (head) head.rotation.set(0, 0, 0);
+                viewer.playerObject.rotation.y = -0.45;
+            }
         } else {
+            if (this.canvas) {
+                this.canvas.style.display = 'block';
+            }
             if (this.isGameLaunching) {
+                // Поднимаем руку в боевую позу обратно
+                if (viewer && viewer.playerObject && viewer.playerObject.skin) {
+                    const rightArm = viewer.playerObject.skin.rightArm;
+                    if (rightArm) rightArm.rotation.x = -Math.PI / 2;
+                }
                 this.startTargetSpawner(1500);
                 if (this.crosshairElem) {
                     this.crosshairElem.classList.remove('hidden');
