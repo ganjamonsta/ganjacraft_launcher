@@ -292,6 +292,16 @@
     letter-spacing: 2.5px;
     text-shadow: 0 0 10px rgba(var(--gc-green-rgb), 0.85), 0 0 26px rgba(var(--gc-green-rgb), 0.6);
     margin: 0; text-transform: uppercase; z-index: 2; pointer-events: none; line-height: 1;
+    animation: hero-neon-pulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes hero-neon-pulse {
+    0% {
+        text-shadow: 0 0 10px rgba(var(--gc-green-rgb), 0.85), 0 0 24px rgba(var(--gc-green-rgb), 0.5);
+    }
+    100% {
+        text-shadow: 0 0 18px rgba(var(--gc-green-rgb), 1), 0 0 38px rgba(var(--gc-green-rgb), 0.8), 0 0 50px rgba(var(--gc-green-rgb), 0.4);
+    }
 }
 
 /* ── 3. Dynamic Play & Leaf Group ── */
@@ -319,23 +329,62 @@
 
 @keyframes sacred-grid-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.play-brand-group .cannabis-leaf-group { animation: leaf-soft-breathe 4s ease-in-out infinite alternate; transform-origin: 100px 100px; }
+.emblem-leaf-group,
+.cannabis-leaf-group {
+    animation: leaf-soft-breathe 4s ease-in-out infinite alternate;
+    transform-origin: 100px 100px;
+}
 
 @keyframes leaf-soft-breathe {
-    0% { transform: scale(0.98); filter: drop-shadow(0 0 10px rgba(var(--gc-green-rgb), 0.45)); }
-    100% { transform: scale(1.02); filter: drop-shadow(0 0 22px rgba(var(--gc-green-rgb), 0.95)) drop-shadow(0 0 36px rgba(0, 230, 118, 0.55)); }
+    0% { transform: scale(0.97); filter: drop-shadow(0 0 10px rgba(var(--gc-green-rgb), 0.45)); }
+    100% { transform: scale(1.03); filter: drop-shadow(0 0 24px rgba(var(--gc-green-rgb), 0.95)) drop-shadow(0 0 38px rgba(0, 230, 118, 0.55)); }
 }
 
 /* Left 4 Dead Easter Egg fragments */
-.leaf-severed-fragment { animation: severed-fragment-drift 4s ease-in-out infinite alternate; transform-origin: 160px 120px; }
-@keyframes severed-fragment-drift { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(2px, -3px) rotate(5deg); } }
-.l4d-splatter-group { animation: l4d-splatter-pulse 3s ease-in-out infinite alternate; }
-@keyframes l4d-splatter-pulse { 0% { opacity: 0.7; } 100% { opacity: 1; } }
+.leaf-shard.shard-1,
+.leaf-severed-fragment {
+    animation: severed-fragment-drift 3.5s ease-in-out infinite alternate;
+    transform-origin: 160px 120px;
+}
+
+.leaf-shard.shard-2 {
+    animation: severed-fragment-drift 4s ease-in-out infinite alternate-reverse;
+    transform-origin: 175px 110px;
+}
+
+@keyframes severed-fragment-drift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(3px, -4px) rotate(8deg); }
+}
+
+.torn-blade-group,
+.l4d-splatter-group {
+    animation: l4d-splatter-pulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes l4d-splatter-pulse {
+    0% { opacity: 0.75; }
+    100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(var(--gc-green-rgb), 0.8)); }
+}
 
 .play-brand-group .play-btn-container {
     width: 100%; display: flex; justify-content: center;
     align-items: center; height: 96px; flex-shrink: 0; margin-bottom: 2px;
     pointer-events: auto;
+}
+
+.play-btn-glow-ring {
+    position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px;
+    border-radius: var(--gc-radius-round);
+    background: radial-gradient(circle, rgba(var(--gc-green-rgb), 0.45) 0%, rgba(var(--gc-green-rgb), 0.12) 50%, transparent 75%);
+    animation: play-ring-pulse 3s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes play-ring-pulse {
+    0% { transform: scale(0.96); opacity: 0.5; filter: blur(2px); }
+    50% { transform: scale(1.1); opacity: 0.95; filter: blur(5px); }
+    100% { transform: scale(0.96); opacity: 0.5; filter: blur(2px); }
 }
 
 /* ── WHEN PLAYERS ARE ONLINE (has-players) ── */
