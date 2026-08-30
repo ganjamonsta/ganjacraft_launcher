@@ -27,6 +27,7 @@ const {
     JVM_OPTIMIZATION_ARGS,
 } = require('../constants');
 const { discordRpc } = require('../discord/rpc');
+const { customizeMinecraftWindow } = require('../window/win32-customizer');
 
 // Global state
 const launcher = new Client();
@@ -1182,6 +1183,15 @@ async function launchGame(event, options) {
                     gameReadyNotified = true;
                     sendDebug('[LAUNCHER] Minecraft game window initialized and fully loaded.');
                     safeSend(mainWindow, 'game-ready');
+
+                    // Apply custom title and icon to the Minecraft window via Win32
+                    try {
+                        const pid = currentGameProcess ? currentGameProcess.pid : 0;
+                        const user = authSession?.name || options?.username;
+                        const title = user ? `Ganj4Craft Season 4: Cyber & Magic — [${user}]` : `Ganj4Craft Season 4: Cyber & Magic`;
+                        setTimeout(() => customizeMinecraftWindow(pid, title), 1000);
+                        setTimeout(() => customizeMinecraftWindow(pid, title), 3500);
+                    } catch (_) {}
                 }
 
                 // Detect fatal Java class loading errors from stderr
