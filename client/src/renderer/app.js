@@ -24,6 +24,7 @@ import {
 } from './ui/effects/index.js';
 import { initAllEasterEggs } from './features/easter-eggs/index.js';
 import { initWardrobeModal } from './features/skin-viewer/index.js';
+import { initLauncherUpdaterHandlers } from './features/updater/index.js';
 
 // === Feature Imports ===
 import { 
@@ -106,27 +107,7 @@ function initWindowControls() {
     }
 }
 
-// === Auto-Updater ===
-function initUpdaterHandlers() {
-    if (window.api.onUpdateAvailable) {
-        window.api.onUpdateAvailable(async (info) => {
-            const version = info?.version || '';
-            const msg = version ? `Доступна новая версия лаунчера (v${version}). Скачать сейчас?` : 'Доступна новая версия лаунчера. Скачать сейчас?';
-            const shouldDownload = await customConfirm(msg, 'Доступно обновление');
-            if (shouldDownload) {
-                window.api.downloadUpdate();
-                showNotification('Загрузка обновления началась...', 'info', 'Обновление', 4000);
-            }
-        });
 
-        window.api.onUpdateDownloaded(async () => {
-            const shouldInstall = await customConfirm('Обновление успешно загружено. Перезапустить лаунчер для установки?', 'Обновление готово');
-            if (shouldInstall) {
-                window.api.installUpdate();
-            }
-        });
-    }
-}
 
 // === Console Toggle ===
 function initConsoleToggle() {
@@ -292,7 +273,7 @@ async function init() {
     updateLoaderStatus(45, 'Подготовка интерфейса и настроек...');
     // 3. Init UI handlers & Pre-populate settings fields
     initWindowControls();
-    initUpdaterHandlers();
+    initLauncherUpdaterHandlers();
     initConsoleToggle();
     initConsoleActions();
     initSettingsButton();

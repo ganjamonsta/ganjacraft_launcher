@@ -8,6 +8,7 @@ import { logToConsole } from '../console/index.js';
 import { getCurrentUsername, getAuthToken } from '../auth/index.js';
 import { getCurrentConfig, settingsChanged, saveSettings, closeSettings } from '../settings/index.js';
 import { gunShooter } from '../easter-eggs/index.js';
+import { isLauncherUpdateAvailable, handleLauncherUpdateClick, renderLauncherUpdateButton } from '../updater/index.js';
 
 /**
  * Заблокировать кнопки настроек и шапки при запуске
@@ -116,16 +117,10 @@ export function unlockControlsAfterLaunch() {
         titleBtn.classList.remove('disabled-launch');
     }
 
-    // Возвращаем круглую кнопку в режим Play
+    // Возвращаем круглую кнопку в актуальный режим (Play или Update)
     if (playBtn) {
         playBtn.classList.remove('is-cancelling-btn');
-        playBtn.setAttribute('title', 'Играть');
-        playBtn.innerHTML = `
-            <span class="play-btn-glow-ring"></span>
-            <svg class="play-btn-triangle-icon" viewBox="0 0 24 24" fill="#ffffff">
-                <path d="M8 5v14l11-7z"/>
-            </svg>
-        `;
+        renderLauncherUpdateButton();
     }
 }
 
@@ -212,6 +207,10 @@ function showPlayScreen() {
  */
 export async function startLaunch() {
     console.log('[GAME] startLaunch() called');
+    if (isLauncherUpdateAvailable()) {
+        handleLauncherUpdateClick();
+        return;
+    }
     lockControlsForLaunch();
     gunShooter.setGameLaunchingMode(true);
 
@@ -457,6 +456,8 @@ export function initGameButtons() {
         playBtn.addEventListener('click', () => {
             if (isGameLaunching) {
                 cancelLaunch();
+            } else if (isLauncherUpdateAvailable()) {
+                handleLauncherUpdateClick();
             } else {
                 if (stepProgress) {
                     stepProgress.classList.remove('hidden');
@@ -472,7 +473,13 @@ export function initGameButtons() {
     }
     
     if (retryBtn) {
-        retryBtn.addEventListener('click', startLaunch);
+        retryBtn.addEventListener('click', () => {
+            if (isLauncherUpdateAvailable()) {
+                handleLauncherUpdateClick();
+            } else {
+                startLaunch();
+            }
+        });
     }
 
     const btnCloseLog = dom.get('btn-close-log-modal');

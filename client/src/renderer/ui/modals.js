@@ -10,9 +10,11 @@ import { ERROR_DISPLAY_TIME } from '../constants.js';
  * Показать модальное окно подтверждения
  * @param {string} message - Текст сообщения
  * @param {string} title - Заголовок окна
+ * @param {string} okText - Текст кнопки подтверждения
+ * @param {string} cancelText - Текст кнопки отмены
  * @returns {Promise<boolean>} - true если OK, false если Cancel/ESC
  */
-export function customConfirm(message, title = 'Подтверждение') {
+export function customConfirm(message, title = 'Подтверждение', okText = 'OK', cancelText = 'Отмена') {
     return new Promise((resolve) => {
         const modal = dom.get('confirm-modal');
         const titleEl = dom.get('confirm-title');
@@ -28,6 +30,8 @@ export function customConfirm(message, title = 'Подтверждение') {
 
         titleEl.textContent = title;
         messageEl.textContent = message;
+        okBtn.textContent = okText;
+        cancelBtn.textContent = cancelText;
         
         // Show cancel button for confirm
         cancelBtn.style.display = '';
@@ -44,6 +48,8 @@ export function customConfirm(message, title = 'Подтверждение') {
             modal.classList.add('hidden');
             okBtn.onclick = null;
             cancelBtn.onclick = null;
+            okBtn.textContent = 'OK';
+            cancelBtn.textContent = 'Отмена';
             abortController.abort();
         };
 
@@ -74,9 +80,10 @@ export function customConfirm(message, title = 'Подтверждение') {
  * Показать информационное модальное окно
  * @param {string} message - Текст сообщения
  * @param {string} title - Заголовок окна
+ * @param {string} okText - Текст кнопки подтверждения
  * @returns {Promise<void>}
  */
-export function customAlert(message, title = 'Информация') {
+export function customAlert(message, title = 'Информация', okText = 'OK') {
     return new Promise((resolve) => {
         const modal = dom.get('confirm-modal');
         const titleEl = dom.get('confirm-title');
@@ -93,6 +100,7 @@ export function customAlert(message, title = 'Информация') {
 
         titleEl.textContent = title;
         messageEl.textContent = message;
+        okBtn.textContent = okText;
 
         // Hide cancel button for alert
         cancelBtn.style.display = 'none';
@@ -109,6 +117,8 @@ export function customAlert(message, title = 'Информация') {
             modal.classList.add('hidden');
             okBtn.onclick = null;
             cancelBtn.style.display = '';
+            okBtn.textContent = 'OK';
+            cancelBtn.textContent = 'Отмена';
             okBtn.classList.remove('modal-btn-primary');
             okBtn.classList.add('modal-btn-danger');
             abortController.abort();

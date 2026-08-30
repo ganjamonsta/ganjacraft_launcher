@@ -52,6 +52,13 @@ if (!gotTheLock) {
             }
         });
         
+        autoUpdater.on('download-progress', (progressObj) => {
+            const win = getMainWindow();
+            if (win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed()) {
+                try { win.webContents.send('update-progress', progressObj); } catch (_) {}
+            }
+        });
+        
         autoUpdater.on('update-downloaded', () => {
             const win = getMainWindow();
             if (win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed()) {
