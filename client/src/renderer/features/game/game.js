@@ -6,7 +6,63 @@
 import { dom } from '../../utils/dom.js';
 import { logToConsole } from '../console/index.js';
 import { getCurrentUsername, getAuthToken } from '../auth/index.js';
-import { getCurrentConfig, settingsChanged, saveSettings } from '../settings/index.js';
+import { getCurrentConfig, settingsChanged, saveSettings, closeSettings } from '../settings/index.js';
+
+/**
+ * Заблокировать кнопки настроек и шапки при запуске
+ */
+export function lockControlsForLaunch() {
+    try {
+        closeSettings();
+    } catch (e) {
+        // ignore
+    }
+    
+    const btnSettings = dom.get('btn-settings');
+    const btnChangelog = dom.get('btn-changelog');
+    const titleBtn = dom.get('title-bar-title');
+    const settingsTabsBar = dom.get('settings-tabs-bar');
+    
+    if (btnSettings) {
+        btnSettings.classList.add('disabled-launch');
+        btnSettings.setAttribute('disabled', 'true');
+        btnSettings.setAttribute('title', 'Настройки недоступны во время запуска');
+    }
+    if (btnChangelog) {
+        btnChangelog.classList.add('disabled-launch');
+        btnChangelog.setAttribute('disabled', 'true');
+        btnChangelog.setAttribute('title', 'Обновления недоступны во время запуска');
+    }
+    if (titleBtn) {
+        titleBtn.classList.add('disabled-launch');
+    }
+    if (settingsTabsBar) {
+        settingsTabsBar.classList.add('hidden');
+    }
+}
+
+/**
+ * Разблокировать кнопки настроек и шапки после завершения/отмены запуска
+ */
+export function unlockControlsAfterLaunch() {
+    const btnSettings = dom.get('btn-settings');
+    const btnChangelog = dom.get('btn-changelog');
+    const titleBtn = dom.get('title-bar-title');
+    
+    if (btnSettings) {
+        btnSettings.classList.remove('disabled-launch');
+        btnSettings.removeAttribute('disabled');
+        btnSettings.setAttribute('title', 'Настройки');
+    }
+    if (btnChangelog) {
+        btnChangelog.classList.remove('disabled-launch');
+        btnChangelog.removeAttribute('disabled');
+        btnChangelog.setAttribute('title', 'Обновления сборки');
+    }
+    if (titleBtn) {
+        titleBtn.classList.remove('disabled-launch');
+    }
+}
 
 /**
  * Обновить прогресс-бар игры (реалистичный эффект тления косяка)
@@ -80,12 +136,15 @@ function showPlayScreen() {
         stepPlay.classList.remove('hidden');
         stepPlay.classList.add('fade-in');
     }
+    unlockControlsAfterLaunch();
 }
 
 /**
  * Запустить игру
  */
 export async function startLaunch() {
+    lockControlsForLaunch();
+
     const statusDiv = dom.get('game-status') || dom.get('status');
     const consoleOutput = dom.get('console-output');
     const retryBtn = dom.get('retry-btn');
@@ -140,6 +199,7 @@ export async function startLaunch() {
             logToConsole('[LAUNCHER] Запуск отменен пользователем.');
             showPlayScreen();
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 0);
+            unlockControlsAfterLaunch();
             return;
         }
         
@@ -161,6 +221,7 @@ export async function startLaunch() {
         // Show Retry
         if (retryBtn) retryBtn.classList.remove('hidden');
         if (cancelBtn) cancelBtn.classList.add('hidden');
+        unlockControlsAfterLaunch();
     }
 }
 
@@ -170,6 +231,7 @@ export async function startLaunch() {
 export async function cancelLaunch() {
     logToConsole('[LAUNCHER] Отмена запуска...');
     await window.api.cancelLaunch();
+    unlockControlsAfterLaunch();
 }
 
 /**
@@ -243,6 +305,8 @@ export function initProgressHandlers() {
         if (playBtn) {
             playBtn.disabled = false;
         }
+
+        unlockControlsAfterLaunch();
     });
 }
 

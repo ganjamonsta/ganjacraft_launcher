@@ -273,6 +273,12 @@ export function openSettings(target = 'general') {
     if (!settingsScreen) return;
     if (settingsAnimating) return;
 
+    // Запретить открытие настроек во время запуска игры
+    const stepProgress = document.getElementById('step-progress');
+    if (stepProgress && !stepProgress.classList.contains('hidden')) {
+        return;
+    }
+
     const targetTabId = (typeof target === 'string') ? target : 'general';
 
     // Если экран уже открыт — плавно переключаем вкладку горизонтально

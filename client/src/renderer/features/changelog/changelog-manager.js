@@ -755,6 +755,9 @@ export function closeChangelogScreen(instant = false) {
  * Переключить видимость экрана истории обновлений
  */
 export function toggleChangelogScreen() {
+    const stepProgress = dom.get('step-progress');
+    if (stepProgress && !stepProgress.classList.contains('hidden')) return;
+
     const settingsScreen = dom.get('step-settings');
     const isVisible = settingsScreen && !settingsScreen.classList.contains('hidden') && !settingsScreen.classList.contains('closing');
 
