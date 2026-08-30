@@ -101,6 +101,11 @@ async function render3dSkin(username) {
             skinViewer3d.camera.position.set(0, 0, 70);
             skinViewer3d.zoom = 0.98;
 
+            // По дефолту скин чуть повёрнут (полупрофиль к центру экрана)
+            if (skinViewer3d.playerObject) {
+                skinViewer3d.playerObject.rotation.y = -0.45;
+            }
+
             // Плавная анимация покоя (дыхание и легкое покачивание рук)
             const idleAnim = new skinview3d.IdleAnimation();
             idleAnim.speed = 0.7;
@@ -116,6 +121,9 @@ async function render3dSkin(username) {
             }
         } else {
             await skinViewer3d.loadSkin(skinUrl);
+            if (skinViewer3d.playerObject) {
+                skinViewer3d.playerObject.rotation.y = -0.45;
+            }
         }
 
         // Попытка загрузить плащ
