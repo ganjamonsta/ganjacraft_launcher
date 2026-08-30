@@ -116,19 +116,19 @@ async function render3dSkin(username) {
             console.log('[SKIN-VIEWER] Creating new skinview3d.SkinViewer instance...');
             skinViewer3d = new skinview3d.SkinViewer({
                 canvas: canvas3d,
-                width: 380,
-                height: 375,
+                width: 480,
+                height: 400,
                 skin: skinUrl,
                 model: 'default'
             });
             console.log('[SKIN-VIEWER] skinview3d.SkinViewer created successfully');
 
-            // Камера с запасом по горизонтали для длинных стволов (АК-47, РПГ, миниган)
+            // Камера с комфортным запасом по горизонтали для длинных стволов (АК-47, РПГ, миниган, дробовики)
             skinViewer3d.camera.position.set(-2, 0, 78);
-            skinViewer3d.zoom = 0.70;
+            skinViewer3d.zoom = 0.65;
 
             if (skinViewer3d.playerObject) {
-                skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
+                skinViewer3d.playerObject.position.set(-5.0, -1.0, 0);
                 skinViewer3d.playerObject.rotation.y = 0.38;
             }
 

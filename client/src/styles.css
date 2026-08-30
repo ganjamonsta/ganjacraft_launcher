@@ -1673,7 +1673,7 @@ body {
 }
 
 .skin-viewer-wrapper.frameless-skin {
-    width: 230px;
+    width: 480px;
     flex: 1 1 auto;
     height: 100%;
     min-height: 0;
@@ -1694,11 +1694,12 @@ body {
 }
 
 .skin-viewer-wrapper canvas {
-    width: 230px !important;
+    width: 480px !important;
     height: 100% !important;
-    max-height: 430px !important;
+    max-height: 400px !important;
     display: block;
     filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.75));
+    overflow: visible;
 }
 
 /* Modern Player Stats Bar Under Character */
