@@ -20,7 +20,7 @@
     position: absolute;
     top: -2.5%; left: -2.5%;
     width: 105%; height: 105%;
-    background-image: url('assets/images/walls/gcr-launcher-wall.avif');
+    background-image: url('../assets/images/walls/gcr-launcher-wall.avif');
     background-size: cover;
     background-position: center;
     opacity: 0.45;

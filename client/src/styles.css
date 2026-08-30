@@ -1836,17 +1836,8 @@ body {
     overflow: visible;
 }
 
-.geometry-wireframe {
-    transform-origin: 100px 100px;
-    animation: sacred-grid-spin 60s linear infinite;
-}
 
-@keyframes sacred-grid-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.cannabis-leaf-group {
+.emblem-leaf-group {
     animation: leaf-soft-breathe 4s ease-in-out infinite alternate;
     transform-origin: 100px 100px;
 }
