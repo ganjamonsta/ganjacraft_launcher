@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.0.184",
+    "date": "2026-08-30T12:04:53.238Z",
+    "timestamp": 1788091493,
+    "title": "Релиз v1.0.184",
+    "description": "Расширение охватываемой инфы про патчи в патчноутах",
+    "changes": [
+      "✨ Implement changelog manager and define UI styles for release feed and patch notes",
+      "🐛 Use local electron-builder binary in trigger script",
+      "🐛 Add three dependency to package.json and improve remote linux build script",
+      "✨ Add dashboard styles and launcher updater module to improve UI and game management capabilities",
+      "✨ Новый апдейтер",
+      "✨ Implement initial core UI styling and architecture for GanjaCraft launcher modules",
+      "✨ Heroic wide combat stance for legs"
+    ]
+  },
+  {
     "version": "1.0.183",
     "date": "2026-08-30T10:34:42.239Z",
     "timestamp": 1788086082,
