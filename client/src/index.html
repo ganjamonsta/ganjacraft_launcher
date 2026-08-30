@@ -650,11 +650,28 @@
                                     <line x1="22" y1="110" x2="100" y2="154" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
                                     <path d="M76 146 L64 140 M60 137 L49 131 M44 127 L35 121" stroke="#ffffff" stroke-width="0.6" opacity="0.3"/>
 
-                                    <!-- 5. Lower Right Blade -->
-                                    <path class="leaf-blade blade-lower-right" d="M100 154 C119 143 137 135 145 131 L145 135 L155 125 L156 129 L166 119 L167 123 L180 108 L169 116 L171 119 L159 128 L161 132 L147 140 L150 144 L133 150 C123 153 112 154 100 154 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.0" />
-                                    <!-- Lower Right Veins -->
-                                    <line x1="178" y1="110" x2="100" y2="154" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
-                                    <path d="M124 146 L136 140 M140 137 L151 131 M156 127 L165 121" stroke="#ffffff" stroke-width="0.6" opacity="0.3"/>
+                                    <!-- 5. Lower Right Blade (Torn / Severed — Left 4 Dead Style) -->
+                                    <g class="torn-blade-group">
+                                        <!-- Severed Jagged Leaf Base / Stump -->
+                                        <path class="leaf-blade blade-lower-right blade-torn" d="M100 154 C112 147 122 141 129 137 L132 135 L130 139 L135 137 L133 140 L141 138 L136 141 L146 142 L137 144 L143 147 L134 147 L137 150 L129 149 C119 152 109 153 100 154 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="1.1" />
+                                        
+                                        <!-- Broken Vein Stems inside Stump -->
+                                        <line x1="100" y1="154" x2="141" y2="142" stroke="#ffffff" stroke-width="0.8" opacity="0.6"/>
+                                        <path d="M116 149 L126 143 M127 146 L134 141" stroke="#ffffff" stroke-width="0.6" opacity="0.4"/>
+                                        
+                                        <!-- Protruding Torn Fiber Ends -->
+                                        <line x1="140" y1="142" x2="149" y2="141" stroke="#39ff14" stroke-width="1.2" stroke-linecap="round" />
+                                        <line x1="136" y1="144" x2="145" y2="145" stroke="#a6ff00" stroke-width="1" stroke-linecap="round" />
+                                        <line x1="134" y1="147" x2="142" y2="149" stroke="#84ff00" stroke-width="0.9" stroke-linecap="round" />
+                                        
+                                        <!-- Floating Severed Leaf Fragments (L4D Tear Effect) -->
+                                        <path class="leaf-shard shard-1" d="M154 133 L162 129 L168 122 L164 128 L159 134 L155 137 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.9" opacity="0.85" />
+                                        <path class="leaf-shard shard-2" d="M171 118 L179 110 L174 116 L170 121 Z" fill="url(#leaf-grad-vivid)" stroke="#84ff00" stroke-width="0.8" opacity="0.7" />
+                                        
+                                        <circle cx="150" cy="138" r="1.2" fill="#39ff14" opacity="0.9"/>
+                                        <circle cx="158" cy="144" r="0.9" fill="#a6ff00" opacity="0.75"/>
+                                        <circle cx="166" cy="126" r="0.8" fill="#84ff00" opacity="0.6"/>
+                                    </g>
 
                                     <!-- Leaf Stem -->
                                     <path d="M100 154 C100 162 99 170 97 178" stroke="#39ff14" stroke-width="2.6" stroke-linecap="round" />
