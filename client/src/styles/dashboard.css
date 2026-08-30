@@ -287,7 +287,7 @@
     }
 }
 
-/* ── Launch Active State (Logo slides up to clear the shooting range) ── */
+/* ── Launch Active State (Player Centers, Background Cards Hide cleanly) ── */
 body.is-game-launching .hero-brand-section.center-brand,
 .is-game-launching .hero-brand-section.center-brand,
 body.is-game-launching .cyber-brand-header,
@@ -298,11 +298,56 @@ body.is-game-launching .cyber-brand-header,
     visibility: hidden !important;
 }
 
+body.is-game-launching .player-stats-bar-modern,
+.is-game-launching .player-stats-bar-modern,
+body.is-game-launching .server-status-card,
+.is-game-launching .server-status-card,
+body.is-game-launching .server-status-card-modern,
+.is-game-launching .server-status-card-modern,
+body.is-game-launching .play-brand-group,
+.is-game-launching .play-brand-group {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transform: scale(0.9) !important;
+    transition: all 0.35s ease !important;
+}
+
+body.is-game-launching .player-character-section,
+.is-game-launching .player-character-section {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -52%) !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    height: 330px !important;
+    z-index: 95 !important;
+    pointer-events: none !important;
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.is-game-launching .player-nametag-wrapper,
+.is-game-launching .player-nametag-wrapper {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+body.is-game-launching .skin-viewer-wrapper canvas,
+.is-game-launching .skin-viewer-wrapper canvas {
+    width: 220px !important;
+    max-height: 320px !important;
+    transform: scale(0.82) !important;
+    filter: drop-shadow(0 0 25px rgba(57, 255, 20, 0.5)) drop-shadow(0 15px 25px rgba(0, 0, 0, 0.8)) !important;
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
 body.is-game-launching .sacred-leaf-wrapper,
 .is-game-launching .sacred-leaf-wrapper {
-    opacity: 0.12 !important;
+    opacity: 0.1 !important;
     transform: scale(0.85) !important;
-    filter: blur(2px) !important;
+    filter: blur(3px) !important;
     transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 

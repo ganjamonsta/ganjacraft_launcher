@@ -1,7 +1,8 @@
 /**
- * Ganj4Craft Launcher - Gun Shooter Mini-Game Engine v2.0
- * 3D Прицеливание персонажа, арсенал из 5 видов оружия, автострельба,
- * эпические боссы с полосками HP, прокачка и сохранение в профиле.
+ * Ganj4Craft Launcher - Gun Shooter Mini-Game Engine v2.1
+ * 3D Персонаж по центру экрана, здоровье и броня игрока,
+ * мобы нападают со всех сторон с детальным Pixel-Art дизайном,
+ * 5 видов оружия, автострельба, боссы и глубокая прокачка.
  */
 
 import * as THREE from 'three';
@@ -18,7 +19,7 @@ export const WEAPONS = {
         key: '1',
         icon: '🔫',
         damage: 14,
-        cooldown: 260, // ms
+        cooldown: 260,
         speed: 28,
         color: '#39ff14',
         unlockCost: 0,
@@ -45,7 +46,7 @@ export const WEAPONS = {
         key: '3',
         icon: '⚡',
         damage: 7,
-        cooldown: 85, // Высокая скорострельность при зажатии ЛКМ
+        cooldown: 85,
         speed: 32,
         color: '#00f2fe',
         unlockCost: 280,
@@ -96,6 +97,12 @@ class GunShooterEngine {
         this.damageNumbers = [];
         this.coinsEntities = [];
 
+        // Здоровье и защита игрока
+        this.playerMaxHp = 100;
+        this.playerHp = 100;
+        this.isPlayerInvincible = false;
+        this.lastRegenTime = performance.now();
+
         // 3D скин
         this.gunMesh = null;
         this.isGunAttached = false;
@@ -119,7 +126,10 @@ class GunShooterEngine {
             damage: 0,
             fireRate: 0,
             critChance: 0,
-            multiShot: 0
+            multiShot: 0,
+            maxHp: 0,
+            armor: 0,
+            regen: 0
         };
 
         // Босс
@@ -133,6 +143,7 @@ class GunShooterEngine {
 
         // UI элементы
         this.crosshairElem = null;
+        this.playerDefenseElem = null;
         this.bossHudElem = null;
         this.hotbarElem = null;
         this.topControlsElem = null;
@@ -170,11 +181,15 @@ class GunShooterEngine {
         } catch (e) {
             console.debug('[ShooterEngine] Load save error', e);
         }
+        this.updatePlayerStatsFromUpgrades();
     }
 
-    /**
-     * Сохранение прогресса
-     */
+    updatePlayerStatsFromUpgrades() {
+        this.playerMaxHp = 100 + (this.upgrades.maxHp || 0) * 25;
+        this.playerHp = this.playerMaxHp;
+        this.updatePlayerDefenseHUD();
+    }
+
     saveProgression() {
         try {
             const data = {
@@ -191,12 +206,10 @@ class GunShooterEngine {
         }
     }
 
-    /**
-     * Инициализация холста и слушателей
-     */
     init() {
         this.ensureCanvas();
         this.ensureCrosshair();
+        this.ensurePlayerDefenseHUD();
         this.ensureBossHUD();
         this.ensureHotbarHUD();
         this.ensureTopControlsHUD();
@@ -237,9 +250,6 @@ class GunShooterEngine {
         }
     }
 
-    /**
-     * Прицел
-     */
     ensureCrosshair() {
         if (this.crosshairElem) return;
 
@@ -260,8 +270,91 @@ class GunShooterEngine {
     }
 
     /**
-     * Полоса здоровья босса (Boss Health Bar)
+     * Полоса здоровья главного героя (по центру над персонажем)
      */
+    ensurePlayerDefenseHUD() {
+        if (this.playerDefenseElem) return;
+
+        const container = document.createElement('div');
+        container.id = 'player-defense-hud';
+        container.className = 'player-defense-hud hidden';
+        container.innerHTML = `
+            <div class="player-defense-nametag" id="player-defense-nametag">OPERATOR</div>
+            <div class="player-defense-hp-track">
+                <div class="player-defense-hp-fill" id="player-defense-hp-fill" style="width: 100%;"></div>
+            </div>
+            <div class="player-defense-hp-text" id="player-defense-hp-text">100 / 100 HP</div>
+        `;
+
+        document.body.appendChild(container);
+        this.playerDefenseElem = container;
+    }
+
+    updatePlayerDefenseHUD() {
+        if (!this.playerDefenseElem) return;
+        const hpText = dom.get('player-defense-hp-text');
+        const hpFill = dom.get('player-defense-hp-fill');
+        const nametag = dom.get('player-defense-nametag');
+
+        const pct = Math.max(0, Math.min(100, (this.playerHp / this.playerMaxHp) * 100));
+        if (hpFill) hpFill.style.width = `${pct}%`;
+        if (hpText) hpText.innerText = `${Math.round(this.playerHp)} / ${this.playerMaxHp} HP`;
+    }
+
+    damagePlayer(rawAmount) {
+        if (this.isPlayerInvincible) return;
+
+        // Расчет урона с учетом брони
+        const armorReduction = Math.min(0.55, (this.upgrades.armor || 0) * 0.08);
+        const damageTaken = Math.max(2, Math.round(rawAmount * (1 - armorReduction)));
+
+        this.playerHp = Math.max(0, this.playerHp - damageTaken);
+        this.updatePlayerDefenseHUD();
+
+        // Всплывающий урон над героем
+        this.spawnDamageNumber(this.width / 2, this.height / 2 - 40, damageTaken, true, 'player_hit');
+
+        // Звук получения урона
+        audioSynth.playError();
+        this.triggerScreenShake(6);
+
+        // Вспышка экрана
+        document.body.classList.remove('player-damaged');
+        void document.body.offsetWidth;
+        document.body.classList.add('player-damaged');
+        setTimeout(() => document.body.classList.remove('player-damaged'), 300);
+
+        if (this.playerHp <= 0) {
+            this.onPlayerDeath();
+        }
+    }
+
+    onPlayerDeath() {
+        // Защитная EMP-волна, уничтожающая всех мобов вокруг
+        audioSynth.playBassDrop();
+        this.triggerScreenShake(14);
+        this.createExplosion(this.width / 2, this.height / 2, 'lucky_block');
+        this.createExplosion(this.width / 2 - 40, this.height / 2, 'tnt');
+        this.createExplosion(this.width / 2 + 40, this.height / 2, 'creeper');
+
+        this.targets.forEach(t => {
+            t.alive = false;
+            this.createExplosion(t.x, t.y, t.type);
+        });
+        this.targets = [];
+
+        // Восстановление здоровья и временная неуязвимость
+        this.isPlayerInvincible = true;
+        this.playerHp = this.playerMaxHp;
+        this.updatePlayerDefenseHUD();
+
+        particlePopper.spawnFloatingScore(this.width / 2, this.height / 2 - 60, '⚡ АВАРИЙНЫЙ ЩИТ! ПЕРЕЗАГРУЗКА');
+
+        setTimeout(() => {
+            this.isPlayerInvincible = false;
+        }, 3200);
+    }
+
     ensureBossHUD() {
         if (this.bossHudElem) return;
 
@@ -286,9 +379,6 @@ class GunShooterEngine {
         this.bossHudElem = container;
     }
 
-    /**
-     * Хотбар оружия (1-5)
-     */
     ensureHotbarHUD() {
         if (this.hotbarElem) return;
 
@@ -324,9 +414,8 @@ class GunShooterEngine {
 
         this.hotbarElem.innerHTML = html;
 
-        // Навешиваем клики на слоты
         this.hotbarElem.querySelectorAll('.weapon-slot').forEach(slot => {
-            slot.addEventListener('click', (e) => {
+            slot.addEventListener('click', () => {
                 const wid = slot.getAttribute('data-weapon-id');
                 if (this.unlockedWeapons.includes(wid)) {
                     this.switchWeapon(wid);
@@ -337,9 +426,6 @@ class GunShooterEngine {
         });
     }
 
-    /**
-     * Верхние элементы (монеты + кнопка магазина)
-     */
     ensureTopControlsHUD() {
         if (this.topControlsElem) return;
 
@@ -366,9 +452,6 @@ class GunShooterEngine {
         }
     }
 
-    /**
-     * Окно магазина улучшений и арсенала
-     */
     ensureShopModal() {
         if (this.shopModalElem) return;
 
@@ -384,9 +467,7 @@ class GunShooterEngine {
                     </div>
                     <button class="shooter-shop-close" id="shooter-shop-close">✕</button>
                 </div>
-                <div class="shooter-shop-body" id="shooter-shop-body">
-                    <!-- Заполняется динамически -->
-                </div>
+                <div class="shooter-shop-body" id="shooter-shop-body"></div>
             </div>
         `;
 
@@ -402,9 +483,6 @@ class GunShooterEngine {
         });
     }
 
-    /**
-     * Открыть / закрыть магазин
-     */
     toggleShop() {
         if (this.isShopOpen) this.closeShop();
         else this.openShop();
@@ -464,12 +542,15 @@ class GunShooterEngine {
         });
         html += `</div>`;
 
-        // 2. Улучшения характеристик
+        // 2. Улучшения характеристик и здоровья
         const upgradeItems = [
             { key: 'damage', name: '💥 Урон пушек', desc: '+15% к урону всех орудий', baseCost: 50 },
             { key: 'fireRate', name: '⚡ Скорострельность', desc: '+12% к скорости стрельбы', baseCost: 50 },
             { key: 'critChance', name: '🎯 Шанс крита', desc: '+5% к шансу нанести 2.5x урон', baseCost: 60 },
-            { key: 'multiShot', name: '🔱 Мульти-выстрел', desc: '+1 параллельный снаряд', baseCost: 250, max: 3 }
+            { key: 'multiShot', name: '🔱 Мульти-выстрел', desc: '+1 параллельный снаряд', baseCost: 250, max: 3 },
+            { key: 'maxHp', name: '💖 Макс. Здоровье', desc: '+25 HP к шкале защиты', baseCost: 60 },
+            { key: 'armor', name: '🛡️ Кибер-Броня', desc: '-8% входящего урона', baseCost: 80, max: 6 },
+            { key: 'regen', name: '🧬 Био-Регенерация', desc: '+2 HP каждые 2 секунды', baseCost: 100, max: 5 }
         ];
 
         html += `<div class="shop-section-title" style="margin-top:15px;"><span>⚙️</span> <span>МОДИФИКАЦИИ БОЙЦА</span></div>`;
@@ -479,7 +560,7 @@ class GunShooterEngine {
             const currentLvl = this.upgrades[item.key] || 0;
             const maxLvl = item.max || 10;
             const isMax = currentLvl >= maxLvl;
-            const cost = Math.round(item.baseCost * Math.pow(1.5, currentLvl));
+            const cost = Math.round(item.baseCost * Math.pow(1.45, currentLvl));
             const canAfford = this.coins >= cost;
 
             html += `
@@ -506,7 +587,6 @@ class GunShooterEngine {
 
         body.innerHTML = html;
 
-        // Слушатели покупок оружия
         body.querySelectorAll('[data-buy-weapon]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const wid = btn.getAttribute('data-buy-weapon');
@@ -524,7 +604,6 @@ class GunShooterEngine {
             });
         });
 
-        // Слушатели покупок улучшений
         body.querySelectorAll('[data-buy-upgrade]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const upKey = btn.getAttribute('data-buy-upgrade');
@@ -533,6 +612,7 @@ class GunShooterEngine {
                     this.coins -= cost;
                     this.upgrades[upKey] = (this.upgrades[upKey] || 0) + 1;
                     audioSynth.playUpgradePurchased();
+                    this.updatePlayerStatsFromUpgrades();
                     this.saveProgression();
                     this.renderShopContent();
                     this.updateCoinsDisplay();
@@ -548,9 +628,6 @@ class GunShooterEngine {
         }
     }
 
-    /**
-     * Смена текущего оружия
-     */
     switchWeapon(weaponId) {
         if (WEAPONS[weaponId] && this.unlockedWeapons.includes(weaponId)) {
             this.currentWeaponId = weaponId;
@@ -558,23 +635,18 @@ class GunShooterEngine {
             this.updateHotbarView();
             this.saveProgression();
 
-            // Всплывающее оповещение
             const w = WEAPONS[weaponId];
             particlePopper.spawnFloatingScore(
                 window.innerWidth / 2,
-                window.innerHeight - 90,
+                window.innerHeight - 140,
                 `${w.icon} ${w.name.toUpperCase()}`
             );
         }
     }
 
-    /**
-     * Переключение горячими клавишами 1-5, B/U
-     */
     handleKeyDown(e) {
         if (!this.isGameLaunching || this.isLogModalOpen) return;
 
-        // 1-5
         if (['1', '2', '3', '4', '5'].includes(e.key)) {
             const keys = Object.keys(WEAPONS);
             const index = parseInt(e.key, 10) - 1;
@@ -607,9 +679,6 @@ class GunShooterEngine {
         this.switchWeapon(unlocked[nextIdx]);
     }
 
-    /**
-     * Прикрепить 3D кибер-бластер к руке скина
-     */
     attach3DGun() {
         const viewer = getSkinViewer3d();
         if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) {
@@ -631,28 +700,24 @@ class GunShooterEngine {
         const gunGroup = new THREE.Group();
         gunGroup.name = 'CyberBlaster';
 
-        // Рукоять
         const gripGeo = new THREE.BoxGeometry(1.6, 3.2, 2.0);
         const gripMat = new THREE.MeshBasicMaterial({ color: 0x111813 });
         const gripMesh = new THREE.Mesh(gripGeo, gripMat);
         gripMesh.position.set(0, -0.8, 0);
         gunGroup.add(gripMesh);
 
-        // Корпус
         const bodyGeo = new THREE.BoxGeometry(2.4, 3.4, 7.5);
         const bodyMat = new THREE.MeshBasicMaterial({ color: 0x1f2937 });
         const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
         bodyMesh.position.set(0, 1.2, 2.6);
         gunGroup.add(bodyMesh);
 
-        // Неоновый энергетический сердечник
         const coreGeo = new THREE.BoxGeometry(2.5, 0.8, 4.5);
         const coreMat = new THREE.MeshBasicMaterial({ color: 0x39ff14 });
         const coreMesh = new THREE.Mesh(coreGeo, coreMat);
         coreMesh.position.set(0, 1.6, 2.8);
         gunGroup.add(coreMesh);
 
-        // Ствол
         const barrelGeo = new THREE.BoxGeometry(1.8, 1.8, 3.5);
         const barrelMat = new THREE.MeshBasicMaterial({ color: 0x059669 });
         const barrelMesh = new THREE.Mesh(barrelGeo, barrelMat);
@@ -697,9 +762,6 @@ class GunShooterEngine {
         }
     }
 
-    /**
-     * Прицеливание мыши
-     */
     handleMouseMove(e) {
         if (!this.isGameLaunching || this.isLogModalOpen) {
             if (this.crosshairElem && !this.crosshairElem.classList.contains('hidden')) {
@@ -720,46 +782,38 @@ class GunShooterEngine {
         const mode = getSkinViewerMode();
         if (mode !== '3d' || !viewer || !viewer.playerObject) return;
 
-        const skinCanvas = dom.get('skin-canvas-3d');
-        if (!skinCanvas) return;
+        // Центр экрана
+        const originX = this.width / 2;
+        const originY = this.height / 2 - 10;
 
-        const rect = skinCanvas.getBoundingClientRect();
-        const originX = rect.left + rect.width * 0.45;
-        const originY = rect.top + rect.height * 0.38;
-
-        const deltaX = (e.clientX - originX) / (window.innerWidth / 2);
-        const deltaY = (e.clientY - originY) / (window.innerHeight / 2);
+        const deltaX = (e.clientX - originX) / (this.width / 2);
+        const deltaY = (e.clientY - originY) / (this.height / 2);
 
         // Поворот тела
-        const targetBodyRotY = -0.45 + Math.max(-0.6, Math.min(0.65, deltaX * 0.75));
-        viewer.playerObject.rotation.y += (targetBodyRotY - viewer.playerObject.rotation.y) * 0.18;
+        const targetBodyRotY = Math.max(-1.0, Math.min(1.0, deltaX * 1.1));
+        viewer.playerObject.rotation.y += (targetBodyRotY - viewer.playerObject.rotation.y) * 0.2;
 
         const rightArm = viewer.playerObject.skin.rightArm;
         const head = viewer.playerObject.skin.head;
 
-        // Поворот руки
         if (rightArm) {
             const targetRotX = -Math.PI / 2 + Math.max(-0.6, Math.min(0.6, deltaY * 0.75));
-            const targetRotY = Math.max(-0.4, Math.min(0.4, deltaX * 0.45));
-            const targetRotZ = Math.max(-0.2, Math.min(0.2, deltaY * 0.3));
+            const targetRotY = Math.max(-0.5, Math.min(0.5, deltaX * 0.5));
+            const targetRotZ = Math.max(-0.3, Math.min(0.3, deltaY * 0.3));
 
             rightArm.rotation.x += (targetRotX - rightArm.rotation.x) * 0.25;
             rightArm.rotation.y += (targetRotY - rightArm.rotation.y) * 0.25;
             rightArm.rotation.z += (targetRotZ - rightArm.rotation.z) * 0.25;
         }
 
-        // Поворот головы
         if (head) {
-            const headRotY = Math.max(-0.6, Math.min(0.6, deltaX * 0.6));
+            const headRotY = Math.max(-0.7, Math.min(0.7, deltaX * 0.7));
             const headRotX = Math.max(-0.4, Math.min(0.4, deltaY * 0.5));
             head.rotation.y += (headRotY - head.rotation.y) * 0.2;
             head.rotation.x += (headRotX - head.rotation.x) * 0.2;
         }
     }
 
-    /**
-     * Обработка нажатия клавиши мыши (старт автострельбы)
-     */
     handlePointerDown(e) {
         if (!this.isGameLaunching || this.isLogModalOpen || this.isShopOpen) return;
 
@@ -776,40 +830,26 @@ class GunShooterEngine {
         this.isFiring = false;
     }
 
-    /**
-     * Текущее оружие со всеми бонусами прокачки
-     */
     getCurrentWeapon() {
         return WEAPONS[this.currentWeaponId] || WEAPONS.blaster;
     }
 
-    /**
-     * Произвести выстрел из текущего оружия
-     */
     fireCurrentWeapon(targetX, targetY) {
         const weapon = this.getCurrentWeapon();
-        const skinCanvas = dom.get('skin-canvas-3d');
-        let startX = 140;
-        let startY = 220;
-
-        if (skinCanvas) {
-            const rect = skinCanvas.getBoundingClientRect();
-            startX = rect.left + rect.width * 0.62;
-            startY = rect.top + rect.height * 0.42;
-        }
+        // Стрельба прямо из центра экрана (где стоит игрок)
+        const startX = this.width / 2 + 10;
+        const startY = this.height / 2 - 15;
 
         const dx = targetX - startX;
         const dy = targetY - startY;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist === 0) return;
 
-        // Расчет урона и бонусов
         const dmgMult = 1 + (this.upgrades.damage * 0.15);
         const isCrit = Math.random() < (0.08 + this.upgrades.critChance * 0.05);
         const finalDamage = Math.round(weapon.damage * dmgMult * (isCrit ? 2.5 : 1));
         const extraPellets = this.upgrades.multiShot || 0;
 
-        // Выстрел в зависимости от типа оружия
         if (weapon.id === 'shotgun') {
             const totalPellets = (weapon.pellets || 5) + extraPellets * 2;
             for (let p = 0; p < totalPellets; p++) {
@@ -852,7 +892,6 @@ class GunShooterEngine {
             });
             audioSynth.playSMG();
         } else if (weapon.id === 'railgun') {
-            // BFG Рельсотрон - мгновенный пробивающий луч
             const vx = (dx / dist) * weapon.speed;
             const vy = (dy / dist) * weapon.speed;
 
@@ -895,7 +934,6 @@ class GunShooterEngine {
             });
             audioSynth.playRocketLaunch();
         } else {
-            // Базовый бластер (+ мультишот)
             const shots = 1 + extraPellets;
             for (let s = 0; s < shots; s++) {
                 const spreadAngle = shots > 1 ? (s - (shots - 1) / 2) * 0.1 : 0;
@@ -919,7 +957,6 @@ class GunShooterEngine {
             audioSynth.playLaserShot();
         }
 
-        // Вспышка у дула
         this.muzzleFlashes.push({
             x: startX,
             y: startY,
@@ -929,13 +966,12 @@ class GunShooterEngine {
             color: weapon.color
         });
 
-        // Отдача
         this.triggerGunRecoil(weapon.id === 'railgun' ? 1.8 : 1.0);
     }
 
     triggerScreenShake(intensity = 4) {
         document.body.classList.remove('screen-shaking');
-        void document.body.offsetWidth; // Reflow
+        void document.body.offsetWidth;
         document.body.classList.add('screen-shaking');
         setTimeout(() => document.body.classList.remove('screen-shaking'), 220);
     }
@@ -959,17 +995,16 @@ class GunShooterEngine {
     }
 
     /**
-     * Спавн мишеней и проверка появления БОССА
+     * Спавн мобов по периметру экрана, летящих к игроку в центр
      */
-    startTargetSpawner(intervalMs = 1400) {
+    startTargetSpawner(intervalMs = 1300) {
         if (this.targetSpawnTimer) clearInterval(this.targetSpawnTimer);
 
         this.targetSpawnTimer = setInterval(() => {
             if (this.isGameLaunching && !this.isLogModalOpen && !this.isShopOpen) {
-                // Проверка спавна босса каждые 12 фрагов
                 if (!this.currentBoss && (this.kills - this.lastBossKills >= 12)) {
                     this.spawnBoss();
-                } else if (this.targets.length < 6) {
+                } else if (this.targets.length < 8) {
                     this.spawnTarget();
                 }
             }
@@ -979,35 +1014,78 @@ class GunShooterEngine {
     spawnTarget() {
         if (!this.isGameLaunching) return;
 
-        const types = ['creeper', 'drone', 'tnt', 'lucky_block'];
-        const type = types[Math.floor(Math.random() * types.length)];
+        const mobPool = ['zombie', 'creeper', 'spider', 'skeleton', 'tnt', 'lucky_block'];
+        const type = mobPool[Math.floor(Math.random() * mobPool.length)];
 
-        const fromLeft = Math.random() > 0.5;
-        const startX = fromLeft ? -50 : this.width + 50;
-        const y = 90 + Math.random() * (this.height - 240);
-        const speed = (fromLeft ? 1 : -1) * (1.3 + Math.random() * 2.0);
+        // Спавн с одной из 4 сторон периметра экрана
+        const side = Math.floor(Math.random() * 4);
+        let startX = 0;
+        let startY = 0;
+
+        if (side === 0) { // Сверху
+            startX = Math.random() * this.width;
+            startY = -50;
+        } else if (side === 1) { // Справа
+            startX = this.width + 50;
+            startY = 70 + Math.random() * (this.height - 180);
+        } else if (side === 2) { // Снизу
+            startX = Math.random() * this.width;
+            startY = this.height + 50;
+        } else { // Слева
+            startX = -50;
+            startY = 70 + Math.random() * (this.height - 180);
+        }
+
+        let baseHp = 18;
+        let speed = 1.35;
+        let damage = 12;
+        let width = 46;
+        let height = 46;
+
+        if (type === 'zombie') {
+            baseHp = 22;
+            speed = 1.3;
+            damage = 14;
+        } else if (type === 'creeper') {
+            baseHp = 16;
+            speed = 1.6;
+            damage = 30; // Высокий урон при детонации
+        } else if (type === 'spider') {
+            baseHp = 12;
+            speed = 2.4; // Очень быстрый
+            damage = 8;
+            width = 44;
+            height = 36;
+        } else if (type === 'skeleton') {
+            baseHp = 18;
+            speed = 1.1;
+            damage = 15;
+        } else if (type === 'tnt') {
+            baseHp = 10;
+            speed = 2.0;
+            damage = 25;
+        } else if (type === 'lucky_block') {
+            baseHp = 28;
+            speed = 0.85;
+            damage = 0; // Мирный бонусный блок
+        }
 
         this.targets.push({
             type,
             x: startX,
-            y,
-            baseY: y,
-            vx: speed,
-            wobbleOffset: Math.random() * Math.PI * 2,
-            wobbleSpeed: 0.04 + Math.random() * 0.03,
-            wobbleAmp: 18 + Math.random() * 15,
-            width: 46,
-            height: 46,
+            y: startY,
+            speed,
+            damage,
+            width,
+            height,
             alive: true,
-            hp: type === 'lucky_block' ? 30 : 15,
-            maxHp: type === 'lucky_block' ? 30 : 15,
+            hp: baseHp,
+            maxHp: baseHp,
+            wobble: Math.random() * Math.PI * 2,
             createdAt: performance.now()
         });
     }
 
-    /**
-     * Спавн БОССА
-     */
     spawnBoss() {
         this.lastBossKills = this.kills;
         const bossTypes = ['cyber_wither', 'giga_creeper', 'ender_drone'];
@@ -1036,14 +1114,14 @@ class GunShooterEngine {
             hp: maxHp,
             maxHp,
             x: this.width / 2,
-            y: -100, // Вылетает сверху
-            targetY: 130 + Math.random() * 60,
+            y: -100,
+            targetY: 130 + Math.random() * 50,
             vx: 2.2,
             width,
             height,
             isEnraged: false,
             wobble: 0,
-            fuseTimer: type === 'giga_creeper' ? 14 : null, // 14 секунд детонации
+            fuseTimer: type === 'giga_creeper' ? 14 : null,
             lastTeleport: performance.now(),
             createdAt: performance.now()
         };
@@ -1051,7 +1129,6 @@ class GunShooterEngine {
         audioSynth.playBossWarning();
         this.triggerScreenShake(8);
 
-        // Обновляем Boss HUD
         if (this.bossHudElem) {
             this.bossHudElem.classList.add('visible');
             this.bossHudElem.classList.remove('enraged');
@@ -1066,7 +1143,6 @@ class GunShooterEngine {
             if (hpFillEl) hpFillEl.style.width = '100%';
         }
 
-        // Всплывающее предупреждение
         particlePopper.spawnFloatingScore(
             this.width / 2,
             180,
@@ -1074,26 +1150,24 @@ class GunShooterEngine {
         );
     }
 
-    /**
-     * Включение / выключение игрового режима при запуске
-     */
     setGameLaunchingMode(isLaunching) {
         this.isGameLaunching = isLaunching;
         this.isActive = isLaunching;
         this.isFiring = false;
 
         if (isLaunching) {
+            this.updatePlayerStatsFromUpgrades();
             this.attach3DGun();
-            this.startTargetSpawner(1400);
+            this.startTargetSpawner(1300);
 
             if (this.crosshairElem) this.crosshairElem.classList.remove('hidden');
+            if (this.playerDefenseElem) this.playerDefenseElem.classList.remove('hidden');
             if (this.hotbarElem) this.hotbarElem.classList.remove('hidden');
             if (this.topControlsElem) this.topControlsElem.classList.remove('hidden');
 
             this.updateHotbarView();
             this.updateCoinsDisplay();
 
-            // Стартовые мишени
             this.spawnTarget();
             this.spawnTarget();
             this.spawnTarget();
@@ -1112,6 +1186,7 @@ class GunShooterEngine {
             this.currentBoss = null;
 
             if (this.crosshairElem) this.crosshairElem.classList.add('hidden');
+            if (this.playerDefenseElem) this.playerDefenseElem.classList.add('hidden');
             if (this.hotbarElem) this.hotbarElem.classList.add('hidden');
             if (this.topControlsElem) this.topControlsElem.classList.add('hidden');
             if (this.bossHudElem) this.bossHudElem.classList.remove('visible');
@@ -1127,10 +1202,12 @@ class GunShooterEngine {
             this.isFiring = false;
             if (this.canvas) this.canvas.style.display = 'none';
             if (this.crosshairElem) this.crosshairElem.classList.add('hidden');
+            if (this.playerDefenseElem) this.playerDefenseElem.classList.add('hidden');
         } else {
             if (this.canvas) this.canvas.style.display = 'block';
-            if (this.isGameLaunching && this.crosshairElem) {
-                this.crosshairElem.classList.remove('hidden');
+            if (this.isGameLaunching) {
+                if (this.crosshairElem) this.crosshairElem.classList.remove('hidden');
+                if (this.playerDefenseElem) this.playerDefenseElem.classList.remove('hidden');
             }
         }
     }
@@ -1144,13 +1221,16 @@ class GunShooterEngine {
         if (this.ctx && this.isGameLaunching && !this.isLogModalOpen) {
             this.ctx.clearRect(0, 0, this.width, this.height);
 
+            // Регенерация здоровья игрока
+            this.processPlayerRegen();
+
             // 1. Автострельба
             this.processAutoFire();
 
             // 2. Обновление босса
             this.updateAndDrawBoss();
 
-            // 3. Обычные мишени
+            // 3. Мобы, летящие к центру
             this.updateAndDrawTargets();
 
             // 4. Снаряды
@@ -1170,6 +1250,18 @@ class GunShooterEngine {
         this.animId = requestAnimationFrame(this.render);
     }
 
+    processPlayerRegen() {
+        const regenAmount = (this.upgrades.regen || 0) * 2;
+        if (regenAmount > 0 && this.playerHp < this.playerMaxHp) {
+            const now = performance.now();
+            if (now - this.lastRegenTime >= 1500) {
+                this.lastRegenTime = now;
+                this.playerHp = Math.min(this.playerMaxHp, this.playerHp + regenAmount);
+                this.updatePlayerDefenseHUD();
+            }
+        }
+    }
+
     processAutoFire() {
         if (this.isFiring && !this.isShopOpen) {
             const now = performance.now();
@@ -1184,22 +1276,16 @@ class GunShooterEngine {
         }
     }
 
-    /**
-     * Отрисовка и поведение БОССА
-     */
     updateAndDrawBoss() {
         if (!this.currentBoss) return;
         const b = this.currentBoss;
 
-        // Плавный вход сверху
         if (b.y < b.targetY) {
             b.y += (b.targetY - b.y) * 0.08;
         } else {
-            // Паттерны движения
             b.wobble += 0.04;
             b.x += b.vx;
 
-            // Отскок от границ
             if (b.x < b.width) {
                 b.x = b.width;
                 b.vx = Math.abs(b.vx);
@@ -1210,7 +1296,6 @@ class GunShooterEngine {
 
             b.y = b.targetY + Math.sin(b.wobble) * 25;
 
-            // Телепортация для Эндер-Дрона
             if (b.type === 'ender_drone' && performance.now() - b.lastTeleport > 3500) {
                 b.lastTeleport = performance.now();
                 b.x = 100 + Math.random() * (this.width - 200);
@@ -1219,7 +1304,6 @@ class GunShooterEngine {
             }
         }
 
-        // Проверка ярости при HP < 50%
         if (!b.isEnraged && b.hp <= b.maxHp * 0.5) {
             b.isEnraged = true;
             b.vx *= 1.5;
@@ -1242,42 +1326,34 @@ class GunShooterEngine {
         const half = b.width / 2;
 
         if (b.type === 'cyber_wither') {
-            // Кибер-Визер 3 головы
             this.ctx.fillStyle = b.isEnraged ? '#ff0055' : '#1e1b4b';
             this.ctx.shadowColor = b.isEnraged ? '#ff0055' : '#a855f7';
             this.ctx.shadowBlur = 25;
 
-            // Тело
             this.ctx.fillRect(-half * 0.6, -half * 0.4, b.width * 0.6, b.height * 0.8);
 
-            // Центральная голова
             this.ctx.fillStyle = '#0f172a';
             this.ctx.fillRect(-18, -half - 10, 36, 32);
-            // Глаза
             this.ctx.fillStyle = b.isEnraged ? '#ff0055' : '#38bdf8';
             this.ctx.fillRect(-12, -half + 2, 8, 8);
             this.ctx.fillRect(4, -half + 2, 8, 8);
 
-            // Левая голова
             this.ctx.fillStyle = '#0f172a';
             this.ctx.fillRect(-half - 12, -half + 5, 24, 24);
             this.ctx.fillStyle = '#a855f7';
             this.ctx.fillRect(-half - 8, -half + 12, 6, 6);
 
-            // Правая голова
             this.ctx.fillStyle = '#0f172a';
             this.ctx.fillRect(half - 12, -half + 5, 24, 24);
             this.ctx.fillStyle = '#a855f7';
             this.ctx.fillRect(half - 8, -half + 12, 6, 6);
         } else if (b.type === 'giga_creeper') {
-            // Гига-крипер
             this.ctx.fillStyle = b.isEnraged ? '#ef4444' : '#22c55e';
             this.ctx.shadowColor = b.isEnraged ? '#ef4444' : '#39ff14';
             this.ctx.shadowBlur = 30;
 
             this.ctx.fillRect(-half, -half, b.width, b.height);
 
-            // Лицо
             this.ctx.fillStyle = '#052e16';
             const s = b.width / 8;
             this.ctx.fillRect(-half + s, -half + s * 2, s * 2, s * 2);
@@ -1285,7 +1361,6 @@ class GunShooterEngine {
             this.ctx.fillRect(-half + s * 3, -half + s * 3, s * 2, s * 3);
             this.ctx.fillRect(-half + s * 2, -half + s * 4, s * 4, s * 3);
 
-            // Таймер взрыва над головой
             const elapsed = (performance.now() - b.createdAt) / 1000;
             const remaining = Math.max(0, Math.ceil(b.fuseTimer - elapsed));
             this.ctx.fillStyle = '#facc15';
@@ -1293,12 +1368,10 @@ class GunShooterEngine {
             this.ctx.textAlign = 'center';
             this.ctx.fillText(`💣 ДЕТОНАЦИЯ: ${remaining}s`, 0, -half - 15);
         } else {
-            // Эндер-Дрон Омега
             this.ctx.fillStyle = '#581c87';
             this.ctx.shadowColor = '#d946ef';
             this.ctx.shadowBlur = 25;
 
-            // Крылья
             this.ctx.beginPath();
             this.ctx.moveTo(-half - 20, -10);
             this.ctx.lineTo(half + 20, -10);
@@ -1306,7 +1379,6 @@ class GunShooterEngine {
             this.ctx.closePath();
             this.ctx.fill();
 
-            // Фиолетовый глаз
             this.ctx.fillStyle = '#f0abfc';
             this.ctx.beginPath();
             this.ctx.arc(0, 0, 10, 0, Math.PI * 2);
@@ -1317,13 +1389,169 @@ class GunShooterEngine {
     }
 
     /**
-     * Отрисовка плазменных снарядов
+     * Отрисовка и движение мобов прямо на игрока в центр экрана
      */
+    updateAndDrawTargets() {
+        const playerX = this.width / 2;
+        const playerY = this.height / 2;
+
+        for (let i = this.targets.length - 1; i >= 0; i--) {
+            const t = this.targets[i];
+
+            // Вектор к игроку в центре
+            const dx = playerX - t.x;
+            const dy = playerY - t.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 5) {
+                t.vx = (dx / dist) * t.speed;
+                t.vy = (dy / dist) * t.speed;
+                t.x += t.vx;
+                t.y += t.vy;
+            }
+
+            // Проверка достижения игрока (удар по главному герою!)
+            if (dist < 52) {
+                this.damagePlayer(t.damage || 12);
+                this.createExplosion(t.x, t.y, t.type);
+                this.targets.splice(i, 1);
+                continue;
+            }
+
+            this.drawMobPixelArt(t, dist);
+        }
+    }
+
+    /**
+     * Детализированный Pixel Art спрайтов мобов
+     */
+    drawMobPixelArt(t, distToPlayer) {
+        this.ctx.save();
+        this.ctx.translate(t.x, t.y);
+
+        const half = t.width / 2;
+
+        // Полоса здоровья над мобом при получении урона
+        if (t.hp < t.maxHp) {
+            const hpWidth = t.width;
+            const hpPct = Math.max(0, t.hp / t.maxHp);
+            this.ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            this.ctx.fillRect(-half, -half - 10, hpWidth, 4);
+            this.ctx.fillStyle = '#ef4444';
+            this.ctx.fillRect(-half, -half - 10, hpWidth * hpPct, 4);
+        }
+
+        if (t.type === 'zombie') {
+            // Кибер-Зомби с металлическими наплечниками
+            this.ctx.fillStyle = '#065f46';
+            this.ctx.shadowColor = '#10b981';
+            this.ctx.shadowBlur = 10;
+            this.ctx.fillRect(-half, -half, t.width, t.height);
+
+            // Броня/наплечники
+            this.ctx.fillStyle = '#334155';
+            this.ctx.fillRect(-half - 3, -half, 6, 12);
+            this.ctx.fillRect(half - 3, -half, 6, 12);
+
+            // Лицо зомби
+            this.ctx.fillStyle = '#064e3b';
+            this.ctx.fillRect(-half + 6, -half + 8, 8, 8);
+            this.ctx.fillRect(half - 14, -half + 8, 8, 8);
+            // Красный кибер-глаз
+            this.ctx.fillStyle = '#ef4444';
+            this.ctx.fillRect(-half + 8, -half + 10, 4, 4);
+            this.ctx.fillStyle = '#34d399';
+            this.ctx.fillRect(half - 12, -half + 10, 4, 4);
+        } else if (t.type === 'creeper') {
+            // Кибер-крипер (мигает белым вблизи игрока!)
+            const isFlashing = distToPlayer < 180 && Math.floor(performance.now() / 120) % 2 === 0;
+
+            this.ctx.fillStyle = isFlashing ? '#ffffff' : '#22c55e';
+            this.ctx.shadowColor = isFlashing ? '#ffffff' : '#22c55e';
+            this.ctx.shadowBlur = isFlashing ? 22 : 10;
+            this.ctx.fillRect(-half, -half, t.width, t.height);
+
+            this.ctx.fillStyle = isFlashing ? '#ef4444' : '#052e16';
+            const s = t.width / 8;
+            this.ctx.fillRect(-half + s, -half + s * 2, s * 2, s * 2);
+            this.ctx.fillRect(half - s * 3, -half + s * 2, s * 2, s * 2);
+            this.ctx.fillRect(-half + s * 3, -half + s * 3, s * 2, s * 3);
+            this.ctx.fillRect(-half + s * 2, -half + s * 4, s * 4, s * 3);
+        } else if (t.type === 'spider') {
+            // Кибер-Паук с 4 механическими ногами
+            this.ctx.fillStyle = '#1e1b4b';
+            this.ctx.shadowColor = '#ef4444';
+            this.ctx.shadowBlur = 12;
+            this.ctx.fillRect(-half + 4, -half + 4, t.width - 8, t.height - 8);
+
+            // 4 анимированные ноги
+            const legTime = Math.sin(performance.now() * 0.02) * 6;
+            this.ctx.strokeStyle = '#475569';
+            this.ctx.lineWidth = 3;
+            this.ctx.beginPath();
+            // Левые ноги
+            this.ctx.moveTo(-half + 4, -half + 8); this.ctx.lineTo(-half - 10, -half + legTime);
+            this.ctx.moveTo(-half + 4, half - 8); this.ctx.lineTo(-half - 10, half - legTime);
+            // Правые ноги
+            this.ctx.moveTo(half - 4, -half + 8); this.ctx.lineTo(half + 10, -half - legTime);
+            this.ctx.moveTo(half - 4, half - 8); this.ctx.lineTo(half + 10, half + legTime);
+            this.ctx.stroke();
+
+            // Красные светящиеся глаза
+            this.ctx.fillStyle = '#ef4444';
+            this.ctx.fillRect(-half + 10, -half + 10, 4, 4);
+            this.ctx.fillRect(-half + 18, -half + 10, 4, 4);
+            this.ctx.fillRect(half - 14, -half + 10, 4, 4);
+            this.ctx.fillRect(half - 22, -half + 10, 4, 4);
+        } else if (t.type === 'skeleton') {
+            // Кибер-Скелет
+            this.ctx.fillStyle = '#e2e8f0';
+            this.ctx.shadowColor = '#00f2fe';
+            this.ctx.shadowBlur = 8;
+            this.ctx.fillRect(-half, -half, t.width, t.height);
+
+            // Глазницы
+            this.ctx.fillStyle = '#0f172a';
+            this.ctx.fillRect(-half + 6, -half + 8, 8, 8);
+            this.ctx.fillRect(half - 14, -half + 8, 8, 8);
+
+            // Бионический синий глаз
+            this.ctx.fillStyle = '#00f2fe';
+            this.ctx.fillRect(-half + 8, -half + 10, 4, 4);
+        } else if (t.type === 'tnt') {
+            // TNT блок
+            this.ctx.fillStyle = '#ef4444';
+            this.ctx.shadowColor = '#ef4444';
+            this.ctx.shadowBlur = 14;
+            this.ctx.fillRect(-half, -half, t.width, t.height);
+
+            this.ctx.fillStyle = '#f8fafc';
+            this.ctx.fillRect(-half, -6, t.width, 12);
+
+            this.ctx.fillStyle = '#0f172a';
+            this.ctx.font = 'bold 10px monospace';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('TNT', 0, 3);
+        } else {
+            // Лаки-блок
+            this.ctx.fillStyle = '#eab308';
+            this.ctx.shadowColor = '#eab308';
+            this.ctx.shadowBlur = 16;
+            this.ctx.fillRect(-half, -half, t.width, t.height);
+
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = 'bold 18px monospace';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('?', 0, 6);
+        }
+
+        this.ctx.restore();
+    }
+
     updateAndDrawBullets() {
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const b = this.bullets[i];
 
-            // Самонаведение ракет
             if (b.isHoming) {
                 let target = this.currentBoss;
                 if (!target && this.targets.length > 0) {
@@ -1354,7 +1582,6 @@ class GunShooterEngine {
             this.ctx.shadowColor = b.color;
             this.ctx.shadowBlur = b.isPiercing ? 25 : 14;
 
-            // Внешний луч
             this.ctx.strokeStyle = b.color;
             this.ctx.lineWidth = b.width;
             this.ctx.lineCap = 'round';
@@ -1363,7 +1590,6 @@ class GunShooterEngine {
             this.ctx.lineTo(b.x, b.y);
             this.ctx.stroke();
 
-            // Ядро
             this.ctx.strokeStyle = '#ffffff';
             this.ctx.lineWidth = b.width * 0.5;
             this.ctx.beginPath();
@@ -1372,21 +1598,15 @@ class GunShooterEngine {
             this.ctx.stroke();
             this.ctx.restore();
 
-            // Столкновения
             this.checkBulletCollisions(b, i);
 
-            // Удаление
             if (b.distTravelled >= b.maxDist || b.x < -100 || b.x > this.width + 100 || b.y < -100 || b.y > this.height + 100) {
                 this.bullets.splice(i, 1);
             }
         }
     }
 
-    /**
-     * Проверка попаданий снарядов
-     */
     checkBulletCollisions(bullet, bulletIndex) {
-        // 1. Попадание в БОССА
         if (this.currentBoss) {
             const b = this.currentBoss;
             const dx = bullet.x - b.x;
@@ -1417,7 +1637,6 @@ class GunShooterEngine {
             }
         }
 
-        // 2. Попадание в обычные мишени
         for (let j = this.targets.length - 1; j >= 0; j--) {
             const t = this.targets[j];
             if (!t.alive) continue;
@@ -1473,7 +1692,6 @@ class GunShooterEngine {
         audioSynth.playBossDefeated();
         this.triggerScreenShake(12);
 
-        // Салют монет
         this.spawnCoinsFountain(b.x, b.y, 25);
         this.createExplosion(b.x, b.y, 'lucky_block');
         this.createExplosion(b.x - 30, b.y - 20, 'tnt');
@@ -1493,7 +1711,7 @@ class GunShooterEngine {
     onTargetDestroyed(target) {
         this.kills++;
         this.score += 100;
-        const dropCoins = target.type === 'lucky_block' ? 12 : (target.type === 'tnt' ? 6 : 3);
+        const dropCoins = target.type === 'lucky_block' ? 14 : (target.type === 'tnt' ? 6 : 3);
         this.coins += dropCoins;
 
         audioSynth.playTargetHit();
@@ -1537,7 +1755,10 @@ class GunShooterEngine {
             let color = '#39ff14';
             let font = 'bold 14px monospace';
 
-            if (d.isCrit) {
+            if (d.weaponId === 'player_hit') {
+                color = '#ff4d4d';
+                font = 'bold 17px monospace';
+            } else if (d.isCrit) {
                 color = '#fbbf24';
                 font = 'bold 18px monospace';
             } else if (d.weaponId === 'railgun') {
@@ -1583,7 +1804,7 @@ class GunShooterEngine {
             const c = this.coinsEntities[i];
             c.x += c.vx;
             c.y += c.vy;
-            c.vy += 0.18; // Гравитация
+            c.vy += 0.18;
             c.life -= c.decay;
 
             this.ctx.save();
@@ -1600,81 +1821,6 @@ class GunShooterEngine {
                 this.coinsEntities.splice(i, 1);
             }
         }
-    }
-
-    updateAndDrawTargets() {
-        for (let i = this.targets.length - 1; i >= 0; i--) {
-            const t = this.targets[i];
-            t.x += t.vx;
-            t.wobbleOffset += t.wobbleSpeed;
-            t.y = t.baseY + Math.sin(t.wobbleOffset) * t.wobbleAmp;
-
-            this.drawTargetShape(t);
-
-            if ((t.vx > 0 && t.x > this.width + 100) || (t.vx < 0 && t.x < -100)) {
-                this.targets.splice(i, 1);
-            }
-        }
-    }
-
-    drawTargetShape(t) {
-        this.ctx.save();
-        this.ctx.translate(t.x, t.y);
-
-        const half = t.width / 2;
-
-        if (t.type === 'creeper') {
-            this.ctx.fillStyle = '#22c55e';
-            this.ctx.shadowColor = '#22c55e';
-            this.ctx.shadowBlur = 10;
-            this.ctx.fillRect(-half, -half, t.width, t.height);
-
-            this.ctx.fillStyle = '#0f172a';
-            const s = t.width / 8;
-            this.ctx.fillRect(-half + s, -half + s * 2, s * 2, s * 2);
-            this.ctx.fillRect(half - s * 3, -half + s * 2, s * 2, s * 2);
-            this.ctx.fillRect(-half + s * 3, -half + s * 3, s * 2, s * 3);
-            this.ctx.fillRect(-half + s * 2, -half + s * 4, s * 4, s * 3);
-            this.ctx.fillRect(-half + s * 2, -half + s * 6, s, s * 2);
-            this.ctx.fillRect(half - s * 3, -half + s * 6, s, s * 2);
-        } else if (t.type === 'tnt') {
-            this.ctx.fillStyle = '#ef4444';
-            this.ctx.shadowColor = '#ef4444';
-            this.ctx.shadowBlur = 12;
-            this.ctx.fillRect(-half, -half, t.width, t.height);
-
-            this.ctx.fillStyle = '#f8fafc';
-            this.ctx.fillRect(-half, -6, t.width, 12);
-
-            this.ctx.fillStyle = '#0f172a';
-            this.ctx.font = 'bold 10px monospace';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('TNT', 0, 3);
-        } else if (t.type === 'lucky_block') {
-            this.ctx.fillStyle = '#eab308';
-            this.ctx.shadowColor = '#eab308';
-            this.ctx.shadowBlur = 14;
-            this.ctx.fillRect(-half, -half, t.width, t.height);
-
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.font = 'bold 18px monospace';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('?', 0, 6);
-        } else {
-            this.ctx.fillStyle = '#10b981';
-            this.ctx.shadowColor = '#39ff14';
-            this.ctx.shadowBlur = 15;
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, half, 0, Math.PI * 2);
-            this.ctx.fill();
-
-            this.ctx.fillStyle = '#ff0055';
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 5, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
-
-        this.ctx.restore();
     }
 
     createExplosion(x, y, type) {
