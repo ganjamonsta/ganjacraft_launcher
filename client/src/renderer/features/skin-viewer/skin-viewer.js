@@ -144,8 +144,9 @@ async function render3dSkin(username) {
             }
         }
 
-        // Применяем 3D экипировку, оружие и броню
-        equipmentManager.applyToViewer(skinViewer3d);
+        // Каждый раз при показе персонажа рандомизируем экипировку
+        equipmentManager.randomizeEquipment();
+        await equipmentManager.applyToViewer(skinViewer3d);
     } catch (err) {
         console.warn('[SkinViewer3D] Error loading 3D skin:', err);
         // Fallback to 2D

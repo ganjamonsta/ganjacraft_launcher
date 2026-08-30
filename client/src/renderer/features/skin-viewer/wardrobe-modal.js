@@ -39,10 +39,16 @@ function ensureWardrobeDOM() {
                     <span class="wardrobe-title-icon">⚔️</span>
                     <div class="wardrobe-title-text">
                         <h3>ГАРДЕРОБ & ОРУЖЕЙНАЯ</h3>
-                        <p>Экипировка героя и арсенал TACZ в 3D</p>
+                        <p>Экипировка героя, моды и 3D арсенал TACZ</p>
                     </div>
                 </div>
-                <button class="wardrobe-close-btn" id="wardrobe-close-btn" title="Закрыть">✕</button>
+                <div class="wardrobe-header-actions">
+                    <button class="wardrobe-random-btn" id="wardrobe-random-btn" title="Случайный сет">
+                        <span>🎲</span>
+                        <span>Случайный сет</span>
+                    </button>
+                    <button class="wardrobe-close-btn" id="wardrobe-close-btn" title="Закрыть">✕</button>
+                </div>
             </div>
 
             <div class="wardrobe-body">
@@ -114,9 +120,19 @@ function setupEventListeners() {
     const overlay = dom.get('wardrobe-modal-overlay');
     const closeBtn = dom.get('wardrobe-close-btn');
     const doneBtn = dom.get('wardrobe-done-btn');
+    const randomBtn = dom.get('wardrobe-random-btn');
 
     if (closeBtn) closeBtn.addEventListener('click', closeWardrobeModal);
     if (doneBtn) doneBtn.addEventListener('click', closeWardrobeModal);
+    if (randomBtn) {
+        randomBtn.addEventListener('click', () => {
+            equipmentManager.randomizeEquipment();
+            equipmentManager.applyToViewer(getSkinViewer3d());
+            renderActiveTab();
+            updateNavBadges();
+            audioSynth.playSuccess();
+        });
+    }
 
     if (overlay) {
         overlay.addEventListener('click', (e) => {
