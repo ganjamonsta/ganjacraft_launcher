@@ -134,7 +134,7 @@
 /* ── 1. Left: Player Character & Stats ── */
 .player-character-section {
     grid-column: 1;
-    width: 100%; max-width: 220px; height: 100%;
+    width: 100%; max-width: 240px; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     box-sizing: border-box;
     background: transparent; border: none; box-shadow: none;
@@ -223,7 +223,8 @@
 }
 
 .skin-viewer-wrapper.frameless-skin {
-    width: 220px; flex: 1 1 auto; height: 100%; min-height: 0; max-height: 320px;
+    /* 380px — часть канваса уходит вправо под оружие — это нормально */
+    width: 380px; flex: 1 1 auto; height: 100%; min-height: 0; max-height: 375px;
     display: flex; align-items: center; justify-content: center;
     overflow: visible; position: relative; cursor: grab;
     background: transparent; border: none; box-shadow: none; margin: 0;
@@ -231,8 +232,7 @@
 .skin-viewer-wrapper.frameless-skin:active { cursor: grabbing; }
 
 .skin-viewer-wrapper canvas {
-    /* 3D рендер остаётся 380px (высокое качество), CSS масштабирует до 220px — суперсэмплинг */
-    width: 220px !important; height: auto !important; max-height: 320px !important;
+    width: 380px !important; height: 100% !important; max-height: 375px !important;
     display: block;
     filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.75));
     overflow: visible;

@@ -14,7 +14,7 @@ import { logToConsole } from '../console/console.js';
 import { initRamSlider } from './ram-slider.js';
 import { debounce, triggerInertiaCascade } from '../../utils/performance.js';
 import { renderChangelogList, markChangelogSeen, checkChangelogBadge } from '../changelog/changelog-manager.js';
-import { applySkinMode, getSkinViewerMode } from '../skin-viewer/index.js';
+import { applySkinMode, getSkinViewerMode, randomizeCharacterEquipment } from '../skin-viewer/index.js';
 import { gunShooter } from '../easter-eggs/index.js';
 
 // Стейт для отслеживания изменений
@@ -197,8 +197,11 @@ export function toggleMainUIVisibility(show, config) {
             playerSection.style.opacity = show ? '1' : '0';
             playerSection.style.pointerEvents = show ? 'auto' : 'none';
 
-            if (show && appState.get('effects.snowEnabled')) {
-                setTimeout(() => createSideBurst('left'), 80);
+            if (show) {
+                randomizeCharacterEquipment();
+                if (appState.get('effects.snowEnabled')) {
+                    setTimeout(() => createSideBurst('left'), 80);
+                }
             }
         }
 
@@ -505,6 +508,7 @@ export async function saveSettings() {
         enableSnow: selectedPreset !== 'off',
         enableSmoke: document.getElementById('setting-enable-smoke')?.checked ?? true,
         enableParallax: document.getElementById('setting-enable-parallax')?.checked ?? true,
+        enableMinigame: selectedMinigame,
         disabledMods: getDisabledMods(),
         modsDefaultsApplied: true,
     };
@@ -516,6 +520,9 @@ export async function saveSettings() {
     }
     
     currentConfig = newConfig;
+
+    // Apply Minigame state
+    gunShooter.setIsEnabled(selectedMinigame);
 
     // Apply Skin Mode (3D / 2D / off)
     applySkinMode(selectedSkinMode);

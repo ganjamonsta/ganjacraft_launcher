@@ -16,6 +16,13 @@ let currentUsername = '';
 let currentMode = localStorage.getItem(STORAGE_KEY_MODE) || '3d'; // '3d' | '2d' | 'off'
 let mouseMoveHandler = null;
 
+let targetHeadX = 0;
+let targetHeadY = 0;
+let currentHeadX = 0;
+let currentHeadY = 0;
+let targetBodyY = 0.38; // Базовый угол поворота к центру экрана
+let currentBodyY = 0.38;
+
 /**
  * Получить текущий режим отображения скина
  */
@@ -44,6 +51,7 @@ export async function initSkinViewer(username) {
     console.log('[SKIN-VIEWER] Current skin mode:', currentMode);
     await applySkinMode(currentMode);
     setupMouseTracking();
+    setupWindowRestoreRandomizer();
     console.log('[SKIN-VIEWER] initSkinViewer completed for:', username);
 }
 
@@ -123,10 +131,10 @@ async function render3dSkin(username) {
 
             if (skinViewer3d.playerObject) {
                 skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
-                skinViewer3d.playerObject.rotation.y = -0.32;
+                skinViewer3d.playerObject.rotation.y = 0.38;
             }
 
-            // Тактическая анимация: руки держат оружие прямо перед собой
+            // Тактическая анимация: руки держат оружие, тело и голова следят за курсором
             skinViewer3d.animation = new skinview3d.FunctionAnimation((player, progress) => {
                 const t = progress * 1.5;
                 if (!player || !player.skin) return;
@@ -160,10 +168,18 @@ async function render3dSkin(username) {
                     return;
                 }
 
-                // Дыхание головы
+                // Плавная интерполяция к целевым углам курсора (lerp)
+                currentHeadX += (targetHeadX - currentHeadX) * 0.12;
+                currentHeadY += (targetHeadY - currentHeadY) * 0.12;
+                currentBodyY += (targetBodyY - currentBodyY) * 0.10;
+
+                // Поворот всего тела к центру экрана и за курсором
+                player.rotation.y = currentBodyY;
+
+                // Дыхание и поворот головы
                 if (player.skin.head) {
-                    player.skin.head.rotation.y = Math.sin(t * 0.5) * 0.04;
-                    player.skin.head.rotation.x = Math.sin(t * 0.3) * 0.02;
+                    player.skin.head.rotation.y = currentHeadY + Math.sin(t * 0.5) * 0.03;
+                    player.skin.head.rotation.x = currentHeadX + Math.sin(t * 0.3) * 0.02;
                 }
 
                 const weaponId = equipmentManager.getSlot('mainHand');
@@ -204,24 +220,24 @@ async function render3dSkin(username) {
                 if (player.skin.leftArm) {
                     if (weaponId === 'tacz_minigun') {
                         // Левая рука крепко держит верхнюю рукоять минигана сверху
-                        player.skin.leftArm.rotation.x = -1.22 + breath;
-                        player.skin.leftArm.rotation.y = 0.72;
-                        player.skin.leftArm.rotation.z = -0.38;
+                        player.skin.leftArm.rotation.x = -1.18 + breath;
+                        player.skin.leftArm.rotation.y = 0.85;
+                        player.skin.leftArm.rotation.z = -0.30;
                     } else if (weaponId === 'tacz_rpg7') {
                         // Левая рука держит переднюю ручку РПГ
-                        player.skin.leftArm.rotation.x = -Math.PI / 2.12 + breath;
-                        player.skin.leftArm.rotation.y = 0.75;
-                        player.skin.leftArm.rotation.z = -0.34;
+                        player.skin.leftArm.rotation.x = -1.28 + breath;
+                        player.skin.leftArm.rotation.y = 0.92;
+                        player.skin.leftArm.rotation.z = -0.25;
                     } else if (weaponId === 'tacz_glock17' || weaponId === 'tacz_deagle') {
                         // Тактический хват пистолета двумя руками
-                        player.skin.leftArm.rotation.x = -Math.PI / 2.22 + breath;
-                        player.skin.leftArm.rotation.y = 0.58;
-                        player.skin.leftArm.rotation.z = -0.28;
+                        player.skin.leftArm.rotation.x = -1.35 + breath;
+                        player.skin.leftArm.rotation.y = 0.72;
+                        player.skin.leftArm.rotation.z = -0.20;
                     } else if (hasWeapon) {
-                        // АК-47, Vector, AWP, Spas-12: левая рука плотно тянется через грудь и обхватывает цевье
-                        player.skin.leftArm.rotation.x = -Math.PI / 2.14 + breath;
-                        player.skin.leftArm.rotation.y = 0.82;
-                        player.skin.leftArm.rotation.z = -0.36;
+                        // АК-47, Vector, AWP, Spas-12: левая рука плотно прижимается к цевью оружия
+                        player.skin.leftArm.rotation.x = -1.22 + breath;
+                        player.skin.leftArm.rotation.y = 1.05;
+                        player.skin.leftArm.rotation.z = -0.20;
                     } else {
                         // Свободная рука
                         player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.04;
@@ -248,7 +264,7 @@ async function render3dSkin(username) {
             await skinViewer3d.loadSkin(skinUrl);
             if (skinViewer3d.playerObject) {
                 skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
-                skinViewer3d.playerObject.rotation.y = -0.32;
+                skinViewer3d.playerObject.rotation.y = 0.38;
             }
         }
 
@@ -262,9 +278,9 @@ async function render3dSkin(username) {
             }
         }
 
-        // Применяем сохраненную экипировку персонажа
+        // Применяем рандомизированную экипировку персонажа
         try {
-            equipmentManager.loadEquipment();
+            equipmentManager.randomizeEquipment();
             await equipmentManager.applyToViewer(skinViewer3d);
         } catch (e) {
             console.warn('[SkinViewer3D] Equipment apply error:', e);
@@ -376,7 +392,7 @@ async function render2dSkin(username) {
 }
 
 /**
- * Слежение головы 3D скина за курсором мыши (в обычном режиме дашборда)
+ * Слежение тела и головы 3D скина за курсором мыши (в обычном режиме дашборда)
  */
 function setupMouseTracking() {
     if (mouseMoveHandler) return;
@@ -390,20 +406,17 @@ function setupMouseTracking() {
 
         const rect = canvas.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 3; // фокус на голову
+        const centerY = rect.top + rect.height * 0.35; // фокус на голову
 
-        const deltaX = (e.clientX - centerX) / (window.innerWidth / 2);
-        const deltaY = (e.clientY - centerY) / (window.innerHeight / 2);
+        const deltaX = (e.clientX - centerX) / (window.innerWidth * 0.55);
+        const deltaY = (e.clientY - centerY) / (window.innerHeight * 0.55);
 
-        // Ограничиваем угол поворота головы
-        const targetRotY = Math.max(-0.6, Math.min(0.6, deltaX * 0.8));
-        const targetRotX = Math.max(-0.4, Math.min(0.4, deltaY * 0.6));
+        // Поворот головы: следование за курсором
+        targetHeadY = Math.max(-0.65, Math.min(0.65, deltaX * 0.85));
+        targetHeadX = Math.max(-0.40, Math.min(0.40, deltaY * 0.60));
 
-        const head = skinViewer3d.playerObject.skin.head;
-        if (head) {
-            head.rotation.y += (targetRotY - head.rotation.y) * 0.1;
-            head.rotation.x += (targetRotX - head.rotation.x) * 0.1;
-        }
+        // Поворот тела: по дефолту повернут к центру экрана (+0.38) + легкий доворот за курсором
+        targetBodyY = 0.38 + Math.max(-0.25, Math.min(0.25, deltaX * 0.35));
     };
 
     window.addEventListener('mousemove', mouseMoveHandler, { passive: true });
@@ -432,7 +445,7 @@ export function setTopDownShooterCamera(isShooter) {
             skinViewer3d.playerObject.scale.set(0.58, 0.58, 0.58);
         }
     } else {
-        // Возврат в стандартную камеру персонажа слева
+        // Возврат в стандартную камеру персонажа слева (повернут к центру)
         if (skinViewer3d.controls) {
             skinViewer3d.controls.minPolarAngle = Math.PI / 2 - 0.5;
             skinViewer3d.controls.maxPolarAngle = Math.PI / 2 + 0.3;
@@ -443,9 +456,66 @@ export function setTopDownShooterCamera(isShooter) {
 
         if (skinViewer3d.playerObject) {
             skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
-            skinViewer3d.playerObject.rotation.set(0, -0.32, 0);
+            skinViewer3d.playerObject.rotation.set(0, 0.38, 0);
             skinViewer3d.playerObject.scale.set(1.0, 1.0, 1.0);
         }
+    }
+}
+
+let lastRandomizeTime = 0;
+let isRandomizerHooked = false;
+
+/**
+ * Рандомизация экипировки персонажа при возврате на главный экран или разворачивании окна
+ * @param {boolean} force - пропустить проверку дебаунса
+ */
+export function randomizeCharacterEquipment(force = false) {
+    const now = Date.now();
+    if (!force && (now - lastRandomizeTime < 1000)) return; // дебаунс 1 сек при авто-триггерах
+
+    if (!skinViewer3d || currentMode !== '3d') return;
+    if (document.body.classList.contains('is-shooter-active')) return;
+    if (document.querySelector('.wardrobe-modal.visible')) return;
+
+    lastRandomizeTime = now;
+    console.log('[SKIN-VIEWER] Randomizing character equipment set!');
+    equipmentManager.randomizeEquipment();
+    equipmentManager.applyToViewer(skinViewer3d);
+}
+
+function triggerRandomizeOnRestore() {
+    randomizeCharacterEquipment(false);
+}
+
+/**
+ * Подписка на события восстановления и фокуса окна
+ */
+export function setupWindowRestoreRandomizer() {
+    if (isRandomizerHooked) return;
+    isRandomizerHooked = true;
+
+    // 1. При переключении вкладок/окон или разворачивании через DOM
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            triggerRandomizeOnRestore();
+        }
+    });
+
+    // 2. При получении фокуса окном
+    window.addEventListener('focus', () => {
+        triggerRandomizeOnRestore();
+    });
+
+    // 3. Через IPC события Electron при восстановлении из трея/сворачивания
+    if (window.api?.onWindowRestore) {
+        window.api.onWindowRestore(() => {
+            triggerRandomizeOnRestore();
+        });
+    }
+    if (window.api?.onWindowFocus) {
+        window.api.onWindowFocus(() => {
+            triggerRandomizeOnRestore();
+        });
     }
 }
 

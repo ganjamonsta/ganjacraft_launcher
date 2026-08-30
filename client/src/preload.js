@@ -167,6 +167,8 @@ contextBridge.exposeInMainWorld('api', {
     onProgress: (callback) => ipcRenderer.on('progress', (event, e) => callback(e)),
     minimize: () => ipcRenderer.send('window-minimize'),
     close: () => ipcRenderer.send('window-close'),
+    onWindowRestore: (callback) => ipcRenderer.on('window-restore', () => callback()),
+    onWindowFocus: (callback) => ipcRenderer.on('window-focus', () => callback()),
     
     // Settings & Config
     loadConfig: () => ipcRenderer.invoke('load-config'),

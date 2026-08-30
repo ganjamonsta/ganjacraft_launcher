@@ -15,6 +15,20 @@ function registerWindowHandlers(mainWindow) {
         mainWindow.minimize();
     });
     
+    // Window restore event
+    mainWindow.on('restore', () => {
+        if (!mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('window-restore');
+        }
+    });
+
+    // Window focus event
+    mainWindow.on('focus', () => {
+        if (!mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('window-focus');
+        }
+    });
+    
     // Close window
     ipcMain.on('window-close', () => {
         mainWindow.close();

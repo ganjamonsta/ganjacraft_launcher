@@ -1,7 +1,7 @@
 /**
- * Ganj4Craft Launcher - Gun Shooter Mini-Game Engine v2.3
- * Волны мобов, выпадение оружия, аптечек (хилок) и временных боевых баффов,
- * бесконечный боезапас с перезарядкой обоймы, компактный 3D персонаж по центру.
+ * Ganj4Craft Launcher - Gun Shooter (Aim Lab Mini-Game)
+ * Легкая, отзывчивая и залипательная мини-игра для тренировки аима во время загрузки Minecraft.
+ * Бесконечный боезапас, сочные звуки TACZ, комбо-серии, взрывы TNT и лаки-блоки.
  */
 
 import * as THREE from 'three';
@@ -11,7 +11,7 @@ import { audioSynth } from './audio-synth.js';
 import { taczAudio } from './tacz-audio.js';
 import { dom } from '../../utils/dom.js';
 
-// Аутентичный арсенал оружия TACZ с размером обоймы и временем перезарядки
+// Аутентичный арсенал оружия TACZ (доступен сразу, бесконечные патроны)
 export const WEAPONS = {
     deagle: {
         id: 'deagle',
@@ -19,13 +19,11 @@ export const WEAPONS = {
         key: '1',
         icon: 'assets/tacz/hud/deagle.png',
         isImg: true,
-        damage: 32,
-        cooldown: 250,
-        magSize: 7,
-        reloadTime: 1300,
-        speed: 34,
+        damage: 45,
+        cooldown: 220,
+        speed: 36,
         color: '#ffdd00',
-        desc: 'Пистолет .50 AE (7 патронов)'
+        desc: 'Пистолет .50 AE — высокий урон и точность'
     },
     spas_12: {
         id: 'spas_12',
@@ -33,15 +31,13 @@ export const WEAPONS = {
         key: '2',
         icon: 'assets/tacz/hud/spas_12.png',
         isImg: true,
-        damage: 12,
+        damage: 18,
         pellets: 6,
-        spread: 0.25,
-        cooldown: 520,
-        magSize: 8,
-        reloadTime: 1800,
-        speed: 28,
+        spread: 0.22,
+        cooldown: 450,
+        speed: 30,
         color: '#ff8800',
-        desc: 'Дробовик (8 патронов, 6 дробин)'
+        desc: 'Дробовик — дробь по площади'
     },
     ak47: {
         id: 'ak47',
@@ -49,27 +45,23 @@ export const WEAPONS = {
         key: '3',
         icon: 'assets/tacz/hud/ak47.png',
         isImg: true,
-        damage: 20,
+        damage: 28,
         cooldown: 110,
-        magSize: 30,
-        reloadTime: 1600,
-        speed: 36,
+        speed: 38,
         color: '#39ff14',
-        desc: 'Автомат Калашникова (30 патронов)'
+        desc: 'Автомат Калашникова — классический зажим'
     },
     vector45: {
         id: 'vector45',
-        name: 'Vector .45 ACP',
+        name: 'Vector .45',
         key: '4',
         icon: 'assets/tacz/hud/vector45.png',
         isImg: true,
-        damage: 12,
-        cooldown: 65,
-        magSize: 35,
-        reloadTime: 1400,
-        speed: 40,
+        damage: 18,
+        cooldown: 60,
+        speed: 42,
         color: '#00f2fe',
-        desc: 'Пистолет-пулемет (35 патронов)'
+        desc: 'Пистолет-пулемет — бешеная скорострельность'
     },
     awp: {
         id: 'awp',
@@ -77,14 +69,12 @@ export const WEAPONS = {
         key: '5',
         icon: 'assets/tacz/hud/ai_awp.png',
         isImg: true,
-        damage: 160,
-        cooldown: 850,
-        magSize: 5,
-        reloadTime: 2200,
-        speed: 55,
+        damage: 200,
+        cooldown: 750,
+        speed: 60,
         color: '#a855f7',
         isPiercing: true,
-        desc: 'Снайперка AWP (5 патронов, пробивает насквозь)'
+        desc: 'Снайперка AWP — ваншот и пробитие насквозь'
     },
     rpg7: {
         id: 'rpg7',
@@ -92,29 +82,25 @@ export const WEAPONS = {
         key: '6',
         icon: 'assets/tacz/hud/rpg7.png',
         isImg: true,
-        damage: 200,
-        aoeRadius: 120,
-        cooldown: 950,
-        magSize: 1,
-        reloadTime: 2000,
-        speed: 20,
+        damage: 250,
+        aoeRadius: 140,
+        cooldown: 850,
+        speed: 22,
         color: '#ff0055',
         isHoming: true,
-        desc: 'РПГ-7 (1 ракета, мощный взрыв)'
+        desc: 'РПГ-7 — мощный фугасный взрыв'
     },
     minigun: {
         id: 'minigun',
-        name: 'Minigun 6-Barrel',
+        name: 'Minigun',
         key: '7',
         icon: 'assets/tacz/hud/minigun.png',
         isImg: true,
-        damage: 16,
-        cooldown: 45,
-        magSize: 100,
-        reloadTime: 2800,
-        speed: 42,
+        damage: 22,
+        cooldown: 40,
+        speed: 44,
         color: '#ffd700',
-        desc: 'Шестиствольный пулемет (100 патронов)'
+        desc: 'Шестиствольный пулемет — шквал свинца'
     }
 };
 
@@ -132,32 +118,6 @@ class GunShooterEngine {
         this.explosions = [];
         this.muzzleFlashes = [];
         this.damageNumbers = [];
-        this.lootDrops = []; // Выпадающие предметы (хилки, баффы, оружие)
-
-        // Здоровье и защита
-        this.playerMaxHp = 100;
-        this.playerHp = 100;
-        this.isPlayerInvincible = false;
-        this.lastRegenTime = performance.now();
-
-        // Временные баффы (таймстампы окончания)
-        this.buffs = {
-            rapidFire: 0,   // Скорострельность 2x
-            doubleDamage: 0,// Квад-урон 2.2x
-            shield: 0       // Энерго-щит
-        };
-
-        // Обойма и перезарядка (бесконечный запас)
-        this.clips = {};
-        this.isReloading = false;
-        this.reloadStartTime = 0;
-        this.reloadDuration = 0;
-
-        // Система волн
-        this.wave = 1;
-        this.mobsRemainingInWave = 8;
-        this.waveKills = 0;
-        this.isWaveIntermission = false;
 
         // Ввод и автострельба
         this.mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
@@ -165,35 +125,28 @@ class GunShooterEngine {
         this.lastFireTime = 0;
         this.targetSpawnTimer = null;
 
-        // Прогресс
+        // Счет и комбо
         this.score = 0;
         this.kills = 0;
-        this.bossKills = 0;
-        this.currentWeaponId = 'deagle';
-        this.unlockedWeapons = ['deagle'];
+        this.combo = 1;
+        this.maxCombo = 1;
+        this.lastHitTime = 0;
+        this.currentWeaponId = 'ak47';
 
-        // Босс
-        this.currentBoss = null;
-
-        // Флаги
+        // Состояние
         this.isEnabled = localStorage.getItem('ganjacraft_shooter_enabled') !== 'false';
         this.isGameLaunching = false;
         this.isActive = false;
         this.isLogModalOpen = false;
 
-        this.damageFlashTimeout = null;
         this.shakeIntensity = 0;
-        this._saveTimer = null;
 
         // UI элементы
         this.crosshairElem = null;
-        this.playerDefenseElem = null;
-        this.bossHudElem = null;
         this.hotbarElem = null;
         this.topControlsElem = null;
-        this.buffsBarElem = null;
 
-        // Привязка методов
+        // Привязка обработчиков
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handlePointerDown = this.handlePointerDown.bind(this);
         this.handlePointerUp = this.handlePointerUp.bind(this);
@@ -201,8 +154,6 @@ class GunShooterEngine {
         this.handleWheel = this.handleWheel.bind(this);
         this.handleResize = this.handleResize.bind(this);
         this.render = this.render.bind(this);
-
-        this.loadProgression();
     }
 
     getIsEnabled() {
@@ -224,84 +175,11 @@ class GunShooterEngine {
         this.setIsEnabled(!this.isEnabled);
     }
 
-    loadProgression() {
-        try {
-            const raw = localStorage.getItem('ganjacraft_shooter_v3');
-            if (raw) {
-                const data = JSON.parse(raw);
-                if (typeof data.kills === 'number') this.kills = data.kills;
-                if (typeof data.wave === 'number' && data.wave >= 1) this.wave = data.wave;
-                if (typeof data.bossKills === 'number') this.bossKills = data.bossKills;
-                if (Array.isArray(data.unlockedWeapons)) {
-                    const valid = data.unlockedWeapons.filter(id => WEAPONS[id]);
-                    if (valid.length > 0) this.unlockedWeapons = valid;
-                }
-                if (data.currentWeaponId && this.unlockedWeapons.includes(data.currentWeaponId)) {
-                    this.currentWeaponId = data.currentWeaponId;
-                }
-            }
-        } catch (e) {
-            console.debug('[ShooterEngine] Load save error', e);
-        }
-
-        if (!this.unlockedWeapons.includes('deagle')) {
-            this.unlockedWeapons.unshift('deagle');
-        }
-        if (!WEAPONS[this.currentWeaponId]) {
-            this.currentWeaponId = 'deagle';
-        }
-
-        this.initClips();
-        this.playerHp = this.playerMaxHp;
-    }
-
-    initClips() {
-        Object.keys(WEAPONS).forEach(k => {
-            if (this.clips[k] === undefined) {
-                this.clips[k] = WEAPONS[k].magSize;
-            }
-        });
-    }
-
-    saveProgression(immediate = false) {
-        if (immediate) {
-            if (this._saveTimer) {
-                clearTimeout(this._saveTimer);
-                this._saveTimer = null;
-            }
-            this._doSave();
-            return;
-        }
-        if (this._saveTimer) return;
-        this._saveTimer = setTimeout(() => {
-            this._saveTimer = null;
-            this._doSave();
-        }, 1500);
-    }
-
-    _doSave() {
-        try {
-            const data = {
-                kills: this.kills,
-                wave: this.wave,
-                bossKills: this.bossKills,
-                unlockedWeapons: this.unlockedWeapons,
-                currentWeaponId: this.currentWeaponId
-            };
-            localStorage.setItem('ganjacraft_shooter_v3', JSON.stringify(data));
-        } catch (e) {
-            console.debug('[ShooterEngine] Save error', e);
-        }
-    }
-
     init() {
         this.ensureCanvas();
         this.ensureCrosshair();
-        this.ensurePlayerDefenseHUD();
-        this.ensureBossHUD();
         this.ensureHotbarHUD();
         this.ensureTopControlsHUD();
-        this.ensureBuffsHUD();
 
         window.addEventListener('resize', this.handleResize, { passive: true });
         window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
@@ -344,149 +222,13 @@ class GunShooterEngine {
         crosshair.innerHTML = `
             <div class="crosshair-ring"></div>
             <div class="crosshair-dot"></div>
-            <div class="crosshair-lines"></div>
-            <div class="crosshair-ammo-indicator" id="crosshair-ammo-indicator">7/∞</div>
+            <div class="crosshair-bracket top"></div>
+            <div class="crosshair-bracket bottom"></div>
+            <div class="crosshair-bracket left"></div>
+            <div class="crosshair-bracket right"></div>
         `;
         document.body.appendChild(crosshair);
         this.crosshairElem = crosshair;
-    }
-
-    ensurePlayerDefenseHUD() {
-        if (this.playerDefenseElem) return;
-
-        const container = document.createElement('div');
-        container.id = 'player-defense-container';
-        container.className = 'player-defense-container hidden';
-        container.innerHTML = `
-            <div class="player-defense-nametag" id="player-defense-nametag">БОЕЦ</div>
-            <div class="player-defense-hp-track">
-                <div class="player-defense-hp-fill" id="player-defense-hp-fill" style="width: 100%;"></div>
-            </div>
-            <div class="player-defense-hp-text" id="player-defense-hp-text">100 / 100 HP</div>
-        `;
-        document.body.appendChild(container);
-        this.playerDefenseElem = container;
-        this.updatePlayerDefenseHUD();
-    }
-
-    ensureBuffsHUD() {
-        if (this.buffsBarElem) return;
-
-        const bar = document.createElement('div');
-        bar.id = 'active-buffs-bar';
-        bar.className = 'active-buffs-bar hidden';
-        document.body.appendChild(bar);
-        this.buffsBarElem = bar;
-    }
-
-    updateBuffsHUD() {
-        if (!this.buffsBarElem) return;
-        const now = performance.now();
-        let html = '';
-
-        if (this.buffs.rapidFire > now) {
-            const rem = Math.ceil((this.buffs.rapidFire - now) / 1000);
-            html += `<span class="buff-pill buff-rapid">⚡ СКОРОСТЬ ${rem}с</span>`;
-        }
-        if (this.buffs.doubleDamage > now) {
-            const rem = Math.ceil((this.buffs.doubleDamage - now) / 1000);
-            html += `<span class="buff-pill buff-damage">💥 КВАД-УРОН ${rem}с</span>`;
-        }
-        if (this.buffs.shield > now) {
-            const rem = Math.ceil((this.buffs.shield - now) / 1000);
-            html += `<span class="buff-pill buff-shield">🛡️ ЩИТ ${rem}с</span>`;
-        }
-
-        this.buffsBarElem.innerHTML = html;
-        if (html) {
-            this.buffsBarElem.classList.remove('hidden');
-        } else {
-            this.buffsBarElem.classList.add('hidden');
-        }
-    }
-
-    updatePlayerDefenseHUD() {
-        const hpText = dom.get('player-defense-hp-text');
-        const hpFill = dom.get('player-defense-hp-fill');
-
-        const pct = Math.max(0, Math.min(100, (this.playerHp / this.playerMaxHp) * 100));
-        if (hpFill) hpFill.style.width = `${pct}%`;
-        if (hpText) hpText.innerText = `${Math.round(this.playerHp)} / ${this.playerMaxHp} HP`;
-    }
-
-    damagePlayer(rawAmount) {
-        // Защита щитом
-        if (this.buffs.shield > performance.now() || this.isPlayerInvincible) {
-            audioSynth.playEquip();
-            this.spawnDamageNumber(this.width / 2, this.height / 2 - 35, 0, false, 'shield_blocked');
-            return;
-        }
-
-        const damageTaken = Math.max(2, Math.round(rawAmount));
-        this.playerHp = Math.max(0, this.playerHp - damageTaken);
-        this.updatePlayerDefenseHUD();
-
-        this.spawnDamageNumber(this.width / 2, this.height / 2 - 35, damageTaken, true, 'player_hit');
-
-        audioSynth.playError();
-        this.triggerScreenShake(5);
-
-        if (this.damageFlashTimeout) clearTimeout(this.damageFlashTimeout);
-        document.body.classList.add('player-damaged');
-        this.damageFlashTimeout = setTimeout(() => {
-            document.body.classList.remove('player-damaged');
-            this.damageFlashTimeout = null;
-        }, 220);
-
-        if (this.playerHp <= 0) {
-            this.onPlayerDeath();
-        }
-    }
-
-    onPlayerDeath() {
-        audioSynth.playBassDrop();
-        this.triggerScreenShake(12);
-        this.createExplosion(this.width / 2, this.height / 2, 'lucky_block');
-
-        this.targets.forEach(t => {
-            t.alive = false;
-            this.createExplosion(t.x, t.y, t.type);
-        });
-        this.targets = [];
-
-        this.isPlayerInvincible = true;
-        this.playerHp = this.playerMaxHp;
-        this.updatePlayerDefenseHUD();
-
-        this.spawnFloatingBanner(this.width / 2, this.height / 2 - 50, '⚡ АВАРИЙНЫЙ ЩИТ! ПЕРЕЗАГРУЗКА', '#38bdf8');
-
-        setTimeout(() => {
-            this.isPlayerInvincible = false;
-        }, 2800);
-    }
-
-    ensureBossHUD() {
-        if (this.bossHudElem) return;
-
-        const container = document.createElement('div');
-        container.id = 'boss-health-container';
-        container.className = 'boss-health-container';
-        container.innerHTML = `
-            <div class="boss-header-row">
-                <div class="boss-title-wrapper">
-                    <span class="boss-skull-icon">💀</span>
-                    <span class="boss-name-text" id="boss-name-text">КИБЕР-ВИЗЕР 3000</span>
-                    <span class="boss-phase-tag" id="boss-phase-tag">ФАЗА 1</span>
-                </div>
-                <div class="boss-hp-numbers" id="boss-hp-numbers">200 / 200 HP</div>
-            </div>
-            <div class="boss-hp-track">
-                <div class="boss-hp-fill" id="boss-hp-fill" style="width: 100%;"></div>
-            </div>
-        `;
-
-        document.body.appendChild(container);
-        this.bossHudElem = container;
     }
 
     ensureHotbarHUD() {
@@ -505,39 +247,24 @@ class GunShooterEngine {
         if (!this.hotbarElem) return;
 
         let html = '';
-        const curWeapon = this.getCurrentWeapon();
-
         Object.keys(WEAPONS).forEach(key => {
             const w = WEAPONS[key];
-            const isUnlocked = this.unlockedWeapons.includes(w.id);
             const isActive = w.id === this.currentWeaponId;
-            const clip = this.clips[w.id] !== undefined ? this.clips[w.id] : w.magSize;
 
             const iconMarkup = w.isImg 
                 ? `<img class="weapon-slot-img" src="${w.icon}" alt="${w.name}" />`
                 : `<span class="weapon-slot-icon">${w.icon}</span>`;
 
-            let ammoMarkup = '';
-            if (isUnlocked) {
-                if (isActive && this.isReloading) {
-                    ammoMarkup = `<span class="weapon-slot-ammo reloading">🔄</span>`;
-                } else {
-                    ammoMarkup = `<span class="weapon-slot-ammo">${clip}/∞</span>`;
-                }
-            } else {
-                ammoMarkup = `<span class="weapon-lock-badge">🔒</span>`;
-            }
-
             html += `
-                <div class="weapon-slot ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}" 
+                <div class="weapon-slot ${isActive ? 'active' : ''}" 
                      data-weapon-id="${w.id}" 
-                     title="${w.name} - ${w.desc}">
+                     title="${w.name} — ${w.desc}">
                     <span class="weapon-slot-key">${w.key}</span>
                     <div class="weapon-slot-icon-box">
                         ${iconMarkup}
                     </div>
                     <span class="weapon-slot-name">${w.name.split(' ')[0]}</span>
-                    ${ammoMarkup}
+                    <span class="weapon-slot-ammo">∞</span>
                 </div>
             `;
         });
@@ -545,17 +272,14 @@ class GunShooterEngine {
         this.hotbarElem.innerHTML = html;
 
         this.hotbarElem.querySelectorAll('.weapon-slot').forEach(slot => {
-            slot.addEventListener('click', () => {
+            slot.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const wid = slot.getAttribute('data-weapon-id');
-                if (this.unlockedWeapons.includes(wid)) {
+                if (WEAPONS[wid]) {
                     this.switchWeapon(wid);
-                } else {
-                    this.spawnFloatingBanner(this.width / 2, this.height - 130, '🔒 Оружие выпадет на волнах!', '#ef4444');
                 }
             });
         });
-
-        this.updateTopControlsView();
     }
 
     ensureTopControlsHUD() {
@@ -565,13 +289,13 @@ class GunShooterEngine {
         container.id = 'shooter-top-controls';
         container.className = 'shooter-top-controls hidden';
         container.innerHTML = `
-            <div class="shooter-wave-badge">
-                <span class="wave-icon">🌊</span>
-                <span id="shooter-wave-display">ВОЛНА ${this.wave}</span>
+            <div class="shooter-wave-badge shooter-score-badge">
+                <span class="wave-icon">🎯</span>
+                <span id="shooter-score-display">ОЧКИ: 0</span>
             </div>
-            <div class="shooter-ammo-badge" id="shooter-ammo-badge">
-                <span class="ammo-icon">⚡</span>
-                <span id="shooter-ammo-display">7 / ∞</span>
+            <div class="shooter-ammo-badge shooter-combo-badge" id="shooter-combo-badge">
+                <span class="ammo-icon">🔥</span>
+                <span id="shooter-combo-display">СЕРИЯ x1</span>
             </div>
             <button class="shooter-toggle-btn ${!this.isEnabled ? 'is-disabled' : ''}" id="shooter-toggle-btn" title="Включить / Выключить мини-игру">
                 <span id="shooter-toggle-text">${this.isEnabled ? '🎯 ИГРА: ВКЛ' : '🎯 ИГРА: ВЫКЛ'}</span>
@@ -601,121 +325,74 @@ class GunShooterEngine {
             }
         }
 
-        const waveDisplay = dom.get('shooter-wave-display');
-        if (waveDisplay) {
-            waveDisplay.innerText = `ВОЛНА ${this.wave}`;
+        const scoreDisplay = dom.get('shooter-score-display');
+        if (scoreDisplay) {
+            scoreDisplay.innerText = `ОЧКИ: ${this.score.toLocaleString()}`;
         }
 
-        const ammoDisplay = dom.get('shooter-ammo-display');
-        const ammoBadge = dom.get('shooter-ammo-badge');
-        const crosshairAmmo = dom.get('crosshair-ammo-indicator');
-        const weapon = this.getCurrentWeapon();
-        const clip = this.clips[weapon.id] !== undefined ? this.clips[weapon.id] : weapon.magSize;
-
-        let ammoText = `${clip} / ∞`;
-        if (this.isReloading) {
-            ammoText = '🔄 ПЕРЕЗАРЯДКА...';
-            if (ammoBadge) {
-                ammoBadge.classList.add('is-reloading');
-                ammoBadge.classList.remove('is-empty');
-            }
-        } else if (clip === 0) {
-            ammoText = '⚠ НЕТ ПАТРОНОВ (R)';
-            if (ammoBadge) {
-                ammoBadge.classList.add('is-empty');
-                ammoBadge.classList.remove('is-reloading');
-            }
-        } else {
-            if (ammoBadge) {
-                ammoBadge.classList.remove('is-reloading', 'is-empty');
+        const comboDisplay = dom.get('shooter-combo-display');
+        const comboBadge = dom.get('shooter-combo-badge');
+        if (comboDisplay) {
+            comboDisplay.innerText = `СЕРИЯ x${this.combo}`;
+        }
+        if (comboBadge) {
+            if (this.combo >= 5) {
+                comboBadge.classList.add('is-reloading'); // пульсация
+            } else {
+                comboBadge.classList.remove('is-reloading');
             }
         }
-
-        if (ammoDisplay) ammoDisplay.innerText = ammoText;
-        if (crosshairAmmo) crosshairAmmo.innerText = this.isReloading ? '🔄 ПЕРЕЗАРЯДКА' : `${clip}/∞`;
     }
 
     switchWeapon(weaponId) {
-        if (WEAPONS[weaponId] && this.unlockedWeapons.includes(weaponId)) {
+        if (WEAPONS[weaponId]) {
             this.currentWeaponId = weaponId;
-            this.isReloading = false;
             taczAudio.playDryFire();
             this.updateHotbarView();
             this.attach3DGun();
-            this.saveProgression();
 
             const w = WEAPONS[weaponId];
             this.spawnFloatingBanner(
                 this.width / 2,
-                this.height - 140,
+                this.height - 120,
                 `🔫 ${w.name.toUpperCase()}`,
                 '#38bdf8'
             );
         }
     }
 
-    startReload() {
-        const weapon = this.getCurrentWeapon();
-        if (this.isReloading) return;
-        if (this.clips[weapon.id] === weapon.magSize) return;
-
-        this.isReloading = true;
-        this.reloadStartTime = performance.now();
-        this.reloadDuration = weapon.reloadTime || 1500;
-
-        taczAudio.playDryFire();
-        this.updateTopControlsView();
-        this.updateHotbarView();
-
-        this.spawnFloatingBanner(this.width / 2, this.height / 2 + 50, '🔄 ПЕРЕЗАРЯДКА (R)...', '#fbbf24');
-    }
-
     handleKeyDown(e) {
-        if (!this.isGameLaunching || this.isLogModalOpen) return;
-
-        // Перезарядка по кнопке R
-        if (e.key === 'r' || e.key === 'R' || e.key === 'к' || e.key === 'К') {
-            this.startReload();
-            return;
-        }
+        if (!this.isGameLaunching || this.isLogModalOpen || !this.isEnabled) return;
 
         // Выбор оружия цифровыми клавишами 1-7
         if (['1', '2', '3', '4', '5', '6', '7'].includes(e.key)) {
             const keys = Object.keys(WEAPONS);
             const index = parseInt(e.key, 10) - 1;
             if (keys[index]) {
-                const targetW = keys[index];
-                if (this.unlockedWeapons.includes(targetW)) {
-                    this.switchWeapon(targetW);
-                } else {
-                    this.spawnFloatingBanner(this.width / 2, this.height - 130, '🔒 Оружие выпадет на волнах!', '#ef4444');
-                }
+                this.switchWeapon(keys[index]);
             }
         }
     }
 
     handleWheel(e) {
-        if (!this.isGameLaunching || this.isLogModalOpen) return;
+        if (!this.isGameLaunching || this.isLogModalOpen || !this.isEnabled) return;
 
-        const unlocked = Object.keys(WEAPONS).filter(k => this.unlockedWeapons.includes(k));
-        if (unlocked.length <= 1) return;
-
-        const curIdx = unlocked.indexOf(this.currentWeaponId);
+        const keys = Object.keys(WEAPONS);
+        const curIdx = keys.indexOf(this.currentWeaponId);
         if (curIdx === -1) return;
 
         let nextIdx = e.deltaY > 0 ? curIdx + 1 : curIdx - 1;
-        if (nextIdx >= unlocked.length) nextIdx = 0;
-        if (nextIdx < 0) nextIdx = unlocked.length - 1;
+        if (nextIdx >= keys.length) nextIdx = 0;
+        if (nextIdx < 0) nextIdx = keys.length - 1;
 
-        this.switchWeapon(unlocked[nextIdx]);
+        this.switchWeapon(keys[nextIdx]);
     }
 
     attach3DGun() {
         if (getSkinViewerMode() !== '3d') return;
-        this.isGunAttached = true;
         const viewer = getSkinViewer3d();
         if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) {
-            setTimeout(() => this.attach3DGun(), 300);
+            setTimeout(() => this.attach3DGun(), 250);
             return;
         }
 
@@ -756,11 +433,7 @@ class GunShooterEngine {
     }
 
     detach3DGun() {
-        if (getSkinViewerMode() !== '3d') {
-            this.isGunAttached = false;
-            return;
-        }
-        this.isGunAttached = false;
+        if (getSkinViewerMode() !== '3d') return;
         const viewer = getSkinViewer3d();
         if (viewer && viewer.playerObject && viewer.playerObject.skin) {
             equipmentManager.loadEquipment();
@@ -792,6 +465,7 @@ class GunShooterEngine {
             this.crosshairElem.classList.remove('hidden');
         }
 
+        // Поворот 3D персонажа за мышкой
         const viewer = getSkinViewer3d();
         const mode = getSkinViewerMode();
         if (mode !== '3d' || !viewer || !viewer.playerObject) return;
@@ -816,7 +490,7 @@ class GunShooterEngine {
 
         const tag = e.target.tagName;
         if (['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A'].includes(tag)) return;
-        if (e.target.closest('button, input, select, textarea, a, .launch-log-modal, .shooter-hotbar-container, .shooter-top-controls, .custom-modal, #title-bar, #step-progress')) return;
+        if (e.target.closest('button, input, select, textarea, a, .launch-log-modal, .shooter-hotbar-container, .shooter-top-controls, .custom-modal, #title-bar')) return;
 
         this.mousePos.x = e.clientX;
         this.mousePos.y = e.clientY;
@@ -824,8 +498,7 @@ class GunShooterEngine {
 
         const now = performance.now();
         const weapon = this.getCurrentWeapon();
-        let effCooldown = weapon.cooldown || 250;
-        if (this.buffs.rapidFire > now) effCooldown *= 0.5;
+        const effCooldown = weapon.cooldown || 220;
 
         if (now - this.lastFireTime >= effCooldown) {
             this.fireCurrentWeapon(e.clientX, e.clientY);
@@ -838,30 +511,11 @@ class GunShooterEngine {
     }
 
     getCurrentWeapon() {
-        return WEAPONS[this.currentWeaponId] || WEAPONS.deagle;
+        return WEAPONS[this.currentWeaponId] || WEAPONS.ak47;
     }
 
     fireCurrentWeapon(targetX, targetY) {
         const weapon = this.getCurrentWeapon();
-
-        // Проверка перезарядки
-        if (this.isReloading) {
-            taczAudio.playDryFire();
-            return;
-        }
-
-        const currentClip = this.clips[weapon.id] !== undefined ? this.clips[weapon.id] : weapon.magSize;
-
-        // Если кончились патроны — запускаем перезарядку
-        if (currentClip <= 0) {
-            this.startReload();
-            return;
-        }
-
-        // Тратим 1 патрон из обоймы
-        this.clips[weapon.id] = Math.max(0, currentClip - 1);
-        this.updateTopControlsView();
-        this.updateHotbarView();
 
         const centerX = this.width / 2;
         const centerY = this.height / 2;
@@ -877,22 +531,18 @@ class GunShooterEngine {
         const startY = centerY + Math.sin(aimAngle) * barrelOffset;
 
         if (this.bullets.length >= 60) {
-            this.bullets.splice(0, this.bullets.length - 50);
+            this.bullets.splice(0, this.bullets.length - 45);
         }
 
-        const isCrit = Math.random() < 0.12;
-        let baseDmg = weapon.damage * (isCrit ? 2.5 : 1);
-        if (this.buffs.doubleDamage > performance.now()) {
-            baseDmg *= 2.2;
-        }
-        const finalDamage = Math.round(baseDmg);
+        const isCrit = Math.random() < 0.15;
+        const finalDamage = Math.round(weapon.damage * (isCrit ? 2.2 : 1));
 
         if (weapon.id === 'spas_12') {
             const totalPellets = weapon.pellets || 6;
             for (let p = 0; p < totalPellets; p++) {
-                const spreadAngle = (Math.random() - 0.5) * (weapon.spread || 0.25);
+                const spreadAngle = (Math.random() - 0.5) * (weapon.spread || 0.22);
                 const angle = Math.atan2(dy, dx) + spreadAngle;
-                const spd = weapon.speed * (0.85 + Math.random() * 0.3);
+                const spd = weapon.speed * (0.88 + Math.random() * 0.25);
 
                 this.bullets.push({
                     x: startX,
@@ -903,14 +553,14 @@ class GunShooterEngine {
                     isCrit,
                     weaponId: weapon.id,
                     distTravelled: 0,
-                    maxDist: dist + 120,
+                    maxDist: dist + 140,
                     length: 16,
                     width: 3.5,
-                    color: this.buffs.doubleDamage > performance.now() ? '#ff0055' : weapon.color
+                    color: weapon.color
                 });
             }
             taczAudio.playShoot('spas_12');
-            this.triggerScreenShake(3.5);
+            this.triggerScreenShake(3);
         } else if (weapon.id === 'awp') {
             const vx = (dx / dist) * weapon.speed;
             const vy = (dy / dist) * weapon.speed;
@@ -926,12 +576,12 @@ class GunShooterEngine {
                 weaponId: weapon.id,
                 distTravelled: 0,
                 maxDist: window.innerWidth * 1.5,
-                length: 70,
+                length: 65,
                 width: 6,
-                color: this.buffs.doubleDamage > performance.now() ? '#ff0055' : weapon.color
+                color: weapon.color
             });
             taczAudio.playShoot('awp');
-            this.triggerScreenShake(5);
+            this.triggerScreenShake(4.5);
         } else if (weapon.id === 'rpg7') {
             const vx = (dx / dist) * weapon.speed;
             const vy = (dy / dist) * weapon.speed;
@@ -948,12 +598,12 @@ class GunShooterEngine {
                 weaponId: weapon.id,
                 distTravelled: 0,
                 maxDist: window.innerWidth * 1.5,
-                length: 32,
+                length: 30,
                 width: 7,
                 color: weapon.color
             });
             taczAudio.playShoot('rpg7');
-            this.triggerScreenShake(6);
+            this.triggerScreenShake(5);
         } else {
             // deagle, ak47, vector45, minigun
             this.bullets.push({
@@ -965,37 +615,32 @@ class GunShooterEngine {
                 isCrit,
                 weaponId: weapon.id,
                 distTravelled: 0,
-                maxDist: dist + 150,
-                length: weapon.id === 'minigun' ? 26 : (weapon.id === 'ak47' ? 28 : 20),
+                maxDist: dist + 160,
+                length: weapon.id === 'minigun' ? 24 : (weapon.id === 'ak47' ? 26 : 20),
                 width: weapon.id === 'deagle' ? 4 : 3,
-                color: this.buffs.doubleDamage > performance.now() ? '#ff0055' : weapon.color
+                color: weapon.color
             });
             taczAudio.playShoot(weapon.id);
-            if (weapon.id === 'deagle') this.triggerScreenShake(2.5);
-            else if (weapon.id === 'minigun') this.triggerScreenShake(1.2);
+            if (weapon.id === 'deagle') this.triggerScreenShake(2.2);
+            else if (weapon.id === 'minigun') this.triggerScreenShake(1.0);
         }
 
-        if (this.muzzleFlashes.length < 8) {
+        if (this.muzzleFlashes.length < 6) {
             this.muzzleFlashes.push({
                 x: startX,
                 y: startY,
-                radius: weapon.id === 'rpg7' || weapon.id === 'awp' ? 34 : 22,
+                radius: weapon.id === 'rpg7' || weapon.id === 'awp' ? 32 : 20,
                 life: 1,
-                decay: 0.25,
-                color: this.buffs.rapidFire > performance.now() ? '#ffd700' : weapon.color
+                decay: 0.28,
+                color: weapon.color
             });
         }
 
-        this.triggerGunRecoil(weapon.id === 'awp' || weapon.id === 'rpg7' ? 1.5 : 0.8);
-
-        // Авто-перезарядка при опустошении
-        if (this.clips[weapon.id] === 0) {
-            this.startReload();
-        }
+        this.triggerGunRecoil(weapon.id === 'awp' || weapon.id === 'rpg7' ? 1.4 : 0.7);
     }
 
-    triggerScreenShake(intensity = 4) {
-        this.shakeIntensity = Math.min(10, (this.shakeIntensity || 0) + intensity);
+    triggerScreenShake(intensity = 3) {
+        this.shakeIntensity = Math.min(8, (this.shakeIntensity || 0) + intensity);
     }
 
     triggerGunRecoil(mult = 1) {
@@ -1006,19 +651,18 @@ class GunShooterEngine {
 
             const rightArm = viewer.playerObject.skin.rightArm;
             if (rightArm) {
-                rightArm.rotation.x = Math.max(-2.5, Math.min(-0.8, rightArm.rotation.x + 0.15 * mult));
+                rightArm.rotation.x = Math.max(-2.4, Math.min(-0.8, rightArm.rotation.x + 0.12 * mult));
             }
         } catch (_) {}
     }
 
-    startTargetSpawner(intervalMs = 1200) {
+    startTargetSpawner(intervalMs = 900) {
         if (this.targetSpawnTimer) clearInterval(this.targetSpawnTimer);
 
         this.targetSpawnTimer = setInterval(() => {
-            if (this.isGameLaunching && !this.isLogModalOpen && !this.isWaveIntermission) {
-                if (this.mobsRemainingInWave > 0 && this.targets.length < 9) {
+            if (this.isGameLaunching && !this.isLogModalOpen) {
+                if (this.targets.length < 8) {
                     this.spawnTarget();
-                    this.mobsRemainingInWave--;
                 }
             }
         }, intervalMs);
@@ -1030,136 +674,61 @@ class GunShooterEngine {
         const mobPool = ['zombie', 'creeper', 'spider', 'skeleton', 'tnt', 'lucky_block'];
         const type = mobPool[Math.floor(Math.random() * mobPool.length)];
 
-        const side = Math.floor(Math.random() * 4);
-        let startX = 0;
-        let startY = 0;
+        // Появление мишеней в случайных местах экрана на безопасном расстоянии от центра
+        const padding = 100;
+        let x, y, distToCenter;
+        let attempts = 0;
 
-        if (side === 0) {
-            startX = Math.random() * this.width;
-            startY = -50;
-        } else if (side === 1) {
-            startX = this.width + 50;
-            startY = 70 + Math.random() * (this.height - 180);
-        } else if (side === 2) {
-            startX = Math.random() * this.width;
-            startY = this.height + 50;
-        } else {
-            startX = -50;
-            startY = 70 + Math.random() * (this.height - 180);
-        }
+        do {
+            x = padding + Math.random() * (this.width - padding * 2);
+            y = 80 + Math.random() * (this.height - 220);
+            const dx = x - this.width / 2;
+            const dy = y - this.height / 2;
+            distToCenter = Math.sqrt(dx * dx + dy * dy);
+            attempts++;
+        } while (distToCenter < 140 && attempts < 10);
 
-        let baseHp = 18 + this.wave * 2;
-        let speed = 1.35 + Math.min(1.2, this.wave * 0.08);
-        let damage = 12;
-        let width = 46;
-        let height = 46;
+        let hp = 30;
+        let width = 48;
+        let height = 48;
+        let lifetime = 6000; // Мишень плавно исчезает через 6с, если в нее не стрелять
 
         if (type === 'zombie') {
-            baseHp = 22 + this.wave * 2.5;
-            speed = 1.3;
-            damage = 14;
+            hp = 35;
         } else if (type === 'creeper') {
-            baseHp = 16 + this.wave * 2;
-            speed = 1.6;
-            damage = 28;
+            hp = 25;
         } else if (type === 'spider') {
-            baseHp = 12 + this.wave * 1.5;
-            speed = 2.4;
-            damage = 8;
+            hp = 20;
             width = 44;
             height = 36;
         } else if (type === 'skeleton') {
-            baseHp = 18 + this.wave * 2;
-            speed = 1.1;
-            damage = 15;
+            hp = 25;
         } else if (type === 'tnt') {
-            baseHp = 10 + this.wave * 1.5;
-            speed = 2.0;
-            damage = 25;
+            hp = 15;
+            lifetime = 8000;
         } else if (type === 'lucky_block') {
-            baseHp = 28;
-            speed = 0.85;
-            damage = 0;
+            hp = 40;
+            lifetime = 5000;
         }
 
         this.targets.push({
             type,
-            x: startX,
-            y: startY,
-            speed,
-            damage,
+            x,
+            y,
+            baseX: x,
+            baseY: y,
+            driftVx: (Math.random() - 0.5) * 1.2,
+            driftVy: (Math.random() - 0.5) * 1.2,
             width,
             height,
             alive: true,
-            hp: baseHp,
-            maxHp: baseHp,
+            hp,
+            maxHp: hp,
             wobble: Math.random() * Math.PI * 2,
-            createdAt: performance.now()
+            scale: 0.1, // Эффект появления
+            createdAt: performance.now(),
+            lifetime
         });
-    }
-
-    spawnBoss() {
-        const bossTypes = ['cyber_wither', 'giga_creeper', 'ender_drone'];
-        const type = bossTypes[this.bossKills % bossTypes.length];
-
-        let name = 'КИБЕР-ВИЗЕР 3000';
-        let maxHp = 220 + this.wave * 40;
-        let width = 76;
-        let height = 76;
-
-        if (type === 'giga_creeper') {
-            name = 'ГИГА-КРИПЕР «ЧЕРНОБЫЛЬ»';
-            maxHp = 180 + this.wave * 35;
-            width = 72;
-            height = 72;
-        } else if (type === 'ender_drone') {
-            name = 'ЭНДЕР-ДРОН «ОМЕГА»';
-            maxHp = 260 + this.wave * 45;
-            width = 82;
-            height = 54;
-        }
-
-        this.currentBoss = {
-            type,
-            name,
-            hp: maxHp,
-            maxHp,
-            x: this.width / 2,
-            y: -100,
-            targetY: 130 + Math.random() * 50,
-            vx: 2.2,
-            width,
-            height,
-            isEnraged: false,
-            wobble: 0,
-            fuseTimer: type === 'giga_creeper' ? 14 : null,
-            lastTeleport: performance.now(),
-            createdAt: performance.now()
-        };
-
-        audioSynth.playBossWarning();
-        this.triggerScreenShake(8);
-
-        if (this.bossHudElem) {
-            this.bossHudElem.classList.add('visible');
-            this.bossHudElem.classList.remove('enraged');
-            const nameEl = dom.get('boss-name-text');
-            const phaseEl = dom.get('boss-phase-tag');
-            const hpTextEl = dom.get('boss-hp-numbers');
-            const hpFillEl = dom.get('boss-hp-fill');
-
-            if (nameEl) nameEl.innerText = name;
-            if (phaseEl) phaseEl.innerText = 'ФАЗА 1';
-            if (hpTextEl) hpTextEl.innerText = `${maxHp} / ${maxHp} HP`;
-            if (hpFillEl) hpFillEl.style.width = '100%';
-        }
-
-        this.spawnFloatingBanner(
-            this.width / 2,
-            180,
-            `🚨 БОСС ВОЛНЫ: ${name}! 🚨`,
-            '#ef4444'
-        );
     }
 
     setGameLaunchingMode(isLaunching) {
@@ -1175,26 +744,25 @@ class GunShooterEngine {
                 setTopDownShooterCamera(true);
                 this.attach3DGun();
             }
-            this.initClips();
 
-            this.mobsRemainingInWave = 8 + this.wave * 3;
-            this.startTargetSpawner(1200);
+            this.score = 0;
+            this.kills = 0;
+            this.combo = 1;
+            this.maxCombo = 1;
+
+            this.startTargetSpawner(900);
 
             if (this.crosshairElem) this.crosshairElem.classList.remove('hidden');
-            if (this.playerDefenseElem) this.playerDefenseElem.classList.remove('hidden');
             if (this.hotbarElem) this.hotbarElem.classList.remove('hidden');
             if (this.topControlsElem) this.topControlsElem.classList.remove('hidden');
 
             this.updateHotbarView();
             this.updateTopControlsView();
 
+            // Спавним 3 начальные мишени
             this.spawnTarget();
             this.spawnTarget();
-
-            // Если стартовая волна кратна 5 — спавним босса
-            if (this.wave % 5 === 0 && !this.currentBoss) {
-                this.spawnBoss();
-            }
+            this.spawnTarget();
 
             this.startLoop();
         } else {
@@ -1204,7 +772,6 @@ class GunShooterEngine {
                 this.detach3DGun();
             }
             this.stopLoop();
-            this.saveProgression(true);
             if (this.targetSpawnTimer) {
                 clearInterval(this.targetSpawnTimer);
                 this.targetSpawnTimer = null;
@@ -1214,16 +781,10 @@ class GunShooterEngine {
             this.explosions = [];
             this.muzzleFlashes = [];
             this.damageNumbers = [];
-            this.lootDrops = [];
-            this.currentBoss = null;
-            this.buffs = { rapidFire: 0, doubleDamage: 0, shield: 0 };
 
             if (this.crosshairElem) this.crosshairElem.classList.add('hidden');
-            if (this.playerDefenseElem) this.playerDefenseElem.classList.add('hidden');
             if (this.hotbarElem) this.hotbarElem.classList.add('hidden');
             if (this.topControlsElem) this.topControlsElem.classList.add('hidden');
-            if (this.bossHudElem) this.bossHudElem.classList.remove('visible');
-            if (this.buffsBarElem) this.buffsBarElem.classList.add('hidden');
 
             if (this.ctx) this.ctx.clearRect(0, 0, this.width, this.height);
         }
@@ -1235,20 +796,14 @@ class GunShooterEngine {
             this.isFiring = false;
             if (this.canvas) this.canvas.style.display = 'none';
             if (this.crosshairElem) this.crosshairElem.classList.add('hidden');
-            if (this.playerDefenseElem) this.playerDefenseElem.classList.add('hidden');
             if (this.hotbarElem) this.hotbarElem.classList.add('hidden');
             if (this.topControlsElem) this.topControlsElem.classList.add('hidden');
-            if (this.bossHudElem) this.bossHudElem.classList.remove('visible');
-            if (this.buffsBarElem) this.buffsBarElem.classList.add('hidden');
         } else {
             if (this.canvas) this.canvas.style.display = 'block';
             if (this.isGameLaunching && this.isEnabled) {
                 if (this.crosshairElem) this.crosshairElem.classList.remove('hidden');
-                if (this.playerDefenseElem) this.playerDefenseElem.classList.remove('hidden');
                 if (this.hotbarElem) this.hotbarElem.classList.remove('hidden');
                 if (this.topControlsElem) this.topControlsElem.classList.remove('hidden');
-                if (this.bossTarget) this.bossHudElem?.classList.add('visible');
-                this.updateBuffsHUD();
             }
         }
     }
@@ -1277,51 +832,30 @@ class GunShooterEngine {
                     const sy = (Math.random() - 0.5) * this.shakeIntensity;
                     this.ctx.save();
                     this.ctx.translate(sx, sy);
-                    this.shakeIntensity *= 0.82;
+                    this.shakeIntensity *= 0.84;
                 } else {
                     this.shakeIntensity = 0;
                 }
 
-                // 1. Проверка завершения перезарядки
-                this.processReloadState();
-
-                // 2. Регенерация
-                this.processPlayerRegen();
-
-                // 3. Автострельба
+                // 1. Автострельба
                 this.processAutoFire();
 
-                // 4. Отрисовка щита вокруг игрока (если активен бафф)
-                this.drawPlayerShieldEffect();
-
-                // 5. Обновление босса
-                this.updateAndDrawBoss();
-
-                // 6. Мобы
+                // 2. Мишени
                 this.updateAndDrawTargets();
 
-                // 7. Выпавший лут (хилки, баффы, оружие)
-                this.updateAndDrawLootDrops();
-
-                // 8. Снаряды
+                // 3. Снаряды
                 this.updateAndDrawBullets();
 
-                // 9. Вспышки и взрывы
+                // 4. Вспышки и взрывы
                 this.updateAndDrawMuzzleFlashes();
                 this.updateAndDrawExplosions();
 
-                // 10. Всплывающий урон и баннеры
+                // 5. Всплывающий урон и баннеры комбо
                 this.updateAndDrawDamageNumbers();
 
                 if (hasShake) {
                     this.ctx.restore();
                 }
-
-                // 11. Обновление плашек баффов
-                this.updateBuffsHUD();
-
-                // 12. Проверка завершения волны
-                this.checkWaveCompletion();
 
             } catch (err) {
                 console.error('[ShooterEngine Render Error]', err);
@@ -1335,73 +869,11 @@ class GunShooterEngine {
         }
     }
 
-    drawPlayerShieldEffect() {
-        if (this.buffs.shield <= performance.now()) return;
-
-        const cx = this.width / 2;
-        const cy = this.height / 2;
-        const t = performance.now() * 0.003;
-
-        this.ctx.save();
-        this.ctx.translate(cx, cy);
-
-        // Вращающийся щитовой барьер
-        this.ctx.strokeStyle = '#38bdf8';
-        this.ctx.lineWidth = 2.5;
-        this.ctx.shadowColor = '#38bdf8';
-        this.ctx.shadowBlur = 15;
-        this.ctx.globalAlpha = 0.75 + Math.sin(t * 4) * 0.2;
-
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, 42, 0, Math.PI * 2);
-        this.ctx.stroke();
-
-        // Узлы щита
-        for (let i = 0; i < 4; i++) {
-            const angle = t + (i * Math.PI) / 2;
-            const nodeX = Math.cos(angle) * 42;
-            const nodeY = Math.sin(angle) * 42;
-            this.ctx.fillStyle = '#00f2fe';
-            this.ctx.beginPath();
-            this.ctx.arc(nodeX, nodeY, 4, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
-
-        this.ctx.restore();
-    }
-
-    processReloadState() {
-        if (this.isReloading) {
-            const elapsed = performance.now() - this.reloadStartTime;
-            if (elapsed >= this.reloadDuration) {
-                const weapon = this.getCurrentWeapon();
-                this.clips[weapon.id] = weapon.magSize;
-                this.isReloading = false;
-                audioSynth.playEquip();
-                this.updateTopControlsView();
-                this.updateHotbarView();
-                this.spawnFloatingBanner(this.width / 2, this.height / 2 + 50, '⚡ ОБОЙМА ЗАРЯЖЕНА!', '#39ff14');
-            }
-        }
-    }
-
-    processPlayerRegen() {
-        if (this.playerHp < this.playerMaxHp) {
-            const now = performance.now();
-            if (now - this.lastRegenTime >= 2500) {
-                this.lastRegenTime = now;
-                this.playerHp = Math.min(this.playerMaxHp, this.playerHp + 2);
-                this.updatePlayerDefenseHUD();
-            }
-        }
-    }
-
     processAutoFire() {
-        if (this.isFiring && !this.isReloading) {
+        if (this.isFiring) {
             const now = performance.now();
             const weapon = this.getCurrentWeapon();
-            let effCooldown = weapon.cooldown || 250;
-            if (this.buffs.rapidFire > now) effCooldown *= 0.5;
+            const effCooldown = weapon.cooldown || 220;
 
             if (now - this.lastFireTime >= effCooldown) {
                 this.fireCurrentWeapon(this.mousePos.x, this.mousePos.y);
@@ -1410,184 +882,58 @@ class GunShooterEngine {
         }
     }
 
-    checkWaveCompletion() {
-        if (this.isWaveIntermission) return;
-
-        if (this.mobsRemainingInWave <= 0 && this.targets.length === 0 && !this.currentBoss) {
-            this.isWaveIntermission = true;
-            this.wave++;
-
-            // Лечение игрока за волну
-            this.playerHp = Math.min(this.playerMaxHp, this.playerHp + 30);
-            this.updatePlayerDefenseHUD();
-
-            audioSynth.playFanfare();
-            this.spawnFloatingBanner(
-                this.width / 2,
-                this.height / 2 - 80,
-                `🎉 ВОЛНА ЗАЧИЩЕНА! +30 HP`,
-                '#39ff14'
-            );
-
-            this.updateTopControlsView();
-            this.saveProgression();
-
-            setTimeout(() => {
-                this.isWaveIntermission = false;
-                this.mobsRemainingInWave = 8 + this.wave * 3;
-                this.spawnFloatingBanner(
-                    this.width / 2,
-                    this.height / 2 - 80,
-                    `🌊 ВОЛНА ${this.wave} НАЧАЛАСЬ!`,
-                    '#38bdf8'
-                );
-
-                if (this.wave % 5 === 0) {
-                    this.spawnBoss();
-                }
-            }, 2500);
-        }
-    }
-
-    updateAndDrawBoss() {
-        if (!this.currentBoss) return;
-        const b = this.currentBoss;
-
-        if (b.y < b.targetY) {
-            b.y += (b.targetY - b.y) * 0.08;
-        } else {
-            b.wobble += 0.04;
-            b.x += b.vx;
-
-            if (b.x < b.width) {
-                b.x = b.width;
-                b.vx = Math.abs(b.vx);
-            } else if (b.x > this.width - b.width) {
-                b.x = this.width - b.width;
-                b.vx = -Math.abs(b.vx);
-            }
-
-            b.y = b.targetY + Math.sin(b.wobble) * 25;
-
-            if (b.type === 'ender_drone' && performance.now() - b.lastTeleport > 3500) {
-                b.lastTeleport = performance.now();
-                b.x = 100 + Math.random() * (this.width - 200);
-                this.createExplosion(b.x, b.y, 'lucky_block');
-                audioSynth.playJump();
-            }
-        }
-
-        if (!b.isEnraged && b.hp <= b.maxHp * 0.5) {
-            b.isEnraged = true;
-            b.vx *= 1.5;
-            audioSynth.playBossWarning();
-            if (this.bossHudElem) {
-                this.bossHudElem.classList.add('enraged');
-                const phaseEl = dom.get('boss-phase-tag');
-                if (phaseEl) phaseEl.innerText = '⚡ ЯРОСТЬ!';
-            }
-            this.spawnFloatingBanner(b.x, b.y - 40, '🔥 БОСС В ЯРОСТИ!', '#ff0055');
-        }
-
-        this.drawBossShape(b);
-    }
-
-    drawBossShape(b) {
-        this.ctx.save();
-        this.ctx.translate(b.x, b.y);
-
-        const half = b.width / 2;
-
-        if (b.type === 'cyber_wither') {
-            this.ctx.fillStyle = b.isEnraged ? '#ff0055' : '#1e1b4b';
-            this.ctx.fillRect(-half * 0.6, -half * 0.4, b.width * 0.6, b.height * 0.8);
-
-            this.ctx.fillStyle = '#0f172a';
-            this.ctx.fillRect(-18, -half - 10, 36, 32);
-            this.ctx.fillStyle = b.isEnraged ? '#ff0055' : '#38bdf8';
-            this.ctx.fillRect(-12, -half + 2, 8, 8);
-            this.ctx.fillRect(4, -half + 2, 8, 8);
-
-            this.ctx.fillStyle = '#0f172a';
-            this.ctx.fillRect(-half - 12, -half + 5, 24, 24);
-            this.ctx.fillStyle = '#a855f7';
-            this.ctx.fillRect(-half - 8, -half + 12, 6, 6);
-
-            this.ctx.fillStyle = '#0f172a';
-            this.ctx.fillRect(half - 12, -half + 5, 24, 24);
-            this.ctx.fillStyle = '#a855f7';
-            this.ctx.fillRect(half - 8, -half + 12, 6, 6);
-        } else if (b.type === 'giga_creeper') {
-            this.ctx.fillStyle = b.isEnraged ? '#ef4444' : '#22c55e';
-            this.ctx.fillRect(-half, -half, b.width, b.height);
-
-            this.ctx.fillStyle = '#052e16';
-            const s = b.width / 8;
-            this.ctx.fillRect(-half + s, -half + s * 2, s * 2, s * 2);
-            this.ctx.fillRect(half - s * 3, -half + s * 2, s * 2, s * 2);
-            this.ctx.fillRect(-half + s * 3, -half + s * 3, s * 2, s * 3);
-            this.ctx.fillRect(-half + s * 2, -half + s * 4, s * 4, s * 3);
-
-            const elapsed = (performance.now() - b.createdAt) / 1000;
-            const remaining = Math.max(0, Math.ceil((b.fuseTimer || 14) - elapsed));
-            this.ctx.fillStyle = '#facc15';
-            this.ctx.font = 'bold 16px monospace';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(`💣 ДЕТОНАЦИЯ: ${remaining}s`, 0, -half - 15);
-        } else {
-            this.ctx.fillStyle = '#581c87';
-            this.ctx.beginPath();
-            this.ctx.moveTo(-half - 20, -10);
-            this.ctx.lineTo(half + 20, -10);
-            this.ctx.lineTo(0, half + 10);
-            this.ctx.closePath();
-            this.ctx.fill();
-
-            this.ctx.fillStyle = '#f0abfc';
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 10, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
-
-        this.ctx.restore();
-    }
-
     updateAndDrawTargets() {
-        const playerX = this.width / 2;
-        const playerY = this.height / 2;
+        const now = performance.now();
 
         for (let i = this.targets.length - 1; i >= 0; i--) {
             const t = this.targets[i];
 
-            const dx = playerX - t.x;
-            const dy = playerY - t.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist > 5) {
-                t.vx = (dx / dist) * t.speed;
-                t.vy = (dy / dist) * t.speed;
-                t.x += t.vx;
-                t.y += t.vy;
+            // Плавное появление
+            if (t.scale < 1) {
+                t.scale = Math.min(1, t.scale + 0.08);
             }
 
-            // Компактный радиус попадания по уменьшенному игроку (36px)
-            if (dist < 36) {
-                this.damagePlayer(t.damage || 12);
-                this.createExplosion(t.x, t.y, t.type);
-                this.targets.splice(i, 1);
-                continue;
+            // Плавное покачивание и дрейф
+            t.wobble += 0.03;
+            t.x = t.baseX + Math.sin(t.wobble) * 20 + (now - t.createdAt) * 0.001 * t.driftVx * 10;
+            t.y = t.baseY + Math.cos(t.wobble * 0.8) * 15 + (now - t.createdAt) * 0.001 * t.driftVy * 10;
+
+            // Время жизни (если не сбили — плавно улетает и исчезает)
+            const age = now - t.createdAt;
+            if (age > t.lifetime) {
+                t.scale -= 0.04;
+                if (t.scale <= 0) {
+                    this.targets.splice(i, 1);
+                    // Сброс комбо при пропуске мишени
+                    if (this.combo > 1) {
+                        this.combo = 1;
+                        this.updateTopControlsView();
+                    }
+                    continue;
+                }
             }
 
-            this.drawMobPixelArt(t, dist);
+            this.drawTargetShape(t);
         }
     }
 
-    drawMobPixelArt(t, distToPlayer) {
+    drawTargetShape(t) {
         this.ctx.save();
         this.ctx.translate(t.x, t.y);
+        this.ctx.scale(t.scale, t.scale);
 
         const halfW = t.width / 2;
         const halfH = t.height / 2;
+
+        // Внешнее неоновое кольцо мишени
+        this.ctx.strokeStyle = t.type === 'lucky_block' ? '#facc15' : (t.type === 'tnt' ? '#ef4444' : '#39ff14');
+        this.ctx.lineWidth = 2;
+        this.ctx.globalAlpha = 0.6 + Math.sin(t.wobble * 2) * 0.3;
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, halfW + 8, 0, Math.PI * 2);
+        this.ctx.stroke();
+
+        this.ctx.globalAlpha = 1.0;
 
         if (t.type === 'zombie') {
             this.ctx.fillStyle = '#1e3a8a';
@@ -1631,199 +977,12 @@ class GunShooterEngine {
             this.ctx.fillStyle = '#eab308';
             this.ctx.fillRect(-halfW, -halfH, t.width, t.height);
             this.ctx.fillStyle = '#ffffff';
-            this.ctx.font = 'bold 20px monospace';
+            this.ctx.font = 'bold 22px monospace';
             this.ctx.textAlign = 'center';
             this.ctx.fillText('?', 0, 7);
         }
 
-        // Полоска здоровья моба
-        const hpPct = Math.max(0, t.hp / t.maxHp);
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        this.ctx.fillRect(-halfW, -halfH - 8, t.width, 4);
-        this.ctx.fillStyle = hpPct > 0.5 ? '#22c55e' : (hpPct > 0.25 ? '#eab308' : '#ef4444');
-        this.ctx.fillRect(-halfW, -halfH - 8, t.width * hpPct, 4);
-
         this.ctx.restore();
-    }
-
-    spawnLootDrop(x, y, type = 'heal', weaponId = null) {
-        this.lootDrops.push({
-            x,
-            y,
-            type, // 'heal' | 'buff_rapid' | 'buff_damage' | 'buff_shield' | 'nuke' | 'weapon'
-            weaponId,
-            wobble: Math.random() * Math.PI * 2,
-            createdAt: performance.now()
-        });
-    }
-
-    triggerNukeBlast() {
-        audioSynth.playBassDrop();
-        this.triggerScreenShake(10);
-        this.createExplosion(this.width / 2, this.height / 2, 'tnt');
-
-        // Уничтожаем всех обычных мобов на экране
-        for (let i = this.targets.length - 1; i >= 0; i--) {
-            const t = this.targets[i];
-            t.alive = false;
-            this.createExplosion(t.x, t.y, t.type);
-            this.spawnDamageNumber(t.x, t.y, 999, true, 'rpg7');
-        }
-        this.targets = [];
-
-        // Урон боссу
-        if (this.currentBoss) {
-            this.currentBoss.hp -= 80;
-            this.spawnDamageNumber(this.currentBoss.x, this.currentBoss.y, 80, true, 'rpg7');
-            this.updateBossHealthHUD();
-            if (this.currentBoss.hp <= 0) {
-                this.onBossDefeated();
-            }
-        }
-    }
-
-    updateAndDrawLootDrops() {
-        if (this.lootDrops.length === 0) return;
-
-        const playerX = this.width / 2;
-        const playerY = this.height / 2;
-
-        for (let i = this.lootDrops.length - 1; i >= 0; i--) {
-            const drop = this.lootDrops[i];
-            drop.wobble += 0.05;
-
-            // Притяжение лута к игроку
-            const dx = playerX - drop.x;
-            const dy = playerY - drop.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < 160) {
-                drop.x += (dx / dist) * 3.8;
-                drop.y += (dy / dist) * 3.8;
-            }
-
-            // Подбор лута игроком (радиус 36px)
-            if (dist < 36) {
-                const now = performance.now();
-
-                if (drop.type === 'weapon' && drop.weaponId) {
-                    const w = WEAPONS[drop.weaponId];
-                    if (!this.unlockedWeapons.includes(drop.weaponId)) {
-                        this.unlockedWeapons.push(drop.weaponId);
-                    }
-                    this.switchWeapon(drop.weaponId);
-                    audioSynth.playFanfare();
-                    this.spawnFloatingBanner(
-                        this.width / 2,
-                        this.height / 2 - 60,
-                        `🎁 НОВОЕ ОРУЖИЕ: ${w ? w.name.toUpperCase() : drop.weaponId}!`,
-                        '#fbbf24'
-                    );
-                } else if (drop.type === 'heal') {
-                    this.playerHp = Math.min(this.playerMaxHp, this.playerHp + 35);
-                    this.updatePlayerDefenseHUD();
-                    audioSynth.playCoinPickup();
-                    this.spawnFloatingBanner(
-                        this.width / 2,
-                        this.height / 2 - 60,
-                        `💚 +35 HP ЛЕЧЕНИЕ!`,
-                        '#22c55e'
-                    );
-                } else if (drop.type === 'buff_rapid') {
-                    this.buffs.rapidFire = now + 10000;
-                    // Мгновенно перезаряжаем текущее оружие
-                    const curW = this.getCurrentWeapon();
-                    this.clips[curW.id] = curW.magSize;
-                    this.isReloading = false;
-                    audioSynth.playEquip();
-                    this.spawnFloatingBanner(
-                        this.width / 2,
-                        this.height / 2 - 60,
-                        `⚡ ГИПЕР-СКОРОСТРЕЛЬНОСТЬ (10с)!`,
-                        '#fbbf24'
-                    );
-                } else if (drop.type === 'buff_damage') {
-                    this.buffs.doubleDamage = now + 10000;
-                    audioSynth.playBossWarning();
-                    this.spawnFloatingBanner(
-                        this.width / 2,
-                        this.height / 2 - 60,
-                        `💥 КВАД-УРОН 2.2x (10с)!`,
-                        '#ef4444'
-                    );
-                } else if (drop.type === 'buff_shield') {
-                    this.buffs.shield = now + 8000;
-                    audioSynth.playFanfare();
-                    this.spawnFloatingBanner(
-                        this.width / 2,
-                        this.height / 2 - 60,
-                        `🛡️ ЭНЕРГО-ЩИТ (8с)!`,
-                        '#38bdf8'
-                    );
-                } else if (drop.type === 'nuke') {
-                    this.triggerNukeBlast();
-                    this.spawnFloatingBanner(
-                        this.width / 2,
-                        this.height / 2 - 60,
-                        `☢️ ТАКТИЧЕСКИЙ УДАР!`,
-                        '#facc15'
-                    );
-                }
-
-                this.updateHotbarView();
-                this.updateTopControlsView();
-                this.lootDrops.splice(i, 1);
-                continue;
-            }
-
-            // Отрисовка лута
-            this.ctx.save();
-            this.ctx.translate(drop.x, drop.y + Math.sin(drop.wobble) * 6);
-
-            // Настройка ауры и цвета
-            let auraColor = '#22c55e';
-            let iconText = '💚';
-
-            if (drop.type === 'weapon') {
-                auraColor = '#fbbf24';
-                iconText = '🔫';
-            } else if (drop.type === 'buff_rapid') {
-                auraColor = '#fbbf24';
-                iconText = '⚡';
-            } else if (drop.type === 'buff_damage') {
-                auraColor = '#ef4444';
-                iconText = '💥';
-            } else if (drop.type === 'buff_shield') {
-                auraColor = '#38bdf8';
-                iconText = '🛡️';
-            } else if (drop.type === 'nuke') {
-                auraColor = '#eab308';
-                iconText = '☢️';
-            }
-
-            // Свечение ауры
-            this.ctx.fillStyle = auraColor;
-            this.ctx.globalAlpha = 0.35 + Math.sin(drop.wobble * 2) * 0.15;
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 20, 0, Math.PI * 2);
-            this.ctx.fill();
-
-            // Рамка ящика
-            this.ctx.globalAlpha = 0.95;
-            this.ctx.fillStyle = '#0f172a';
-            this.ctx.strokeStyle = auraColor;
-            this.ctx.lineWidth = 2;
-            this.ctx.fillRect(-14, -14, 28, 28);
-            this.ctx.strokeRect(-14, -14, 28, 28);
-
-            // Иконка
-            this.ctx.fillStyle = auraColor;
-            this.ctx.font = '14px monospace';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(iconText, 0, 5);
-
-            this.ctx.restore();
-        }
     }
 
     updateAndDrawBullets() {
@@ -1836,8 +995,8 @@ class GunShooterEngine {
                 const tdy = target.y - b.y;
                 const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
                 if (tdist > 0) {
-                    b.vx += (tdx / tdist) * 1.6;
-                    b.vy += (tdy / tdist) * 1.6;
+                    b.vx += (tdx / tdist) * 1.8;
+                    b.vy += (tdy / tdist) * 1.8;
                     const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
                     b.vx = (b.vx / curSpd) * 22;
                     b.vy = (b.vy / curSpd) * 22;
@@ -1873,33 +1032,6 @@ class GunShooterEngine {
     }
 
     checkBulletCollisions(bullet) {
-        if (this.currentBoss) {
-            const b = this.currentBoss;
-            const dx = bullet.x - b.x;
-            const dy = bullet.y - b.y;
-            const distSq = dx * dx + dy * dy;
-            const hitR = b.width * 0.75;
-
-            if (distSq < hitR * hitR) {
-                b.hp -= bullet.damage;
-                this.spawnDamageNumber(bullet.x, bullet.y, bullet.damage, bullet.isCrit, bullet.weaponId);
-
-                if (bullet.weaponId === 'rpg7') {
-                    taczAudio.playShoot('rpg7');
-                    this.createExplosion(b.x, b.y, 'tnt');
-                } else {
-                    taczAudio.playFleshHit();
-                }
-
-                this.updateBossHealthHUD();
-
-                if (b.hp <= 0) {
-                    this.onBossDefeated();
-                }
-                return !bullet.isPiercing;
-            }
-        }
-
         for (let j = this.targets.length - 1; j >= 0; j--) {
             const t = this.targets[j];
             if (!t.alive) continue;
@@ -1907,14 +1039,14 @@ class GunShooterEngine {
             const dx = bullet.x - t.x;
             const dy = bullet.y - t.y;
             const distSq = dx * dx + dy * dy;
-            const hitR = t.width * 0.75;
+            const hitR = (t.width * t.scale) * 0.85;
 
             if (distSq < hitR * hitR) {
                 t.hp -= bullet.damage;
                 this.spawnDamageNumber(t.x, t.y, bullet.damage, bullet.isCrit, bullet.weaponId);
 
                 if (bullet.weaponId === 'rpg7') {
-                    this.createExplosion(t.x, t.y, 'tnt');
+                    this.triggerAoeBlast(bullet.x, bullet.y, bullet.aoeRadius || 140, bullet.damage);
                 } else {
                     taczAudio.playFleshHit();
                 }
@@ -1931,82 +1063,74 @@ class GunShooterEngine {
         return false;
     }
 
-    updateBossHealthHUD() {
-        if (!this.currentBoss || !this.bossHudElem) return;
-        const b = this.currentBoss;
-        const hpTextEl = dom.get('boss-hp-numbers');
-        const hpFillEl = dom.get('boss-hp-fill');
+    triggerAoeBlast(x, y, radius, dmg) {
+        this.createExplosion(x, y, 'tnt');
+        this.triggerScreenShake(6);
 
-        const pct = Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100));
-        if (hpTextEl) hpTextEl.innerText = `${Math.max(0, Math.round(b.hp))} / ${b.maxHp} HP (${Math.round(pct)}%)`;
-        if (hpFillEl) hpFillEl.style.width = `${pct}%`;
-    }
+        for (let i = this.targets.length - 1; i >= 0; i--) {
+            const t = this.targets[i];
+            if (!t.alive) continue;
 
-    onBossDefeated() {
-        if (!this.currentBoss) return;
-        const b = this.currentBoss;
+            const dx = t.x - x;
+            const dy = t.y - y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-        this.bossKills++;
-        this.kills += 5;
-        this.score += 1500;
+            if (dist <= radius) {
+                t.hp -= Math.round(dmg * (1 - dist / radius));
+                this.spawnDamageNumber(t.x, t.y, dmg, true, 'rpg7');
 
-        taczAudio.playKill();
-        audioSynth.playBossDefeated();
-        this.triggerScreenShake(8);
-
-        this.createExplosion(b.x, b.y, 'lucky_block');
-        this.createExplosion(b.x - 30, b.y - 20, 'tnt');
-        this.createExplosion(b.x + 30, b.y + 20, 'creeper');
-
-        // Гарантированный дроп оружия из босса
-        const locked = Object.keys(WEAPONS).filter(k => !this.unlockedWeapons.includes(k));
-        if (locked.length > 0) {
-            const dropW = locked[Math.floor(Math.random() * locked.length)];
-            this.spawnLootDrop(b.x, b.y, 'weapon', dropW);
-        } else {
-            this.spawnLootDrop(b.x, b.y, 'buff_damage');
+                if (t.hp <= 0) {
+                    t.alive = false;
+                    this.onTargetDestroyed(t);
+                    this.targets.splice(i, 1);
+                }
+            }
         }
-        // Дополнительный бафф/хилка с босса
-        this.spawnLootDrop(b.x + 30, b.y, 'heal');
-
-        this.spawnFloatingBanner(b.x, b.y, `🏆 БОСС УНИЧТОЖЕН!`, '#fbbf24');
-
-        if (this.bossHudElem) {
-            this.bossHudElem.classList.remove('visible');
-        }
-
-        this.currentBoss = null;
-        this.saveProgression();
-        this.updateTopControlsView();
     }
 
     onTargetDestroyed(target) {
         this.kills++;
-        this.score += 100;
+        this.lastHitTime = performance.now();
+
+        // Увеличение серии комбо
+        this.combo++;
+        if (this.combo > this.maxCombo) {
+            this.maxCombo = this.combo;
+        }
+
+        // Очки с множителем комбо
+        const baseScore = target.type === 'lucky_block' ? 500 : (target.type === 'tnt' ? 250 : 100);
+        const earned = baseScore * Math.min(10, this.combo);
+        this.score += earned;
 
         taczAudio.playKill();
         if (Math.random() > 0.4) taczAudio.playHeadHit();
 
         this.createExplosion(target.x, target.y, target.type);
 
-        // Шанс дропа лута (24% обычный моб, 75% lucky block)
-        const dropChance = target.type === 'lucky_block' ? 0.75 : 0.24;
-        if (Math.random() < dropChance) {
-            const locked = Object.keys(WEAPONS).filter(k => !this.unlockedWeapons.includes(k));
-
-            // Если есть неоткрытое оружие — 35% шанс дропа оружия
-            if (locked.length > 0 && Math.random() < 0.35) {
-                const dropW = locked[Math.floor(Math.random() * locked.length)];
-                this.spawnLootDrop(target.x, target.y, 'weapon', dropW);
-            } else {
-                // Иначе выбираем полезный дроп: хилка или боевой бафф
-                const pool = ['heal', 'heal', 'buff_rapid', 'buff_damage', 'buff_shield', 'nuke'];
-                const selected = pool[Math.floor(Math.random() * pool.length)];
-                this.spawnLootDrop(target.x, target.y, selected);
-            }
+        // Особые эффекты мишеней
+        if (target.type === 'tnt') {
+            // Взрыв TNT уничтожает соседние мишени
+            audioSynth.playBassDrop();
+            this.triggerAoeBlast(target.x, target.y, 220, 200);
+            this.spawnFloatingBanner(target.x, target.y - 20, '💥 ЦЕПНОЙ ВЗРЫВ TNT!', '#ef4444');
+        } else if (target.type === 'lucky_block') {
+            audioSynth.playFanfare();
+            this.spawnFloatingBanner(target.x, target.y - 20, `🎁 ДЖЕКПОТ +${earned}!`, '#facc15');
         }
 
-        this.saveProgression();
+        // Комбо поздравления
+        if (this.combo === 5) {
+            audioSynth.playFanfare();
+            this.spawnFloatingBanner(this.width / 2, 160, '🔥 СЕРИЯ 5X! ОГОНЬ!', '#fbbf24');
+        } else if (this.combo === 10) {
+            audioSynth.playFanfare();
+            this.spawnFloatingBanner(this.width / 2, 160, '⚡ СЕРИЯ 10X! НЕУДЕРЖИМЫЙ!', '#38bdf8');
+        } else if (this.combo === 20) {
+            audioSynth.playFanfare();
+            this.spawnFloatingBanner(this.width / 2, 160, '👑 СЕРИЯ 20X! СТРЕЛОК-АС!', '#a855f7');
+        }
+
         this.updateTopControlsView();
     }
 
@@ -2017,7 +1141,7 @@ class GunShooterEngine {
         this.damageNumbers.push({
             x,
             y,
-            vy: -1.8,
+            vy: -1.6,
             text,
             isBanner: true,
             color,
@@ -2031,9 +1155,9 @@ class GunShooterEngine {
             this.damageNumbers.shift();
         }
         this.damageNumbers.push({
-            x: x + (Math.random() - 0.5) * 20,
-            y: y + (Math.random() - 0.5) * 15,
-            vy: -2.2,
+            x: x + (Math.random() - 0.5) * 16,
+            y: y + (Math.random() - 0.5) * 12,
+            vy: -2.0,
             damage: dmg,
             isCrit,
             weaponId,
@@ -2059,38 +1183,32 @@ class GunShooterEngine {
             this.ctx.globalAlpha = Math.max(0, d.life);
 
             if (d.isBanner) {
-                this.ctx.font = 'bold 16px monospace';
+                this.ctx.font = 'bold 16px "JetBrains Mono", monospace';
                 this.ctx.fillStyle = d.color || '#fbbf24';
                 this.ctx.fillText(d.text, d.x, d.y);
             } else {
                 this.ctx.font = d.isCrit ? 'bold 18px monospace' : 'bold 14px monospace';
                 let color = '#39ff14';
-                if (d.weaponId === 'player_hit') color = '#ff4d4d';
-                else if (d.weaponId === 'shield_blocked') color = '#38bdf8';
-                else if (d.isCrit) color = '#fbbf24';
+                if (d.isCrit) color = '#fbbf24';
                 else if (d.weaponId === 'awp') color = '#c084fc';
                 else if (d.weaponId === 'rpg7') color = '#f43f5e';
 
                 this.ctx.fillStyle = color;
-                if (d.weaponId === 'shield_blocked') {
-                    this.ctx.fillText(`🛡️ БЛОК`, d.x, d.y);
-                } else {
-                    this.ctx.fillText(`-${d.damage}${d.isCrit ? ' ⚡' : ''}`, d.x, d.y);
-                }
+                this.ctx.fillText(`+${d.damage}${d.isCrit ? ' ⚡' : ''}`, d.x, d.y);
             }
         }
         this.ctx.globalAlpha = 1.0;
     }
 
     createExplosion(x, y, type) {
-        if (this.explosions.length >= 75) {
-            this.explosions.splice(0, 15);
+        if (this.explosions.length >= 80) {
+            this.explosions.splice(0, 20);
         }
         const colors = type === 'creeper' 
             ? ['#16a34a', '#22c55e', '#052e16'] 
             : (type === 'tnt' ? ['#ef4444', '#f97316', '#ffffff'] : ['#eab308', '#fbbf24', '#38bdf8']);
 
-        const count = type === 'tnt' ? 24 : 12;
+        const count = type === 'tnt' ? 24 : (type === 'lucky_block' ? 20 : 12);
         for (let i = 0; i < count; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 1.5 + Math.random() * 4.5;

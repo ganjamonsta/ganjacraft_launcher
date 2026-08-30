@@ -305,22 +305,41 @@ class EquipmentManager {
      * Рандомизация экипировки персонажа
      */
     randomizeEquipment() {
-        const pickRandom = (slotName, allowNoneChance = 0.25) => {
-            const catalog = EQUIPMENT_CATALOG[slotName];
-            if (!catalog) return 'none';
-            const keys = Object.keys(catalog);
-            if (Math.random() < allowNoneChance && keys.includes('none')) {
-                return 'none';
-            }
-            const nonNone = keys.filter(k => k !== 'none');
-            return nonNone[Math.floor(Math.random() * nonNone.length)] || 'none';
-        };
+        const taczGuns = [
+            'tacz_ak47', 
+            'tacz_vector45', 
+            'tacz_awp', 
+            'tacz_spas_12', 
+            'tacz_deagle', 
+            'tacz_glock17', 
+            'tacz_rpg7', 
+            'tacz_minigun'
+        ];
 
-        this.currentEquipment.head = pickRandom('head', 0.25);
-        this.currentEquipment.chest = pickRandom('chest', 0.15);
-        this.currentEquipment.legs = pickRandom('legs', 0.15);
-        this.currentEquipment.boots = pickRandom('boots', 0.15);
-        this.currentEquipment.mainHand = pickRandom('mainHand', 0.05);
+        // 75% шанс на полный комплект брони (Незерит или Алмазка) + случайное оружие
+        const armorTheme = Math.random() < 0.5 ? 'netherite' : 'diamond';
+        const hasFullArmor = Math.random() < 0.75;
+
+        if (hasFullArmor) {
+            this.currentEquipment.head = Math.random() < 0.85 ? `${armorTheme}_helmet` : 'none';
+            this.currentEquipment.chest = `${armorTheme}_chestplate`;
+            this.currentEquipment.legs = `${armorTheme}_leggings`;
+            this.currentEquipment.boots = `${armorTheme}_boots`;
+        } else {
+            const pick = (slot, prefix) => Math.random() < 0.7 ? `${prefix}_${slot}` : 'none';
+            this.currentEquipment.head = pick('helmet', armorTheme);
+            this.currentEquipment.chest = pick('chestplate', armorTheme);
+            this.currentEquipment.legs = pick('leggings', armorTheme);
+            this.currentEquipment.boots = pick('boots', armorTheme);
+        }
+
+        // 95% шанс на оружие в руках
+        if (Math.random() < 0.95) {
+            this.currentEquipment.mainHand = taczGuns[Math.floor(Math.random() * taczGuns.length)];
+        } else {
+            this.currentEquipment.mainHand = 'none';
+        }
+
         this.currentEquipment.offHand = 'none';
         this.currentEquipment.back = 'none';
 
