@@ -112,19 +112,19 @@ class VoxelItemBuilder {
             mesh.scale.set(scale, scale, scale);
 
             if (options.isShield) {
-                // Щит во второй руке
+                // Щит / артефакт во второй руке (смотрит вперед)
                 mesh.position.set(0, 0, 0);
                 itemGroup.rotation.set(0, Math.PI / 2, 0);
-                itemGroup.position.set(2, -7, 0);
+                itemGroup.position.set(1.0, -8.0, 1.2);
             } else if (options.isBackpack) {
                 // Рюкзак на спине
                 mesh.position.set(0, 0, 0);
                 itemGroup.position.set(0, 0, -3.5);
             } else {
-                // Оружие / инструмент в основной руке (наклон 45 градусов как в Minecraft)
-                mesh.position.set(-w * scale * 0.25, h * scale * 0.35, 0);
-                itemGroup.rotation.set(-Math.PI / 4, Math.PI / 4, 0);
-                itemGroup.position.set(0, -9.5, 1.5);
+                // Оружие / меч в основной руке: клинок направлен вперед и вверх
+                mesh.position.set(-w * scale * 0.2, h * scale * 0.2, 0);
+                itemGroup.rotation.set(-Math.PI / 3.2, 0, 0);
+                itemGroup.position.set(-1.0, -9.5, 1.2);
             }
 
             itemGroup.add(mesh);

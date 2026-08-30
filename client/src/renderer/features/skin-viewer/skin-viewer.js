@@ -129,11 +129,11 @@ async function render3dSkin(username) {
                 const hasWeapon = equipmentManager.getSlot('mainHand') !== 'none';
                 if (player.skin.rightArm) {
                     if (hasWeapon) {
-                        player.skin.rightArm.rotation.x = -Math.PI / 3.3 + Math.sin(t * 0.8) * 0.02;
-                        player.skin.rightArm.rotation.y = -0.15;
-                        player.skin.rightArm.rotation.z = 0.08;
+                        player.skin.rightArm.rotation.x = -0.35 + Math.sin(t * 0.8) * 0.02;
+                        player.skin.rightArm.rotation.y = -0.05;
+                        player.skin.rightArm.rotation.z = 0.04;
                     } else {
-                        player.skin.rightArm.rotation.x = Math.sin(t * 0.6) * 0.08;
+                        player.skin.rightArm.rotation.x = Math.sin(t * 0.6) * 0.05;
                         player.skin.rightArm.rotation.y = 0;
                         player.skin.rightArm.rotation.z = 0;
                     }
@@ -143,11 +143,11 @@ async function render3dSkin(username) {
                 const hasOffHand = equipmentManager.getSlot('offHand') !== 'none';
                 if (player.skin.leftArm) {
                     if (hasOffHand) {
-                        player.skin.leftArm.rotation.x = -Math.PI / 4.0 + Math.sin(t * 0.7) * 0.02;
-                        player.skin.leftArm.rotation.y = 0.30;
-                        player.skin.leftArm.rotation.z = -0.08;
+                        player.skin.leftArm.rotation.x = -0.28 + Math.sin(t * 0.7) * 0.02;
+                        player.skin.leftArm.rotation.y = 0.15;
+                        player.skin.leftArm.rotation.z = -0.04;
                     } else {
-                        player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.08;
+                        player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.05;
                         player.skin.leftArm.rotation.y = 0;
                         player.skin.leftArm.rotation.z = 0;
                     }

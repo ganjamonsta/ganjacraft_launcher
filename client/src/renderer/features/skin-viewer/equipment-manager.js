@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { taczGeoLoader } from './tacz-geo-loader.js';
 import { voxelItemBuilder } from './voxel-item-builder.js';
 import { armorMeshBuilder } from './armor-mesh-builder.js';
+import { backpackMeshBuilder } from './backpack-mesh-builder.js';
 
 const STORAGE_KEY_EQUIPMENT = 'ganjacraft_player_equipment_v1';
 
@@ -707,34 +708,14 @@ class EquipmentManager {
 
     // ── Построение 3D Рюкзаков / Спины ──
     buildBackMesh(item) {
+        if (item.id && item.id.includes('backpack')) {
+            return backpackMeshBuilder.buildBackpack(item);
+        }
+
         const group = new THREE.Group();
         group.name = `EQ_BACK_${item.id}`;
 
-        if (item.id.includes('backpack')) {
-            const baseColor = new THREE.Color(item.color || '#2c282e');
-            const accentColor = new THREE.Color(item.accent || '#eab308');
-
-            const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.7 });
-            const buckleMat = new THREE.MeshStandardMaterial({ color: accentColor, metalness: 0.9, roughness: 0.2 });
-
-            // Корпус рюкзака
-            const bodyGeo = new THREE.BoxGeometry(7.2, 9.6, 4.4);
-            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-            bodyMesh.position.set(0, 0, -4.0);
-            group.add(bodyMesh);
-
-            // Верхний клапан
-            const flapGeo = new THREE.BoxGeometry(7.4, 3.2, 4.6);
-            const flapMesh = new THREE.Mesh(flapGeo, bodyMat);
-            flapMesh.position.set(0, 3.6, -4.0);
-            group.add(flapMesh);
-
-            // Пряжка
-            const buckleGeo = new THREE.BoxGeometry(1.6, 1.2, 0.4);
-            const buckleMesh = new THREE.Mesh(buckleGeo, buckleMat);
-            buckleMesh.position.set(0, 2.0, -6.3);
-            group.add(buckleMesh);
-        } else if (item.id.includes('elytra')) {
+        if (item.id.includes('elytra')) {
             const elytraMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5, side: THREE.DoubleSide });
             const wingGeo = new THREE.PlaneGeometry(6, 16);
             

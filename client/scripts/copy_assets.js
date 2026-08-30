@@ -130,14 +130,22 @@ if (fs.existsSync(srcMek)) {
 }
 
 // 7. Copy Sophisticated Backpacks
-const srcBackpacks = path.join(srcMods, 'SophisticatedBackpacks-1.21.x', 'src', 'main', 'resources', 'assets', 'sophisticatedbackpacks', 'textures', 'entity');
-if (fs.existsSync(srcBackpacks)) {
-    for (const file of fs.readdirSync(srcBackpacks)) {
+const srcBackpacksEntity = path.join(srcMods, 'SophisticatedBackpacks-1.21.x', 'src', 'main', 'resources', 'assets', 'sophisticatedbackpacks', 'textures', 'entity');
+if (fs.existsSync(srcBackpacksEntity)) {
+    for (const file of fs.readdirSync(srcBackpacksEntity)) {
         if (file.endsWith('.png')) {
-            fs.copyFileSync(path.join(srcBackpacks, file), path.join(dstEquip, 'backpacks', file));
+            fs.copyFileSync(path.join(srcBackpacksEntity, file), path.join(dstEquip, 'backpacks', file));
         }
     }
-    console.log('Copied Sophisticated Backpacks textures');
+}
+const srcBackpacksBlock = path.join(srcMods, 'SophisticatedBackpacks-1.21.x', 'src', 'main', 'resources', 'assets', 'sophisticatedbackpacks', 'textures', 'block');
+if (fs.existsSync(srcBackpacksBlock)) {
+    for (const file of fs.readdirSync(srcBackpacksBlock)) {
+        if (file.endsWith('.png')) {
+            fs.copyFileSync(path.join(srcBackpacksBlock, file), path.join(dstEquip, 'backpacks', file));
+        }
+    }
+    console.log('Copied Sophisticated Backpacks block textures');
 }
 
 // 8. Copy Artifacts
