@@ -1,37 +1,238 @@
 /* ==========================================================================
    Ganj4Craft Launcher — Mods Tab
-   Mods sub-tabs, search, mod items, nested addons & dependent mods
+   Subtabs bar, search input, categories grid, nested addons & dependent mods
    ========================================================================== */
 
-/* ── Mods Sub-Tabs ── */
-.settings-tabs .tab-btn { position: relative; }
+/* ── Unified Mods Subtabs Toolbar (Metal Glass Capsule Bar) ── */
+#mods-subtabs {
+    background: linear-gradient(180deg, rgba(38, 44, 54, 0.75) 0%, rgba(20, 24, 30, 0.88) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--gc-border-medium);
+    border-radius: 22px;
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+#mods-subtabs .unified-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Subtab items: plain text, no box background or border */
+#mods-subtabs .unified-toolbar-group .unified-btn {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #a5b0c0;
+    text-transform: none;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    cursor: pointer;
+    outline: none;
+    margin: 0;
+    transform: none;
+}
+
+#mods-subtabs .unified-toolbar-group .unified-btn:hover {
+    color: #ffffff;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Active tab: text glows neon green */
+#mods-subtabs .unified-toolbar-group .unified-btn.active {
+    background: transparent;
+    color: var(--gc-green);
+    font-weight: 500;
+    border: none;
+    box-shadow: none;
+    text-shadow: 0 0 10px rgba(var(--gc-green-rgb), 0.85), 0 0 20px rgba(var(--gc-green-rgb), 0.5);
+    transform: none;
+}
+
+/* Catalog button style (Right end pill button) */
+#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"] {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #d0d8e4;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    transform: none;
+}
+
+#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"]:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: none;
+}
+
+#mods-subtabs [data-subtab="КАТАЛОГ ССЫЛОК"].active {
+    background: rgba(var(--gc-green-rgb), 0.1);
+    color: var(--gc-green);
+    font-weight: 500;
+    border: 1px solid var(--gc-green);
+    box-shadow: 0 0 12px rgba(var(--gc-green-rgb), 0.4);
+    text-shadow: 0 0 8px rgba(var(--gc-green-rgb), 0.6);
+    transform: none;
+}
+
+/* ── Mods Search Input & Wrapper ── */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#mods-search-input {
+    height: 32px;
+    padding: 0 34px 0 14px;
+    font-size: 11.5px;
+    background: rgba(12, 14, 18, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    color: #ffffff;
+    outline: none;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 30px;
+    width: 100%;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#mods-search-input:focus {
+    border-color: var(--gc-green);
+    background: rgba(18, 22, 28, 0.95);
+    box-shadow: 0 0 12px var(--gc-green-glow);
+}
+
+.search-action-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a808c;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+    outline: none;
+    box-shadow: none;
+}
+
+.search-action-btn:hover {
+    color: #ffffff;
+}
+
+.search-action-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.search-icon-clear {
+    color: #e57373;
+}
+
+.search-action-btn:hover .search-icon-clear {
+    color: #ff5252;
+    transform: scale(1.1);
+}
+
+/* ── 2-Column Grid Layout for Mods Category Cards ── */
+#mods-grid.settings-categories {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+    align-items: start !important;
+    padding-right: 16px !important;
+}
+
+#mods-grid.settings-categories .settings-category {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#mods-grid.settings-categories .full-mods-list-card {
+    grid-column: 1 / -1 !important;
+    column-span: all !important;
+    width: 100% !important;
+}
 
 /* ── Nested Addons & Dependent Mods UI ── */
 .mod-addons-container {
-    margin-left: 18px; margin-top: var(--gc-gap-xs); margin-bottom: var(--gc-gap-md);
+    margin-left: 18px;
+    margin-top: var(--gc-gap-xs);
+    margin-bottom: var(--gc-gap-md);
     padding-left: var(--gc-gap-md);
     border-left: 2px dashed rgba(var(--gc-accent-rgb), 0.4);
-    display: flex; flex-direction: column; gap: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     position: relative;
     transition: opacity var(--gc-duration-normal) var(--gc-ease-standard), filter var(--gc-duration-normal) ease, border-color var(--gc-duration-normal) ease;
 }
 
 .mod-addons-container.parent-disabled {
-    opacity: 0.45; filter: grayscale(0.6);
+    opacity: 0.45;
+    filter: grayscale(0.6);
     border-left-color: var(--gc-border-medium);
 }
 
 .mod-addons-header {
-    display: flex; align-items: center; gap: 6px;
-    font-size: var(--gc-font-xs); font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
-    color: #81c784; padding: 2px 0 2px 2px; user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--gc-font-xs);
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #81c784;
+    padding: 2px 0 2px 2px;
+    user-select: none;
 }
 
-.mod-addons-container.parent-disabled .mod-addons-header { color: var(--gc-text-subtle); }
+.mod-addons-container.parent-disabled .mod-addons-header {
+    color: var(--gc-text-subtle);
+}
 
 .setting-item.mod-addon-item {
-    background: var(--gc-surface-item); border: 1px solid var(--gc-border-subtle);
-    border-radius: var(--gc-radius-md); padding: var(--gc-gap-sm) var(--gc-gap-md);
+    background: var(--gc-surface-item);
+    border: 1px solid var(--gc-border-subtle);
+    border-radius: var(--gc-radius-md);
+    padding: var(--gc-gap-sm) var(--gc-gap-md);
     transition: background 0.2s ease, border-color 0.2s ease;
 }
 
@@ -41,12 +242,18 @@
 }
 
 .mod-addon-item .addon-badge {
-    font-size: var(--gc-font-xs); font-weight: 600; color: #81c784;
+    font-size: var(--gc-font-xs);
+    font-weight: 600;
+    color: #81c784;
     background: rgba(var(--gc-accent-rgb), 0.12);
-    padding: 1px 5px; border-radius: var(--gc-radius-xs);
-    margin-left: 6px; display: inline-block; vertical-align: middle;
+    padding: 1px 5px;
+    border-radius: var(--gc-radius-xs);
+    margin-left: 6px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .mod-addons-container.parent-disabled .mod-addon-item .addon-badge {
-    background: rgba(255, 255, 255, 0.08); color: #999;
+    background: rgba(255, 255, 255, 0.08);
+    color: #999;
 }
