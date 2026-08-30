@@ -2025,11 +2025,66 @@ body {
 }
 
 .play-btn-update-icon.ready-icon {
-    filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.85));
+    width: 34px;
+    height: 34px;
+    filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.95));
 }
 
-.play-btn-update-icon.spinning-update {
-    animation: spin-updater-icon 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+/* ── Circular Progress SVG & Percentage Display ── */
+.play-btn-progress-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.play-btn-progress-svg .progress-bg {
+    stroke: rgba(0, 229, 255, 0.18);
+    stroke-width: 4.5px;
+}
+
+.play-btn-progress-svg .progress-bar-circle {
+    stroke: var(--gc-cyan, #00e5ff);
+    stroke-width: 4.5px;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.95));
+}
+
+.play-btn-progress-svg .progress-bar-circle.completed {
+    stroke: var(--gc-green, #39ff14);
+    stroke-width: 4.5px;
+    filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.95));
+}
+
+.play-btn-percent-text {
+    position: relative;
+    z-index: 4;
+    font-family: 'JetBrains Mono', 'Outfit', monospace;
+    font-size: 21px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    text-shadow: 
+        0 0 12px rgba(0, 229, 255, 0.95),
+        0 0 24px rgba(0, 229, 255, 0.6);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    pointer-events: none;
+    user-select: none;
+}
+
+.play-btn-percent-text .percent-sign {
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 2px;
+    color: var(--gc-cyan, #00e5ff);
+    opacity: 0.95;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.9);
 }
 
 /* 3. Right: Server Status Card Modern */

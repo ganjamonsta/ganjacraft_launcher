@@ -44,6 +44,9 @@ export function renderLauncherUpdateButton() {
         playBtn.setAttribute('aria-label', 'Перезапустить');
         playBtn.innerHTML = `
             <span class="play-btn-glow-ring update-glow ready-glow"></span>
+            <svg class="play-btn-progress-svg" viewBox="0 0 80 80">
+                <circle class="progress-bar-circle completed" cx="40" cy="40" r="35" fill="none" stroke="#39ff14" stroke-width="4" stroke-linecap="round" stroke-dasharray="219.91" stroke-dashoffset="0" transform="rotate(-90 40 40)"/>
+            </svg>
             <svg class="play-btn-update-icon ready-icon" viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M23 4v6h-6"></path>
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
@@ -51,14 +54,21 @@ export function renderLauncherUpdateButton() {
         `;
     } else if (updaterState.isDownloading) {
         playBtn.className = 'magnetic-play-btn-circle is-update-btn is-downloading';
-        const titleText = updaterState.percent > 0 ? `Загрузка обновления (${updaterState.percent}%)...` : 'Загрузка обновления...';
+        const percentVal = Math.max(0, Math.min(100, updaterState.percent || 0));
+        const dashOffset = (219.91 * (1 - percentVal / 100)).toFixed(2);
+        const displayPercent = String(Math.round(percentVal)).padStart(2, '0');
+        const titleText = `Загрузка обновления: ${percentVal}%`;
         playBtn.setAttribute('title', titleText);
-        playBtn.setAttribute('aria-label', 'Загрузка обновления');
+        playBtn.setAttribute('aria-label', titleText);
         playBtn.innerHTML = `
             <span class="play-btn-glow-ring update-glow pulse-fast"></span>
-            <svg class="play-btn-update-icon spinning-update" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            <svg class="play-btn-progress-svg" viewBox="0 0 80 80">
+                <circle class="progress-bg" cx="40" cy="40" r="35" fill="none" stroke="rgba(0, 229, 255, 0.15)" stroke-width="4"/>
+                <circle class="progress-bar-circle" cx="40" cy="40" r="35" fill="none" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"
+                        stroke-dasharray="219.91" stroke-dashoffset="${dashOffset}"
+                        transform="rotate(-90 40 40)"/>
             </svg>
+            <div class="play-btn-percent-text">${displayPercent}<span class="percent-sign">%</span></div>
         `;
     } else if (updaterState.isAvailable) {
         playBtn.className = 'magnetic-play-btn-circle is-update-btn';
@@ -115,7 +125,7 @@ export async function startDownloadingLauncherUpdate() {
     if (isSimulationMode) {
         let currentPercent = 0;
         const interval = setInterval(() => {
-            currentPercent += 20;
+            currentPercent += Math.floor(Math.random() * 8) + 8; // Шаг 8..15%
             if (currentPercent >= 100) {
                 clearInterval(interval);
                 updaterState.percent = 100;
@@ -128,7 +138,7 @@ export async function startDownloadingLauncherUpdate() {
                 updaterState.percent = currentPercent;
                 renderLauncherUpdateButton();
             }
-        }, 400);
+        }, 320);
         return;
     }
 
