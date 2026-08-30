@@ -3,78 +3,44 @@ import * as THREE from 'three';
 /**
  * Bedrock & GeckoLib Advanced Player Rig
  * 
- * Продвинутый суставный скелет игрока Minecraft:
- * - Разделение рук на Плечо + Локоть + Предплечье + Кисть
- * - Разделение ног на Бедро + Колено + Голень + Стопу
- * - Шея, голова, торс и внешние слои одежды (2nd layer / jacket / hat / sleeves)
- * - 100% совместимость с мировыми координатами skinview3d
+ * Точный суставный скелет игрока Minecraft:
+ * - Плечо + Локоть + Предплечье + Кисть
+ * - Бедро + Колено + Голень + Стопа
+ * - 100% совместимость с UV-разверткой и координатами Minecraft Java / Bedrock
  * - Точки крепления (Sockets): mainHand, offHand, back, head
  */
 
-/**
- * Вспомогательная функция для генерации BoxGeometry с точными UV граней
- * @param {number} width 
- * @param {number} height 
- * @param {number} depth 
- * @param {object} uvs { top, bottom, right, front, left, back } [u0, v0, u1, v1]
- * @param {number} inflate 
- * @param {string} pivot 'top' | 'center'
- */
-function createMinecraftBoxGeometry(width, height, depth, uvs, inflate = 0, pivot = 'top') {
-    const w = width + inflate * 2;
-    const h = height + inflate * 2;
-    const d = depth + inflate * 2;
+function setUVs(box, u, v, width, height, depth, textureWidth = 64, textureHeight = 64) {
+    const toFaceVertices = (x1, y1, x2, y2) => [
+        new THREE.Vector2(x1 / textureWidth, 1.0 - y2 / textureHeight),
+        new THREE.Vector2(x2 / textureWidth, 1.0 - y2 / textureHeight),
+        new THREE.Vector2(x2 / textureWidth, 1.0 - y1 / textureHeight),
+        new THREE.Vector2(x1 / textureWidth, 1.0 - y1 / textureHeight),
+    ];
 
-    const x0 = -w / 2, x1 = w / 2;
-    const y0 = pivot === 'center' ? -h / 2 : -h;
-    const y1 = pivot === 'center' ? h / 2 : 0;
-    const z0 = -d / 2, z1 = d / 2;
+    const top = toFaceVertices(u + depth, v, u + width + depth, v + depth);
+    const bottom = toFaceVertices(u + width + depth, v, u + width * 2 + depth, v + depth);
+    const left = toFaceVertices(u, v + depth, u + depth, v + depth + height);
+    const front = toFaceVertices(u + depth, v + depth, u + width + depth, v + depth + height);
+    const right = toFaceVertices(u + width + depth, v + depth, u + width + depth * 2, v + height + depth);
+    const back = toFaceVertices(u + width + depth * 2, v + depth, u + width * 2 + depth * 2, v + height + depth);
 
-    const positions = [];
-    const normals = [];
-    const uvsArray = [];
+    const uvRight = [right[3], right[2], right[0], right[1]];
+    const uvLeft = [left[3], left[2], left[0], left[1]];
+    const uvTop = [top[3], top[2], top[0], top[1]];
+    const uvBottom = [bottom[0], bottom[1], bottom[3], bottom[2]];
+    const uvFront = [front[3], front[2], front[0], front[1]];
+    const uvBack = [back[3], back[2], back[0], back[1]];
 
-    const TW = 64.0;
-    const TH = 64.0;
-
-    const addQuad = (v0, v1, v2, v3, norm, uv) => {
-        if (!uv) return;
-        const uMin = uv[0] / TW;
-        const vMin = 1.0 - uv[3] / TH;
-        const uMax = uv[2] / TW;
-        const vMax = 1.0 - uv[1] / TH;
-
-        // Triangle 1: 0, 1, 2
-        positions.push(...v0, ...v1, ...v2);
-        normals.push(...norm, ...norm, ...norm);
-        uvsArray.push(uMin, vMax, uMin, vMin, uMax, vMin);
-
-        // Triangle 2: 0, 2, 3
-        positions.push(...v0, ...v2, ...v3);
-        normals.push(...norm, ...norm, ...norm);
-        uvsArray.push(uMin, vMax, uMax, vMin, uMax, vMax);
-    };
-
-    // Right (+X)
-    if (uvs.right) addQuad([x1, y1, z1], [x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [1, 0, 0], uvs.right);
-    // Left (-X)
-    if (uvs.left) addQuad([x0, y1, z0], [x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [-1, 0, 0], uvs.left);
-    // Top (+Y)
-    if (uvs.top) addQuad([x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [0, 1, 0], uvs.top);
-    // Bottom (-Y)
-    if (uvs.bottom) addQuad([x0, y0, z1], [x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [0, -1, 0], uvs.bottom);
-    // Front (+Z)
-    if (uvs.front) addQuad([x0, y1, z1], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [0, 0, 1], uvs.front);
-    // Back (-Z)
-    if (uvs.back) addQuad([x1, y1, z0], [x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [0, 0, -1], uvs.back);
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvsArray, 2));
-    geo.computeBoundingBox();
-    geo.computeBoundingSphere();
-    return geo;
+    const newUVData = [];
+    for (const uvArray of [uvRight, uvLeft, uvTop, uvBottom, uvFront, uvBack]) {
+        for (const uv of uvArray) {
+            newUVData.push(uv.x, uv.y);
+        }
+    }
+    const uvAttr = box.attributes.uv;
+    uvAttr.set(new Float32Array(newUVData));
+    uvAttr.needsUpdate = true;
 }
 
 export class BedrockPlayerRig {
@@ -93,10 +59,10 @@ export class BedrockPlayerRig {
     }
 
     /**
-     * Создание полной иерархии суставов в мировой системе skinview3d
+     * Построение скелета
      */
     buildHierarchy() {
-        // 1. Torso (Центр торса в 0, 0, 0; высота 12, от -6 до +6)
+        // 1. Torso
         this.bones.torso = new THREE.Group();
         this.bones.torso.name = 'bone_torso';
         this.bones.torso.position.set(0, 0, 0);
@@ -108,7 +74,7 @@ export class BedrockPlayerRig {
         this.bones.head.position.set(0, 6, 0);
         this.bones.torso.add(this.bones.head);
 
-        // 3. Right Arm (Плечо: x = -6, y = +4)
+        // 3. Right Arm
         this.bones.rightShoulder = new THREE.Group();
         this.bones.rightShoulder.name = 'bone_right_shoulder';
         this.bones.rightShoulder.position.set(-6, 4, 0);
@@ -120,14 +86,14 @@ export class BedrockPlayerRig {
 
         this.bones.rightElbow = new THREE.Group();
         this.bones.rightElbow.name = 'bone_right_elbow';
-        this.bones.rightElbow.position.set(0, -6, 0); // Локтевой сустав
+        this.bones.rightElbow.position.set(0, -6, 0);
         this.bones.rightUpperArm.add(this.bones.rightElbow);
 
         this.bones.rightLowerArm = new THREE.Group();
         this.bones.rightLowerArm.name = 'bone_right_lower_arm';
         this.bones.rightElbow.add(this.bones.rightLowerArm);
 
-        // 4. Left Arm (Плечо: x = +6, y = +4)
+        // 4. Left Arm
         this.bones.leftShoulder = new THREE.Group();
         this.bones.leftShoulder.name = 'bone_left_shoulder';
         this.bones.leftShoulder.position.set(6, 4, 0);
@@ -139,14 +105,14 @@ export class BedrockPlayerRig {
 
         this.bones.leftElbow = new THREE.Group();
         this.bones.leftElbow.name = 'bone_left_elbow';
-        this.bones.leftElbow.position.set(0, -6, 0); // Локтевой сустав
+        this.bones.leftElbow.position.set(0, -6, 0);
         this.bones.leftUpperArm.add(this.bones.leftElbow);
 
         this.bones.leftLowerArm = new THREE.Group();
         this.bones.leftLowerArm.name = 'bone_left_lower_arm';
         this.bones.leftElbow.add(this.bones.leftLowerArm);
 
-        // 5. Right Leg (Бедро: x = -1.9, y = -6 на низу торса)
+        // 5. Right Leg
         this.bones.rightHip = new THREE.Group();
         this.bones.rightHip.name = 'bone_right_hip';
         this.bones.rightHip.position.set(-1.9, -6, 0);
@@ -158,14 +124,14 @@ export class BedrockPlayerRig {
 
         this.bones.rightKnee = new THREE.Group();
         this.bones.rightKnee.name = 'bone_right_knee';
-        this.bones.rightKnee.position.set(0, -6, 0); // Коленный сустав
+        this.bones.rightKnee.position.set(0, -6, 0);
         this.bones.rightUpperLeg.add(this.bones.rightKnee);
 
         this.bones.rightLowerLeg = new THREE.Group();
         this.bones.rightLowerLeg.name = 'bone_right_lower_leg';
         this.bones.rightKnee.add(this.bones.rightLowerLeg);
 
-        // 6. Left Leg (Бедро: x = +1.9, y = -6)
+        // 6. Left Leg
         this.bones.leftHip = new THREE.Group();
         this.bones.leftHip.name = 'bone_left_hip';
         this.bones.leftHip.position.set(1.9, -6, 0);
@@ -177,7 +143,7 @@ export class BedrockPlayerRig {
 
         this.bones.leftKnee = new THREE.Group();
         this.bones.leftKnee.name = 'bone_left_knee';
-        this.bones.leftKnee.position.set(0, -6, 0); // Коленный сустав
+        this.bones.leftKnee.position.set(0, -6, 0);
         this.bones.leftUpperLeg.add(this.bones.leftKnee);
 
         this.bones.leftLowerLeg = new THREE.Group();
@@ -185,34 +151,27 @@ export class BedrockPlayerRig {
         this.bones.leftKnee.add(this.bones.leftLowerLeg);
 
         // ── ТОЧКИ КРЕПЛЕНИЯ (SOCKETS) ──
-        // Основная рука (TACZ стволы / мечи в ладони)
         this.sockets.mainHand = new THREE.Group();
         this.sockets.mainHand.name = 'socket_main_hand';
         this.sockets.mainHand.position.set(0, -5.5, 0);
         this.bones.rightLowerArm.add(this.sockets.mainHand);
 
-        // Вторая рука (цевьё / щит)
         this.sockets.offHand = new THREE.Group();
         this.sockets.offHand.name = 'socket_off_hand';
         this.sockets.offHand.position.set(0, -5.5, 0);
         this.bones.leftLowerArm.add(this.sockets.offHand);
 
-        // Спина (рюкзаки, плащи, крылья)
         this.sockets.back = new THREE.Group();
         this.sockets.back.name = 'socket_back';
         this.sockets.back.position.set(0, 0, -2.1);
         this.bones.torso.add(this.sockets.back);
 
-        // Голова (шлемы, короны)
         this.sockets.head = new THREE.Group();
         this.sockets.head.name = 'socket_head';
-        this.sockets.head.position.set(0, 0, 0);
+        this.sockets.head.position.set(0, 4.0, 0);
         this.bones.head.add(this.sockets.head);
     }
 
-    /**
-     * Создание мешей тела с текстурой скина
-     */
     applySkinTexture(texture) {
         if (!texture) return;
         texture.magFilter = THREE.NearestFilter;
@@ -236,253 +195,126 @@ export class BedrockPlayerRig {
 
     rebuildSkinMeshes() {
         if (!this.materials.base) return;
-
         this.clearMeshes();
 
-        // 1. HEAD (8x8x8, pivot на шее, голова поднимается вверх от 0 до +8)
-        const headGeo = createMinecraftBoxGeometry(8, 8, 8, {
-            top: [8, 0, 16, 8],
-            bottom: [16, 0, 24, 8],
-            right: [0, 8, 8, 16],
-            front: [8, 8, 16, 16],
-            left: [16, 8, 24, 16],
-            back: [24, 8, 32, 16]
-        });
-        const headMesh = new THREE.Mesh(headGeo, this.materials.base);
-        headMesh.name = 'mesh_head';
-        headMesh.position.set(0, 8, 0);
-        this.bones.head.add(headMesh);
+        // 1. HEAD (8x8x8)
+        const headGeo = new THREE.BoxGeometry(8, 8, 8);
+        setUVs(headGeo, 0, 0, 8, 8, 8);
+        headGeo.translate(0, 4, 0);
+        this.bones.head.add(new THREE.Mesh(headGeo, this.materials.base));
 
-        // Hat Layer
-        const hatGeo = createMinecraftBoxGeometry(8, 8, 8, {
-            top: [40, 0, 48, 8],
-            bottom: [48, 0, 56, 8],
-            right: [32, 8, 40, 16],
-            front: [40, 8, 48, 16],
-            left: [48, 8, 56, 16],
-            back: [56, 8, 64, 16]
-        }, 0.5);
-        const hatMesh = new THREE.Mesh(hatGeo, this.materials.layer2);
-        hatMesh.name = 'mesh_hat';
-        hatMesh.position.set(0, 8, 0);
-        this.bones.head.add(hatMesh);
+        const hatGeo = new THREE.BoxGeometry(8.8, 8.8, 8.8);
+        setUVs(hatGeo, 32, 0, 8, 8, 8);
+        hatGeo.translate(0, 4, 0);
+        this.bones.head.add(new THREE.Mesh(hatGeo, this.materials.layer2));
 
-        // 2. TORSO (8x12x4, pivot по центру, от -6 до +6)
-        const torsoGeo = createMinecraftBoxGeometry(8, 12, 4, {
-            top: [20, 16, 28, 20],
-            bottom: [28, 16, 36, 20],
-            right: [16, 20, 20, 32],
-            front: [20, 20, 28, 32],
-            left: [28, 20, 32, 32],
-            back: [32, 20, 40, 32]
-        }, 0, 'center');
-        const torsoMesh = new THREE.Mesh(torsoGeo, this.materials.base);
-        torsoMesh.name = 'mesh_torso';
-        this.bones.torso.add(torsoMesh);
+        // 2. TORSO (8x12x4)
+        const torsoGeo = new THREE.BoxGeometry(8, 12, 4);
+        setUVs(torsoGeo, 16, 16, 8, 12, 4);
+        this.bones.torso.add(new THREE.Mesh(torsoGeo, this.materials.base));
 
-        // Jacket Layer
-        const jacketGeo = createMinecraftBoxGeometry(8, 12, 4, {
-            top: [20, 32, 28, 36],
-            bottom: [28, 32, 36, 36],
-            right: [16, 36, 20, 48],
-            front: [20, 36, 28, 48],
-            left: [28, 36, 32, 48],
-            back: [32, 36, 40, 48]
-        }, 0.35, 'center');
-        const jacketMesh = new THREE.Mesh(jacketGeo, this.materials.layer2);
-        jacketMesh.name = 'mesh_jacket';
-        this.bones.torso.add(jacketMesh);
+        const jacketGeo = new THREE.BoxGeometry(8.6, 12.5, 4.6);
+        setUVs(jacketGeo, 16, 32, 8, 12, 4);
+        this.bones.torso.add(new THREE.Mesh(jacketGeo, this.materials.layer2));
 
         // 3. RIGHT ARM (Upper 4x6x4 + Lower 4x6x4)
-        const rUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [44, 16, 48, 20],
-            bottom: [48, 16, 52, 20],
-            right: [40, 20, 44, 26],
-            front: [44, 20, 48, 26],
-            left: [48, 20, 52, 26],
-            back: [52, 20, 56, 26]
-        });
-        const rUpperMesh = new THREE.Mesh(rUpperGeo, this.materials.base);
-        rUpperMesh.name = 'mesh_right_upper_arm';
-        this.bones.rightUpperArm.add(rUpperMesh);
+        const rUpperGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(rUpperGeo, 40, 16, 4, 6, 4);
+        rUpperGeo.translate(0, -3, 0);
+        this.bones.rightUpperArm.add(new THREE.Mesh(rUpperGeo, this.materials.base));
 
-        const rLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [48, 16, 52, 20],
-            right: [40, 26, 44, 32],
-            front: [44, 26, 48, 32],
-            left: [48, 26, 52, 32],
-            back: [52, 26, 56, 32]
-        });
-        const rLowerMesh = new THREE.Mesh(rLowerGeo, this.materials.base);
-        rLowerMesh.name = 'mesh_right_lower_arm';
-        this.bones.rightLowerArm.add(rLowerMesh);
-
-        // Right Sleeve Layer
-        const rSleeveUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [44, 32, 48, 36],
-            bottom: [48, 32, 52, 36],
-            right: [40, 36, 44, 42],
-            front: [44, 36, 48, 42],
-            left: [48, 36, 52, 42],
-            back: [52, 36, 56, 42]
-        }, 0.28);
+        const rSleeveUpperGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(rSleeveUpperGeo, 40, 32, 4, 6, 4);
+        rSleeveUpperGeo.translate(0, -3, 0);
         this.bones.rightUpperArm.add(new THREE.Mesh(rSleeveUpperGeo, this.materials.layer2));
 
-        const rSleeveLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [48, 32, 52, 36],
-            right: [40, 42, 44, 48],
-            front: [44, 42, 48, 48],
-            left: [48, 42, 52, 48],
-            back: [52, 42, 56, 48]
-        }, 0.28);
+        const rLowerGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(rLowerGeo, 40, 22, 4, 6, 4);
+        rLowerGeo.translate(0, -3, 0);
+        this.bones.rightLowerArm.add(new THREE.Mesh(rLowerGeo, this.materials.base));
+
+        const rSleeveLowerGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(rSleeveLowerGeo, 40, 38, 4, 6, 4);
+        rSleeveLowerGeo.translate(0, -3, 0);
         this.bones.rightLowerArm.add(new THREE.Mesh(rSleeveLowerGeo, this.materials.layer2));
 
         // 4. LEFT ARM (Upper 4x6x4 + Lower 4x6x4)
-        const lUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [36, 48, 40, 52],
-            bottom: [40, 48, 44, 52],
-            right: [32, 52, 36, 58],
-            front: [36, 52, 40, 58],
-            left: [40, 52, 44, 58],
-            back: [44, 52, 48, 58]
-        });
-        const lUpperMesh = new THREE.Mesh(lUpperGeo, this.materials.base);
-        lUpperMesh.name = 'mesh_left_upper_arm';
-        this.bones.leftUpperArm.add(lUpperMesh);
+        const lUpperGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(lUpperGeo, 32, 48, 4, 6, 4);
+        lUpperGeo.translate(0, -3, 0);
+        this.bones.leftUpperArm.add(new THREE.Mesh(lUpperGeo, this.materials.base));
 
-        const lLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [40, 48, 44, 52],
-            right: [32, 58, 36, 64],
-            front: [36, 58, 40, 64],
-            left: [40, 58, 44, 64],
-            back: [44, 58, 48, 64]
-        });
-        const lLowerMesh = new THREE.Mesh(lLowerGeo, this.materials.base);
-        lLowerMesh.name = 'mesh_left_lower_arm';
-        this.bones.leftLowerArm.add(lLowerMesh);
-
-        // Left Sleeve Layer
-        const lSleeveUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [52, 48, 56, 52],
-            bottom: [56, 48, 60, 52],
-            right: [48, 52, 52, 58],
-            front: [52, 52, 56, 58],
-            left: [56, 52, 60, 58],
-            back: [60, 52, 64, 58]
-        }, 0.28);
+        const lSleeveUpperGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(lSleeveUpperGeo, 48, 48, 4, 6, 4);
+        lSleeveUpperGeo.translate(0, -3, 0);
         this.bones.leftUpperArm.add(new THREE.Mesh(lSleeveUpperGeo, this.materials.layer2));
 
-        const lSleeveLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [56, 48, 60, 52],
-            right: [48, 58, 52, 64],
-            front: [52, 58, 56, 64],
-            left: [56, 58, 60, 64],
-            back: [60, 58, 64, 64]
-        }, 0.28);
+        const lLowerGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(lLowerGeo, 32, 54, 4, 6, 4);
+        lLowerGeo.translate(0, -3, 0);
+        this.bones.leftLowerArm.add(new THREE.Mesh(lLowerGeo, this.materials.base));
+
+        const lSleeveLowerGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(lSleeveLowerGeo, 48, 54, 4, 6, 4);
+        lSleeveLowerGeo.translate(0, -3, 0);
         this.bones.leftLowerArm.add(new THREE.Mesh(lSleeveLowerGeo, this.materials.layer2));
 
         // 5. RIGHT LEG (Upper 4x6x4 + Lower 4x6x4)
-        const rLegUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [4, 16, 8, 20],
-            bottom: [8, 16, 12, 20],
-            right: [0, 20, 4, 26],
-            front: [4, 20, 8, 26],
-            left: [8, 20, 12, 26],
-            back: [12, 20, 16, 26]
-        });
-        const rLegUpperMesh = new THREE.Mesh(rLegUpperGeo, this.materials.base);
-        rLegUpperMesh.name = 'mesh_right_upper_leg';
-        this.bones.rightUpperLeg.add(rLegUpperMesh);
+        const rLegUpperGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(rLegUpperGeo, 0, 16, 4, 6, 4);
+        rLegUpperGeo.translate(0, -3, 0);
+        this.bones.rightUpperLeg.add(new THREE.Mesh(rLegUpperGeo, this.materials.base));
 
-        const rLegLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [8, 16, 12, 20],
-            right: [0, 26, 4, 32],
-            front: [4, 26, 8, 32],
-            left: [8, 26, 12, 32],
-            back: [12, 26, 16, 32]
-        });
-        const rLegLowerMesh = new THREE.Mesh(rLegLowerGeo, this.materials.base);
-        rLegLowerMesh.name = 'mesh_right_lower_leg';
-        this.bones.rightLowerLeg.add(rLegLowerMesh);
-
-        // Right Pants Layer
-        const rPantsUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [4, 32, 8, 36],
-            bottom: [8, 32, 12, 36],
-            right: [0, 36, 4, 42],
-            front: [4, 36, 8, 42],
-            left: [8, 36, 12, 42],
-            back: [12, 36, 16, 42]
-        }, 0.28);
+        const rPantsUpperGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(rPantsUpperGeo, 0, 32, 4, 6, 4);
+        rPantsUpperGeo.translate(0, -3, 0);
         this.bones.rightUpperLeg.add(new THREE.Mesh(rPantsUpperGeo, this.materials.layer2));
 
-        const rPantsLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [8, 32, 12, 36],
-            right: [0, 42, 4, 48],
-            front: [4, 42, 8, 48],
-            left: [8, 42, 12, 48],
-            back: [12, 42, 16, 48]
-        }, 0.28);
+        const rLegLowerGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(rLegLowerGeo, 0, 22, 4, 6, 4);
+        rLegLowerGeo.translate(0, -3, 0);
+        this.bones.rightLowerLeg.add(new THREE.Mesh(rLegLowerGeo, this.materials.base));
+
+        const rPantsLowerGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(rPantsLowerGeo, 0, 38, 4, 6, 4);
+        rPantsLowerGeo.translate(0, -3, 0);
         this.bones.rightLowerLeg.add(new THREE.Mesh(rPantsLowerGeo, this.materials.layer2));
 
         // 6. LEFT LEG (Upper 4x6x4 + Lower 4x6x4)
-        const lLegUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [20, 48, 24, 52],
-            bottom: [24, 48, 28, 52],
-            right: [16, 52, 20, 58],
-            front: [20, 52, 24, 58],
-            left: [24, 52, 28, 58],
-            back: [28, 52, 32, 58]
-        });
-        const lLegUpperMesh = new THREE.Mesh(lLegUpperGeo, this.materials.base);
-        lLegUpperMesh.name = 'mesh_left_upper_leg';
-        this.bones.leftUpperLeg.add(lLegUpperMesh);
+        const lLegUpperGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(lLegUpperGeo, 16, 48, 4, 6, 4);
+        lLegUpperGeo.translate(0, -3, 0);
+        this.bones.leftUpperLeg.add(new THREE.Mesh(lLegUpperGeo, this.materials.base));
 
-        const lLegLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [24, 48, 28, 52],
-            right: [16, 58, 20, 64],
-            front: [20, 58, 24, 64],
-            left: [24, 58, 28, 64],
-            back: [28, 58, 32, 64]
-        });
-        const lLegLowerMesh = new THREE.Mesh(lLegLowerGeo, this.materials.base);
-        lLegLowerMesh.name = 'mesh_left_lower_leg';
-        this.bones.leftLowerLeg.add(lLegLowerMesh);
-
-        // Left Pants Layer
-        const lPantsUpperGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            top: [4, 48, 8, 52],
-            bottom: [8, 48, 12, 52],
-            right: [0, 52, 4, 58],
-            front: [4, 52, 8, 58],
-            left: [8, 52, 12, 58],
-            back: [12, 52, 16, 58]
-        }, 0.28);
+        const lPantsUpperGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(lPantsUpperGeo, 0, 48, 4, 6, 4);
+        lPantsUpperGeo.translate(0, -3, 0);
         this.bones.leftUpperLeg.add(new THREE.Mesh(lPantsUpperGeo, this.materials.layer2));
 
-        const lPantsLowerGeo = createMinecraftBoxGeometry(4, 6, 4, {
-            bottom: [8, 48, 12, 52],
-            right: [0, 58, 4, 64],
-            front: [4, 58, 8, 64],
-            left: [8, 58, 12, 64],
-            back: [12, 58, 16, 64]
-        }, 0.28);
+        const lLegLowerGeo = new THREE.BoxGeometry(4, 6, 4);
+        setUVs(lLegLowerGeo, 16, 54, 4, 6, 4);
+        lLegLowerGeo.translate(0, -3, 0);
+        this.bones.leftLowerLeg.add(new THREE.Mesh(lLegLowerGeo, this.materials.base));
+
+        const lPantsLowerGeo = new THREE.BoxGeometry(4.5, 6.2, 4.5);
+        setUVs(lPantsLowerGeo, 0, 54, 4, 6, 4);
+        lPantsLowerGeo.translate(0, -3, 0);
         this.bones.leftLowerLeg.add(new THREE.Mesh(lPantsLowerGeo, this.materials.layer2));
     }
 
     clearMeshes() {
-        const disposeHierarchy = (obj) => {
+        const disposeMesh = (obj) => {
             if (!obj) return;
             for (let i = obj.children.length - 1; i >= 0; i--) {
                 const child = obj.children[i];
-                if (child.name && (child.name.startsWith('mesh_') || child.isMesh)) {
+                if (child.isMesh) {
                     obj.remove(child);
                     if (child.geometry) child.geometry.dispose();
                 } else {
-                    disposeHierarchy(child);
+                    disposeMesh(child);
                 }
             }
         };
-        disposeHierarchy(this.root);
+        disposeMesh(this.root);
     }
 }

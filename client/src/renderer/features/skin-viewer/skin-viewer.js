@@ -133,7 +133,7 @@ async function render3dSkin(username) {
 
             if (skinViewer3d.playerObject) {
                 skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
-                skinViewer3d.playerObject.rotation.y = 0.38;
+                skinViewer3d.playerObject.rotation.y = 0;
                 skinViewer3d.playerObject.add(bedrockRig.root);
                 // Скрываем базовый недеформируемый 6-блочный меш
                 if (skinViewer3d.playerObject.skin) {
