@@ -86,6 +86,8 @@ export function renderLauncherUpdateButton() {
     }
 }
 
+let isSimulationMode = false;
+
 /**
  * Начать загрузку обновления
  */
@@ -95,14 +97,40 @@ export async function startDownloadingLauncherUpdate() {
         return;
     }
     if (updaterState.isDownloaded) {
-        window.api.installUpdate();
+        if (isSimulationMode) {
+            showNotification(`[DEV] Симуляция: лаунчер бы перезапустился и установил v${updaterState.version || '1.0.183'}!`, 'success', 'Тест обновления', 5000);
+        } else {
+            window.api.installUpdate();
+        }
         return;
     }
 
     updaterState.isDownloading = true;
+    updaterState.percent = 0;
     renderLauncherUpdateButton();
     showNotification('Загрузка обновления началась...', 'info', 'Обновление', 4000);
     logToConsole('[UPDATER] Загрузка новой версии лаунчера...');
+
+    // Если запущена симуляция в dev-режиме
+    if (isSimulationMode) {
+        let currentPercent = 0;
+        const interval = setInterval(() => {
+            currentPercent += 20;
+            if (currentPercent >= 100) {
+                clearInterval(interval);
+                updaterState.percent = 100;
+                updaterState.isDownloading = false;
+                updaterState.isDownloaded = true;
+                renderLauncherUpdateButton();
+                logToConsole('[UPDATER] [DEV] Симуляция: Обновление загружено.');
+                showNotification('Обновление готово к установке! Нажмите кнопку для перезапуска.', 'success', 'Обновление загружено', 6000);
+            } else {
+                updaterState.percent = currentPercent;
+                renderLauncherUpdateButton();
+            }
+        }, 400);
+        return;
+    }
 
     try {
         const res = await window.api.downloadUpdate();
@@ -124,8 +152,12 @@ export async function startDownloadingLauncherUpdate() {
  */
 export function handleLauncherUpdateClick() {
     if (updaterState.isDownloaded) {
-        logToConsole('[UPDATER] Установка обновления и перезапуск...');
-        window.api.installUpdate();
+        if (isSimulationMode) {
+            showNotification(`[DEV] Симуляция: лаунчер бы перезапустился и установил v${updaterState.version || '1.0.183'}!`, 'success', 'Тест обновления', 5000);
+        } else {
+            logToConsole('[UPDATER] Установка обновления и перезапуск...');
+            window.api.installUpdate();
+        }
     } else if (updaterState.isDownloading) {
         showNotification(`Загрузка обновления продолжается${updaterState.percent > 0 ? ` (${updaterState.percent}%)` : ''}...`, 'info', 'Обновление', 3000);
     } else if (updaterState.isAvailable) {
@@ -140,18 +172,17 @@ export function initLauncherUpdaterHandlers() {
     if (!window.api) return;
 
     if (window.api.onUpdateAvailable) {
-        window.api.onUpdateAvailable(async (info) => {
+        window.api.onUpdateAvailable((info) => {
             const version = info?.version || '';
             updaterState.isAvailable = true;
             updaterState.version = version;
             renderLauncherUpdateButton();
 
             const msg = version 
-                ? `Доступна новая версия лаунчера (v${version}). Для продолжения игры необходимо обновить лаунчер.`
-                : 'Доступна новая версия лаунчера. Для продолжения игры необходимо обновить лаунчер.';
+                ? `Доступна новая версия лаунчера (v${version}). Нажмите кнопку по центру для обновления.`
+                : 'Доступна новая версия лаунчера. Нажмите кнопку по центру для обновления.';
 
-            await customAlert(msg, 'Доступно обновление', 'ОБНОВИТЬ');
-            startDownloadingLauncherUpdate();
+            showNotification(msg, 'info', 'Доступно обновление', 6000);
         });
     }
 
@@ -168,16 +199,36 @@ export function initLauncherUpdaterHandlers() {
     }
 
     if (window.api.onUpdateDownloaded) {
-        window.api.onUpdateDownloaded(async () => {
+        window.api.onUpdateDownloaded(() => {
             updaterState.isDownloading = false;
             updaterState.isDownloaded = true;
             renderLauncherUpdateButton();
 
             logToConsole('[UPDATER] Обновление успешно загружено.');
-            showNotification('Обновление готово к установке!', 'success', 'Обновление', 5000);
-
-            await customAlert('Обновление успешно загружено. Перезапустите лаунчер для установки новой версии.', 'Обновление готово', 'ПЕРЕЗАПУСТИТЬ');
-            window.api.installUpdate();
+            showNotification('Обновление готово к установке! Нажмите кнопку для перезапуска.', 'success', 'Обновление загружено', 6000);
         });
+    }
+
+    // Expose developer simulation helpers
+    if (typeof window !== 'undefined') {
+        window.simulateUpdateAvailable = (version = '1.0.183') => {
+            isSimulationMode = true;
+            updaterState.isAvailable = true;
+            updaterState.version = version;
+            renderLauncherUpdateButton();
+            const msg = `Доступна новая версия лаунчера (v${version}). Нажмите кнопку по центру для обновления.`;
+            showNotification(msg, 'info', 'Доступно обновление', 6000);
+        };
+        window.simulateUpdateProgress = (percent = 45) => {
+            updaterState.isDownloading = true;
+            updaterState.percent = percent;
+            renderLauncherUpdateButton();
+        };
+        window.simulateUpdateDownloaded = () => {
+            updaterState.isDownloading = false;
+            updaterState.isDownloaded = true;
+            renderLauncherUpdateButton();
+            showNotification('Обновление готово к установке! Нажмите кнопку для перезапуска.', 'success', 'Обновление загружено', 6000);
+        };
     }
 }
