@@ -187,6 +187,7 @@ contextBridge.exposeInMainWorld('api', {
     resolveModrinth: (hashes) => ipcRenderer.invoke('resolve-modrinth', hashes),
     
     // Events
+    onGameReady: (callback) => ipcRenderer.on('game-ready', () => callback()),
     onGameClosed: (callback) => ipcRenderer.on('game-closed', () => callback()),
     
     // Updater

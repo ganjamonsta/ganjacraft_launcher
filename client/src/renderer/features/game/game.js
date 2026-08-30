@@ -226,16 +226,10 @@ export async function startLaunch() {
     
     if (result.success) {
         if (statusDiv) {
-            statusDiv.innerText = 'Игра запущена';
+            statusDiv.innerText = 'Загрузка Minecraft и модов...';
             statusDiv.style.color = '#39ff14';
         }
         setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 100);
-        if (cancelBtn) cancelBtn.classList.add('hidden');
-
-        const cfg = getCurrentConfig() || {};
-        if (cfg.hideOnPlay !== false) {
-            window.api.minimize();
-        }
     } else {
         // Error Handling
         console.error(result.error);
@@ -331,6 +325,27 @@ export function initProgressHandlers() {
             setJointProgress(gameJointProgress, gameJointBurn, gameJointEnd, 5);
         }
     });
+
+    // Game Fully Ready Handler (Minecraft main window & sound engine loaded)
+    if (window.api.onGameReady) {
+        window.api.onGameReady(() => {
+            logToConsole('[LAUNCHER] Игра Minecraft полностью инициализирована!');
+            const statusEl = dom.get('game-status') || dom.get('status');
+            if (statusEl) {
+                statusEl.innerText = 'Игра запущена';
+                statusEl.style.color = '#39ff14';
+            }
+            
+            // Завершаем режим тира
+            gunShooter.setGameLaunchingMode(false);
+
+            // Сворачиваем лаунчер только теперь, когда игра действительно полностью готова
+            const cfg = getCurrentConfig() || {};
+            if (cfg.hideOnPlay !== false) {
+                window.api.minimize();
+            }
+        });
+    }
 
     // Game Closed Handler
     window.api.onGameClosed(() => {

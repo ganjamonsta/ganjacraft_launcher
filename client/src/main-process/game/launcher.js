@@ -931,10 +931,30 @@ async function launchGame(event, options) {
             launcher.once('arguments', onArguments);
 
             let detectedFatalClassError = false;
+            let gameReadyNotified = false;
 
             launcher.on('data', (e) => {
                 const text = String(e).trim();
                 if (text) sendLog(`[GAME] ${text}`);
+
+                // Detect when Minecraft game is fully loaded into memory (sound engine / title screen / display window)
+                if (!gameReadyNotified && (
+                    text.includes('Sound engine started') ||
+                    text.includes('OpenAL initialized') ||
+                    text.includes('Backend library: LWJGL') ||
+                    text.includes('LWJGL Version:') ||
+                    text.includes('TitleScreen') ||
+                    text.includes('Reloading ResourceManager') ||
+                    text.includes('Setting user:') ||
+                    text.includes('Initialized OpenGL') ||
+                    text.includes('Display window created')
+                )) {
+                    gameReadyNotified = true;
+                    sendDebug('[LAUNCHER] Minecraft game window initialized and fully loaded.');
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('game-ready');
+                    }
+                }
 
                 // Detect fatal Java class loading errors from stderr
                 if (!detectedFatalClassError && (
