@@ -92,14 +92,14 @@ async function render3dSkin(username) {
         if (!skinViewer3d) {
             skinViewer3d = new skinview3d.SkinViewer({
                 canvas: canvas3d,
-                width: 220,
-                height: 350,
+                width: 230,
+                height: 420,
                 skin: skinUrl,
                 model: 'default'
             });
 
             skinViewer3d.camera.position.set(0, 0, 70);
-            skinViewer3d.zoom = 0.90;
+            skinViewer3d.zoom = 0.98;
 
             // Плавная анимация покоя (дыхание и легкое покачивание рук)
             const idleAnim = new skinview3d.IdleAnimation();
