@@ -4,6 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Ganj4Craft Launcher</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Pixelify+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <!-- Design System — Modular CSS -->
     <link rel="stylesheet" href="styles/tokens.css">
     <link rel="stylesheet" href="styles/base.css">
@@ -554,6 +558,14 @@
             <div class="main-dashboard-layout">
                 <!-- 1. Left: Player Character & Stats -->
                 <div class="player-character-section">
+                    <!-- Minecraft In-Game Overhead Nametag -->
+                    <div class="player-nametag-wrapper">
+                        <div class="minecraft-nametag">
+                            <span id="player-rank-badge" class="player-rank-pill minecraft-rank-badge rank-player">[Игрок]</span>
+                            <span id="player-display-name" class="minecraft-player-name">...</span>
+                        </div>
+                    </div>
+
                     <div id="skin-viewer-container" class="skin-viewer-wrapper frameless-skin">
                         <canvas id="skin-canvas-3d" width="230" height="420"></canvas>
                         <canvas id="skin-canvas-2d" width="230" height="420" style="display:none;"></canvas>

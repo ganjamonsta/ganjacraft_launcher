@@ -116,6 +116,86 @@
     z-index: 10; padding: 2px 0;
 }
 
+/* Minecraft In-Game Overhead Nametag */
+.player-nametag-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 4px;
+    margin-bottom: 2px;
+    z-index: 15;
+    flex-shrink: 0;
+}
+
+.minecraft-nametag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-family: var(--gc-font-minecraft, 'Minecraft', 'Pixelify Sans', 'Minecraftia', monospace);
+    font-size: 13.5px;
+    line-height: 1.2;
+    -webkit-font-smoothing: none;
+    image-rendering: pixelated;
+    font-smooth: never;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.minecraft-nametag .minecraft-rank-badge,
+.minecraft-nametag .player-rank-pill {
+    font-weight: 700;
+    color: #55ff55;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
+.minecraft-nametag .minecraft-player-name {
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
+/* Specific Minecraft Rank Colors & Shadows */
+.minecraft-nametag .rank-admin,
+.minecraft-nametag .rank-администратор {
+    color: #ff5555;
+    text-shadow: 2px 2px 0px #3f1515, 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
+.minecraft-nametag .rank-moder,
+.minecraft-nametag .rank-модератор {
+    color: #55ffff;
+    text-shadow: 2px 2px 0px #153f3f, 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
+.minecraft-nametag .rank-vip {
+    color: #ffff55;
+    text-shadow: 2px 2px 0px #3f3f15, 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
+.minecraft-nametag .rank-premium,
+.minecraft-nametag .rank-премиум {
+    color: #ffaa00;
+    text-shadow: 2px 2px 0px #3f2a00, 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
+.minecraft-nametag .rank-legend,
+.minecraft-nametag .rank-легенда {
+    color: #ff55ff;
+    text-shadow: 2px 2px 0px #3f153f, 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
+.minecraft-nametag .rank-player,
+.minecraft-nametag .rank-игрок {
+    color: #55ff55;
+    text-shadow: 2px 2px 0px #153f15, 2px 2px 0px rgba(0, 0, 0, 0.9);
+}
+
 .skin-viewer-wrapper.frameless-skin {
     width: 230px; flex: 1 1 auto; height: 100%; min-height: 0;
     display: flex; align-items: center; justify-content: center;
@@ -191,10 +271,16 @@
 .l4d-splatter-group { animation: l4d-splatter-pulse 3s ease-in-out infinite alternate; }
 @keyframes l4d-splatter-pulse { 0% { opacity: 0.7; } 100% { opacity: 1; } }
 
-.center-brand-version { font-family: var(--gc-font-display); font-size: 13.5px; font-weight: 600; color: var(--gc-text-muted); letter-spacing: 0.8px; margin: 4px 0 0 0; opacity: 0.85; }
+.center-brand-version {
+    font-family: var(--gc-font-mono); font-size: 11.5px; font-weight: 700;
+    color: rgba(255, 255, 255, 0.4); letter-spacing: 1px;
+}
 
 /* ── Play Button ── */
-.play-btn-container { width: 100%; display: flex; justify-content: center; align-items: center; perspective: 800px; box-sizing: border-box; padding: 0; flex-shrink: 0; margin-bottom: 2px; }
+.play-btn-container {
+    width: 100%; display: flex; justify-content: center;
+    align-items: center; height: 96px; flex-shrink: 0; margin-bottom: 2px;
+}
 
 .magnetic-play-btn-circle {
     position: relative;
@@ -240,7 +326,6 @@
 
 .play-btn-triangle-icon { position: relative; z-index: 2; width: 32px; height: 32px; margin-left: 4px; fill: var(--gc-text-white); filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6)); pointer-events: none; }
 
-/* ── 3. Right: Server Status Card ── */
 /* ── 3. Right: Server Status Hub ── */
 .launch-action-hub {
     width: 100%; max-width: 240px; height: 100%;
@@ -248,15 +333,15 @@
     box-sizing: border-box; z-index: 10; padding: 2px 0 4px 0;
 }
 
-/* Base / Minimal Frameless State (when 0 players or server empty) */
+/* Base / Frameless Clean State (No backgrounds, clear & crisp) */
 .server-live-card-modern {
     display: flex; flex-direction: column; width: 100%; box-sizing: border-box;
-    background: transparent;
-    backdrop-filter: none; -webkit-backdrop-filter: none;
-    border: none;
-    border-radius: 18px;
-    box-shadow: none;
-    padding: 6px 0;
+    background: transparent !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    padding: 0 !important;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -267,17 +352,86 @@
     -webkit-backdrop-filter: none !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 6px 0 !important;
+    padding: 0 !important;
     height: auto !important;
 }
 
-.server-live-card-modern:not(.has-players) .server-live-top-row,
-.server-live-card-modern.empty-card .server-live-top-row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
+.server-live-top-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
     width: 100%;
+    padding: 4px 0;
+}
+
+.server-live-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.status-indicator-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--gc-green);
+    box-shadow: 0 0 8px var(--gc-green);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.status-indicator-dot.online {
+    animation: pulse-green 2s infinite;
+}
+
+.status-indicator-dot.offline {
+    background-color: var(--gc-red);
+    box-shadow: 0 0 8px var(--gc-red);
+    animation: none;
+}
+
+.server-live-status-text {
+    font-family: var(--gc-font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--gc-text-muted);
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.server-live-count-large {
+    font-family: var(--gc-font-display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gc-text-white);
+    letter-spacing: 0.6px;
+    line-height: 1.1;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.server-live-card-modern:not(.has-players) .server-live-count-large,
+.server-live-card-modern.empty-card .server-live-count-large {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: var(--gc-text-white) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    letter-spacing: 0.6px !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
 }
 
 .server-live-card-modern:not(.has-players) .server-card-divider,
@@ -287,63 +441,20 @@
     display: none !important;
 }
 
-.server-live-card-modern:not(.has-players) .server-live-count-large,
-.server-live-card-modern.empty-card .server-live-count-large {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--gc-green);
-    background: rgba(var(--gc-green-rgb), 0.1);
-    border: 1px solid rgba(var(--gc-green-rgb), 0.3);
-    padding: 2px 8px;
-    border-radius: 12px;
-    margin-top: 0;
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 8px rgba(var(--gc-green-rgb), 0.4);
-}
-
-/* ── Premium Glass State (When Players ARE Online) ── */
+/* ── Live Players List (When Players ARE Online) ── */
 .server-live-card-modern.has-players {
-    background: linear-gradient(135deg, rgba(22, 32, 26, 0.65) 0%, rgba(10, 16, 13, 0.78) 100%);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(57, 255, 20, 0.28);
-    border-radius: 18px;
-    padding: 18px 16px 14px 16px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(57, 255, 20, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     height: 100%;
-}
-
-.server-live-card-modern.has-players:hover {
-    border-color: rgba(57, 255, 20, 0.45);
-    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), 0 0 32px rgba(57, 255, 20, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-}
-
-.server-live-card-modern.has-players .server-live-top-row {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.server-live-card-modern.has-players .server-live-count-large {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--gc-text-white);
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin-top: 2px;
-    letter-spacing: 0.5px;
-    line-height: 1;
 }
 
 .server-live-card-modern.has-players .server-card-divider {
     display: block;
     width: 100%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-    margin: 14px 0 12px 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), rgba(57, 255, 20, 0.2));
+    margin: 10px 0 8px 0;
     flex-shrink: 0;
 }
 
@@ -351,13 +462,12 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    width: 100%;
     flex: 1 1 auto;
     max-height: 250px;
     overflow-y: auto;
     padding-right: 2px;
 }
-
-
 
 .live-player-item {
     display: flex; align-items: center; gap: 6px; padding: 5px 8px;

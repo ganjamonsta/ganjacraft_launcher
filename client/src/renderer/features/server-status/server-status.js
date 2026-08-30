@@ -138,6 +138,12 @@ export async function updateServerStatus() {
             indicator.className = 'status-indicator online';
             indicator.title = 'Сервер доступен';
 
+            const liveDot = document.querySelector('.status-indicator-dot');
+            if (liveDot) {
+                liveDot.className = 'status-indicator-dot online';
+                liveDot.title = 'Сервер доступен';
+            }
+
             if (liveStatusText) {
                 liveStatusText.textContent = 'СЕРВЕР В СЕТИ';
             }
@@ -187,6 +193,12 @@ export async function updateServerStatus() {
             }
             indicator.className = 'status-indicator offline';
             indicator.title = 'Сервер недоступен';
+
+            const liveDot = document.querySelector('.status-indicator-dot');
+            if (liveDot) {
+                liveDot.className = 'status-indicator-dot offline';
+                liveDot.title = 'Сервер недоступен';
+            }
 
             if (liveCard) {
                 liveCard.classList.remove('has-players');

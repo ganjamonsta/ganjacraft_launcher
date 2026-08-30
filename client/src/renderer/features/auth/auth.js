@@ -214,10 +214,11 @@ export async function loadPlayerStats(username) {
                 const player = data.players.find(p => p.nick && p.nick.toLowerCase() === username.toLowerCase());
                 if (player) {
                     if (rankBadgeEl) {
-                        const rankName = player.rank_name || 'Игрок';
-                        rankBadgeEl.textContent = rankName;
-                        const rankSlug = rankName.toLowerCase().replace(/\s+/g, '-');
-                        rankBadgeEl.className = `player-rank-pill rank-${rankSlug}`;
+                        const rawRank = player.rank_name || 'Игрок';
+                        const rankClean = rawRank.replace(/[\[\]]/g, '').trim();
+                        rankBadgeEl.textContent = `[${rankClean}]`;
+                        const rankSlug = rankClean.toLowerCase().replace(/\s+/g, '-');
+                        rankBadgeEl.className = `player-rank-pill minecraft-rank-badge rank-${rankSlug}`;
                     }
                     if (coinsEl) coinsEl.textContent = (player.emc != null ? Number(player.emc).toLocaleString('ru-RU') : '0');
                     const hours = player.season_hours || player.total_hours || (player.season_playtime_minutes ? (player.season_playtime_minutes / 60).toFixed(1) : '0');
@@ -231,8 +232,8 @@ export async function loadPlayerStats(username) {
     }
 
     if (rankBadgeEl) {
-        rankBadgeEl.textContent = 'Игрок';
-        rankBadgeEl.className = 'player-rank-pill rank-player';
+        rankBadgeEl.textContent = '[Игрок]';
+        rankBadgeEl.className = 'player-rank-pill minecraft-rank-badge rank-player';
     }
     if (coinsEl) coinsEl.textContent = '0';
     if (playtimeEl) playtimeEl.textContent = '0 ч';
