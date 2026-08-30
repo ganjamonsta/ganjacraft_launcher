@@ -70,9 +70,6 @@ export function lockControlsForLaunch() {
     if (settingsTabsBar) {
         settingsTabsBar.classList.add('hidden');
     }
-    if (popCounter) {
-        popCounter.classList.add('hidden');
-    }
 
     // Трансформируем круглую кнопку Play в кнопку Cancel
     if (playBtn) {
@@ -103,7 +100,6 @@ export function unlockControlsAfterLaunch() {
     const btnChangelog = dom.get('btn-changelog');
     const titleBtn = dom.get('title-bar-title');
     const playBtn = dom.get('play-btn');
-    const popCounter = dom.get('particle-pop-counter');
     
     if (btnSettings) {
         btnSettings.classList.remove('disabled-launch');
@@ -118,9 +114,6 @@ export function unlockControlsAfterLaunch() {
     }
     if (titleBtn) {
         titleBtn.classList.remove('disabled-launch');
-    }
-    if (popCounter) {
-        popCounter.classList.remove('hidden');
     }
 
     // Возвращаем круглую кнопку в режим Play
@@ -218,6 +211,7 @@ function showPlayScreen() {
  * Запустить игру
  */
 export async function startLaunch() {
+    console.log('[GAME] startLaunch() called');
     lockControlsForLaunch();
     gunShooter.setGameLaunchingMode(true);
 
@@ -246,11 +240,13 @@ export async function startLaunch() {
     }
 
     logToConsole('[LAUNCHER] Подготовка к запуску игры...');
+    console.log('[GAME] Calling window.api.launchGame...');
 
     const result = await window.api.launchGame({ 
         username: getCurrentUsername(),
         token: getAuthToken()
     });
+    console.log('[GAME] window.api.launchGame returned:', result);
     
     if (result.success) {
         if (statusDiv) {
@@ -444,4 +440,20 @@ export function initGameButtons() {
             toggleLaunchLogModal();
         });
     }
+
+    const backdropLog = dom.get('launch-log-backdrop');
+    if (backdropLog) {
+        backdropLog.addEventListener('click', () => {
+            toggleLaunchLogModal();
+        });
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = dom.get('launch-log-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                toggleLaunchLogModal();
+            }
+        }
+    });
 }

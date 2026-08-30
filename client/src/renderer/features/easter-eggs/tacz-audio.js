@@ -1,17 +1,18 @@
 /**
  * Ganj4Craft Launcher - TACZ Authentic Audio Engine
- * Высокопроизводительный Web Audio API плеер для звуков оружия TACZ
+ * Высокопроизводительный HTML5 Audio плеер для звуков оружия TACZ с пулом аудио-элементов,
+ * аппаратным декодированием и троттлингом для устранения лагов.
  */
 
 import { audioSynth } from './audio-synth.js';
 
 class TACZAudioEngine {
     constructor() {
-        this.audioCtx = null;
-        this.soundBuffers = new Map();
-        this.loadingPromises = new Map();
         this.volume = 0.75;
         this.isMuted = false;
+        this.audioPool = new Map(); // id -> Array<HTMLAudioElement>
+        this.lastPlayTime = new Map(); // id -> timestamp
+        this.poolSize = 4;
 
         // Предустановленные пути звуков
         this.soundPaths = {
@@ -19,7 +20,6 @@ class TACZAudioEngine {
             'deagle_shoot': 'assets/tacz/sounds/deagle_shoot.ogg',
             'spas12_shoot': 'assets/tacz/sounds/spas12_shoot.ogg',
             'p90_shoot': 'assets/tacz/sounds/p90_shoot.ogg',
-            'victor45_shoot': 'assets/tacz/sounds/victor45_shoot.ogg',
             'awp_shoot': 'assets/tacz/sounds/awp_shoot.ogg',
             'rpg7_shoot': 'assets/tacz/sounds/rpg7_shoot.ogg',
             'minigun_shoot': 'assets/tacz/sounds/minigun_shoot.ogg',
@@ -29,130 +29,104 @@ class TACZAudioEngine {
             'dry_fire': 'assets/tacz/sounds/dry_fire.ogg'
         };
 
-        this.initContext();
-    }
-
-    initContext() {
-        if (!this.audioCtx && (window.AudioContext || window.webkitAudioContext)) {
-            try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                this.audioCtx = new AudioContextClass();
-            } catch (e) {
-                console.debug('[TACZ Audio] AudioContext init error:', e);
-            }
-        }
-    }
-
-    resumeContext() {
-        if (this.audioCtx && this.audioCtx.state === 'suspended') {
-            this.audioCtx.resume().catch(() => {});
-        }
+        // Минимальные интервалы (мс) между повторным воспроизведением одного звука
+        this.minCooldowns = {
+            'flesh_hit': 35,
+            'head_hit': 35,
+            'kill': 45,
+            'dry_fire': 100,
+            'spas12_shoot': 80,
+            'ak47_shoot': 35,
+            'p90_shoot': 30,
+            'minigun_shoot': 25,
+            'deagle_shoot': 70,
+            'awp_shoot': 120,
+            'rpg7_shoot': 120
+        };
     }
 
     /**
-     * Предзагрузка звукового файла в AudioBuffer
+     * Получить свободный HTML5 Audio элемент из пула
      */
-    async loadSound(id) {
-        if (this.soundBuffers.has(id)) {
-            return this.soundBuffers.get(id);
-        }
-
-        if (this.loadingPromises.has(id)) {
-            return this.loadingPromises.get(id);
-        }
-
-        const url = this.soundPaths[id];
-        if (!url) return null;
-
-        const promise = (async () => {
-            try {
-                this.initContext();
-                if (!this.audioCtx) return null;
-
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch sound: ${response.status}`);
-                }
-                const arrayBuffer = await response.arrayBuffer();
-                const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
-                this.soundBuffers.set(id, audioBuffer);
-                return audioBuffer;
-            } catch (err) {
-                console.debug(`[TACZ Audio] Failed to load ${id}:`, err);
-                return null;
-            } finally {
-                this.loadingPromises.delete(id);
+    getAudioElement(id) {
+        if (!this.audioPool.has(id)) {
+            const list = [];
+            const src = this.soundPaths[id];
+            if (!src) return null;
+            for (let i = 0; i < this.poolSize; i++) {
+                const a = new Audio(src);
+                a.preload = 'auto';
+                list.push(a);
             }
-        })();
+            this.audioPool.set(id, list);
+        }
+        const pool = this.audioPool.get(id);
+        if (!pool || pool.length === 0) return null;
 
-        this.loadingPromises.set(id, promise);
-        return promise;
-    }
-
-    /**
-     * Предзагрузка всех звуков арсенала
-     */
-    preloadAll() {
-        Object.keys(this.soundPaths).forEach(id => {
-            this.loadSound(id);
-        });
+        for (let i = 0; i < pool.length; i++) {
+            if (pool[i].paused || pool[i].ended) {
+                return pool[i];
+            }
+        }
+        const first = pool[0];
+        try { first.currentTime = 0; } catch (_) {}
+        return first;
     }
 
     /**
      * Воспроизвести звук по ID
-     * @param {string} id 
-     * @param {number} pitchShift - Случайная вариация высоты тона (для разнообразия)
-     * @param {number} volScale - Масштаб громкости
      */
-    async play(id, pitchShift = 1.0, volScale = 1.0) {
+    play(id, pitchShift = 1.0, volScale = 1.0) {
         if (this.isMuted) return;
-        this.resumeContext();
 
-        let buffer = this.soundBuffers.get(id);
-        if (!buffer) {
-            buffer = await this.loadSound(id);
+        const now = performance.now();
+        const minCd = this.minCooldowns[id] || 30;
+        const lastPlay = this.lastPlayTime.get(id) || 0;
+        if (now - lastPlay < minCd) {
+            return;
         }
+        this.lastPlayTime.set(id, now);
 
-        if (buffer && this.audioCtx) {
+        const audio = this.getAudioElement(id);
+        if (audio) {
             try {
-                const source = this.audioCtx.createBufferSource();
-                source.buffer = buffer;
-
-                // Небольшой рандом питча для сочности выстрелов (+- 4%)
-                source.playbackRate.value = pitchShift * (0.97 + Math.random() * 0.06);
-
-                const gainNode = this.audioCtx.createGain();
-                gainNode.gain.value = Math.max(0, Math.min(1.0, this.volume * volScale));
-
-                source.connect(gainNode);
-                gainNode.connect(this.audioCtx.destination);
-                source.start(0);
-                return;
-            } catch (err) {
-                console.debug('[TACZ Audio] Play error:', err);
+                audio.volume = Math.max(0, Math.min(1.0, this.volume * volScale));
+                audio.currentTime = 0;
+                audio.playbackRate = Math.max(0.8, Math.min(1.3, pitchShift * (0.96 + Math.random() * 0.08)));
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        this.playFallback(id);
+                    });
+                }
+            } catch (_) {
+                this.playFallback(id);
             }
+        } else {
+            this.playFallback(id);
         }
-
-        // Фолбэк на синтезатор при отсутствии файла или сбое
-        this.playFallback(id);
     }
 
     playFallback(id) {
-        if (id.includes('shoot')) {
-            if (id.includes('spas')) audioSynth.playShotgun();
-            else if (id.includes('minigun') || id.includes('p90') || id.includes('victor')) audioSynth.playLaserShot();
-            else if (id.includes('rpg7')) audioSynth.playExplosion(true);
-            else audioSynth.playLaserShot();
-        } else if (id === 'head_hit') {
-            audioSynth.playCrit();
-        } else if (id === 'flesh_hit') {
-            audioSynth.playHit();
-        } else if (id === 'kill') {
-            audioSynth.playCoin();
-        }
+        try {
+            if (id.includes('shoot')) {
+                if (id.includes('spas')) audioSynth.playShotgun();
+                else if (id.includes('minigun') || id.includes('p90')) audioSynth.playSMG();
+                else if (id.includes('rpg7')) audioSynth.playRocketLaunch();
+                else if (id.includes('awp')) audioSynth.playRailgun();
+                else audioSynth.playLaserShot();
+            } else if (id === 'head_hit') {
+                audioSynth.playPop(1.8);
+            } else if (id === 'flesh_hit') {
+                audioSynth.playTargetHit();
+            } else if (id === 'kill') {
+                audioSynth.playCoin();
+            } else if (id === 'dry_fire') {
+                audioSynth.playError();
+            }
+        } catch (_) {}
     }
 
-    // Хелперы для выстрелов
     playShoot(weaponId) {
         const soundMap = {
             'deagle': 'deagle_shoot',

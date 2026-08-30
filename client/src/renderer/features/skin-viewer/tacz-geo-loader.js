@@ -3,12 +3,12 @@ import * as THREE from 'three';
 /**
  * TACZ & Bedrock Geometry 3D Loader
  * Парсит оригинальные .geo.json модели TACZ и компилирует всю геометрию
- * в единый оптимизированный THREE.BufferGeometry (1 Draw Call вместо 1000+).
+ * в оптимизированный THREE.BufferGeometry (1 Draw Call).
  */
 
 class TaczGeoLoader {
     constructor() {
-        this.modelCache = new Map();
+        this.dataCache = new Map();
         this.textureCache = new Map();
         this.textureLoader = new THREE.TextureLoader();
     }
@@ -33,30 +33,62 @@ class TaczGeoLoader {
      * @param {string} gunId Идентификатор оружия (например 'ak47', 'deagle', 'spas_12')
      */
     async loadGunModel(gunId) {
-        if (this.modelCache.has(gunId)) {
-            return this.modelCache.get(gunId).clone(true);
-        }
-
         try {
-            const geoUrl = `assets/tacz/geo/${gunId}_geo.json`;
+            let data = this.dataCache.get(gunId);
+            if (!data) {
+                const geoUrl = `assets/tacz/geo/${gunId}_geo.json`;
+                const res = await fetch(geoUrl);
+                if (!res.ok) throw new Error(`Failed to fetch TACZ geo for ${gunId}`);
+                const geoJson = await res.json();
+                data = this.parseBedrockGeoData(geoJson, gunId);
+                this.dataCache.set(gunId, data);
+            }
+
             const texUrl = `assets/tacz/uv/${gunId}.png`;
-
-            const res = await fetch(geoUrl);
-            if (!res.ok) throw new Error(`Failed to fetch TACZ geo for ${gunId}`);
-            const geoJson = await res.json();
-
             const texture = this.loadTexture(texUrl);
-            const material = new THREE.MeshStandardMaterial({
+            
+            // Используем MeshBasicMaterial для идеальной стабильности WebGL и аутентичного вида пикселей
+            const material = new THREE.MeshBasicMaterial({
                 map: texture,
                 transparent: true,
-                alphaTest: 0.15,
-                roughness: 0.45,
-                metalness: 0.25
+                alphaTest: 0.1,
+                side: THREE.DoubleSide
             });
 
-            const gunGroup = this.parseBedrockGeo(geoJson, material, gunId);
-            this.modelCache.set(gunId, gunGroup);
-            return gunGroup.clone(true);
+            const rootGroup = new THREE.Group();
+            rootGroup.name = `TACZ_GUN_${gunId}`;
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(data.positions), 3));
+            geometry.setAttribute('normal', new THREE.Float32BufferAttribute(new Float32Array(data.normals), 3));
+            geometry.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(data.uvs), 2));
+            geometry.computeBoundingBox();
+            geometry.computeBoundingSphere();
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(data.pivot[0], -data.pivot[1], -data.pivot[2]);
+            rootGroup.add(mesh);
+
+            if (gunId === 'minigun') {
+                rootGroup.rotation.set(-Math.PI / 2 + 0.15, 0, Math.PI);
+                rootGroup.scale.set(0.58, 0.58, 0.58);
+                rootGroup.position.set(-0.5, -9.6, 0.6);
+            } else if (gunId === 'rpg7') {
+                rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
+                rootGroup.scale.set(0.65, 0.65, 0.65);
+                rootGroup.position.set(-0.5, -9.8, 1.0);
+            } else if (gunId === 'glock_17' || gunId === 'deagle') {
+                rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
+                rootGroup.scale.set(0.68, 0.68, 0.68);
+                rootGroup.position.set(0, -10.4, 0.4);
+            } else {
+                // ak47, vector45, spas_12, ai_awp, p90, m4a1 и др.
+                rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
+                rootGroup.scale.set(0.65, 0.65, 0.65);
+                rootGroup.position.set(0, -10.2, 0.5);
+            }
+
+            return rootGroup;
         } catch (e) {
             console.warn(`[TaczGeoLoader] Could not load real 3D model for ${gunId}, fallback`, e);
             return null;
@@ -64,14 +96,13 @@ class TaczGeoLoader {
     }
 
     /**
-     * Парсер Bedrock 1.12.0 minecraft:geometry в единый оптимизированный Three.js Mesh
+     * Парсер Bedrock 1.12.0 minecraft:geometry в сырые массивы геометрии
      */
-    parseBedrockGeo(geoJson, material, gunId) {
-        const rootGroup = new THREE.Group();
-        rootGroup.name = `TACZ_GUN_${gunId}`;
-
+    parseBedrockGeoData(geoJson, gunId) {
         const geometries = geoJson['minecraft:geometry'] || [];
-        if (!geometries.length) return rootGroup;
+        if (!geometries.length) {
+            return { positions: [], normals: [], uvs: [], pivot: [0, 0, 0] };
+        }
 
         const geo = geometries[0];
         const desc = geo.description || {};
@@ -245,33 +276,15 @@ class TaczGeoLoader {
             }
         }
 
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        const rootBone = bones.find(b => b.name === 'root') || bones[0];
+        const pivot = rootBone?.pivot || [0, 0, 0];
 
-        const mesh = new THREE.Mesh(geometry, material);
-        rootGroup.add(mesh);
-
-        if (gunId === 'minigun') {
-            rootGroup.rotation.set(-Math.PI / 2 + 0.35, 0, Math.PI);
-            rootGroup.scale.set(0.60, 0.60, 0.60);
-            rootGroup.position.set(-0.6, -8.6, 1.8);
-        } else if (gunId === 'rpg7') {
-            rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
-            rootGroup.scale.set(0.65, 0.65, 0.65);
-            rootGroup.position.set(-0.8, -9.0, 2.4);
-        } else if (gunId === 'glock_17') {
-            rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
-            rootGroup.scale.set(0.72, 0.72, 0.72);
-            rootGroup.position.set(-0.5, -9.4, 1.4);
-        } else {
-            rootGroup.rotation.set(-Math.PI / 2, 0, Math.PI);
-            rootGroup.scale.set(0.68, 0.68, 0.68);
-            rootGroup.position.set(-0.5, -9.2, 1.5);
-        }
-
-        return rootGroup;
+        return {
+            positions,
+            normals,
+            uvs,
+            pivot
+        };
     }
 }
 

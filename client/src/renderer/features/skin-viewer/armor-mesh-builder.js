@@ -58,12 +58,11 @@ class ArmorMeshBuilder {
 
     createMaterial(textureUrl) {
         const texture = this.loadTexture(textureUrl);
-        return new THREE.MeshStandardMaterial({
+        return new THREE.MeshBasicMaterial({
             map: texture,
             transparent: true,
-            alphaTest: 0.15,
-            roughness: 0.45,
-            metalness: 0.25
+            alphaTest: 0.1,
+            side: THREE.DoubleSide
         });
     }
 

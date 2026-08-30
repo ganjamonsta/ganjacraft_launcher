@@ -593,11 +593,6 @@
                         <canvas id="skin-canvas-2d" width="380" height="375" style="display:none;"></canvas>
                     </div>
 
-                    <button id="btn-open-wardrobe" class="btn-wardrobe-trigger" title="Гардероб и оружейная в 3D">
-                        <span class="wardrobe-btn-icon">⚔️</span>
-                        <span>ГАРДЕРОБ & ОРУЖИЕ</span>
-                    </button>
-
                     <div class="player-stats-bar-modern">
                         <div class="stat-col-modern">
                             <div class="stat-meta-row">
@@ -641,9 +636,19 @@
                         </svg>
                         <h2 class="hero-neon-title-cyber">GANJ4CRAFT</h2>
                     </div>
+
+                    <!-- Circular Magnetic Play Button with Glowing Ring and White Arrow (Centered) -->
+                    <div class="play-btn-container">
+                        <button id="play-btn" class="magnetic-play-btn-circle" aria-label="Играть" title="Играть">
+                            <span class="play-btn-glow-ring"></span>
+                            <svg class="play-btn-triangle-icon" viewBox="0 0 24 24" fill="#ffffff">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- 3. Dynamic Play & Leaf Group (Moves between Center and Right Column) -->
+                <!-- 3. Sacred Leaf Emblem (Right Column) -->
                 <div class="play-brand-group" id="play-brand-group">
                     <!-- Sacred Geometry Leaf Emblem -->
                     <div class="sacred-leaf-wrapper">
@@ -717,16 +722,6 @@
                                 <path d="M100 154 C100 162 99 170 97 178" stroke="#00a844" stroke-width="2.6" stroke-linecap="round" />
                             </g>
                         </svg>
-                    </div>
-
-                    <!-- Circular Magnetic Play Button with Glowing Ring and White Arrow -->
-                    <div class="play-btn-container">
-                        <button id="play-btn" class="magnetic-play-btn-circle" aria-label="Играть" title="Играть">
-                            <span class="play-btn-glow-ring"></span>
-                            <svg class="play-btn-triangle-icon" viewBox="0 0 24 24" fill="#ffffff">
-                                <path d="M8 5v14l11-7z"/>
-                            </svg>
-                        </button>
                     </div>
                 </div>
 

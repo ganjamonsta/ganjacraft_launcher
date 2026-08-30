@@ -216,23 +216,21 @@
     filter: drop-shadow(0 0 8px rgba(var(--gc-green-rgb), 0.4));
 }
 
-/* ── Dedicated Cyber Launch Log Modal (Positioned to the right of 3D Player) ── */
+/* ── Dedicated Cyber Launch Log Modal (Fullscreen Centered) ── */
 .launch-log-modal {
     position: fixed;
-    top: 48px;
-    left: 265px;
-    right: 16px;
-    bottom: 74px;
-    width: auto;
-    height: auto;
-    z-index: 300 !important;
+    top: 40px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5000 !important;
     display: flex;
-    align-items: stretch;
-    justify-content: stretch;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
-    padding: 0;
+    padding: 16px 24px 20px 24px;
     pointer-events: auto !important;
-    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .launch-log-modal.hidden {
@@ -240,20 +238,29 @@
 }
 
 .launch-log-backdrop {
-    display: none;
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 8, 6, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 1;
+    cursor: pointer;
 }
 
 .launch-log-card {
     position: relative;
-    z-index: 301 !important;
+    z-index: 2 !important;
     width: 100%;
+    max-width: 860px;
     height: 100%;
-    background: rgba(8, 14, 10, 0.96);
+    max-height: 520px;
+    background: rgba(8, 14, 10, 0.98);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(57, 255, 20, 0.35);
-    border-radius: 16px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9), 0 0 24px rgba(57, 255, 20, 0.18);
+    border: 1px solid rgba(57, 255, 20, 0.45);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(57, 255, 20, 0.2);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -352,8 +359,43 @@
     color: #ff6b6b !important;
 }
 
-/* Hide frag counter when viewing launch logs */
+/* ── Hide all game elements and progress bars when viewing launch logs ── */
+body.log-modal-open .player-character-section,
+body.log-modal-open #skin-viewer-container,
+body.log-modal-open #step-progress,
+body.log-modal-open .shooter-hotbar-container,
+body.log-modal-open .shooter-top-controls,
+body.log-modal-open .player-defense-container,
+body.log-modal-open .player-defense-hud,
+body.log-modal-open .boss-health-container,
+body.log-modal-open .active-buffs-bar,
+body.log-modal-open .gun-shooter-canvas,
+body.log-modal-open .gun-crosshair,
+body.log-modal-open .gun-shooter-crosshair,
+body.log-modal-open #gun-shooter-crosshair,
 body.log-modal-open .launch-kills-badge {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ── Reposition Progress HUD to top-left when mini-game is active so it never overlaps the hotbar ── */
+body.is-shooter-active #step-progress {
+    bottom: auto !important;
+    top: 48px !important;
+    left: 20px !important;
+    transform: none !important;
+    min-width: 250px !important;
+    max-width: 290px !important;
+    z-index: 95 !important;
+}
+
+body.is-shooter-active .launch-progress-layout {
+    padding: 6px 14px 8px 14px !important;
+    border-radius: 12px !important;
+}
+
+body.is-shooter-active .launch-kills-badge {
     display: none !important;
 }
 

@@ -40,7 +40,7 @@
 /* ── Server Status Widget (top-right corner) ── */
 #server-status-widget {
     position: absolute;
-    top: 20px; right: 20px;
+    top: 16px; right: 16px;
     background: rgba(20, 20, 20, 0.6);
     backdrop-filter: blur(6px);
     padding: 8px 12px;
@@ -138,7 +138,7 @@
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     box-sizing: border-box;
     background: transparent; border: none; box-shadow: none;
-    z-index: 10; padding: 2px 0;
+    z-index: 10; padding: 16px 0;
     overflow: visible;
 }
 
@@ -148,8 +148,8 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    margin-top: 4px;
-    margin-bottom: 2px;
+    margin-top: 0;
+    margin-bottom: 4px;
     z-index: 15;
     flex-shrink: 0;
 }
@@ -157,17 +157,17 @@
 .minecraft-nametag {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     background: rgba(0, 0, 0, 0.52);
-    padding: 4px 12px;
+    padding: 4px 11px;
     border-radius: 3px;
     font-family: var(--gc-font-minecraft, 'Minecraft', 'Pixelify Sans', 'Minecraftia', monospace);
-    font-size: 17.5px;
+    font-size: 17px;
     line-height: 1.25;
     -webkit-font-smoothing: none;
     image-rendering: pixelated;
     font-smooth: never;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     pointer-events: none;
     user-select: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -241,26 +241,36 @@
 .player-stats-bar-modern {
     display: flex; align-items: center; justify-content: center;
     gap: var(--gc-gap-lg); width: 100%; max-width: 220px;
-    padding: 0 4px; height: 48px; flex-shrink: 0; margin-bottom: 2px;
+    padding: 0 4px; height: 48px; flex-shrink: 0; margin-bottom: 0;
 }
 
 .stat-col-modern { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .stat-meta-row { display: flex; align-items: center; gap: 5px; }
 .stat-icon-svg { color: var(--gc-text-muted); opacity: 0.85; }
-.stat-label-text { font-family: var(--gc-font-display); font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; color: var(--gc-text-muted); text-transform: uppercase; }
-.stat-value-text { font-family: var(--gc-font-display); font-size: 17px; font-weight: 800; color: var(--gc-text-white); letter-spacing: 0.4px; line-height: 1.1; }
-.stat-divider-line { width: 1px; height: 26px; background: var(--gc-border-medium); margin: 0 2px; }
+.stat-label-text { font-family: var(--gc-font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.9px; color: var(--gc-text-muted); text-transform: uppercase; }
+.stat-value-text { font-family: var(--gc-font-display); font-size: 16px; font-weight: 800; color: var(--gc-text-white); letter-spacing: 0.4px; line-height: 1.1; }
+.stat-divider-line { width: 1px; height: 24px; background: var(--gc-border-medium); margin: 0 2px; }
 
-/* ── 2. Center: Cyber Header (GANJ4CRAFT) ── */
+/* ── 2. Center: Cyber Header (GANJ4CRAFT) & Centered Play Button ── */
 .hero-brand-section.center-brand {
     grid-column: 2;
     grid-row: 1;
     width: 100%; height: 100%;
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     padding-top: 52px;
-    text-align: center; position: relative; z-index: 10;
+    padding-bottom: 2px;
+    text-align: center; position: relative; z-index: 25;
     box-sizing: border-box;
+    pointer-events: none;
     transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-brand-section.center-brand .cyber-brand-header {
+    pointer-events: auto;
+}
+
+.hero-brand-section.center-brand .play-btn-container {
+    pointer-events: auto;
 }
 
 .cyber-brand-header {
@@ -275,9 +285,9 @@
 
 .hero-neon-title-cyber {
     font-family: var(--gc-font-display);
-    font-size: 29px; font-weight: 900;
+    font-size: 27px; font-weight: 900;
     color: var(--gc-green);
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     text-shadow: 0 0 10px rgba(var(--gc-green-rgb), 0.85), 0 0 26px rgba(var(--gc-green-rgb), 0.6);
     margin: 0; text-transform: uppercase; z-index: 2; pointer-events: none; line-height: 1;
     animation: hero-neon-pulse 4s ease-in-out infinite alternate;
@@ -309,7 +319,9 @@ body.is-game-launching .server-status-card,
 body.is-game-launching .server-status-card-modern,
 .is-game-launching .server-status-card-modern,
 body.is-game-launching .play-brand-group,
-.is-game-launching .play-brand-group {
+.is-game-launching .play-brand-group,
+body.is-game-launching .play-btn-container,
+.is-game-launching .play-btn-container {
     opacity: 0 !important;
     pointer-events: none !important;
     visibility: hidden !important;
@@ -344,21 +356,20 @@ body.is-game-launching .launch-action-hub,
     transition: opacity 0.3s ease !important;
 }
 
-/* ── 3. Dynamic Play & Leaf Group ── */
-/* DEFAULT / 0 PLAYERS (empty-card): Placed in Right Column with Leaf + Play Button together */
+/* ── 3. Sacred Leaf Emblem (Right Column) ── */
 .play-brand-group {
     grid-column: 3;
     grid-row: 1;
     width: 100%; max-width: 240px; height: 100%;
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-    padding: 58px 0 4px 0;
-    box-sizing: border-box; z-index: 30;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 0;
+    box-sizing: border-box; z-index: 20;
     pointer-events: none;
     transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .play-brand-group .sacred-leaf-wrapper {
-    width: 190px; height: 190px;
+    width: 170px; height: 170px;
     display: flex; align-items: center; justify-content: center;
     margin: auto 0;
     pointer-events: none !important;
@@ -414,7 +425,8 @@ body.is-game-launching .launch-action-hub,
     100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(var(--gc-green-rgb), 0.8)); }
 }
 
-.play-brand-group .play-btn-container {
+/* ── Centered Play Button Container ── */
+.play-btn-container {
     width: 100%; display: flex; justify-content: center;
     align-items: center; height: 96px; flex-shrink: 0; margin-bottom: 2px;
     pointer-events: auto;
@@ -436,22 +448,6 @@ body.is-game-launching .launch-action-hub,
     100% { transform: scale(0.96); opacity: 0.5; filter: blur(2px); }
 }
 
-/* ── WHEN PLAYERS ARE ONLINE (has-players) ── */
-/* Name GanjaCraft moves to top of Center column */
-.main-dashboard-layout.has-players .hero-brand-section.center-brand {
-    justify-content: flex-start;
-    padding-top: 2px;
-}
-
-/* Play & Leaf Group moves to CENTER Column below GanjaCraft */
-.main-dashboard-layout.has-players .play-brand-group {
-    grid-column: 2;
-    max-width: 100%;
-    padding: 60px 0 6px 0;
-    justify-content: space-between;
-    z-index: 30;
-}
-
 .main-dashboard-layout.has-players .launch-action-hub {
     z-index: 15;
 }
@@ -459,16 +455,16 @@ body.is-game-launching .launch-action-hub,
 .magnetic-play-btn-circle {
     position: relative;
     z-index: 40;
-    width: 86px; height: 86px;
+    width: 80px; height: 80px;
     border-radius: var(--gc-radius-round);
     background: radial-gradient(circle at 40% 40%, #1e2930 0%, #0c1014 100%);
     border: 2px solid var(--gc-green);
     outline: none; cursor: pointer; overflow: visible;
     display: flex; align-items: center; justify-content: center;
     box-shadow:
-        0 0 26px rgba(var(--gc-green-rgb), 0.55),
-        0 10px 24px rgba(0, 0, 0, 0.8),
-        inset 0 0 14px rgba(var(--gc-green-rgb), 0.25);
+        0 0 22px rgba(var(--gc-green-rgb), 0.5),
+        0 8px 20px rgba(0, 0, 0, 0.8),
+        inset 0 0 12px rgba(var(--gc-green-rgb), 0.22);
     transition: box-shadow var(--gc-duration-normal) ease, filter var(--gc-duration-normal) ease, border-color var(--gc-duration-normal) ease;
     will-change: transform;
     margin: 0; user-select: none; -webkit-user-select: none; pointer-events: auto !important;
@@ -518,7 +514,7 @@ body.is-game-launching .launch-action-hub,
 
 .magnetic-play-btn-circle:hover .play-btn-glow-ring { opacity: 1; }
 
-.play-btn-triangle-icon { position: relative; z-index: 2; width: 32px; height: 32px; margin-left: 4px; fill: var(--gc-text-white); filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6)); pointer-events: none; }
+.play-btn-triangle-icon { position: relative; z-index: 2; width: 28px; height: 28px; margin-left: 3px; fill: var(--gc-text-white); filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6)); pointer-events: none; }
 
 /* ── 4. Right: Server Status Hub (Pinned to Top Right) ── */
 .launch-action-hub {
@@ -594,9 +590,9 @@ body.is-game-launching .launch-action-hub,
 
 .server-live-status-text {
     font-family: var(--gc-font-display);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 1.2px;
+    letter-spacing: 1.4px;
     color: var(--gc-text-muted);
     text-transform: uppercase;
     line-height: 1;
@@ -604,10 +600,10 @@ body.is-game-launching .launch-action-hub,
 
 .server-live-count-large {
     font-family: var(--gc-font-display);
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 800;
     color: var(--gc-text-white);
-    letter-spacing: 0.6px;
+    letter-spacing: 0.5px;
     line-height: 1.1;
     background: transparent !important;
     border: none !important;
@@ -619,7 +615,7 @@ body.is-game-launching .launch-action-hub,
 
 .server-live-card-modern:not(.has-players) .server-live-count-large,
 .server-live-card-modern.empty-card .server-live-count-large {
-    font-size: 20px !important;
+    font-size: 22px !important;
     font-weight: 800 !important;
     color: var(--gc-text-white) !important;
     background: transparent !important;
@@ -627,7 +623,7 @@ body.is-game-launching .launch-action-hub,
     padding: 0 !important;
     border-radius: 0 !important;
     margin: 0 !important;
-    letter-spacing: 0.6px !important;
+    letter-spacing: 0.5px !important;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
 }
 
@@ -748,12 +744,12 @@ body.is-game-launching .launch-action-hub,
 .app-version-fixed,
 #app-version {
     position: absolute;
-    bottom: 8px;
-    right: 14px;
+    bottom: 16px;
+    right: 16px;
     font-family: var(--gc-font-mono);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.45);
     letter-spacing: 0.8px;
     z-index: var(--gc-z-ui);
     pointer-events: none;

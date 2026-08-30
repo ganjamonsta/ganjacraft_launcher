@@ -101,8 +101,11 @@ export const EQUIPMENT_CATALOG = {
     // ⚔️ ОСНОВНАЯ РУКА (TACZ 3D арсенал)
     mainHand: {
         none: { id: 'none', name: 'Пустая рука', icon: '✊', rarity: 'common' },
+        tacz_deagle: { id: 'tacz_deagle', name: 'Desert Eagle .50', mod: 'TACZ', icon: 'assets/tacz/hud/deagle.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'deagle' },
+        tacz_spas_12: { id: 'tacz_spas_12', name: 'SPAS-12', mod: 'TACZ', icon: 'assets/tacz/hud/spas_12.png', isImage: true, rarity: 'rare', type: 'tacz_geo', geoGunId: 'spas_12' },
         tacz_ak47: { id: 'tacz_ak47', name: 'АК-47', mod: 'TACZ', icon: 'assets/tacz/hud/ak47.png', isImage: true, rarity: 'epic', type: 'tacz_geo', geoGunId: 'ak47' },
         tacz_vector45: { id: 'tacz_vector45', name: 'Kriss Vector .45', mod: 'TACZ', icon: 'assets/tacz/hud/vector45.png', isImage: true, rarity: 'legendary', type: 'tacz_geo', geoGunId: 'vector45' },
+        tacz_awp: { id: 'tacz_awp', name: 'AWP Sniper', mod: 'TACZ', icon: 'assets/tacz/hud/ai_awp.png', isImage: true, rarity: 'legendary', type: 'tacz_geo', geoGunId: 'ai_awp' },
         tacz_glock17: { id: 'tacz_glock17', name: 'Glock 17', mod: 'TACZ', icon: 'assets/tacz/hud/glock_17.png', isImage: true, rarity: 'common', type: 'tacz_geo', geoGunId: 'glock_17' },
         tacz_rpg7: { id: 'tacz_rpg7', name: 'РПГ-7', mod: 'TACZ', icon: 'assets/tacz/hud/rpg7.png', isImage: true, rarity: 'mythic', type: 'tacz_geo', geoGunId: 'rpg7' },
         tacz_minigun: { id: 'tacz_minigun', name: 'Миниган M134', mod: 'TACZ', icon: 'assets/tacz/hud/minigun.png', isImage: true, rarity: 'mythic', type: 'tacz_geo', geoGunId: 'minigun' }
@@ -252,6 +255,9 @@ class EquipmentManager {
                         this.currentEquipment[slot] = 'none';
                     }
                 });
+                this.currentEquipment.mainHand = 'none';
+            } else {
+                this.currentEquipment.mainHand = 'none';
             }
         } catch (e) {
             console.debug('[EquipmentManager] Load error', e);

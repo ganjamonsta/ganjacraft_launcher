@@ -94,27 +94,24 @@ class AudioSynthEngine {
         if (!ctx) return;
 
         try {
-            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-            const noteDur = 0.1;
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
 
-            notes.forEach((freq, idx) => {
-                const now = ctx.currentTime + (idx * noteDur);
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.08);
+            osc.frequency.setValueAtTime(783.99, now + 0.16);
+            osc.frequency.setValueAtTime(1046.50, now + 0.24);
 
-                osc.type = idx === notes.length - 1 ? 'triangle' : 'square';
-                osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
 
-                const dur = idx === notes.length - 1 ? 0.45 : noteDur * 0.9;
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                osc.start(now);
-                osc.stop(now + dur);
-            });
+            osc.start(now);
+            osc.stop(now + 0.46);
         } catch (e) {
             console.debug('[AudioSynth] Fanfare error', e);
         }
@@ -306,7 +303,6 @@ class AudioSynthEngine {
 
         try {
             const now = ctx.currentTime;
-            // 1. Ударный низкий тон
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
 
@@ -315,39 +311,12 @@ class AudioSynthEngine {
             osc.frequency.exponentialRampToValueAtTime(30, now + 0.18);
 
             gain.gain.setValueAtTime(0.35, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
 
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.start(now);
-            osc.stop(now + 0.23);
-
-            // 2. Хрустящий шумовой залп дроби
-            const bufferSize = ctx.sampleRate * 0.15;
-            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-
-            const noise = ctx.createBufferSource();
-            noise.buffer = buffer;
-
-            const noiseFilter = ctx.createBiquadFilter();
-            noiseFilter.type = 'bandpass';
-            noiseFilter.frequency.setValueAtTime(1400, now);
-            noiseFilter.frequency.exponentialRampToValueAtTime(300, now + 0.15);
-
-            const noiseGain = ctx.createGain();
-            noiseGain.gain.setValueAtTime(0.3, now);
-            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-
-            noise.connect(noiseFilter);
-            noiseFilter.connect(noiseGain);
-            noiseGain.connect(ctx.destination);
-
-            noise.start(now);
-            noise.stop(now + 0.16);
+            osc.stop(now + 0.21);
         } catch (e) {
             console.debug('[AudioSynth] Shotgun error', e);
         }
@@ -489,24 +458,22 @@ class AudioSynthEngine {
 
         try {
             const now = ctx.currentTime;
-            [0, 0.25, 0.5].forEach((offset) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
 
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(440, now + offset);
-                osc.frequency.linearRampToValueAtTime(880, now + offset + 0.12);
-                osc.frequency.linearRampToValueAtTime(440, now + offset + 0.24);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.linearRampToValueAtTime(880, now + 0.12);
+            osc.frequency.linearRampToValueAtTime(330, now + 0.3);
 
-                gain.gain.setValueAtTime(0.25, now + offset);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.24);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
 
-                osc.start(now + offset);
-                osc.stop(now + offset + 0.25);
-            });
+            osc.start(now);
+            osc.stop(now + 0.33);
         } catch (e) {
             console.debug('[AudioSynth] BossWarning error', e);
         }
@@ -520,24 +487,22 @@ class AudioSynthEngine {
         if (!ctx) return;
 
         try {
-            const notes = [440, 554.37, 659.25, 880, 1108.73, 1318.51];
-            notes.forEach((freq, idx) => {
-                const now = ctx.currentTime + (idx * 0.08);
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
 
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, now);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.linearRampToValueAtTime(1318.51, now + 0.35);
 
-                gain.gain.setValueAtTime(0.28, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
 
-                osc.start(now);
-                osc.stop(now + 0.32);
-            });
+            osc.start(now);
+            osc.stop(now + 0.4);
         } catch (e) {
             console.debug('[AudioSynth] BossDefeated error', e);
         }
@@ -580,24 +545,23 @@ class AudioSynthEngine {
         if (!ctx) return;
 
         try {
-            const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-            notes.forEach((freq, idx) => {
-                const now = ctx.currentTime + (idx * 0.05);
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
 
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(freq, now);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(783.99, now + 0.06);
+            osc.frequency.setValueAtTime(1318.51, now + 0.12);
 
-                gain.gain.setValueAtTime(0.18, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
 
-                osc.start(now);
-                osc.stop(now + 0.2);
-            });
+            osc.start(now);
+            osc.stop(now + 0.23);
         } catch (e) {
             console.debug('[AudioSynth] UpgradePurchased error', e);
         }

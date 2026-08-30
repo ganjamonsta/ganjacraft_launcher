@@ -212,7 +212,7 @@ export function toggleMainUIVisibility(show, config) {
             centerBrand.style.pointerEvents = show ? 'auto' : 'none';
         }
 
-        // Анимируем блок логотипа и кнопки Play - улетает вправо
+        // Анимируем блок эмблемы листа на правой панели - улетает вправо
         if (playBrandGroup) {
             playBrandGroup.style.transition = show
                 ? 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 80ms, opacity 0.4s ease 80ms'

@@ -795,7 +795,50 @@
    8. ШУТЕР-МИНИ-ИГРА (GUN SHOOTER & CROSSHAIR)
    ========================================================================== */
 
-.gun-crosshair {
+/* ── Shooter Top-Down Character Stage (Centered 3D Player in Mini-Game) ── */
+body.is-shooter-active .player-character-section {
+    opacity: 1 !important;
+    pointer-events: none !important;
+    visibility: visible !important;
+}
+
+body.is-shooter-active .player-nametag-wrapper,
+body.is-shooter-active .btn-wardrobe-trigger,
+body.is-shooter-active .player-stats-bar-modern {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease, visibility 0.3s ease !important;
+}
+
+body.is-shooter-active #skin-viewer-container {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 380px !important;
+    height: 375px !important;
+    z-index: 92 !important;
+    pointer-events: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 25px rgba(57, 255, 20, 0.35));
+    transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.gun-shooter-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 94;
+}
+
+.gun-crosshair,
+.gun-shooter-crosshair,
+#gun-shooter-crosshair {
     position: fixed;
     top: 0;
     left: 0;
@@ -803,7 +846,7 @@
     height: 32px;
     margin-left: -16px;
     margin-top: -16px;
-    pointer-events: none;
+    pointer-events: none !important;
     z-index: 1000;
     transition: transform 0.04s linear;
 }
@@ -1040,36 +1083,42 @@
    10. WEAPON HOTBAR HUD (1-5) & PLAYER DEFENSE HUD
    ========================================================================== */
 
+.player-defense-container,
 .player-defense-hud {
     position: fixed;
-    top: calc(50% - 170px);
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 16px;
+    left: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 4px;
     z-index: 100;
     pointer-events: none;
     user-select: none;
     font-family: 'JetBrains Mono', 'Consolas', monospace;
+    background: rgba(10, 18, 12, 0.88);
+    border: 1px solid rgba(57, 255, 20, 0.35);
+    border-radius: 10px;
+    padding: 6px 12px;
+    backdrop-filter: blur(8px);
     transition: opacity 0.3s ease;
 }
 
 .player-defense-nametag {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 800;
     color: #fff;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 3px 12px;
-    border-radius: 4px;
-    border: 1px solid rgba(57, 255, 20, 0.4);
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    border: none;
     text-shadow: 0 0 8px rgba(57, 255, 20, 0.8);
+    letter-spacing: 0.8px;
 }
 
 .player-defense-hp-track {
-    width: 140px;
-    height: 8px;
+    width: 120px;
+    height: 7px;
     background: rgba(10, 20, 14, 0.9);
     border: 1px solid rgba(57, 255, 20, 0.4);
     border-radius: 4px;
@@ -1087,7 +1136,7 @@
 }
 
 .player-defense-hp-text {
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 800;
     color: #6ee7b7;
     text-shadow: 0 1px 4px rgba(0,0,0,0.8);
@@ -1095,7 +1144,7 @@
 
 .shooter-hotbar-container {
     position: fixed;
-    bottom: 84px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 105;
@@ -1234,52 +1283,84 @@
     gap: 10px;
 }
 
-.shooter-coins-badge {
+.shooter-wave-badge {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(14, 24, 18, 0.92);
-    border: 1px solid rgba(234, 179, 8, 0.5);
+    background: rgba(14, 24, 18, 0.94);
+    border: 1px solid rgba(56, 189, 248, 0.6);
     border-radius: 12px;
     padding: 7px 14px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(234, 179, 8, 0.25);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(56, 189, 248, 0.25);
     backdrop-filter: blur(8px);
     font-family: 'JetBrains Mono', 'Consolas', monospace;
-}
-
-.coins-icon {
-    font-size: 16px;
-    filter: drop-shadow(0 0 6px #eab308);
-}
-
-.coins-amount {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 900;
-    color: #fbbf24;
+    color: #38bdf8;
     letter-spacing: 0.5px;
 }
 
-.shooter-shop-btn {
+.wave-icon {
+    font-size: 15px;
+    filter: drop-shadow(0 0 6px #38bdf8);
+}
+
+.shooter-ammo-badge {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(57, 255, 20, 0.2));
-    border: 1px solid #39ff14;
+    background: rgba(14, 24, 18, 0.94);
+    border: 1px solid rgba(57, 255, 20, 0.5);
     border-radius: 12px;
     padding: 7px 14px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(57, 255, 20, 0.2);
     backdrop-filter: blur(8px);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 13px;
+    font-weight: 900;
+    color: #39ff14;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
 }
 
-.shooter-shop-btn:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.5), rgba(57, 255, 20, 0.4));
-    box-shadow: 0 8px 25px rgba(57, 255, 20, 0.4);
+.shooter-ammo-badge.is-reloading {
+    border-color: #f59e0b;
+    color: #fbbf24;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    animation: reloadPulse 0.8s infinite alternate;
+}
+
+.shooter-ammo-badge.is-empty {
+    border-color: #ef4444;
+    color: #ef4444;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes reloadPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.04); }
+}
+
+.ammo-icon {
+    font-size: 15px;
+}
+
+.weapon-slot-ammo {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 8.5px;
+    font-weight: 800;
+    font-family: monospace;
+    color: #6ee7b7;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+
+.weapon-slot-ammo.reloading {
+    color: #fbbf24;
+    animation: reloadPulse 0.6s infinite alternate;
 }
 
 .shooter-toggle-btn {
@@ -1319,178 +1400,56 @@
     box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
 }
 
-/* Shop Modal Window */
-.shooter-shop-overlay {
+/* Active Buffs Bar */
+.active-buffs-bar {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(4, 8, 6, 0.82);
-    backdrop-filter: blur(10px);
-    z-index: 9999;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 106;
     display: flex;
     align-items: center;
-    justify-content: center;
-    opacity: 0;
+    gap: 8px;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+    user-select: none;
 }
 
-.shooter-shop-overlay.visible {
-    opacity: 1;
-    pointer-events: all;
-}
-
-.shooter-shop-window {
-    width: 680px;
-    max-width: 92vw;
-    max-height: 85vh;
-    background: rgba(12, 20, 15, 0.96);
-    border: 1.5px solid rgba(57, 255, 20, 0.4);
-    border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(57, 255, 20, 0.25);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    animation: consolePop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.shooter-shop-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    background: rgba(18, 30, 22, 0.8);
-    border-bottom: 1px solid rgba(57, 255, 20, 0.25);
-}
-
-.shooter-shop-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 15px;
-    font-weight: 900;
-    color: #39ff14;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.shooter-shop-close {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-}
-
-.shooter-shop-close:hover {
-    color: #ff4757;
-    background: rgba(255, 71, 87, 0.15);
-}
-
-.shooter-shop-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.shop-section-title {
-    font-size: 11px;
-    font-weight: 800;
-    color: #6ee7b7;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.shop-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
-}
-
-.upgrade-card {
-    background: rgba(18, 28, 22, 0.7);
-    border: 1px solid rgba(57, 255, 20, 0.2);
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: all 0.2s ease;
-}
-
-.upgrade-card:hover {
-    border-color: rgba(57, 255, 20, 0.45);
-    background: rgba(24, 38, 28, 0.85);
-}
-
-.upgrade-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.upgrade-name {
-    font-size: 13px;
-    font-weight: 800;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.upgrade-level-badge {
-    font-size: 10px;
-    font-weight: 700;
-    color: #39ff14;
-    background: rgba(57, 255, 20, 0.15);
-    padding: 1px 6px;
-    border-radius: 4px;
-}
-
-.upgrade-desc {
-    font-size: 11px;
-    color: #94a3b8;
-}
-
-.upgrade-buy-btn {
+.buff-pill {
     display: flex;
     align-items: center;
     gap: 5px;
-    background: linear-gradient(135deg, #10b981, #059669);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(10, 18, 14, 0.92);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    animation: buffPop 0.25s ease-out;
 }
 
-.upgrade-buy-btn:hover:not(:disabled) {
-    transform: scale(1.04);
-    background: linear-gradient(135deg, #34d399, #10b981);
-    box-shadow: 0 6px 16px rgba(57, 255, 20, 0.4);
+@keyframes buffPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
-.upgrade-buy-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    background: #334155;
-    box-shadow: none;
+.buff-pill.buff-rapid {
+    border: 1px solid #fbbf24;
+    color: #fbbf24;
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
+}
+
+.buff-pill.buff-damage {
+    border: 1px solid #ef4444;
+    color: #f87171;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
+}
+
+.buff-pill.buff-shield {
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
 }
 
 /* Screen Shake Effect */
@@ -1503,7 +1462,9 @@
     100% { transform: translate(0, 0); }
 }
 
-.screen-shaking {
-    animation: screenShake 0.22s ease-in-out;
+.shooter-canvas-container.screen-shaking,
+#main-content.screen-shaking {
+    animation: screenShake 0.18s ease-in-out;
 }
+
 

@@ -342,7 +342,6 @@ async function init() {
 
     updateLoaderStatus(90, 'Загрузка новостей и сервера...');
     // 6. Load news, changelog and start status checker
-    console.log('[INIT STEP 8] Loading news, changelog and server status...');
     await Promise.allSettled([
         loadNews(),
         loadChangelogHistory(),
@@ -351,10 +350,8 @@ async function init() {
             setTimeout(resolve, 150);
         })
     ]);
-    console.log('[INIT STEP 8] News, changelog and status loaded');
     
     updateLoaderStatus(100, 'Готово!');
-    console.log('[INIT COMPLETE] Launcher initialization complete!');
     logToConsole('[LAUNCHER] Initialization complete. All modules pre-loaded.');
     
     // Smoothly fade out splash loading screen
