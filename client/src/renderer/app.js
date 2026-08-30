@@ -15,6 +15,7 @@ import {
     createSideBurst
 } from './ui/effects/index.js';
 import { initAllEasterEggs } from './features/easter-eggs/index.js';
+import { initWardrobeModal } from './features/skin-viewer/index.js';
 
 // === Feature Imports ===
 import { 
@@ -286,6 +287,7 @@ async function init() {
     initConsoleActions();
     initSettingsButton();
     initChangelog();
+    initWardrobeModal();
     initAuthHandlers();
     initProgressHandlers();
     initGameButtons();

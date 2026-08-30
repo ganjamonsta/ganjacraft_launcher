@@ -5,6 +5,7 @@
 
 import * as skinview3d from 'skinview3d';
 import { dom } from '../../utils/dom.js';
+import { equipmentManager } from './equipment-manager.js';
 
 const STORAGE_KEY_MODE = 'ganja_skin_viewer_mode';
 const SKIN_BASE_URL = 'https://launcher.ganj4craft.ru/api/skins';
@@ -142,10 +143,22 @@ async function render3dSkin(username) {
                 skinViewer3d.loadCape(null);
             }
         }
+
+        // Применяем 3D экипировку, оружие и броню
+        equipmentManager.applyToViewer(skinViewer3d);
     } catch (err) {
         console.warn('[SkinViewer3D] Error loading 3D skin:', err);
         // Fallback to 2D
         render2dSkin(username);
+    }
+}
+
+/**
+ * Принудительное обновление 3D экипировки персонажа
+ */
+export function refreshCharacterEquipment() {
+    if (skinViewer3d && currentMode === '3d') {
+        equipmentManager.applyToViewer(skinViewer3d);
     }
 }
 
