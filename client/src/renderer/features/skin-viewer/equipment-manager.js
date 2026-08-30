@@ -423,6 +423,16 @@ class EquipmentManager {
                 const weaponMesh = await this.buildWeaponMesh(item);
                 if (weaponMesh) {
                     if (rig && rig.sockets && rig.sockets.mainHand) {
+                        // Точное позиционирование в ладони сустава кисти
+                        if (item.geoGunId === 'minigun') {
+                            weaponMesh.position.set(0, 0.2, 0.6);
+                        } else if (item.geoGunId === 'rpg7') {
+                            weaponMesh.position.set(0, 0.4, 0.8);
+                        } else if (item.geoGunId === 'glock_17' || item.geoGunId === 'deagle') {
+                            weaponMesh.position.set(0, 0, 0.4);
+                        } else {
+                            weaponMesh.position.set(0, 0, 0.5);
+                        }
                         rig.sockets.mainHand.add(weaponMesh);
                     } else if (skin && skin.rightArm) {
                         skin.rightArm.add(weaponMesh);

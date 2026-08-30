@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import * as skinview3d from 'skinview3d';
 import { dom } from '../../utils/dom.js';
 import { equipmentManager } from './equipment-manager.js';
+import { BedrockPlayerRig } from './bedrock-player-rig.js';
+import { poseAnimator } from './pose-animator.js';
 
 const STORAGE_KEY_MODE = 'ganja_skin_viewer_mode';
 const SKIN_BASE_URL = 'https://launcher.ganj4craft.ru/api/skins';
@@ -93,7 +95,7 @@ export async function setSkinViewerMode(mode) {
 }
 
 /**
- * Рендер 3D скина через skinview3d
+ * Рендер 3D скина через skinview3d и суставной BedrockPlayerRig
  */
 async function render3dSkin(username) {
     const canvas3d = dom.get('skin-canvas-3d');
@@ -125,43 +127,35 @@ async function render3dSkin(username) {
             skinViewer3d.camera.position.set(-2, 0, 78);
             skinViewer3d.zoom = 0.70;
 
+            // ── ПОДКЛЮЧЕНИЕ СУСТАВНОГО СКЕЛЕТА BEDROCK RIG ──
+            const bedrockRig = new BedrockPlayerRig();
+            skinViewer3d.bedrockRig = bedrockRig;
+
             if (skinViewer3d.playerObject) {
                 skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
                 skinViewer3d.playerObject.rotation.y = 0.38;
+                skinViewer3d.playerObject.add(bedrockRig.root);
+                // Скрываем базовый недеформируемый 6-блочный меш
+                if (skinViewer3d.playerObject.skin) {
+                    skinViewer3d.playerObject.skin.visible = false;
+                    skinViewer3d.playerObject.skin.traverse(o => { if (o.isMesh) o.visible = false; });
+                }
             }
 
-            // Тактическая анимация: руки держат оружие, тело и голова следят за курсором
+            // Загрузка текстуры скина на суставной скелет
+            new THREE.TextureLoader().load(skinUrl, (texture) => {
+                bedrockRig.applySkinTexture(texture);
+                equipmentManager.applyToViewer(skinViewer3d);
+            });
+
+            // Тактическая суставная анимация: сгибы локтей, коленей, оружие, дыхание и курсор
             skinViewer3d.animation = new skinview3d.FunctionAnimation((player, progress) => {
                 const t = progress * 1.5;
-                if (!player || !player.skin) return;
+                if (!player) return;
 
-                // Если активен шутер во время загрузки — держим оружие прямо перед собой в Top-Down стойке
-                if (document.body.classList.contains('is-shooter-active')) {
-                    const weaponId = equipmentManager.getSlot('mainHand');
-                    if (player.skin.head) {
-                        player.skin.head.rotation.set(0, 0, 0);
-                    }
-                    if (player.skin.rightArm) {
-                        if (weaponId === 'tacz_minigun') {
-                            player.skin.rightArm.rotation.set(-0.95, -0.15, 0.08);
-                        } else if (weaponId === 'tacz_rpg7') {
-                            player.skin.rightArm.rotation.set(-Math.PI / 2.05, -0.20, 0.08);
-                        } else {
-                            player.skin.rightArm.rotation.set(-Math.PI / 2, -0.22, 0.08);
-                        }
-                    }
-                    if (player.skin.leftArm) {
-                        if (weaponId === 'tacz_minigun') {
-                            player.skin.leftArm.rotation.set(-1.25, 0.65, -0.30);
-                        } else if (weaponId === 'tacz_rpg7') {
-                            player.skin.leftArm.rotation.set(-Math.PI / 2.05, 0.70, -0.30);
-                        } else {
-                            player.skin.leftArm.rotation.set(-Math.PI / 2.08, 0.75, -0.32);
-                        }
-                    }
-                    if (player.skin.rightLeg) player.skin.rightLeg.rotation.set(0, 0, 0);
-                    if (player.skin.leftLeg) player.skin.leftLeg.rotation.set(0, 0, 0);
-                    return;
+                if (player.skin && player.skin.visible) {
+                    player.skin.visible = false;
+                    player.skin.traverse(o => { if (o.isMesh) o.visible = false; });
                 }
 
                 // Плавная интерполяция к целевым углам курсора (lerp)
@@ -169,77 +163,23 @@ async function render3dSkin(username) {
                 currentHeadY += (targetHeadY - currentHeadY) * 0.12;
                 currentBodyY += (targetBodyY - currentBodyY) * 0.10;
 
-                // Поворот всего тела к центру экрана и за курсором
-                player.rotation.y = currentBodyY;
-
-                // Дыхание и поворот головы
-                if (player.skin.head) {
-                    player.skin.head.rotation.y = currentHeadY + Math.sin(t * 0.5) * 0.03;
-                    player.skin.head.rotation.x = currentHeadX + Math.sin(t * 0.3) * 0.02;
-                }
-
                 const weaponId = equipmentManager.getSlot('mainHand');
-                const hasWeapon = weaponId !== 'none';
-                const breath = Math.sin(t * 0.8) * 0.015;
 
-                // 1. Поза правой руки
-                if (player.skin.rightArm) {
-                    if (weaponId === 'tacz_minigun') {
-                        // Тяжелая поза минигана (стрельба от бедра)
-                        player.skin.rightArm.rotation.x = -0.75 + breath;
-                        player.skin.rightArm.rotation.y = -0.15;
-                        player.skin.rightArm.rotation.z = 0.10;
-                    } else if (weaponId === 'tacz_rpg7') {
-                        // РПГ на плече
-                        player.skin.rightArm.rotation.x = -Math.PI / 2.10 + breath;
-                        player.skin.rightArm.rotation.y = -0.22;
-                        player.skin.rightArm.rotation.z = 0.10;
-                    } else if (weaponId === 'tacz_glock17' || weaponId === 'tacz_deagle') {
-                        // Одноручный хват пистолета
-                        player.skin.rightArm.rotation.x = -Math.PI / 2.20 + breath;
-                        player.skin.rightArm.rotation.y = -0.08;
-                        player.skin.rightArm.rotation.z = 0.04;
-                    } else if (hasWeapon) {
-                        // АК-47, Vector, AWP, Spas-12: сведенные руки в боевой хват
-                        player.skin.rightArm.rotation.x = -Math.PI / 2.15 + breath;
-                        player.skin.rightArm.rotation.y = -0.35;
-                        player.skin.rightArm.rotation.z = 0.12;
-                    } else {
-                        // Свободная рука
-                        player.skin.rightArm.rotation.x = Math.sin(t * 0.6) * 0.04;
-                        player.skin.rightArm.rotation.y = 0;
-                        player.skin.rightArm.rotation.z = 0.02;
+                // Если активен шутер во время загрузки — держим оружие прямо перед собой в Top-Down стойке
+                if (document.body.classList.contains('is-shooter-active')) {
+                    if (skinViewer3d.bedrockRig) {
+                        skinViewer3d.bedrockRig.root.rotation.set(0, 0, 0);
                     }
+                    return;
                 }
 
-                // 2. Поза левой руки (поддержка оружия)
-                if (player.skin.leftArm) {
-                    if (weaponId === 'tacz_minigun') {
-                        // Левая рука крепко держит верхнюю рукоять минигана сверху
-                        player.skin.leftArm.rotation.x = -1.18 + breath;
-                        player.skin.leftArm.rotation.y = 0.85;
-                        player.skin.leftArm.rotation.z = -0.30;
-                    } else if (weaponId === 'tacz_rpg7') {
-                        // Левая рука держит переднюю ручку РПГ
-                        player.skin.leftArm.rotation.x = -1.28 + breath;
-                        player.skin.leftArm.rotation.y = 0.92;
-                        player.skin.leftArm.rotation.z = -0.25;
-                    } else if (weaponId === 'tacz_glock17' || weaponId === 'tacz_deagle') {
-                        // Тактический хват пистолета двумя руками
-                        player.skin.leftArm.rotation.x = -1.35 + breath;
-                        player.skin.leftArm.rotation.y = 0.72;
-                        player.skin.leftArm.rotation.z = -0.20;
-                    } else if (hasWeapon) {
-                        // АК-47, Vector, AWP, Spas-12: левая рука плотно прижимается к цевью оружия
-                        player.skin.leftArm.rotation.x = -1.22 + breath;
-                        player.skin.leftArm.rotation.y = 1.05;
-                        player.skin.leftArm.rotation.z = -0.20;
-                    } else {
-                        // Свободная рука
-                        player.skin.leftArm.rotation.x = -Math.sin(t * 0.6) * 0.04;
-                        player.skin.leftArm.rotation.y = 0;
-                        player.skin.leftArm.rotation.z = -0.02;
-                    }
+                // Обновляем суставную позу через PoseAnimator
+                if (skinViewer3d.bedrockRig) {
+                    poseAnimator.update(skinViewer3d.bedrockRig, weaponId, t, {
+                        headX: currentHeadX,
+                        headY: currentHeadY,
+                        bodyY: currentBodyY
+                    });
                 }
 
                 // Плащ
@@ -258,6 +198,12 @@ async function render3dSkin(username) {
             }
         } else {
             await skinViewer3d.loadSkin(skinUrl);
+            new THREE.TextureLoader().load(skinUrl, (texture) => {
+                if (skinViewer3d.bedrockRig) {
+                    skinViewer3d.bedrockRig.applySkinTexture(texture);
+                    equipmentManager.applyToViewer(skinViewer3d);
+                }
+            });
             if (skinViewer3d.playerObject) {
                 skinViewer3d.playerObject.position.set(-3.5, -1.0, 0);
                 skinViewer3d.playerObject.rotation.y = 0.38;
