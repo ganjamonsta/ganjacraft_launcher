@@ -5,10 +5,9 @@
 
 import { dom } from '../../utils/dom.js';
 import { FILES_BASE } from '../../constants.js';
-import { MOD_GROUPS, SUB_CATEGORIES } from './mod-groups.js';
+import { MOD_GROUPS, CATEGORY_ORDER } from './mod-groups.js';
 
 let cachedManifest = null;
-let currentSubTab = 'ОПЦИОНАЛЬНЫЕ';
 let searchQuery = '';
 let allGroupItems = [];
 
@@ -22,11 +21,10 @@ function getModStem(filePath) {
 }
 
 const LEGACY_GROUP_ALIASES = {
-    etf: 'etf_emf_cit',
-    emf: 'etf_emf_cit',
-    etf_emf: 'etf_emf_cit',
-    cit_resewn: 'etf_emf_cit',
-    forgematica_printer: 'forgematica'
+    etf_emf_cit: 'etf',
+    cit_resewn: 'etf',
+    etf_emf: 'etf',
+    oculus: 'iris'
 };
 
 function isModDisabled(filePath, disabledMods = []) {
@@ -131,7 +129,7 @@ export async function loadModsList(disabledMods = [], config = {}, forceReload =
                 name: group.name,
                 shortName: group.shortName || group.name,
                 version: group.version || '1.0.0',
-                subCategory: group.subCategory || 'Оптимизация',
+                subCategory: group.subCategory || 'Остальное',
                 icon: group.icon || 'gear',
                 dependsOn: group.dependsOn || null,
                 description: group.description,
@@ -164,7 +162,7 @@ export async function loadModsList(disabledMods = [], config = {}, forceReload =
             name: prettyName,
             shortName: prettyName,
             version: '1.0.0',
-            subCategory: 'Механики',
+            subCategory: 'Остальное',
             icon: 'block',
             dependsOn: null,
             description: `Дополнительный мод (${fileName})`,
@@ -185,142 +183,7 @@ export async function loadModsList(disabledMods = [], config = {}, forceReload =
         }
     });
 
-    setupSubtabsListeners();
     renderModsGrid();
-    if (cachedManifest) {
-        renderLinksCatalog(cachedManifest);
-    }
-}
-
-let subtabTransitionTimer = null;
-
-function setupSubtabsListeners() {
-    const subtabsContainer = dom.get('mods-subtabs');
-    if (!subtabsContainer || subtabsContainer.dataset.bound) return;
-    subtabsContainer.dataset.bound = 'true';
-
-    subtabsContainer.addEventListener('click', (e) => {
-        const btn = e.target.closest('.unified-btn');
-        if (!btn) return;
-
-        const subtab = btn.dataset.subtab;
-        if (!subtab || subtab === currentSubTab) return;
-
-        const prevSubtab = currentSubTab;
-        currentSubTab = subtab;
-
-        const subtabOrder = ['ОПЦИОНАЛЬНЫЕ', 'КАТАЛОГ ССЫЛОК'];
-        const prevIndex = subtabOrder.indexOf(prevSubtab);
-        const newIndex = subtabOrder.indexOf(subtab);
-        const direction = newIndex > prevIndex ? 'right' : 'left';
-
-        const enterAnim = direction === 'right' ? 'subtab-enter-right' : 'subtab-enter-left';
-        const exitAnim = direction === 'right' ? 'subtab-exit-left' : 'subtab-exit-right';
-
-        subtabsContainer.querySelectorAll('.unified-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const gridView = dom.get('mods-grid-container');
-        const catalogView = dom.get('mods-catalog-container');
-
-        const outgoingView = subtab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
-        const incomingView = subtab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
-
-        if (subtabTransitionTimer) {
-            clearTimeout(subtabTransitionTimer);
-            subtabTransitionTimer = null;
-        }
-
-        // 1. Очищаем анимационные классы со всех контейнеров при быстрой смене
-        [gridView, catalogView].forEach(v => {
-            if (v) {
-                v.classList.remove(
-                    'subtab-entering', 'subtab-exiting',
-                    'subtab-enter-right', 'subtab-enter-left',
-                    'subtab-exit-right', 'subtab-exit-left'
-                );
-            }
-        });
-
-        // 2. Включаем целевую вкладку
-        if (incomingView) {
-            incomingView.classList.remove('hidden');
-            incomingView.classList.add('subtab-entering', enterAnim);
-            if (subtab === 'КАТАЛОГ ССЫЛОК') {
-                renderLinksCatalog(cachedManifest);
-            } else {
-                renderModsGrid();
-            }
-        }
-
-        // 3. Плавно уводим уходящую вкладку
-        if (outgoingView && !outgoingView.classList.contains('hidden')) {
-            outgoingView.classList.add('subtab-exiting', exitAnim);
-        }
-
-        // 4. Гарантированная детерминированная зачистка на основе реального текущего currentSubTab
-        subtabTransitionTimer = setTimeout(() => {
-            const activeView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? catalogView : gridView;
-            const inactiveView = currentSubTab === 'КАТАЛОГ ССЫЛОК' ? gridView : catalogView;
-
-            if (inactiveView) {
-                inactiveView.classList.add('hidden');
-                inactiveView.classList.remove('subtab-exiting', 'subtab-exit-left', 'subtab-exit-right');
-            }
-
-            if (activeView) {
-                activeView.classList.remove('hidden', 'subtab-entering', 'subtab-enter-right', 'subtab-enter-left');
-            }
-
-            subtabTransitionTimer = null;
-        }, 280);
-    });
-
-    const searchInput = dom.get('mods-search-input');
-    const clearBtn = dom.get('mods-search-clear-btn');
-
-    function updateSearchUI() {
-        const val = searchInput ? searchInput.value.trim() : '';
-        if (clearBtn) {
-            const mag = clearBtn.querySelector('.search-icon-magnifier');
-            const clr = clearBtn.querySelector('.search-icon-clear');
-            if (val.length > 0) {
-                if (mag) mag.classList.add('hidden');
-                if (clr) clr.classList.remove('hidden');
-            } else {
-                if (clr) clr.classList.add('hidden');
-                if (mag) mag.classList.remove('hidden');
-            }
-        }
-    }
-
-    function triggerSearchUpdate() {
-        if (currentSubTab === 'КАТАЛОГ ССЫЛОК') {
-            renderLinksCatalog(cachedManifest, true);
-        } else {
-            renderModsGrid();
-        }
-    }
-
-    if (searchInput) {
-        searchInput.oninput = (e) => {
-            searchQuery = e.target.value.trim().toLowerCase();
-            updateSearchUI();
-            triggerSearchUpdate();
-        };
-    }
-
-    if (clearBtn) {
-        clearBtn.onclick = () => {
-            if (searchInput && searchInput.value) {
-                searchInput.value = '';
-                searchQuery = '';
-                updateSearchUI();
-                searchInput.focus();
-                triggerSearchUpdate();
-            }
-        };
-    }
 }
 
 /**
@@ -332,7 +195,7 @@ export function toggleModState(modId, isChecked) {
 
     mod.checked = isChecked;
 
-    // Синхронизируем состояние чекбокса в DOM без перерисовки всего контейнера
+    // Синхронизируем состояние чекбокса в DOM без полной перерисовки страницы
     const grid = dom.get('mods-grid');
     if (grid) {
         const input = grid.querySelector(`input[data-id="${modId}"]`);
@@ -348,6 +211,9 @@ export function toggleModState(modId, isChecked) {
                 addonsContainer.classList.add('parent-disabled');
             }
         }
+
+        // Обновляем счётчик активных модов
+        updateActiveCounterDisplay();
     }
 
     if (isChecked) {
@@ -367,8 +233,17 @@ export function toggleModState(modId, isChecked) {
     }
 }
 
+function updateActiveCounterDisplay() {
+    const counter = document.getElementById('mods-active-counter');
+    if (counter) {
+        const total = allGroupItems.length;
+        const enabled = allGroupItems.filter(i => i.checked).length;
+        counter.textContent = `${enabled} / ${total} активно`;
+    }
+}
+
 /**
- * Индивидуальные SVG иконки для каждого мода
+ * Индивидуальные SVG иконки для каждого типа мода
  */
 function getModItemSVG(iconType) {
     switch (iconType) {
@@ -376,16 +251,28 @@ function getModItemSVG(iconType) {
             return `<svg class="setting-icon" style="color: #4CAF50;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
         case 'cloud':
             return `<svg class="setting-icon" style="color: #64b5f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>`;
+        case 'brush':
+            return `<svg class="setting-icon" style="color: #ba68c8;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92.92 2.07 1.06 3 1.06 2.76 0 5-2.24 5-5 0-.58-.1-1.13-.27-1.64"/></svg>`;
+        case 'leaf':
+            return `<svg class="setting-icon" style="color: #81c784;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`;
+        case 'monitor':
+            return `<svg class="setting-icon" style="color: #29b6f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>`;
         case 'eye':
-            return `<svg class="setting-icon" style="color: #ba68c8;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-        case 'map':
-            return `<svg class="setting-icon" style="color: #ffb74d;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>`;
-        case 'gamepad':
-            return `<svg class="setting-icon" style="color: #81c784;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="11" r="1"/><circle cx="18" cy="13" r="1"/></svg>`;
-        case 'swords':
-            return `<svg class="setting-icon" style="color: #e57373;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/></svg>`;
+            return `<svg class="setting-icon" style="color: #ab47bc;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
         case 'block':
             return `<svg class="setting-icon" style="color: #4dd0e1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+        case 'keyboard':
+            return `<svg class="setting-icon" style="color: #ffa726;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>`;
+        case 'mouse':
+            return `<svg class="setting-icon" style="color: #26a69a;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="7"/><line x1="12" x2="12" y1="6" y2="10"/></svg>`;
+        case 'award':
+            return `<svg class="setting-icon" style="color: #ffca28;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`;
+        case 'camera':
+            return `<svg class="setting-icon" style="color: #42a5f5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>`;
+        case 'user':
+            return `<svg class="setting-icon" style="color: #7e57c2;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        case 'blueprint':
+            return `<svg class="setting-icon" style="color: #26c6da;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24a1.48 1.48 0 0 0-1.55 0L3 6"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>`;
         case 'gear':
         default:
             return `<svg class="setting-icon" style="color: #a1a8b5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`;
@@ -400,13 +287,14 @@ function getCategoryIconId(catName) {
         case 'ОПТИМИЗАЦИЯ': return '#icon-game';
         case 'ГРАФИКА': return '#icon-appearance';
         case 'ИНТЕРФЕЙС': return '#icon-wrench';
-        case 'МЕХАНИКИ': return '#icon-folder';
+        case 'КАМЕРА': return '#icon-hide';
+        case 'СТРОИТЕЛЬСТВО': return '#icon-folder';
         default: return '#icon-game';
     }
 }
 
 /**
- * Отрендерить единую одностраничную таблицу модов (Опциональные моды + Поиск + Полный список)
+ * Отрендерить единую страницу модов (Опциональные моды + Поиск + Полный список внизу)
  */
 export function renderModsGrid() {
     const grid = dom.get('mods-grid');
@@ -431,16 +319,22 @@ export function renderModsGrid() {
 
     const fragment = document.createDocumentFragment();
 
-    // 1. КАРТОЧКА ПОИСКА МОДОВ (Top-Right Card, без лишних кнопок)
+    // 1. КАРТОЧКА ПОИСКА МОДОВ (Размещается вверху правой колонки)
+    const totalOptional = allGroupItems.length;
+    const enabledOptional = allGroupItems.filter(i => i.checked).length;
+
     const searchCard = document.createElement('div');
     searchCard.className = 'settings-category search-card-top';
     searchCard.innerHTML = `
-        <div class="category-header">
-            <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <h4>ПОИСК МОДОВ</h4>
+        <div class="category-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <h4>ПОИСК МОДОВ</h4>
+            </div>
+            <span class="mods-active-counter" id="mods-active-counter">${enabledOptional} / ${totalOptional} активно</span>
         </div>
         <div class="category-content" style="padding: 12px 14px;">
             <div class="search-input-wrapper" style="width: 100%;">
@@ -465,10 +359,31 @@ export function renderModsGrid() {
     // Помещаем Поиск первым в правую колонку
     colRight.appendChild(searchCard);
 
+    // Сортировка категорий
+    const sortedCats = Object.keys(groupsMap).sort((a, b) => {
+        const idxA = CATEGORY_ORDER.indexOf(a);
+        const idxB = CATEGORY_ORDER.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+    });
+
+    if (query && filteredMods.length === 0) {
+        const emptyNotice = document.createElement('div');
+        emptyNotice.className = 'settings-category';
+        emptyNotice.innerHTML = `
+            <div class="category-content" style="padding: 24px; text-align: center; color: var(--gc-text-subtle, #7a808c); font-size: 13px;">
+                Опциональные моды по запросу «${query}» не найдены
+            </div>
+        `;
+        colLeft.appendChild(emptyNotice);
+    }
+
     // Распределяем категории по колонкам:
-    // Левая:  ОПТИМИЗАЦИЯ, ГРАФИКА
-    // Правая: ПОИСК МОДОВ, ИНТЕРФЕЙС, МЕХАНИКИ
-    Object.keys(groupsMap).forEach(catName => {
+    // Левая:  Оптимизация, Графика
+    // Правая: Поиск модов, Интерфейс, Камера, Строительство, Остальное
+    sortedCats.forEach(catName => {
         const categoryMods = groupsMap[catName];
         if (categoryMods.length === 0) return;
 
@@ -480,7 +395,7 @@ export function renderModsGrid() {
         header.className = 'category-header';
         header.innerHTML = `
             <svg class="category-icon"><use href="${iconId}"/></svg>
-            <h4>${catName}</h4>
+            <h4>${catName.toUpperCase()}</h4>
         `;
         categoryCard.appendChild(header);
 
@@ -535,13 +450,13 @@ export function renderModsGrid() {
                 addonsContainer.className = `mod-addons-container ${!mod.checked ? 'parent-disabled' : ''}`;
                 addonsContainer.dataset.parentId = mod.id;
 
-                const header = document.createElement('div');
-                header.className = 'mod-addons-header';
-                header.innerHTML = `
+                const addonsHeader = document.createElement('div');
+                addonsHeader.className = 'mod-addons-header';
+                addonsHeader.innerHTML = `
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
                     <span>АДДОНЫ И МОДУЛИ ДЛЯ ${mod.shortName.toUpperCase()}</span>
                 `;
-                addonsContainer.appendChild(header);
+                addonsContainer.appendChild(addonsHeader);
 
                 children.forEach(child => {
                     processedIds.add(child.id);
@@ -570,7 +485,7 @@ export function renderModsGrid() {
         categoryCard.appendChild(content);
 
         const upperCat = catName.toUpperCase();
-        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА' || upperCat === 'ПРОЧЕЕ') {
+        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА') {
             colLeft.appendChild(categoryCard);
         } else {
             colRight.appendChild(categoryCard);
@@ -626,8 +541,6 @@ export function renderModsGrid() {
 function setupSearchCardEvents() {
     const searchInput = document.getElementById('mods-search-input');
     const clearBtn = document.getElementById('mods-search-clear-btn');
-    const enableAllBtn = document.getElementById('btn-enable-all-mods');
-    const disableAllBtn = document.getElementById('btn-disable-all-mods');
 
     if (searchInput) {
         searchInput.oninput = (e) => {
@@ -645,21 +558,16 @@ function setupSearchCardEvents() {
         clearBtn.onclick = () => {
             searchQuery = '';
             renderModsGrid();
+            const newSearchInput = document.getElementById('mods-search-input');
+            if (newSearchInput) {
+                newSearchInput.focus();
+            }
         };
-    }
-
-    if (enableAllBtn) {
-        enableAllBtn.onclick = () => setAllModsState(true);
-    }
-
-    if (disableAllBtn) {
-        disableAllBtn.onclick = () => setAllModsState(false);
     }
 }
 
 let cachedCatalogData = null;
 let lastCatalogManifest = null;
-let lastRenderedQuery = null;
 let currentRenderedIndex = 0;
 let filteredCatalogItems = [];
 const BATCH_SIZE = 25;
@@ -765,7 +673,7 @@ function renderLinksCatalogIntoContainer(manifest, contentContainer, query = '')
             return {
                 fileName,
                 cleanName: groupMatch ? groupMatch.name : cleanName,
-                isOptional: !!groupMatch,
+                isOptional: !!file.optional,
                 downloadUrl,
                 modrinthUrl: (file.hash && resolvedModrinthUrls[file.hash.toLowerCase()]) 
                              ? resolvedModrinthUrls[file.hash.toLowerCase()] 
@@ -833,6 +741,7 @@ export function setAllModsState(isChecked) {
         grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             cb.checked = isChecked;
         });
+        updateActiveCounterDisplay();
     }
 }
 

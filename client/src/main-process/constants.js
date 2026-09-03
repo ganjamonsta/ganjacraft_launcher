@@ -85,26 +85,11 @@ function getMirrorFallbackUrl(url) {
 
 // Default disabled optional mods (filename patterns)
 const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
-    // FancyMenu stack
-    'client-fancymenu',
-    'client-konkrete',
-    'client-melody',
-
-    // Gamepad/motor assistance stack
-    'client-motorassistance',
-    'client-controllable',
-    'client-framework',
-
-    // Forgematica (schematics)
+    // Forgematica & Printer (schematics)
+    'client-forgematica',
     'client-Forgematica',
-    'client-MaFgLib',
-    'client-badpackets',
-    'client-NeoForgematicaPrinter',
-
-    // LAN Properties
-    'client-lanserverproperties',
-    'client_lanserverproperties',
-    'lanserverproperties',
+    'client-neoforgematicaprinter',
+    'client-NeoForgematicaPrinter'
 ];
 
 // JVM optimization arguments
