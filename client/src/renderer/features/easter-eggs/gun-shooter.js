@@ -11,96 +11,33 @@ import { audioSynth } from './audio-synth.js';
 import { taczAudio } from './tacz-audio.js';
 import { dom } from '../../utils/dom.js';
 
-// Аутентичный арсенал оружия TACZ (доступен сразу, бесконечные патроны)
+// Арсенал мини-игры: тяжелый пулемет Minigun и гранатомет RPG-7
 export const WEAPONS = {
-    deagle: {
-        id: 'deagle',
-        name: 'Desert Eagle .50',
+    minigun: {
+        id: 'minigun',
+        name: 'Minigun M134',
         key: '1',
-        icon: 'assets/tacz/hud/deagle.png',
+        icon: 'assets/tacz/hud/minigun.png',
         isImg: true,
-        damage: 45,
-        cooldown: 220,
-        speed: 36,
-        color: '#ffdd00',
-        desc: 'Пистолет .50 AE — высокий урон и точность'
-    },
-    spas_12: {
-        id: 'spas_12',
-        name: 'SPAS-12',
-        key: '2',
-        icon: 'assets/tacz/hud/spas_12.png',
-        isImg: true,
-        damage: 18,
-        pellets: 6,
-        spread: 0.22,
-        cooldown: 450,
-        speed: 30,
-        color: '#ff8800',
-        desc: 'Дробовик — дробь по площади'
-    },
-    ak47: {
-        id: 'ak47',
-        name: 'AK-47',
-        key: '3',
-        icon: 'assets/tacz/hud/ak47.png',
-        isImg: true,
-        damage: 28,
-        cooldown: 110,
-        speed: 38,
-        color: '#39ff14',
-        desc: 'Автомат Калашникова — классический зажим'
-    },
-    vector45: {
-        id: 'vector45',
-        name: 'Vector .45',
-        key: '4',
-        icon: 'assets/tacz/hud/vector45.png',
-        isImg: true,
-        damage: 18,
-        cooldown: 60,
-        speed: 42,
-        color: '#00f2fe',
-        desc: 'Пистолет-пулемет — бешеная скорострельность'
-    },
-    awp: {
-        id: 'awp',
-        name: 'AWP Sniper',
-        key: '5',
-        icon: 'assets/tacz/hud/ai_awp.png',
-        isImg: true,
-        damage: 200,
-        cooldown: 750,
-        speed: 60,
-        color: '#a855f7',
-        isPiercing: true,
-        desc: 'Снайперка AWP — ваншот и пробитие насквозь'
+        damage: 26,
+        cooldown: 40,
+        speed: 46,
+        color: '#ffd700',
+        desc: 'Шестиствольный пулемет — шквал свинца'
     },
     rpg7: {
         id: 'rpg7',
         name: 'RPG-7',
-        key: '6',
+        key: '2',
         icon: 'assets/tacz/hud/rpg7.png',
         isImg: true,
-        damage: 250,
-        aoeRadius: 140,
-        cooldown: 850,
-        speed: 22,
+        damage: 280,
+        aoeRadius: 150,
+        cooldown: 800,
+        speed: 24,
         color: '#ff0055',
         isHoming: true,
         desc: 'РПГ-7 — мощный фугасный взрыв'
-    },
-    minigun: {
-        id: 'minigun',
-        name: 'Minigun',
-        key: '7',
-        icon: 'assets/tacz/hud/minigun.png',
-        isImg: true,
-        damage: 22,
-        cooldown: 40,
-        speed: 44,
-        color: '#ffd700',
-        desc: 'Шестиствольный пулемет — шквал свинца'
     }
 };
 
@@ -131,7 +68,7 @@ class GunShooterEngine {
         this.combo = 1;
         this.maxCombo = 1;
         this.lastHitTime = 0;
-        this.currentWeaponId = 'ak47';
+        this.currentWeaponId = 'minigun';
 
         // Состояние
         this.isEnabled = localStorage.getItem('ganjacraft_shooter_enabled') !== 'false';
@@ -297,34 +234,13 @@ class GunShooterEngine {
                 <span class="ammo-icon">🔥</span>
                 <span id="shooter-combo-display">СЕРИЯ x1</span>
             </div>
-            <button class="shooter-toggle-btn ${!this.isEnabled ? 'is-disabled' : ''}" id="shooter-toggle-btn" title="Включить / Выключить мини-игру">
-                <span id="shooter-toggle-text">${this.isEnabled ? '🎯 ИГРА: ВКЛ' : '🎯 ИГРА: ВЫКЛ'}</span>
-            </button>
         `;
 
         document.body.appendChild(container);
         this.topControlsElem = container;
-
-        const toggleBtn = dom.get('shooter-toggle-btn');
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', () => this.toggleEnabled());
-        }
     }
 
     updateTopControlsView() {
-        const toggleText = dom.get('shooter-toggle-text');
-        if (toggleText) {
-            toggleText.innerText = this.isEnabled ? '🎯 ИГРА: ВКЛ' : '🎯 ИГРА: ВЫКЛ';
-        }
-        const toggleBtn = dom.get('shooter-toggle-btn');
-        if (toggleBtn) {
-            if (this.isEnabled) {
-                toggleBtn.classList.remove('is-disabled');
-            } else {
-                toggleBtn.classList.add('is-disabled');
-            }
-        }
-
         const scoreDisplay = dom.get('shooter-score-display');
         if (scoreDisplay) {
             scoreDisplay.innerText = `ОЧКИ: ${this.score.toLocaleString()}`;
@@ -337,7 +253,7 @@ class GunShooterEngine {
         }
         if (comboBadge) {
             if (this.combo >= 5) {
-                comboBadge.classList.add('is-reloading'); // пульсация
+                comboBadge.classList.add('is-reloading');
             } else {
                 comboBadge.classList.remove('is-reloading');
             }
@@ -364,8 +280,8 @@ class GunShooterEngine {
     handleKeyDown(e) {
         if (!this.isGameLaunching || this.isLogModalOpen || !this.isEnabled) return;
 
-        // Выбор оружия цифровыми клавишами 1-7
-        if (['1', '2', '3', '4', '5', '6', '7'].includes(e.key)) {
+        // Выбор оружия клавишами 1 (Миниган) и 2 (РПГ-7)
+        if (e.key === '1' || e.key === '2') {
             const keys = Object.keys(WEAPONS);
             const index = parseInt(e.key, 10) - 1;
             if (keys[index]) {
@@ -389,45 +305,33 @@ class GunShooterEngine {
     }
 
     attach3DGun() {
-        if (getSkinViewerMode() !== '3d') return;
+        if (!this.isGameLaunching || getSkinViewerMode() !== '3d') return;
         const viewer = getSkinViewer3d();
         if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) {
-            setTimeout(() => this.attach3DGun(), 250);
+            setTimeout(() => {
+                if (this.isGameLaunching) this.attach3DGun();
+            }, 250);
             return;
         }
 
-        const weaponMap = {
-            'deagle': 'tacz_deagle',
-            'spas_12': 'tacz_spas_12',
-            'ak47': 'tacz_ak47',
-            'vector45': 'tacz_vector45',
-            'awp': 'tacz_awp',
-            'rpg7': 'tacz_rpg7',
-            'minigun': 'tacz_minigun'
-        };
-
-        const taczGunId = weaponMap[this.currentWeaponId] || ('tacz_' + this.currentWeaponId);
+        const taczGunId = this.currentWeaponId === 'rpg7' ? 'tacz_rpg7' : 'tacz_minigun';
         equipmentManager.setSlot('mainHand', taczGunId);
         equipmentManager.applyToViewer(viewer);
 
         const rightArm = viewer.playerObject.skin.rightArm;
         const leftArm = viewer.playerObject.skin.leftArm;
         if (rightArm) {
-            if (this.currentWeaponId === 'minigun') {
-                rightArm.rotation.set(-0.95, -0.15, 0.08);
-            } else if (this.currentWeaponId === 'rpg7') {
+            if (this.currentWeaponId === 'rpg7') {
                 rightArm.rotation.set(-Math.PI / 2.05, -0.20, 0.08);
             } else {
-                rightArm.rotation.set(-Math.PI / 2, -0.22, 0.08);
+                rightArm.rotation.set(-0.95, -0.15, 0.08);
             }
         }
         if (leftArm) {
-            if (this.currentWeaponId === 'minigun') {
-                leftArm.rotation.set(-1.25, 0.65, -0.30);
-            } else if (this.currentWeaponId === 'rpg7') {
+            if (this.currentWeaponId === 'rpg7') {
                 leftArm.rotation.set(-Math.PI / 2.05, 0.70, -0.30);
             } else {
-                leftArm.rotation.set(-Math.PI / 2.08, 0.75, -0.32);
+                leftArm.rotation.set(-1.25, 0.65, -0.30);
             }
         }
     }
@@ -511,7 +415,7 @@ class GunShooterEngine {
     }
 
     getCurrentWeapon() {
-        return WEAPONS[this.currentWeaponId] || WEAPONS.ak47;
+        return WEAPONS[this.currentWeaponId] || WEAPONS.minigun;
     }
 
     fireCurrentWeapon(targetX, targetY) {
@@ -530,59 +434,15 @@ class GunShooterEngine {
         const startX = centerX + Math.cos(aimAngle) * barrelOffset;
         const startY = centerY + Math.sin(aimAngle) * barrelOffset;
 
-        if (this.bullets.length >= 60) {
-            this.bullets.splice(0, this.bullets.length - 45);
+        // Пул пуль: если превысили лимит, удаляем старейшие
+        if (this.bullets.length >= 70) {
+            this.bullets.splice(0, 15);
         }
 
         const isCrit = Math.random() < 0.15;
-        const finalDamage = Math.round(weapon.damage * (isCrit ? 2.2 : 1));
+        const finalDamage = Math.round(weapon.damage * (isCrit ? 2.0 : 1));
 
-        if (weapon.id === 'spas_12') {
-            const totalPellets = weapon.pellets || 6;
-            for (let p = 0; p < totalPellets; p++) {
-                const spreadAngle = (Math.random() - 0.5) * (weapon.spread || 0.22);
-                const angle = Math.atan2(dy, dx) + spreadAngle;
-                const spd = weapon.speed * (0.88 + Math.random() * 0.25);
-
-                this.bullets.push({
-                    x: startX,
-                    y: startY,
-                    vx: Math.cos(angle) * spd,
-                    vy: Math.sin(angle) * spd,
-                    damage: Math.round(finalDamage / (totalPellets * 0.5)),
-                    isCrit,
-                    weaponId: weapon.id,
-                    distTravelled: 0,
-                    maxDist: dist + 140,
-                    length: 16,
-                    width: 3.5,
-                    color: weapon.color
-                });
-            }
-            taczAudio.playShoot('spas_12');
-            this.triggerScreenShake(3);
-        } else if (weapon.id === 'awp') {
-            const vx = (dx / dist) * weapon.speed;
-            const vy = (dy / dist) * weapon.speed;
-
-            this.bullets.push({
-                x: startX,
-                y: startY,
-                vx,
-                vy,
-                damage: finalDamage,
-                isCrit,
-                isPiercing: true,
-                weaponId: weapon.id,
-                distTravelled: 0,
-                maxDist: window.innerWidth * 1.5,
-                length: 65,
-                width: 6,
-                color: weapon.color
-            });
-            taczAudio.playShoot('awp');
-            this.triggerScreenShake(4.5);
-        } else if (weapon.id === 'rpg7') {
+        if (weapon.id === 'rpg7') {
             const vx = (dx / dist) * weapon.speed;
             const vy = (dy / dist) * weapon.speed;
 
@@ -595,48 +455,51 @@ class GunShooterEngine {
                 isCrit,
                 isHoming: true,
                 aoeRadius: weapon.aoeRadius,
-                weaponId: weapon.id,
+                weaponId: 'rpg7',
                 distTravelled: 0,
                 maxDist: window.innerWidth * 1.5,
-                length: 30,
+                length: 32,
                 width: 7,
                 color: weapon.color
             });
             taczAudio.playShoot('rpg7');
-            this.triggerScreenShake(5);
+            this.triggerScreenShake(4.5);
         } else {
-            // deagle, ak47, vector45, minigun
+            // Minigun - мощный поток трассеров с микро-разбросом
+            const spread = (Math.random() - 0.5) * 0.08;
+            const angle = aimAngle + spread;
+            const spd = weapon.speed * (0.94 + Math.random() * 0.12);
+
             this.bullets.push({
                 x: startX,
                 y: startY,
-                vx: Math.cos(aimAngle) * weapon.speed,
-                vy: Math.sin(aimAngle) * weapon.speed,
+                vx: Math.cos(angle) * spd,
+                vy: Math.sin(angle) * spd,
                 damage: finalDamage,
                 isCrit,
-                weaponId: weapon.id,
+                weaponId: 'minigun',
                 distTravelled: 0,
-                maxDist: dist + 160,
-                length: weapon.id === 'minigun' ? 24 : (weapon.id === 'ak47' ? 26 : 20),
-                width: weapon.id === 'deagle' ? 4 : 3,
-                color: weapon.color
+                maxDist: dist + 200,
+                length: 26,
+                width: 3.5,
+                color: isCrit ? '#ffffff' : weapon.color
             });
-            taczAudio.playShoot(weapon.id);
-            if (weapon.id === 'deagle') this.triggerScreenShake(2.2);
-            else if (weapon.id === 'minigun') this.triggerScreenShake(1.0);
+            taczAudio.playShoot('minigun');
+            this.triggerScreenShake(0.8);
         }
 
-        if (this.muzzleFlashes.length < 6) {
+        if (this.muzzleFlashes.length < 5) {
             this.muzzleFlashes.push({
                 x: startX,
                 y: startY,
-                radius: weapon.id === 'rpg7' || weapon.id === 'awp' ? 32 : 20,
+                radius: weapon.id === 'rpg7' ? 34 : 22,
                 life: 1,
-                decay: 0.28,
+                decay: 0.3,
                 color: weapon.color
             });
         }
 
-        this.triggerGunRecoil(weapon.id === 'awp' || weapon.id === 'rpg7' ? 1.4 : 0.7);
+        this.triggerGunRecoil(weapon.id === 'rpg7' ? 1.3 : 0.6);
     }
 
     triggerScreenShake(intensity = 3) {
@@ -990,16 +853,31 @@ class GunShooterEngine {
             const b = this.bullets[i];
 
             if (b.isHoming && this.targets.length > 0) {
-                const target = this.targets[0];
-                const tdx = target.x - b.x;
-                const tdy = target.y - b.y;
-                const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
-                if (tdist > 0) {
-                    b.vx += (tdx / tdist) * 1.8;
-                    b.vy += (tdy / tdist) * 1.8;
-                    const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-                    b.vx = (b.vx / curSpd) * 22;
-                    b.vy = (b.vy / curSpd) * 22;
+                let closestTarget = null;
+                let minDistSq = Infinity;
+                for (let tIdx = 0; tIdx < this.targets.length; tIdx++) {
+                    const t = this.targets[tIdx];
+                    if (!t.alive) continue;
+                    const tdx = t.x - b.x;
+                    const tdy = t.y - b.y;
+                    const distSq = tdx * tdx + tdy * tdy;
+                    if (distSq < minDistSq) {
+                        minDistSq = distSq;
+                        closestTarget = t;
+                    }
+                }
+
+                if (closestTarget) {
+                    const tdx = closestTarget.x - b.x;
+                    const tdy = closestTarget.y - b.y;
+                    const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
+                    if (tdist > 0) {
+                        b.vx += (tdx / tdist) * 2.2;
+                        b.vy += (tdy / tdist) * 2.2;
+                        const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                        b.vx = (b.vx / curSpd) * 22;
+                        b.vy = (b.vy / curSpd) * 22;
+                    }
                 }
             }
 
@@ -1188,9 +1066,8 @@ class GunShooterEngine {
                 this.ctx.fillText(d.text, d.x, d.y);
             } else {
                 this.ctx.font = d.isCrit ? 'bold 18px monospace' : 'bold 14px monospace';
-                let color = '#39ff14';
+                let color = '#ffd700';
                 if (d.isCrit) color = '#fbbf24';
-                else if (d.weaponId === 'awp') color = '#c084fc';
                 else if (d.weaponId === 'rpg7') color = '#f43f5e';
 
                 this.ctx.fillStyle = color;

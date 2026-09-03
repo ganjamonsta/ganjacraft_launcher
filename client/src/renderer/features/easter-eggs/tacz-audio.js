@@ -14,15 +14,10 @@ class TACZAudioEngine {
         this.lastPlayTime = new Map(); // id -> timestamp
         this.poolSize = 4;
 
-        // Предустановленные пути звуков
+        // Предустановленные пути звуков (только Minigun и RPG-7 + эффекты попаданий)
         this.soundPaths = {
-            'ak47_shoot': 'assets/tacz/sounds/ak47_shoot.ogg',
-            'deagle_shoot': 'assets/tacz/sounds/deagle_shoot.ogg',
-            'spas12_shoot': 'assets/tacz/sounds/spas12_shoot.ogg',
-            'p90_shoot': 'assets/tacz/sounds/p90_shoot.ogg',
-            'awp_shoot': 'assets/tacz/sounds/awp_shoot.ogg',
-            'rpg7_shoot': 'assets/tacz/sounds/rpg7_shoot.ogg',
             'minigun_shoot': 'assets/tacz/sounds/minigun_shoot.ogg',
+            'rpg7_shoot': 'assets/tacz/sounds/rpg7_shoot.ogg',
             'head_hit': 'assets/tacz/sounds/head_hit.ogg',
             'flesh_hit': 'assets/tacz/sounds/flesh_hit.ogg',
             'kill': 'assets/tacz/sounds/kill.ogg',
@@ -35,12 +30,7 @@ class TACZAudioEngine {
             'head_hit': 35,
             'kill': 45,
             'dry_fire': 100,
-            'spas12_shoot': 80,
-            'ak47_shoot': 35,
-            'p90_shoot': 30,
             'minigun_shoot': 25,
-            'deagle_shoot': 70,
-            'awp_shoot': 120,
             'rpg7_shoot': 120
         };
     }
@@ -109,12 +99,10 @@ class TACZAudioEngine {
 
     playFallback(id) {
         try {
-            if (id.includes('shoot')) {
-                if (id.includes('spas')) audioSynth.playShotgun();
-                else if (id.includes('minigun') || id.includes('p90')) audioSynth.playSMG();
-                else if (id.includes('rpg7')) audioSynth.playRocketLaunch();
-                else if (id.includes('awp')) audioSynth.playRailgun();
-                else audioSynth.playLaserShot();
+            if (id === 'rpg7_shoot') {
+                audioSynth.playRocketLaunch();
+            } else if (id === 'minigun_shoot') {
+                audioSynth.playSMG();
             } else if (id === 'head_hit') {
                 audioSynth.playPop(1.8);
             } else if (id === 'flesh_hit') {
@@ -128,18 +116,7 @@ class TACZAudioEngine {
     }
 
     playShoot(weaponId) {
-        const soundMap = {
-            'deagle': 'deagle_shoot',
-            'spas_12': 'spas12_shoot',
-            'ak47': 'ak47_shoot',
-            'vector45': 'p90_shoot',
-            'p90': 'p90_shoot',
-            'awp': 'awp_shoot',
-            'rpg7': 'rpg7_shoot',
-            'minigun': 'minigun_shoot'
-        };
-
-        const soundId = soundMap[weaponId] || 'ak47_shoot';
+        const soundId = weaponId === 'rpg7' ? 'rpg7_shoot' : 'minigun_shoot';
         this.play(soundId, 1.0, 0.9);
     }
 
