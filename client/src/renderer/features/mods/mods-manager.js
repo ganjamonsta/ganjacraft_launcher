@@ -4,6 +4,7 @@
  */
 
 import { dom } from '../../utils/dom.js';
+import { FILES_BASE } from '../../constants.js';
 import { MOD_GROUPS, SUB_CATEGORIES } from './mod-groups.js';
 
 let cachedManifest = null;
@@ -755,7 +756,7 @@ function renderLinksCatalogIntoContainer(manifest, contentContainer, query = '')
                 g.files && g.files.some(p => fileName.toLowerCase().includes(p.toLowerCase()))
             );
 
-            const downloadUrl = file.url || `https://gcrlauncher1.loca.lt/files/${file.path.replace(/^\/+/, '')}`;
+            const downloadUrl = file.url || `${FILES_BASE}/${file.path.replace(/^\/+/, '')}`;
 
             const modrinthUrl = groupMatch?.modrinthSlug 
                 ? `https://modrinth.com/mod/${groupMatch.modrinthSlug}`

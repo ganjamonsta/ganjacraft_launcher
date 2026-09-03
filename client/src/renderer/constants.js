@@ -3,6 +3,11 @@
  * Централизованное хранение констант UI
  */
 
+// URLs
+export const BASE_URL = 'https://launcher.ganj4craft.ru';
+export const FILES_BASE = `${BASE_URL}/files`;
+export const API_BASE = `${BASE_URL}/api`;
+
 // UI Timings (ms)
 export const ERROR_DISPLAY_TIME = 5000;
 

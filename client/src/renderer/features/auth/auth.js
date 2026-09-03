@@ -6,7 +6,7 @@
 import { appState } from '../../state/app-state.js';
 import { dom } from '../../utils/dom.js';
 import { showError } from '../../ui/modals.js';
-import { ERROR_DISPLAY_TIME } from '../../constants.js';
+import { ERROR_DISPLAY_TIME, API_BASE } from '../../constants.js';
 import { initSkinViewer } from '../skin-viewer/index.js';
 import { initMagneticPlayButton } from '../ui/magnetic-button.js';
 
@@ -201,7 +201,7 @@ export async function loadPlayerStats(username) {
     const playtimeEl = dom.get('stat-playtime');
 
     try {
-        const res = await fetch('https://launcher.ganj4craft.ru/api/stats/leaderboards', {
+        const res = await fetch(`${API_BASE}/stats/leaderboards`, {
             headers: {
                 'User-Agent': 'localtunnel',
                 'Bypass-Tunnel-Reminder': 'true'

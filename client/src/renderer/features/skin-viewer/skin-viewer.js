@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import * as skinview3d from 'skinview3d';
 import { dom } from '../../utils/dom.js';
+import { API_BASE } from '../../constants.js';
 import { equipmentManager } from './equipment-manager.js';
 import { BedrockPlayerRig } from './bedrock-player-rig.js';
 import { poseAnimator } from './pose-animator.js';
 
 const STORAGE_KEY_MODE = 'ganja_skin_viewer_mode';
-const SKIN_BASE_URL = 'https://launcher.ganj4craft.ru/api/skins';
-const CAPE_BASE_URL = 'https://launcher.ganj4craft.ru/api/capes';
+const SKIN_BASE_URL = `${API_BASE}/skins`;
+const CAPE_BASE_URL = `${API_BASE}/capes`;
 
 let skinViewer3d = null;
 let currentUsername = '';

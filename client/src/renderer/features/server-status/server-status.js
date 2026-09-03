@@ -4,6 +4,7 @@
  */
 
 import { dom } from '../../utils/dom.js';
+import { API_BASE } from '../../constants.js';
 
 const SERVER_ADDRESS = 'vocalize-cove.gl.joinmc.link';
 const STATUS_UPDATE_INTERVAL = 60000; // 60 секунд
@@ -164,7 +165,7 @@ export async function updateServerStatus() {
                 if (livePlayersContainer) {
                     livePlayersContainer.innerHTML = list.map(p => {
                         const name = typeof p === 'string' ? p : (p?.name_clean || p?.name_raw || 'Игрок');
-                        const avatarUrl = `https://launcher.ganj4craft.ru/api/skins/${encodeURIComponent(name)}.png`;
+                        const avatarUrl = `${API_BASE}/skins/${encodeURIComponent(name)}.png`;
                         return `
                             <div class="live-player-item" title="${name}">
                                 <div class="live-player-avatar-wrap">
