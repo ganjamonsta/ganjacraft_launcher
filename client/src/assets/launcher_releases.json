@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.0.187",
+    "date": "2026-09-03T11:08:27.454Z",
+    "timestamp": 1788433707,
+    "title": "Релиз v1.0.187",
+    "description": "Переработка экрана настроек, обновление клиентских модов и облегчение логики мини игры при запуске майнкрафта.",
+    "changes": [
+      "✨ Implement modular settings architecture with adaptive layout, performance utilities, and easter egg module",
+      "✨ Implement centralized configuration management and a modularized mods-manager system",
+      "✨ Implement easter egg features including a terminal-style RCON console, particle popping minigame, and meme webcam overlay.",
+      "✨ Implement mod management system with group support and dependency handling",
+      "✨ Implement mod management system with categorization, toggle dependencies, and custom UI",
+      "✨ Implement authentication, constants, and module structures for renderer features",
+      "✨ Implement mods manager module with grouping logic and sub-tab UI support"
+    ]
+  },
+  {
     "version": "1.0.186",
     "date": "2026-08-30T13:52:28.383Z",
     "timestamp": 1788097948,
