@@ -89,7 +89,20 @@ const DEFAULT_DISABLED_OPTIONAL_MOD_PATTERNS = [
     'client-forgematica',
     'client-Forgematica',
     'client-neoforgematicaprinter',
-    'client-NeoForgematicaPrinter'
+    'client-NeoForgematicaPrinter',
+
+    // Better Advancements
+    'client-betteradvancements',
+    'client-BetterAdvancements',
+
+    // Better Third Person
+    'client-betterthirdperson',
+    'client-BetterThirdPerson',
+    'client-leawind_third_person',
+
+    // First Person Model
+    'client-firstperson',
+    'client-FirstPerson'
 ];
 
 // JVM optimization arguments

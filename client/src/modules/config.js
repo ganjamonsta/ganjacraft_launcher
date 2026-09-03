@@ -29,6 +29,7 @@ function getDefaultConfig() {
         // Separate flag: whether we already applied default mod toggles at least once.
         // This must NOT be coupled to isDefault, because the install-path wizard sets isDefault=false.
         modsDefaultsApplied: false,
+        modsDefaultsVersion: 2,
 
         // General
         installPath: defaultInstallPath,

@@ -418,11 +418,13 @@ function stopModWatcher() {
     }
 }
 
+const CURRENT_MODS_DEFAULTS_VERSION = 2;
+
 /**
  * Применить дефолтные настройки модов для свежих установок
  */
 async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug, options = {}) {
-    if (config.modsDefaultsApplied === true) return config;
+    if (config.modsDefaultsApplied === true && config.modsDefaultsVersion === CURRENT_MODS_DEFAULTS_VERSION) return config;
     const signal = options.signal;
     if (signal && signal.aborted) throw new Error('CANCELLED');
     
@@ -438,6 +440,7 @@ async function applyDefaultModSettings(config, rootPath, sendLog, sendDebug, opt
         const merged = Array.from(new Set([...existing, ...defaults]));
         config.disabledMods = merged;
         config.modsDefaultsApplied = true;
+        config.modsDefaultsVersion = CURRENT_MODS_DEFAULTS_VERSION;
         saveConfig(config);
 
         if (defaults.length > 0) {

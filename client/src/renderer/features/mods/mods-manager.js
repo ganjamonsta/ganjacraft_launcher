@@ -73,7 +73,7 @@ export async function loadModsList(disabledMods = [], config = {}, forceReload =
         allGroupItems.forEach(item => {
             if (item.type === 'group') {
                 const group = MOD_GROUPS.find(g => g.id === item.id);
-                if (config.modsDefaultsApplied !== true && group?.defaultDisabled) {
+                if ((config.modsDefaultsApplied !== true || config.modsDefaultsVersion !== 2) && group?.defaultDisabled) {
                     item.checked = false;
                 } else {
                     item.checked = item.paths.every(p => !isModDisabled(p, disabledMods));
@@ -117,7 +117,7 @@ export async function loadModsList(disabledMods = [], config = {}, forceReload =
             groupFiles.forEach(f => handledFiles.add(f.path));
 
             let isChecked;
-            if (config.modsDefaultsApplied !== true && group.defaultDisabled) {
+            if ((config.modsDefaultsApplied !== true || config.modsDefaultsVersion !== 2) && group.defaultDisabled) {
                 isChecked = false;
             } else {
                 isChecked = groupFiles.every(f => !isModDisabled(f.path, disabledMods));
@@ -485,7 +485,7 @@ export function renderModsGrid() {
         categoryCard.appendChild(content);
 
         const upperCat = catName.toUpperCase();
-        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА' || upperCat === 'КАМЕРА') {
+        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА') {
             colLeft.appendChild(categoryCard);
         } else {
             colRight.appendChild(categoryCard);

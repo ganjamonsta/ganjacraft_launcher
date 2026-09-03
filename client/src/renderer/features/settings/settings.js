@@ -517,6 +517,7 @@ export async function saveSettings() {
         enableDiscordRpc: selectedDiscordRpc,
         disabledMods: getDisabledMods(),
         modsDefaultsApplied: true,
+        modsDefaultsVersion: 2,
     };
     
     const ok = await window.api.saveConfig(newConfig);

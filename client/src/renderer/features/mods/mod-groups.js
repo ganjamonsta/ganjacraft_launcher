@@ -202,7 +202,8 @@ export const MOD_GROUPS = [
         description: 'Удобное полноэкранное древо достижений с масштабированием, описаниями и прогрессом.',
         curseSlug: 'better-advancements',
         modrinthSlug: 'better-advancements',
-        files: ['client-betteradvancements', 'client-BetterAdvancements']
+        files: ['client-betteradvancements', 'client-BetterAdvancements'],
+        defaultDisabled: true
     },
 
     // ----------------------------------------------------
@@ -219,7 +220,8 @@ export const MOD_GROUPS = [
         description: 'Плавная свободная камера от третьего лица при нажатии F5 (обзор на 360° вокруг игрока).',
         curseSlug: 'leawind-third-person',
         modrinthSlug: 'leawind-third-person',
-        files: ['client-leawind_third_person', 'client-betterthirdperson', 'client-BetterThirdPerson']
+        files: ['client-leawind_third_person', 'client-betterthirdperson', 'client-BetterThirdPerson'],
+        defaultDisabled: true
     },
     {
         id: 'first_person',
@@ -232,7 +234,8 @@ export const MOD_GROUPS = [
         description: 'Реалистичный вид от первого лица с отображением тела, ног, брони и предметов персонажа.',
         curseSlug: 'first-person-model',
         modrinthSlug: 'first-person-model',
-        files: ['client-firstperson', 'client-FirstPerson']
+        files: ['client-firstperson', 'client-FirstPerson'],
+        defaultDisabled: true
     },
 
     // ----------------------------------------------------
@@ -275,8 +278,8 @@ export const MOD_GROUPS = [
 export const CATEGORY_ORDER = [
     'Оптимизация',
     'Графика',
-    'Камера',
     'Интерфейс',
+    'Камера',
     'Строительство',
     'Остальное'
 ];
