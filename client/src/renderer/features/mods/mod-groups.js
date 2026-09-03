@@ -21,7 +21,7 @@ export const MOD_GROUPS = [
         description: 'Ядерное ускорение рендеринга и многопоточности. Основной двигатель FPS.',
         curseSlug: 'sodium',
         modrinthSlug: 'sodium',
-        files: ['client-sodium', 'client-embeddium', 'client-chloride']
+        files: ['client-sodium-neoforge', 'client-sodium-fabric', 'client-sodium-0.', 'client-embeddium', 'client-chloride']
     },
     {
         id: 'sodium_extra',
@@ -89,12 +89,25 @@ export const MOD_GROUPS = [
         description: 'Поддержка шейдерпаков OptiFine в интерфейсе настроек Sodium.',
         curseSlug: 'iris',
         modrinthSlug: 'iris',
-        files: ['client-oculus', 'client-iris']
+        files: ['client-oculus', 'client-iris', 'iris', 'oculus']
     },
 
     // ----------------------------------------------------
     // ГРАФИКА
     // ----------------------------------------------------
+    {
+        id: 'borderless',
+        name: 'Borderless Mining',
+        shortName: 'Borderless',
+        version: '1.7.5',
+        category: 'Графика',
+        subCategory: 'Графика',
+        icon: 'monitor',
+        description: 'Полноэкранный режим в окне без рамок (Borderless Fullscreen) для удобного переключения окон без сворачивания.',
+        curseSlug: 'borderless-mining',
+        modrinthSlug: 'borderless-mining',
+        files: ['client-borderless', 'borderless']
+    },
     {
         id: 'athena',
         name: 'Athena (Connected Textures)',
@@ -106,25 +119,77 @@ export const MOD_GROUPS = [
         description: 'Соединяющиеся текстуры блоков (стекло, камень и другие блоки OptiFine CTM).',
         curseSlug: 'athena',
         modrinthSlug: 'athena',
-        files: ['client-athena']
+        files: ['client-athena', 'athena']
     },
     {
         id: 'etf_emf_cit',
-        name: 'OptiFine Features (ETF + EMF + CIT)',
-        shortName: 'ETF, EMF & CIT (Текстуры и 3D-модели)',
-        version: '7.1 / 3.2.4 / 1.2.18',
+        name: 'OptiFine Features (ETF + EMF)',
+        shortName: 'ETF & EMF (Текстуры и 3D-модели)',
+        version: '7.1 / 3.2.4',
         category: 'Графика',
         subCategory: 'Графика',
         icon: 'eye',
-        description: 'Кастомные текстуры мобов, 3D-модели сущностей, живая анимация и предметы на наковальне (CIT).',
+        description: 'Кастомные текстуры мобов, 3D-модели сущностей и живая плавная анимация (аналог OptiFine).',
         curseSlug: 'entity-texture-features-fabric-forge',
         modrinthSlug: 'entity-texture-features',
-        files: ['client-entity_texture_features', 'client-entity_model_features', 'client-citreforged']
+        files: ['client-entity_texture_features', 'client-entity_model_features', 'client-citreforged', 'entity_texture_features', 'entity_model_features']
     },
 
     // ----------------------------------------------------
     // ИНТЕРФЕЙС
     // ----------------------------------------------------
+    {
+        id: 'mouse_tweaks',
+        name: 'Mouse Tweaks',
+        shortName: 'Mouse Tweaks',
+        version: '2.26.1',
+        category: 'Интерфейс',
+        subCategory: 'Интерфейс',
+        icon: 'mouse',
+        description: 'Удобное управление инвентарём: быстрое перемещение предметов зажатием кнопки мыши и прокрутка колесиком.',
+        curseSlug: 'mouse-tweaks',
+        modrinthSlug: 'mouse-tweaks',
+        files: ['client-mousetweaks', 'client-MouseTweaks', 'mousetweaks', 'MouseTweaks']
+    },
+    {
+        id: 'simply_tooltips',
+        name: 'Simply Tooltips',
+        shortName: 'Simply Tooltips',
+        version: '0.1.3',
+        category: 'Интерфейс',
+        subCategory: 'Интерфейс',
+        icon: 'block',
+        description: 'Современный аккуратный рендеринг всплывающих подсказок (тултипов) для предметов.',
+        curseSlug: 'simply-tooltips',
+        modrinthSlug: 'simply-tooltips',
+        files: ['client-simplytooltips', 'client-SimplyTooltips', 'simplytooltips', 'SimplyTooltips']
+    },
+    {
+        id: 'oracle_index',
+        name: 'Oracle Index',
+        shortName: 'Oracle Index',
+        version: '1.3.1',
+        category: 'Интерфейс',
+        subCategory: 'Интерфейс',
+        icon: 'book',
+        description: 'Интерактивная внутриигровая энциклопедия и база знаний по модам и механикам сборки.',
+        curseSlug: 'oracle-index',
+        modrinthSlug: 'oracle-index',
+        files: ['client-oracle_index', 'client-oracle-index', 'oracle_index', 'oracle-index']
+    },
+    {
+        id: 'watermedia',
+        name: 'WaterMedia',
+        shortName: 'WaterMedia',
+        version: '2.1.34',
+        category: 'Интерфейс',
+        subCategory: 'Интерфейс',
+        icon: 'cloud',
+        description: 'Мультимедийный движок для видео и аудио в игре (экраны, ТВ, рамки, радио и стриминг).',
+        curseSlug: 'watermedia',
+        modrinthSlug: 'watermedia',
+        files: ['client-watermedia', 'watermedia']
+    },
     {
         id: 'xaero_minimap',
         name: 'Xaero\'s Minimap',
@@ -162,7 +227,7 @@ export const MOD_GROUPS = [
         description: 'Быстрый поиск конфликтов клавиш и расширенная настройка биндов.',
         curseSlug: 'controlling',
         modrinthSlug: 'controlling',
-        files: ['client-controlling', 'client-searchables']
+        files: ['client-controlling', 'client-Controlling', 'client-searchables', 'client-Searchables', 'controlling', 'searchables']
     },
     {
         id: 'emi',
@@ -175,7 +240,7 @@ export const MOD_GROUPS = [
         description: 'Удобный интерфейс просмотра всех рецептов игры справа в инвентаре.',
         curseSlug: 'emi',
         modrinthSlug: 'emi',
-        files: ['client-emi', 'client-createjeicompat']
+        files: ['client-emi', 'client-createjeicompat', 'emi']
     },
     {
         id: 'better_advancements',
@@ -188,7 +253,7 @@ export const MOD_GROUPS = [
         description: 'Удобное древо достижений во весь экран с описаниями и прогрессом.',
         curseSlug: 'better-advancements',
         modrinthSlug: 'better-advancements',
-        files: ['client-betteradvancements', 'client-BetterAdvancements']
+        files: ['client-betteradvancements', 'client-BetterAdvancements', 'betteradvancements']
     },
     {
         id: 'more_overlays',
@@ -259,7 +324,7 @@ export const MOD_GROUPS = [
         description: 'Загрузка 3D-схематик постройки, полупрозрачная проекция блоков и авто-принтер.',
         curseSlug: 'forgematica',
         modrinthSlug: 'forgematica',
-        files: ['client-forgematica', 'client-Forgematica', 'client-mafglib', 'client-badpackets', 'client-neoforgematicaprinter', 'client-NeoForgematicaPrinter'],
+        files: ['client-forgematica', 'client-Forgematica', 'client-mafglib', 'client-badpackets', 'client-neoforgematicaprinter', 'client-NeoForgematicaPrinter', 'forgematica', 'neoforgematicaprinter'],
         defaultDisabled: true
     },
     {
@@ -273,7 +338,7 @@ export const MOD_GROUPS = [
         description: 'Плавная свободная камера от третьего лица при нажатии F5 (360° обзор).',
         curseSlug: 'leawind-third-person',
         modrinthSlug: 'leawind-third-person',
-        files: ['client-leawind_third_person', 'client-BetterThirdPerson']
+        files: ['client-leawind_third_person', 'client-BetterThirdPerson', 'BetterThirdPerson', 'betterthirdperson']
     },
     {
         id: 'first_person',
@@ -286,7 +351,7 @@ export const MOD_GROUPS = [
         description: 'Вид от первого лица с отображением тела игрока и предметов в руках.',
         curseSlug: 'first-person-model',
         modrinthSlug: 'first-person-model',
-        files: ['client-firstperson', 'client-FirstPerson']
+        files: ['client-firstperson', 'client-FirstPerson', 'firstperson']
     },
     {
         id: 'controllable',
