@@ -485,7 +485,7 @@ export function renderModsGrid() {
         categoryCard.appendChild(content);
 
         const upperCat = catName.toUpperCase();
-        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА') {
+        if (upperCat === 'ОПТИМИЗАЦИЯ' || upperCat === 'ГРАФИКА' || upperCat === 'КАМЕРА') {
             colLeft.appendChild(categoryCard);
         } else {
             colRight.appendChild(categoryCard);
