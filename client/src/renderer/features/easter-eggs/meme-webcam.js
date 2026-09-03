@@ -174,7 +174,7 @@ export function hideMemeWebcam() {
 function showRepairToast() {
     const toast = document.createElement('div');
     toast.className = 'craft-repaired-toast';
-    toast.innerHTML = `<span>🛠️ Крафт успешно починен админом! Приятной игры.</span>`;
+    toast.innerHTML = `<span>🛠️ Ошибка успешно исправлена. Приятной игры.</span>`;
     document.body.appendChild(toast);
 
     setTimeout(() => toast.classList.add('visible'), 10);

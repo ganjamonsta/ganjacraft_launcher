@@ -659,7 +659,9 @@ export function switchTab(targetTabId) {
         if (cascadeTarget) {
             delete cascadeTarget.dataset.dir;
             cascadeTarget.classList.remove('inertia-cascade');
-            Array.from(cascadeTarget.children).forEach(child => {
+            const cardTargets = cascadeTarget.querySelectorAll(':scope > div > .settings-category, :scope > div > .full-mods-list-card');
+            const itemsToReset = cardTargets.length > 0 ? Array.from(cardTargets) : Array.from(cascadeTarget.children);
+            itemsToReset.forEach(child => {
                 child.style.animation = '';
             });
         }

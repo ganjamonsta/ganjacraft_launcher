@@ -206,307 +206,336 @@
                         </svg>
                     </div>
 
-                    <div class="settings-categories inertia-cascade">
-                        <!-- Category 1: Paths -->
-                        <div class="settings-category">
-                            <div class="category-header">
-                                <svg class="category-icon">
-                                    <use href="#icon-folder" />
-                                </svg>
-                                <h4>Пути</h4>
-                            </div>
-                            <div class="category-content">
-                                <div class="setting-item setting-item-stacked">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-game" />
+                    <div id="general-grid-container" class="settings-scroll-container">
+                        <div id="general-grid" class="settings-categories inertia-cascade">
+                            <!-- Left Column: System, Engine & Maintenance -->
+                            <div class="general-col-left">
+                                <!-- Card 1: Paths & Java -->
+                                <div class="settings-category">
+                                    <div class="category-header">
+                                        <svg class="category-icon">
+                                            <use href="#icon-folder" />
                                         </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Папка установки</span>
-                                            <span class="setting-desc">Где хранятся файлы игры</span>
-                                        </div>
+                                        <h4>Пути и Java</h4>
                                     </div>
-                                    <div class="setting-control path-control">
-                                        <input type="text" id="setting-path" readonly placeholder="Выберите папку...">
-                                        <button id="btn-select-path" class="icon-btn" title="Выбрать папку">
-                                            <svg class="btn-icon">
-                                                <use href="#icon-search" />
-                                            </svg>
-                                        </button>
-                                        <button id="btn-open-path" class="icon-btn" title="Открыть папку">
-                                            <svg class="btn-icon">
-                                                <use href="#icon-folder-open" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="setting-item setting-item-stacked">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-java" />
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Путь к Java</span>
-                                            <span class="setting-desc">Оставьте пустым для авто-определения</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control path-control">
-                                        <input type="text" id="setting-java" placeholder="Авто-определение">
-                                        <button id="btn-select-java" class="icon-btn" title="Выбрать файл">
-                                            <svg class="btn-icon">
-                                                <use href="#icon-search" />
-                                            </svg>
-                                        </button>
-                                        <button id="btn-reset-java" class="icon-btn reset" title="Сбросить (Авто)">
-                                            <svg class="btn-icon">
-                                                <use href="#icon-reset" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Category 2: Performance -->
-                        <div class="settings-category">
-                            <div class="category-header">
-                                <svg class="category-icon">
-                                    <use href="#icon-memory" />
-                                </svg>
-                                <h4>Производительность</h4>
-                            </div>
-                            <div class="category-content">
-                                <div class="setting-item ram-setting">
-                                    <div class="setting-label">
-                                        <div class="setting-text">
-                                            <span class="setting-title">Оперативная память (RAM)</span>
-                                            <span class="setting-desc">Минимум: <strong id="ram-min-display">2</strong>
-                                                GB — Максимум: <strong id="ram-max-display">6</strong> GB</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control ram-control">
-                                        <div class="ram-slider-container">
-                                            <div class="ram-slider-wrapper">
-                                                <div class="ram-track">
-                                                    <div class="ram-range" id="ram-range"></div>
+                                    <div class="category-content">
+                                        <div class="setting-item setting-item-stacked">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-game" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Папка установки</span>
+                                                    <span class="setting-desc">Где хранятся файлы игры</span>
                                                 </div>
-                                                <input type="range" id="setting-ram-slider-min"
-                                                    class="ram-slider ram-slider-min" min="1" max="16" value="1"
-                                                    step="1">
-                                                <input type="range" id="setting-ram-slider-max"
-                                                    class="ram-slider ram-slider-max" min="1" max="16" value="3"
-                                                    step="1">
                                             </div>
-                                            <div class="ram-labels">
-                                                <span>1 GB</span>
-                                                <span>4 GB</span>
-                                                <span>8 GB</span>
-                                                <span>12 GB</span>
-                                                <span>16 GB</span>
+                                            <div class="setting-control path-control">
+                                                <input type="text" id="setting-path" readonly placeholder="Выберите папку...">
+                                                <button id="btn-select-path" class="icon-btn" title="Выбрать папку">
+                                                    <svg class="btn-icon">
+                                                        <use href="#icon-search" />
+                                                    </svg>
+                                                </button>
+                                                <button id="btn-open-path" class="icon-btn" title="Открыть папку">
+                                                    <svg class="btn-icon">
+                                                        <use href="#icon-folder-open" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-                                        <!-- Hidden inputs for compatibility -->
-                                        <input type="hidden" id="setting-ram-min" value="1G">
-                                        <input type="hidden" id="setting-ram-max" value="3G">
+
+                                        <div class="setting-item setting-item-stacked">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-java" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Путь к Java</span>
+                                                    <span class="setting-desc">Оставьте пустым для авто-определения</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control path-control">
+                                                <input type="text" id="setting-java" placeholder="Авто-определение">
+                                                <button id="btn-select-java" class="icon-btn" title="Выбрать файл">
+                                                    <svg class="btn-icon">
+                                                        <use href="#icon-search" />
+                                                    </svg>
+                                                </button>
+                                                <button id="btn-reset-java" class="icon-btn reset" title="Сбросить (Авто)">
+                                                    <svg class="btn-icon">
+                                                        <use href="#icon-reset" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <label class="setting-item setting-item-toggle">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-hide" />
+                                <!-- Card 2: Performance -->
+                                <div class="settings-category">
+                                    <div class="category-header">
+                                        <svg class="category-icon">
+                                            <use href="#icon-memory" />
                                         </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Скрывать лаунчер</span>
-                                            <span class="setting-desc">Свернуть в трей при запуске игры</span>
+                                        <h4>Производительность</h4>
+                                    </div>
+                                    <div class="category-content">
+                                        <div class="setting-item ram-setting">
+                                            <div class="setting-label">
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Оперативная память (RAM)</span>
+                                                    <span class="setting-desc">Минимум: <strong id="ram-min-display">2</strong> GB — Максимум: <strong id="ram-max-display">6</strong> GB</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control ram-control">
+                                                <div class="ram-slider-container">
+                                                    <div class="ram-slider-wrapper">
+                                                        <div class="ram-track">
+                                                            <div class="ram-range" id="ram-range"></div>
+                                                        </div>
+                                                        <input type="range" id="setting-ram-slider-min"
+                                                            class="ram-slider ram-slider-min" min="1" max="16" value="1"
+                                                            step="1">
+                                                        <input type="range" id="setting-ram-slider-max"
+                                                            class="ram-slider ram-slider-max" min="1" max="16" value="3"
+                                                            step="1">
+                                                    </div>
+                                                    <div class="ram-labels">
+                                                        <span>1 GB</span>
+                                                        <span>4 GB</span>
+                                                        <span>8 GB</span>
+                                                        <span>12 GB</span>
+                                                        <span>16 GB</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Hidden inputs for compatibility -->
+                                                <input type="hidden" id="setting-ram-min" value="1G">
+                                                <input type="hidden" id="setting-ram-max" value="3G">
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <span class="toggle-switch">
-                                            <input type="checkbox" id="setting-hide-on-play">
-                                            <span class="toggle-slider"></span>
-                                        </span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
 
-                        <!-- Category 3: Appearance -->
-                        <div class="settings-category">
-                            <div class="category-header">
-                                <svg class="category-icon">
-                                    <use href="#icon-appearance" />
-                                </svg>
-                                <h4>Внешний вид</h4>
-                            </div>
-                            <div class="category-content">
-                                <div class="setting-item">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-appearance" />
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Отображение скина</span>
-                                            <span class="setting-desc">3D WebGL, 2D или отключить</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <select id="setting-skin-mode" class="setting-select">
-                                            <option value="3d">3D WebGL</option>
-                                            <option value="2d">2D Изометрия</option>
-                                            <option value="off">Отключен</option>
-                                        </select>
+                                        <label class="setting-item setting-item-toggle">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-hide" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Скрывать лаунчер</span>
+                                                    <span class="setting-desc">Свернуть в трей при запуске для экономии ресурсов</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <span class="toggle-switch">
+                                                    <input type="checkbox" id="setting-hide-on-play">
+                                                    <span class="toggle-slider"></span>
+                                                </span>
+                                            </div>
+                                        </label>
                                     </div>
                                 </div>
 
-                                <div class="setting-item">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-snow" />
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Тема эффектов</span>
-                                            <span class="setting-desc">Сезонные частицы и анимация</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <select id="setting-effects-preset" class="setting-select">
-                                            <option value="auto">Авто (По сезону)</option>
-                                            <option value="snow">Зима (Снежинки)</option>
-                                            <option value="leaves">Осень (Листопад)</option>
-                                            <option value="sakura">Весна (Сакура)</option>
-                                            <option value="fireflies">Лето (Светлячки)</option>
-                                            <option value="ganja">Ganja Special</option>
-                                            <option value="off">Отключено</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="setting-item">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-appearance" />
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Плотность частиц</span>
-                                            <span class="setting-desc">Количество частиц на экране</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <select id="setting-effects-density" class="setting-select">
-                                            <option value="low">Низкая</option>
-                                            <option value="medium">Средняя</option>
-                                            <option value="high">Высокая</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Category 4: Interface & Maintenance -->
-                        <div class="settings-category">
-                            <div class="category-header">
-                                <svg class="category-icon">
-                                    <use href="#icon-wrench" />
-                                </svg>
-                                <h4>Интерфейс и сервис</h4>
-                            </div>
-                            <div class="category-content">
-                                <label class="setting-item setting-item-toggle">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-smoke" />
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Эффект дыма</span>
-                                            <span class="setting-desc">Дым следует за курсором</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <span class="toggle-switch">
-                                            <input type="checkbox" id="setting-enable-smoke">
-                                            <span class="toggle-slider"></span>
-                                        </span>
-                                    </div>
-                                </label>
-
-                                <label class="setting-item setting-item-toggle">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
-                                            <use href="#icon-parallax" />
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Параллакс-эффект</span>
-                                            <span class="setting-desc">Фон реагирует на курсор</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <span class="toggle-switch">
-                                            <input type="checkbox" id="setting-enable-parallax">
-                                            <span class="toggle-slider"></span>
-                                        </span>
-                                    </div>
-                                </label>
-
-                                <label class="setting-item setting-item-toggle">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon" style="color: #5865F2;">
-                                            <use href="#icon-discord" />
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Discord Rich Presence</span>
-                                            <span class="setting-desc">Отображать статус игры и лаунчера в профиле Discord</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <span class="toggle-switch">
-                                            <input type="checkbox" id="setting-enable-discord-rpc">
-                                            <span class="toggle-slider"></span>
-                                        </span>
-                                    </div>
-                                </label>
-
-                                <label class="setting-item setting-item-toggle">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="12" r="10"/>
-                                            <line x1="12" y1="8" x2="12" y2="16"/>
-                                            <line x1="8" y1="12" x2="16" y2="12"/>
-                                        </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Мини-игра при запуске</span>
-                                            <span class="setting-desc">Интерактивный шутер во время загрузки Minecraft</span>
-                                        </div>
-                                    </div>
-                                    <div class="setting-control">
-                                        <span class="toggle-switch">
-                                            <input type="checkbox" id="setting-enable-minigame">
-                                            <span class="toggle-slider"></span>
-                                        </span>
-                                    </div>
-                                </label>
-
-                                <div class="setting-item danger-item">
-                                    <div class="setting-label">
-                                        <svg class="setting-icon">
+                                <!-- Card 3: Maintenance (Clean Danger styling, NO nested box/double border) -->
+                                <div class="settings-category category-danger">
+                                    <div class="category-header">
+                                        <svg class="category-icon">
                                             <use href="#icon-danger" />
                                         </svg>
-                                        <div class="setting-text">
-                                            <span class="setting-title">Обслуживание</span>
-                                            <span class="setting-desc">Смена аккаунта или сброс</span>
+                                        <h4>Обслуживание</h4>
+                                    </div>
+                                    <div class="category-content">
+                                        <div class="setting-item">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-wrench" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Сессия и файлы</span>
+                                                    <span class="setting-desc">Смена профиля или сброс клиента</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control setting-actions-group">
+                                                <button id="logout-btn" class="secondary-btn settings-action-btn">
+                                                    Выйти
+                                                </button>
+                                                <button id="btn-reinstall" class="danger-btn settings-action-btn">
+                                                    <svg class="btn-icon">
+                                                        <use href="#icon-reset" />
+                                                    </svg>
+                                                    Переустановить
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="setting-control setting-actions-group">
-                                        <button id="logout-btn" class="secondary-btn settings-action-btn">
-                                            Выйти
-                                        </button>
-                                        <button id="btn-reinstall" class="danger-btn settings-action-btn">
-                                            <svg class="btn-icon">
-                                                <use href="#icon-reset" />
-                                            </svg>
-                                            Переустановить
-                                        </button>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Visuals, Effects & Features -->
+                            <div class="general-col-right">
+                                <!-- Card 4: Appearance (Dropdowns) -->
+                                <div class="settings-category">
+                                    <div class="category-header">
+                                        <svg class="category-icon">
+                                            <use href="#icon-appearance" />
+                                        </svg>
+                                        <h4>Внешний вид</h4>
+                                    </div>
+                                    <div class="category-content">
+                                        <div class="setting-item">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-appearance" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Отображение скина</span>
+                                                    <span class="setting-desc">3D WebGL, 2D или отключить</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <select id="setting-skin-mode" class="setting-select">
+                                                    <option value="3d">3D WebGL</option>
+                                                    <option value="2d">2D Изометрия</option>
+                                                    <option value="off">Отключен</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="setting-item">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-snow" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Тема эффектов</span>
+                                                    <span class="setting-desc">Сезонные частицы и анимация</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <select id="setting-effects-preset" class="setting-select">
+                                                    <option value="auto">Авто (По сезону)</option>
+                                                    <option value="snow">Зима (Снежинки)</option>
+                                                    <option value="leaves">Осень (Листопад)</option>
+                                                    <option value="sakura">Весна (Сакура)</option>
+                                                    <option value="fireflies">Лето (Светлячки)</option>
+                                                    <option value="ganja">Ganja Special</option>
+                                                    <option value="off">Отключено</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="setting-item">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-appearance" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Плотность частиц</span>
+                                                    <span class="setting-desc">Количество частиц на экране</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <select id="setting-effects-density" class="setting-select">
+                                                    <option value="low">Низкая</option>
+                                                    <option value="medium">Средняя</option>
+                                                    <option value="high">Высокая</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card 5: Interface Effects (Toggles) -->
+                                <div class="settings-category">
+                                    <div class="category-header">
+                                        <svg class="category-icon">
+                                            <use href="#icon-smoke" />
+                                        </svg>
+                                        <h4>Эффекты интерфейса</h4>
+                                    </div>
+                                    <div class="category-content">
+                                        <label class="setting-item setting-item-toggle">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-smoke" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Эффект дыма</span>
+                                                    <span class="setting-desc">Дым следует за курсором</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <span class="toggle-switch">
+                                                    <input type="checkbox" id="setting-enable-smoke">
+                                                    <span class="toggle-slider"></span>
+                                                </span>
+                                            </div>
+                                        </label>
+
+                                        <label class="setting-item setting-item-toggle">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon">
+                                                    <use href="#icon-parallax" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Параллакс фона</span>
+                                                    <span class="setting-desc">Фон реагирует на движение курсора</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <span class="toggle-switch">
+                                                    <input type="checkbox" id="setting-enable-parallax">
+                                                    <span class="toggle-slider"></span>
+                                                </span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Card 6: Integrations & Features (Toggles) -->
+                                <div class="settings-category">
+                                    <div class="category-header">
+                                        <svg class="category-icon">
+                                            <use href="#icon-game" />
+                                        </svg>
+                                        <h4>Интеграции и функции</h4>
+                                    </div>
+                                    <div class="category-content">
+                                        <label class="setting-item setting-item-toggle">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon" style="color: #5865F2;">
+                                                    <use href="#icon-discord" />
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Discord Rich Presence</span>
+                                                    <span class="setting-desc">Отображать статус игры в профиле Discord</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <span class="toggle-switch">
+                                                    <input type="checkbox" id="setting-enable-discord-rpc">
+                                                    <span class="toggle-slider"></span>
+                                                </span>
+                                            </div>
+                                        </label>
+
+                                        <label class="setting-item setting-item-toggle">
+                                            <div class="setting-label">
+                                                <svg class="setting-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <line x1="12" y1="8" x2="12" y2="16"/>
+                                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                                </svg>
+                                                <div class="setting-text">
+                                                    <span class="setting-title">Мини-игра при запуске</span>
+                                                    <span class="setting-desc">Интерактивный шутер во время загрузки Minecraft</span>
+                                                </div>
+                                            </div>
+                                            <div class="setting-control">
+                                                <span class="toggle-switch">
+                                                    <input type="checkbox" id="setting-enable-minigame">
+                                                    <span class="toggle-slider"></span>
+                                                </span>
+                                            </div>
+                                        </label>
                                     </div>
                                 </div>
                             </div>

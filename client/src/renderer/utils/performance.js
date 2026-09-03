@@ -89,7 +89,10 @@ export function triggerInertiaCascade(target, direction = 'down', randomize = tr
     void el.offsetWidth; // Force reflow
     el.classList.add('inertia-cascade');
 
-    const children = Array.from(el.children);
+    // Если внутри есть колонки (как в general-col-left/right или mods-col-left/right),
+    // берем непосредственно сами карточки настроек, чтобы каскад шел по каждой карточке
+    const cardTargets = el.querySelectorAll(':scope > div > .settings-category, :scope > div > .full-mods-list-card');
+    const children = cardTargets.length > 0 ? Array.from(cardTargets) : Array.from(el.children);
     if (!children.length) return;
 
     const directions = ['right', 'left', 'down', 'up'];
